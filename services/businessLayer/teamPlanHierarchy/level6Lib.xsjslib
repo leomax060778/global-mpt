@@ -406,7 +406,9 @@ function insertHl6(data, userId) {
 
         if (hl6_id > 0) {
             data.hl6.HL6_ID = hl6_id;
-            budgetSpendRequest.insertOwnMoneyBudgetSpendRequest(data.hl6.BUDGET, hl6_id, 'HL6', userId, blLevel2.getHl2AllowAutomaticBudgetApprovalByHl4Id(data.hl6.HL5_ID) && data.hl6.IN_BUDGET);
+
+            var l4Id = dataHl5.getHl5ById(data.hl6.HL5_ID).HL4_ID;
+            budgetSpendRequest.insertOwnMoneyBudgetSpendRequest(data.hl6.BUDGET, hl6_id, 'HL6', userId, blLevel2.getHl2AllowAutomaticBudgetApprovalByHl4Id(l4Id) && data.hl6.IN_BUDGET);
 
             insertInCrmBinding(validationResult.crmBindingChangedFields, validationResult.crmBindingChangedFieldsUpdate, hl6_id);
 
@@ -827,13 +829,14 @@ function updateHl6(data, userId) {
         );
 
         if (objHL6.BUDGET != data.hl6.BUDGET) {
+            var l4Id = dataHl5.getHl5ById(data.hl6.HL5_ID).HL4_ID;
             var budgetSpendRequestStatus = budgetSpendRequest.getBudgetSpendRequestsStatus();
 
             var ownMoneyBudgetSpendRequestStatus = budgetSpendRequest.getOwnMoneyBudgetSpendRequestStatusByHlIdLevel(data.hl6.HL6_ID, 'HL6');
             if(ownMoneyBudgetSpendRequestStatus && ownMoneyBudgetSpendRequestStatus != budgetSpendRequestStatus.PENDING)
                 throw ErrorLib.getErrors().CustomError("", "hl6Services/handlePut/updateHl6", "Cannot update Marketing Subtactic Budget because Own money budget spend request is no longer in Pending Status.");
 
-            budgetSpendRequest.updateOwnMoneyBudgetSpendRequestByHlIdLevel(data.hl6.HL6_ID, 'HL6', data.hl6.BUDGET, blLevel2.getHl2AllowAutomaticBudgetApprovalByHl5Id(data.hl6.HL5_ID) && data.hl6.IN_BUDGET, userId);
+            budgetSpendRequest.updateOwnMoneyBudgetSpendRequestByHlIdLevel(data.hl6.HL6_ID, 'HL6', data.hl6.BUDGET, blLevel2.getHl2AllowAutomaticBudgetApprovalByHl5Id(l4Id) && data.hl6.IN_BUDGET, userId);
         }
 
         insertInCrmBinding(validationResult.crmBindingChangedFields, validationResult.crmBindingChangedFieldsUpdate, data.hl6.HL6_ID);
