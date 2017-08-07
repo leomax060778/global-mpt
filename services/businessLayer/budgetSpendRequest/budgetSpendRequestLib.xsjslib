@@ -2,6 +2,7 @@ $.import("mktgplanningtool.services.commonLib", "mapper");
 var mapper = $.mktgplanningtool.services.commonLib.mapper;
 var dataBudgetSpendRequest = mapper.getDataBudgetSpendRequest();
 var dataBudgetReport = mapper.getDataBudgetSpendReport();
+var dataHl2 = mapper.getDataLevel2();
 /** ***********END INCLUDE LIBRARIES*************** */
 var BUDGET_SPEND_REQUEST_ORIGIN = {
     BUDGET_REQUESTOR: 1,
@@ -51,7 +52,8 @@ function getL2BudgetApproverByL2Id(l2Id) {
                 "budgetSpendRequestServices/handleGet/getL2BudgetApproverByL2Id",
                 L2_ID_MISSING);
 
-    return dataBudgetSpendRequest.getL2BudgetApproverByL2Id(l2Id);
+    var hl2 = dataHl2.getLevel2ById({IN_HL2_ID: l2Id});
+    return dataBudgetSpendRequest.getL2BudgetApproverByL2Id(l2Id, hl2.HL1_ID);
 }
 
 function insertL2BudgetApprover(l2Id, budgetApproverIds, userId) {

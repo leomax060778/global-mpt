@@ -32,9 +32,10 @@ var HIERARCHY_LEVEL = {
     HL6: 3
 };
 
-function getL2BudgetApproverByL2Id(l2Id){
+function getL2BudgetApproverByL2Id(l2Id, l1Id){
     var parameters = {
         in_hl2_id: l2Id
+        ,in_hl1_id: l1Id
     };
     var rdo = db.executeProcedureManual(GET_L2_BUDGET_SPEND_APPROVER_BY_L2_ID, parameters);
 

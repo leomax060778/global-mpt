@@ -27,7 +27,7 @@ function handleGet(parameters, userSessionID){
 			var objLevel2 = {};
 			objLevel2.IN_HL2_ID = parameters[0].value;
 			
-			var rdo = blLevel2.getLevel2ById(objLevel2)
+			var rdo = blLevel2.getLevel2ById(objLevel2);
 			httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
 		}
 		else if (parameters[0].name == GET_ALL_CENTRAL_TEAM){
