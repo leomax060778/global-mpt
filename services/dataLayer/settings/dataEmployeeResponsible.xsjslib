@@ -1,0 +1,58 @@
+/***************Import Library*******************/
+$.import("mktgplanningtool.services.commonLib","mapper");
+var mapper = $.mktgplanningtool.services.commonLib.mapper;
+var db = mapper.getdbHelper();
+var ErrorLib = mapper.getErrors();
+/*************************************************/
+var GET_ALL_EMPLOYEE_RESPONSIBLE = "GET_ALL_EMPLOYEE_RESPONSIBLE";
+var INS_EMPLOYEE_RESPONSIBLE = "INS_EMPLOYEE_RESPONSIBLE";
+var UPD_EMPLOYEE_RESPONSIBLE = "UPD_EMPLOYEE_RESPONSIBLE";
+var GET_EMPLOYEE_RESPONSIBLE_BY_EMPLOYEE_NUMER = "GET_EMPLOYEE_RESPONSIBLE_BY_EMPLOYEE_NUMER";
+var GET_EMPLOYEE_RESPONSIBLE_BY_ID = "GET_EMPLOYEE_RESPONSIBLE_BY_ID";
+/******************************************************/
+
+function updEmployeeResponsible(employeeResponsibleId, FULL_NAME,EMPLOYEE_NUMBER, userId,autoCommit){
+	var params = {
+		'in_employeeResponsibleId' : employeeResponsibleId,
+		'in_FULL_NAME': FULL_NAME,
+		'in_EMPLOYEE_NUMBER': EMPLOYEE_NUMBER,
+		'in_modified_user_id': userId
+	};
+	var rdo;
+	if(autoCommit){
+		rdo = db.executeScalar(UPD_EMPLOYEE_RESPONSIBLE,params,'out_result');
+	}else{
+		rdo = db.executeScalarManual(UPD_EMPLOYEE_RESPONSIBLE,params,'out_result');
+	}
+	return rdo;
+}
+
+
+function insEmployeeResponsible( FULL_NAME,EMPLOYEE_NUMBER, userId,autoCommit){
+	var params = {
+		'in_FULL_NAME': FULL_NAME,
+		'in_EMPLOYEE_NUMBER': EMPLOYEE_NUMBER,
+		'in_created_user_id': userId
+	};
+	var rdo;
+	if(autoCommit){
+		rdo = db.executeScalar(INS_EMPLOYEE_RESPONSIBLE,params,'out_result');
+	}else{
+		rdo = db.executeScalarManual(INS_EMPLOYEE_RESPONSIBLE,params,'out_result');
+	}
+	return rdo;
+}
+
+function getEmployeeResponsibleByEmployeeNumber(employee_number){
+	var rdo = db.executeProcedureManual(GET_EMPLOYEE_RESPONSIBLE_BY_EMPLOYEE_NUMER,{'in_employee_number':employee_number});
+	return db.extractArray(rdo.out_result)[0];
+}
+
+function getAllEmployeeResponsibles(){
+	return  db.extractArray(db.executeProcedureManual(GET_ALL_EMPLOYEE_RESPONSIBLE,{}).out_result);
+}
+
+function getEmployeeResponsibleById(employeeId){
+	var rdo = db.executeProcedureManual(GET_EMPLOYEE_RESPONSIBLE_BY_ID,{'in_employee_id':employeeId});
+	return db.extractArray(rdo.out_result)[0];
+}

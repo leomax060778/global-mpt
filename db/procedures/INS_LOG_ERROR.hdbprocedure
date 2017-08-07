@@ -1,0 +1,21 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_LOG_ERROR" (
+	IN in_name_error nvarchar(255),
+	IN in_message nvarchar(1000),
+	IN in_stack nvarchar(5000),
+	IN in_details nvarchar(5000),
+	IN in_user_id bigint,
+	IN in_modified_user_id bigint,
+	OUT out_error_id bigint
+ ) 
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER 
+	DEFAULT SCHEMA MKTG_PLANNING_TOOL
+	AS
+BEGIN
+		INSERT INTO "MKTG_PLANNING_TOOL"."LOG_ERROR"
+		(NAME_ERROR, MESSAGE,STACK,DETAILS,USER_ID,MODIFIED_DATE_TZ,MODIFIED_USER_ID) 
+		VALUES(in_name_error, in_message, in_stack, in_details, in_user_id, CURRENT_TIMESTAMP,
+		 in_modified_user_id );
+	
+		SELECT TOP 1 CURRENT_IDENTITY_VALUE() INTO out_error_id FROM "MKTG_PLANNING_TOOL"."LOG_ERROR"; 
+END;

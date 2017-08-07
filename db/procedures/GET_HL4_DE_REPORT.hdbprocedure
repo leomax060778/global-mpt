@@ -1,0 +1,43 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL4_DE_REPORT" (
+	OUT out_result TABLE
+	(
+		hl4_id BIGINT,
+		hl4_crm_description NVARCHAR(100),
+		budget DECIMAL(19, 6),
+		hl4_modified_date TIMESTAMP,
+		hl4_path NVARCHAR(255),
+		STATUS_NAME NVARCHAR(255)		
+	 ) 
+	)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER 
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	READS SQL DATA AS
+BEGIN
+ /*
+ NOTE: for now status are already set in the stored procedure. It doesn't worth to spend time for now
+ to move the status selection into the service.
+ STATUS to be considered are
+ */
+ out_result =       SELECT HL4.HL4_ID,
+              		HL4.HL4_CRM_DESCRIPTION,
+              		HL4.HL4_FNC_BUDGET_TOTAL_MKT AS BUDGET,
+               		TO_DATE(TO_CHAR(HL4.MODIFIED_DATE_TZ, 'MMDDYYYY'), 'MMDDYYYY') AS hl4_modified_date,
+             		CONCAT(CONCAT(CONCAT(CONCAT(CONCAT(HL1.ACRONYM, SUBSTRING(TO_NVARCHAR(BGY.BUDGET_YEAR), 3, 2)), '-'),
+             		HL3.ACRONYM),'-'), HL4.ACRONYM) AS hl4_path
+             		, SD.DETAIL as STATUS_NAME
+             		FROM "MKTG_PLANNING_TOOL".HL4
+             		INNER JOIN "MKTG_PLANNING_TOOL".HL3 ON HL3.HL3_ID = HL4.HL3_ID
+             		INNER JOIN "MKTG_PLANNING_TOOL".HL2 ON HL2.HL2_ID = HL3.HL2_ID
+             		INNER JOIN "MKTG_PLANNING_TOOL".HL1 ON HL1.HL1_ID = HL2.HL1_ID
+             		INNER JOIN "MKTG_PLANNING_TOOL".BUDGET_YEAR BGY ON HL1.BUDGET_YEAR_ID = BGY.BUDGET_YEAR_ID
+             		INNER JOIN "MKTG_PLANNING_TOOL".HL4_STATUS_DETAIL SD ON HL4.HL4_STATUS_DETAIL_ID = SD.HL4_STATUS_DETAIL_ID
+             		WHERE
+             		HL4.HL4_STATUS_DETAIL_ID IN (SELECT HL4_STATUS_DETAIL_ID
+             					FROM "MKTG_PLANNING_TOOL".HL4_STATUS_DETAIL
+             					WHERE DETAIL IN ('Load Data Entry',  'Update In CRM')) AND
+             		HL4.ENABLED = 1 AND
+             		HL4.DELETED = 0
+             		ORDER BY hl4_modified_date ASC, hl4_path ASC;
+		
+END;

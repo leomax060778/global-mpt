@@ -1,0 +1,15 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::DEL_HL6_SALES_HARD"
+(
+	in in_hl6_id bigint,
+	out out_result bigint
+) 
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER 
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL" AS
+BEGIN
+
+	DELETE FROM HL6_SALES
+	where HL6_ID = in_hl6_id;
+	
+	SELECT ::ROWCOUNT INTO out_result FROM DUMMY;
+END;

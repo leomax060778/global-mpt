@@ -1,0 +1,25 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_ALL_REGION" ( 
+OUT out_result TABLE(
+	REGION_ID BIGINT,
+	REGION_NAME nvarchar(255),
+	REGION_ISO nvarchar(100)
+))
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER 
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	READS SQL DATA AS
+BEGIN
+/***************************** 
+	Write your procedure logic 
+ *****************************/
+ out_result = 
+		
+	SELECT 
+	REGION_ID,
+	REGION_NAME,
+	REGION_ISO
+ FROM REGION
+ WHERE ENABLED = 1 AND DELETED = 0
+ ORDER BY upper(REGION_NAME);
+	
+END;

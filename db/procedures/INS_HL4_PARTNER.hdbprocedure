@@ -1,0 +1,37 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_HL4_PARTNER" (
+		IN hl4Partner TABLE(
+		    in_hl4_id bigint,
+		    in_value decimal,
+		    in_region_id bigint,
+		    in_created_user_id bigint,
+		    in_partner_name nvarchar(512),
+		    in_partner_type_id bigint
+		    ),
+		OUT out_hl4_partner_id bigint
+	) 
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER 
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL" AS
+BEGIN
+	INSERT INTO "MKTG_PLANNING_TOOL"."HL4_PARTNER"(
+		hl4_id,
+		value,
+		region_id,
+		created_user_id,
+		partner_name,
+		partner_type_id
+		)
+	(
+	SELECT
+		in_hl4_id,
+		in_value,
+		in_region_id,
+		in_created_user_id,
+		in_partner_name,
+		in_partner_type_id
+		FROM :hl4Partner
+		);
+		
+
+	SELECT TOP 1 CURRENT_IDENTITY_VALUE() INTO out_hl4_partner_id FROM "MKTG_PLANNING_TOOL"."HL4_PARTNER";
+END;

@@ -1,0 +1,17 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_COST_CENTER_TEAMS" (
+		IN costCenterTeams TABLE (in_user_id BIGINT,
+		 in_cost_center_id BIGINT,
+		 in_hl3_id BIGINT)
+		,OUT out_cost_center_teams_id BIGINT
+	) 
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER 
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	AS
+BEGIN
+	INSERT INTO COST_CENTER_TEAMS (COST_CENTER_ID, HL3_ID,created_user_id)
+	--VALUES (in_cost_center_id, in_hl3_id, in_user_id);
+	(select in_cost_center_id, in_hl3_id, in_user_id from :costCenterTeams);
+	
+	SELECT TOP 1 CURRENT_IDENTITY_VALUE() INTO out_cost_center_teams_id FROM "MKTG_PLANNING_TOOL"."COST_CENTER_TEAMS";
+END;

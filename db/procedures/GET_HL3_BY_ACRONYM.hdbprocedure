@@ -1,0 +1,21 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL3_BY_ACRONYM" (
+	IN in_acronym NVARCHAR(25),
+	IN in_hl1_id bigint,
+	OUT out_result TABLE(hl3_id integer)
+) 
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER 
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	READS SQL DATA AS
+BEGIN
+	out_result =
+	SELECT HL3.hl3_id
+	FROM HL3
+	INNER JOIN HL2 ON HL3.HL2_ID = HL2.HL2_ID
+	WHERE 
+      UPPER(HL3.acronym)= UPPER(in_acronym)
+      AND HL2.hl1_id = in_hl1_id
+	  AND HL3.deleted = 0
+	  AND HL3.enabled = 1;
+	
+END;

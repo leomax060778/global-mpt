@@ -1,0 +1,20 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_HL4_ALLOCATION_CATEGORY_OPTION" (
+    IN categoryOption TABLE(
+        in_id bigint,
+        in_category_option_level_id bigint,
+        in_amount DECIMAL(19, 6),
+        in_created_user_id bigint,
+        in_updated TINYINT
+    ),
+
+    OUT out_result_id bigint
+)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER 
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL" AS
+BEGIN
+	INSERT INTO "MKTG_PLANNING_TOOL"."HL4_CATEGORY_OPTION" (allocation_category_option_level_id,hl4_id,amount,created_user_id,updated)
+	(SELECT IN_CATEGORY_OPTION_LEVEL_ID,IN_ID,IN_AMOUNT,IN_CREATED_USER_ID, IN_UPDATED FROM :categoryOption);
+	
+	SELECT TOP 1 CURRENT_IDENTITY_VALUE() INTO out_result_id FROM "MKTG_PLANNING_TOOL"."HL4_CATEGORY_OPTION";
+END;

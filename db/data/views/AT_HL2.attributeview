@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Dimension:dimension xmlns:Dimension="http://www.sap.com/ndb/BiModelDimension.ecore" schemaVersion="1.2" id="AT_HL2" applyPrivilegeType="ANALYTIC_PRIVILEGE" checkAnalyticPrivileges="true" defaultClient="$$client$$" defaultLanguage="$$language$$" hierarchiesSQLEnabled="false" translationRelevant="true" visibility="internal" dimensionType="Standard">
+  <descriptions defaultDescription="AT_HL2"/>
+  <informationModelLayout relativeWidthScenario="27"/>
+  <attributes>
+  
+    <attribute id="HL2_ID" order="1" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="HL2_ID"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL2" columnName="HL2_ID"/>
+    </attribute>
+    <attribute id="ENABLED" order="2" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="ENABLED"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL2" columnName="ENABLED"/>
+    </attribute>
+    <attribute id="DELETED" order="3" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="DELETED"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL2" columnName="DELETED"/>
+    </attribute>
+    <attribute id="HL2_BUDGET_TOTAL" order="4" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="HL2_BUDGET_TOTAL"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL2" columnName="HL2_BUDGET_TOTAL"/>
+    </attribute>
+    <attribute id="ORGANIZATION_ACRONYM" order="5" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="ORGANIZATION_ACRONYM"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL2" columnName="ORGANIZATION_ACRONYM"/>
+    </attribute>
+    <attribute id="ORGANIZATION_NAME" order="6" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="ORGANIZATION_NAME"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL2" columnName="ORGANIZATION_NAME"/>
+    </attribute>
+    <attribute id="HL1_ID" order="7" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="HL1_ID"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL2" columnName="HL1_ID"/>
+    </attribute>
+    <attribute id="IN_BUDGET" order="8" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="IN_BUDGET"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL2" columnName="IN_BUDGET"/>
+    </attribute>
+    <attribute id="CRT_RELATED" order="9" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="CRT_RELATED"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL2" columnName="CRT_RELATED"/>
+    </attribute>
+    <attribute id="IMPLEMENT_EXECUTION_LEVEL" order="10" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="IMPLEMENT_EXECUTION_LEVEL"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL2" columnName="IMPLEMENT_EXECUTION_LEVEL"/>
+    </attribute>
+  </attributes>
+  <calculatedAttributes/>
+  <privateDataFoundation>
+    <tableProxies>
+      <tableProxy>
+        <table schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL2"/>
+      </tableProxy>
+    </tableProxies>
+    <joins/>
+    <layout>
+      <shapes>
+        <shape modelObjectName="HL2" modelObjectNameSpace="MKTG_PLANNING_TOOL" modelObjectType="catalog">
+          <upperLeftCorner x="70" y="30"/>
+        </shape>
+        <shape modelObjectName="DataFoundation" modelObjectNameSpace="DataFoundation" modelObjectType="repository">
+          <upperLeftCorner x="40" y="85"/>
+          <rectangleSize height="0" width="0"/>
+        </shape>
+      </shapes>
+    </layout>
+  </privateDataFoundation>
+  <hierarchies/>
+</Dimension:dimension>

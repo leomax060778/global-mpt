@@ -1,0 +1,42 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_HL2" (
+	IN in_user_id bigint
+	,IN in_hl2_budget_total DECIMAL(19, 2)
+	,IN in_organization_acronym nvarchar(25)
+	,IN in_organization_name nvarchar(255) 
+	,IN in_implement_execution_level tinyint
+	,IN in_crt_related tinyint
+	,IN in_hl1_id bigint
+	,IN in_in_budget tinyint
+	,IN in_allow_automatic_budget_approval tinyint
+	,OUT out_hl2_id bigint
+	) 
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER 
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL" AS
+BEGIN
+
+	INSERT INTO HL2 (
+	 created_user_id
+	,hl2_budget_total
+	,organization_acronym
+	,organization_name
+	,hl1_id
+	,in_budget
+	,crt_related
+	,implement_execution_level
+	,ALLOW_AUTOMATIC_BUDGET_APPROVAL
+	)
+	VALUES (
+	in_user_id
+	,in_hl2_budget_total
+	,in_organization_acronym
+	,in_organization_name
+	,in_hl1_id
+	,in_in_budget
+	,in_crt_related
+	,in_implement_execution_level
+	,in_allow_automatic_budget_approval
+	);
+	
+	SELECT TOP 1 CURRENT_IDENTITY_VALUE() INTO out_hl2_id FROM "MKTG_PLANNING_TOOL"."HL2";
+END;

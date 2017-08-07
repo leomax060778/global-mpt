@@ -1,0 +1,24 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_HL3_USER" (
+	IN arrHl3User TABLE (in_hl3_id bigint,
+	in_user_id bigint,
+	in_created_user_id bigint)
+	,OUT out_hl3_user_id bigint
+	) 
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER 
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL" AS
+BEGIN
+	INSERT INTO "MKTG_PLANNING_TOOL"."HL3_USER" (
+	 hl3_id
+	,user_id
+	,created_date_tz
+	,created_user_id
+	)
+	(select
+	 in_hl3_id
+	,in_user_id
+	,CURRENT_TIMESTAMP
+	,in_created_user_id from :arrHl3User);
+	
+	SELECT TOP 1 CURRENT_IDENTITY_VALUE() INTO out_hl3_user_id FROM "MKTG_PLANNING_TOOL"."HL3_USER";
+END;

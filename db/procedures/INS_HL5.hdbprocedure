@@ -1,0 +1,159 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_HL5" 
+(
+	in in_hl5_crm_description nvarchar(100)
+	,in in_acronym nvarchar(25)
+	,in in_distribution_channel_id bigint
+	,in in_budget decimal(19, 2)
+	,in in_hl4_id bigint
+	
+	,in in_campaign_objective_id bigint
+	,in in_campaign_type_id bigint
+	,in in_campaign_subtype_id bigint
+	,in in_marketing_program_id bigint
+	,in in_marketing_activity_id bigint
+	
+	,in in_actual_start_date timestamp
+	,in in_actual_end_date timestamp
+	,in in_show_on_dg_calendar tinyint
+	,in in_business_owner_id bigint
+	,in in_employee_responsible_id bigint
+	,in in_cost_center_id bigint
+	
+	,in in_in_budget tinyint
+	,in in_budget_spend_q1 decimal(19, 2)
+	,in in_budget_spend_q2 decimal(19, 2)
+	,in in_budget_spend_q3 decimal(19, 2)
+	,in in_budget_spend_q4 decimal(19, 2)
+	,in in_euro_conversion_id bigint
+	,in in_hl5_status_detail_id bigint
+	,in in_created_user_id bigint
+
+	,in in_route_to_market bigint
+	,in in_venue nvarchar(255)
+	,in in_city nvarchar(255)
+	,in in_country nvarchar(255)
+	,in in_url nvarchar(255)
+	,in in_sales_organization bigint
+    ,in in_planned_start_date timestamp
+    ,in in_planned_end_date timestamp
+    ,in in_street nvarchar(255)
+    ,in in_postal_code nvarchar(20)
+    ,in in_region nvarchar(255)
+    ,in in_event_owner nvarchar(255)
+    ,in in_number_of_participants nvarchar(255)
+    ,in in_priority_id bigint
+    ,IN IN_IMPORTED TINYINT
+    ,IN IN_IMPORT_ID BIGINT
+    ,IN in_co_funded tinyint
+    ,IN in_allow_budget_zero tinyint
+    ,IN in_is_power_user tinyint
+
+	,OUT out_hl5_id bigint
+	) 
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER 
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL" AS
+BEGIN
+
+	INSERT INTO HL5
+	(
+      hl5_crm_description 
+	, acronym
+	, distribution_channel_id 
+	, budget 
+	, hl4_id 
+	
+	, campaign_objective_id 
+	, campaign_type_id 
+	, campaign_subtype_id 
+	, marketing_program_id 
+	, marketing_activity_id 
+	
+	, actual_start_date 
+	, actual_end_date 
+	, show_on_dg_calendar 
+	, business_owner_id 
+	, employee_responsible_id 
+	, cost_center_id 
+	
+	, in_budget 
+	, budget_spend_q1 
+	, budget_spend_q2 
+	, budget_spend_q3 
+	, budget_spend_q4 
+	, euro_conversion_id 
+	, hl5_status_detail_id 
+	, created_user_id
+	, route_to_market_id
+	, venue
+	, city
+	, country
+	, url
+	, sales_organization_id
+    , planned_start_date
+    , planned_end_date
+    , street
+    , postal_code
+    , region
+    , event_owner
+    , number_of_participants
+    , priority_id
+    , IMPORTED
+    , IMPORT_ID
+    , co_funded
+    , allow_budget_zero
+    , is_power_user
+	)
+	VALUES (
+     in_hl5_crm_description
+	, in_acronym 
+	, in_distribution_channel_id
+	, in_budget 
+	, in_hl4_id 
+	
+	, in_campaign_objective_id 
+	, in_campaign_type_id 
+	, in_campaign_subtype_id 
+	, in_marketing_program_id 
+	, in_marketing_activity_id 
+	
+	, in_actual_start_date 
+	, in_actual_end_date 
+	, in_show_on_dg_calendar 
+	, in_business_owner_id 
+	, in_employee_responsible_id 
+	, in_cost_center_id 
+	
+	, in_in_budget 
+	, in_budget_spend_q1 
+	, in_budget_spend_q2 
+	, in_budget_spend_q3 
+	, in_budget_spend_q4 
+	, in_euro_conversion_id 
+	, in_hl5_status_detail_id 
+	, in_created_user_id
+
+	, in_route_to_market
+    , in_venue
+    , in_city
+    , in_country
+    , in_url
+    , in_sales_organization
+
+    , in_planned_start_date
+    , in_planned_end_date
+    , in_street
+    , in_postal_code
+    , in_region
+    , in_event_owner
+    , in_number_of_participants
+    , in_priority_id
+    , IN_IMPORTED
+    , IN_IMPORT_ID
+    , in_co_funded
+    , in_allow_budget_zero
+    , in_is_power_user
+);
+	
+	SELECT TOP 1 CURRENT_IDENTITY_VALUE() INTO out_hl5_id FROM "MKTG_PLANNING_TOOL"."HL5";
+END;

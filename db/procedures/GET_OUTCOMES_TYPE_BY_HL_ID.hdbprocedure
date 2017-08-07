@@ -1,0 +1,18 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_OUTCOMES_TYPE_BY_HL_ID" (
+		IN in_hl_id bigint,
+		OUT out_outcomes_type TABLE (OUTCOMES_TYPE_ID BIGINT, OUTCOMES_TYPE_NAME NVARCHAR(127), HIERARCHY_LEVEL_ID BIGINT)
+	) 
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER 
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL" AS
+BEGIN
+	out_outcomes_type = select distinct eo.expected_outcome_id as OUTCOMES_TYPE_ID
+                        , eo.NAME as OUTCOMES_TYPE_NAME
+                        ,eol.HIERARCHY_LEVEL_ID
+                        from "MKTG_PLANNING_TOOL"."EXPECTED_OUTCOME_LEVEL" eol
+                        inner join "MKTG_PLANNING_TOOL"."EXPECTED_OUTCOME" eo on eo.expected_outcome_id = eol.expected_outcome_id
+                        where eol.HIERARCHY_LEVEL_ID = in_hl_id
+                        and eol.enabled = 1 and eol.deleted = 0
+                        and eo.enabled = 1 and eo.deleted = 0
+                        order by eo.NAME;
+END;

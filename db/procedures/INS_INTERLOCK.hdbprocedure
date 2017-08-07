@@ -1,0 +1,46 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_INTERLOCK" ( 
+	IN in_entity_id bigint,
+	IN in_hl4_id bigint,
+	IN in_organization_type_id bigint,
+	IN in_requested_resource nvarchar(300),
+	IN in_requested_budget decimal(19, 6),
+	IN in_interlock_status_id bigint,
+	IN in_created_user_id bigint,
+	OUT out_interlock_id BIGINT
+	) 
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER 
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL" AS
+BEGIN
+    DECLARE ID_INTERLOCK_REQUEST BIGINT;
+    ID_INTERLOCK_REQUEST := 0;
+	INSERT INTO "MKTG_PLANNING_TOOL"."INTERLOCK_REQUEST" (
+	entity_id,
+	hl4_id,
+	organization_type_id,
+	requested_resource,
+	requested_budget,
+	interlock_status_id,
+	created_user_id
+	) 
+	VALUES (in_entity_id,in_hl4_id,in_organization_type_id,in_requested_resource,in_requested_budget,in_interlock_status_id,in_created_user_id);
+
+    SELECT TOP 1 CURRENT_IDENTITY_VALUE() INTO ID_INTERLOCK_REQUEST FROM "MKTG_PLANNING_TOOL"."INTERLOCK_REQUEST";
+
+    INSERT INTO "MKTG_PLANNING_TOOL"."INTERLOCK_REQUEST_MESSAGE" (
+       INTERLOCK_REQUEST_ID,
+       CREATED_USER_ID,
+       SENDER_ID,
+       INTERLOCK_REQUEST_ORIGIN_ID,
+       MESSAGE       )
+       VALUES(
+       ID_INTERLOCK_REQUEST,
+       in_created_user_id,
+       in_created_user_id,
+       1,
+       in_requested_resource
+       );
+
+    out_interlock_id:=ID_INTERLOCK_REQUEST;
+
+END;
