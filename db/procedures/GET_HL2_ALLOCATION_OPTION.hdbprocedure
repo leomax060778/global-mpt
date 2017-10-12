@@ -1,0 +1,111 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL2_ALLOCATION_OPTION" (
+	IN in_hl_id INTEGER,
+    	OUT out_option TABLE (
+    	    OPTION_ID INTEGER
+    	    , OPTION_NAME nvarchar(255)
+    	    , CATEGORY_OPTION_LEVEL_ID integer
+    	    , AMOUNT decimal(19, 6)
+    	    , CATEGORY_NAME NVARCHAR(60)
+    	    , UPDATED TINYINT
+    	    , ALLOCATION_CATEGORY_ID INTEGER
+    	    , HL2_CATEGORY_OPTION_ID INTEGER
+	        , SUB_AMOUNT DECIMAL(19,2)
+    	    )
+    	) 
+    	LANGUAGE SQLSCRIPT
+    	SQL SECURITY INVOKER 
+    	DEFAULT SCHEMA "MKTG_PLANNING_TOOL" AS
+    BEGIN
+    	va_hl2_option =
+    	SELECT option.allocation_option_id as option_id
+    	, option.name as option_name
+    	, ACOL.allocation_category_option_level_id as category_option_level_id
+    	, hl2CO.amount
+    	, category.name as category_name
+    	, 0 as updated
+    	, ACOL.allocation_category_id
+        , hl2CO.hl2_category_option_id
+    	FROM hl2_category_option hl2CO
+    	inner join allocation_category_option_level ACOL
+    	ON ACOL.allocation_category_option_level_id = hl2CO.allocation_category_option_level_id
+    	AND ACOL.enabled = 1 AND ACOL.deleted = 0
+    	inner join allocation_option option on ACOL.allocation_option_id = option.allocation_option_id
+    	inner join allocation_category category on category.allocation_category_id = ACOL.allocation_category_id
+    	where
+    	hl2_id = in_hl_id
+    	AND hl2CO.deleted = 0 and hl2CO.enabled = 1;
+    
+    va_l3 = SELECT HL3.HL2_ID, SUM(HL3_CO.AMOUNT * HL3.HL3_FNC_BUDGET_TOTAL / 100) AS SUB_AMOUNT, ACOL.ALLOCATION_OPTION_ID, AO.NAME
+     FROM "_SYS_BIC"."mktgplanningtool.db.data.views/AT_HL3_CATEGORY_OPTION" HL3_CO
+        LEFT JOIN "_SYS_BIC"."mktgplanningtool.db.data.views/AT_ALLOCATION_CATEGORY_OPTION_LEVEL" ACOL
+        	ON HL3_CO.ALLOCATION_CATEGORY_OPTION_LEVEL_ID = ACOL.ALLOCATION_CATEGORY_OPTION_LEVEL_ID
+        LEFT JOIN "_SYS_BIC"."mktgplanningtool.db.data.views/AT_ALLOCATION_CATEGORY" AC
+        	ON AC.ALLOCATION_CATEGORY_ID = ACOL.ALLOCATION_CATEGORY_ID
+        LEFT JOIN "_SYS_BIC"."mktgplanningtool.db.data.views/AT_ALLOCATION_OPTION" AO
+        	ON AO.ALLOCATION_OPTION_ID = ACOL.ALLOCATION_OPTION_ID
+        LEFT JOIN "_SYS_BIC"."mktgplanningtool.db.data.views/AT_HL3" HL3 ON HL3.HL3_ID = HL3_CO.HL3_ID
+        where 	HL3.HL2_ID = in_hl_id
+        GROUP BY HL3.HL2_ID,ACOL.ALLOCATION_OPTION_ID,AO.NAME;
+
+    	va_option =
+        	SELECT option.allocation_option_id as option_id
+        	, option.name as option_name
+        	, ACOL.allocation_category_option_level_id as category_option_level_id
+        	, 0 as amount
+        	, category.name as category_name
+        	, 0 as updated
+        	, ACOL.allocation_category_id
+            , null as HL2_CATEGORY_OPTION_ID
+        	FROM allocation_category_option_level ACOL
+        	inner join allocation_option option on ACOL.allocation_option_id = option.allocation_option_id
+        	inner join allocation_category category on category.allocation_category_id = ACOL.allocation_category_id
+        	where ACOL.allocation_category_option_level_id not in
+        	(SELECT CATEGORY_OPTION_LEVEL_ID from :va_hl2_option)
+        	AND ACOL.HIERARCHY_LEVEL_ID = 5
+        	AND ACOL.deleted = 0 and ACOL.enabled = 1;
+    
+    
+        va_union = SELECT  OPTION_ID
+                            , OPTION_NAME
+                            , CATEGORY_OPTION_LEVEL_ID
+                            , AMOUNT
+                            , CATEGORY_NAME
+                            , UPDATED
+                            , ALLOCATION_CATEGORY_ID
+                            , HL2_CATEGORY_OPTION_ID
+                            FROM
+                            ((select OPTION_ID
+                                     , OPTION_NAME
+                                     , CATEGORY_OPTION_LEVEL_ID
+                                     , AMOUNT
+                                     , CATEGORY_NAME
+                                     , UPDATED
+                                     , ALLOCATION_CATEGORY_ID
+                                     , HL2_CATEGORY_OPTION_ID
+                            from :va_hl2_option)
+                            UNION
+                            (select OPTION_ID
+                                    , OPTION_NAME
+                                    , CATEGORY_OPTION_LEVEL_ID
+                                    , AMOUNT
+                                    , CATEGORY_NAME
+                                    , UPDATED
+                                    , ALLOCATION_CATEGORY_ID
+                                    , HL2_CATEGORY_OPTION_ID
+                             from :va_option))
+                             ORDER BY CATEGORY_NAME, OPTION_NAME;
+
+      out_option = SELECT a.OPTION_ID
+                          , a.OPTION_NAME
+                          , a.CATEGORY_OPTION_LEVEL_ID
+                          , a.AMOUNT
+                          , a.CATEGORY_NAME
+                          , a.UPDATED
+                          , a.ALLOCATION_CATEGORY_ID
+                          , a.HL2_CATEGORY_OPTION_ID
+                          , b.SUB_AMOUNT
+
+                   FROM :va_union a
+                     left join :va_l3 b on a.OPTION_ID = b.ALLOCATION_OPTION_ID;
+
+END;

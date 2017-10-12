@@ -1,0 +1,17 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_SEGMENTATION_FORM_ITEM_OF_INTEREST" (
+    IN arrSegmentationItemOfInterest TABLE(
+        	    in_segmentation_item_of_interest_id bigint,
+        	    in_user_id bigint,
+        	    in_segmentation_form_id bigint
+        		),
+    OUT out_result bigint
+)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER 
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL" AS
+BEGIN
+	INSERT INTO SEGMENTATION_FORM_SEGMENTATION_ITEM_OF_INTEREST (SEGMENTATION_FORM_ID, SEGMENTATION_ITEM_OF_INTEREST_ID,CREATED_USER_ID)
+	(select IN_SEGMENTATION_FORM_ID, IN_SEGMENTATION_ITEM_OF_INTEREST_ID, IN_USER_ID from :arrSegmentationItemOfInterest);
+
+	SELECT TOP 1 CURRENT_IDENTITY_VALUE() INTO out_result FROM SEGMENTATION_FORM_SEGMENTATION_ITEM_OF_INTEREST;
+END;

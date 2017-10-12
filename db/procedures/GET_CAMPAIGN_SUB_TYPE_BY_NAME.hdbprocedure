@@ -4,6 +4,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_CAMPAIGN_SUB
         OUT out_result TABLE(
               CAMPAIGN_SUB_TYPE_ID BIGINT
             , NAME NVARCHAR(255)
+            , CRM_KEY NVARCHAR(255)
         )
 )
 LANGUAGE SQLSCRIPT
@@ -16,6 +17,7 @@ out_result =
 	select 
 	 CAMPAIGN_SUB_TYPE_ID
 	,NAME
+	, CRM_KEY
 	FROM CAMPAIGN_SUB_TYPE
 	WHERE 
 	upper(name) = upper(IN_NAME)

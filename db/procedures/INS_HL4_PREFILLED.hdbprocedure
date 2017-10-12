@@ -1,0 +1,27 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_HL4_PREFILLED" (
+	IN in_acronym NVARCHAR(25),
+  	IN in_crm_description nvarchar(100),
+	IN in_details nvarchar(3000),
+  	IN in_business_details nvarchar(3000),
+  	IN in_created_user_id bigint,
+  	OUT out_result bigint
+)
+LANGUAGE SQLSCRIPT
+SQL SECURITY INVOKER
+DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+AS
+BEGIN
+    INSERT INTO "HL4_PREFILLED"(acronym, 
+  								crm_description, 
+		  						details, 
+		  						business_details,
+    							created_user_id
+    							)
+      VALUES(	in_acronym, 
+      			in_crm_description, 
+      			in_details, 
+      			in_business_details,
+      			in_created_user_id
+      		);
+    SELECT TOP 1 CURRENT_IDENTITY_VALUE() INTO out_result FROM "HL4_PREFILLED";
+END;

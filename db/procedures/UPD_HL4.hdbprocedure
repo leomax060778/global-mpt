@@ -12,13 +12,6 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::UPD_HL4" (
 	IN in_is_annual_plan tinyint,
 	IN in_user_id bigint,
 	--******added-- 
-	IN in_EURO_CONVERSION_ID bigint,
-	IN in_IN_BUDGET tinyint,
-	IN in_SPEND_CATEGORY_ID BIGINT,
-	IN in_HL4_FNC_BUDGET_SPEND_Q1 DECIMAL (19, 2),
-	IN in_HL4_FNC_BUDGET_SPEND_Q2 DECIMAL (19, 2),
-	IN in_HL4_FNC_BUDGET_SPEND_Q3 DECIMAL (19, 2),
-	IN in_HL4_FNC_BUDGET_SPEND_Q4 DECIMAL (19, 2),
 	IN in_HL4_FNC_BUDGET_TOTAL_MKT DECIMAL (19, 2),
 	--*************--	
 	OUT out_result int
@@ -41,13 +34,6 @@ BEGIN
 		is_annual_plan = in_is_annual_plan,
 		modified_date_tz = CURRENT_TIMESTAMP,
 		--******added-- 
-		EURO_CONVERSION_ID =in_EURO_CONVERSION_ID,
-		IN_BUDGET=in_IN_BUDGET,
-		SPEND_CATEGORY_ID=in_SPEND_CATEGORY_ID,
-		HL4_FNC_BUDGET_SPEND_Q1=in_HL4_FNC_BUDGET_SPEND_Q1,
-		HL4_FNC_BUDGET_SPEND_Q2=in_HL4_FNC_BUDGET_SPEND_Q2,
-		HL4_FNC_BUDGET_SPEND_Q3=in_HL4_FNC_BUDGET_SPEND_Q3,
-		HL4_FNC_BUDGET_SPEND_Q4=in_HL4_FNC_BUDGET_SPEND_Q4,
 		HL4_FNC_BUDGET_TOTAL_MKT=in_HL4_FNC_BUDGET_TOTAL_MKT
 		--*************--	
 		where hl4_id = in_hl4_id;

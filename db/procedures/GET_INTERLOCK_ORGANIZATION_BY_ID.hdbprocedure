@@ -1,0 +1,19 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_INTERLOCK_ORGANIZATION_BY_ID" ( 
+	IN in_interlock_organization_id bigint,
+	OUT out_result TABLE(
+		INTERLOCK_ORGANIZATION_ID bigint,
+		NAME nvarchar(255)
+		)
+)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER 
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	READS SQL DATA AS
+BEGIN
+	out_result = SELECT	INTERLOCK_ORGANIZATION_ID,
+						NAME
+				 FROM INTERLOCK_ORGANIZATION
+				 	WHERE 	INTERLOCK_ORGANIZATION_ID = in_interlock_organization_id
+				 		AND ENABLED = 1 
+				 		AND DELETED = 0;
+END;

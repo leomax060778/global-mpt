@@ -1,0 +1,518 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::UPD_PROCESSING_REPORT_EXPORT_DATA" (
+	IN IN_HL_ID BIGINT,
+	IN IN_HIERARCHY_LEVEL NVARCHAR(3),
+	OUT out_result bigint
+	)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL" AS
+BEGIN
+--DECLARE VARIABLES
+	DECLARE VA_OBJECT_TYPE NVARCHAR(255);
+	DECLARE VA_DELETE_RESULT INTEGER;
+	DECLARE VA_HL_EXIST INTEGER;
+	DECLARE VA_PATH_TABLE TABLE (
+	         BUDGET_YEAR INTEGER
+	        , L1_ACRONYM NVARCHAR(25)
+	        , L2_ACRONYM NVARCHAR(25)
+	        , L3_ACRONYM NVARCHAR(25)
+	        , L4_ACRONYM NVARCHAR(25)
+	        , L5_ACRONYM NVARCHAR(25)
+	        , GRANDPARENT_ID INTEGER
+	    );
+	DECLARE VA_PATH NVARCHAR(255);
+	DECLARE VA_MA_PATH NVARCHAR(255);
+	DECLARE VA_MA_HL BIGINT;
+	DECLARE VA_CATEGORY_OPTION TABLE (
+	IMP1 NVARCHAR(255),
+    ZZIMP_PERCENTAGE1 NVARCHAR(255),
+    IMP2 NVARCHAR(255),
+    ZZIMP_PERCENTAGE2 NVARCHAR(255),
+    IMP3 NVARCHAR(255),
+    ZZIMP_PERCENTAGE3 NVARCHAR(255),
+    IMP4 NVARCHAR(255),
+    ZZIMP_PERCENTAGE4 NVARCHAR(255),
+    IMP5 NVARCHAR(255),
+    ZZIMP_PERCENTAGE5 NVARCHAR(255),
+    MKTSEG1 NVARCHAR(255),
+    ZZMSEG_PERCENTAGE1 NVARCHAR(255),
+    MKTSEG2 NVARCHAR(255),
+    ZZMSEG_PERCENTAGE2 NVARCHAR(255),
+    MKTSEG3 NVARCHAR(255),
+    ZZMSEG_PERCENTAGE3 NVARCHAR(255),
+    MKTSEG4 NVARCHAR(255),
+    ZZMSEG_PERCENTAGE4 NVARCHAR(255),
+    MKTSEG5 NVARCHAR(255),
+    ZZMSEG_PERCENTAGE5 NVARCHAR(255),
+    INDUSTRY1 NVARCHAR(255),
+    ZZIND_PERCENTAGE1 NVARCHAR(255),
+    INDUSTRY2 NVARCHAR(255),
+    ZZIND_PERCENTAGE2 NVARCHAR(255),
+    INDUSTRY3 NVARCHAR(255),
+    ZZIND_PERCENTAGE3 NVARCHAR(255),
+    INDUSTRY4 NVARCHAR(255),
+    ZZIND_PERCENTAGE4 NVARCHAR(255),
+    INDUSTRY5 NVARCHAR(255),
+    ZZIND_PERCENTAGE5 NVARCHAR(255),
+    SOLUTION1 NVARCHAR(255),
+    ZZSOL_PERCENTAGE1 NVARCHAR(255),
+    SOLUTION2 NVARCHAR(255),
+    ZZSOL_PERCENTAGE2 NVARCHAR(255),
+    SOLUTION3 NVARCHAR(255),
+    ZZSOL_PERCENTAGE3 NVARCHAR(255),
+    SOLUTION4 NVARCHAR(255),
+    ZZSOL_PERCENTAGE4 NVARCHAR(255),
+    SOLUTION5 NVARCHAR(255),
+    ZZSOL_PERCENTAGE5 NVARCHAR(255)
+	);
+	DECLARE VA_STATUS BIGINT;
+	DECLARE VA_PARENT_ID BIGINT;
+	DECLARE VA_BUYING_CLASSIFICATION NVARCHAR(15);
+
+    --ERROR HANDLER TO NOT DATA FOUND ERROR
+        DECLARE EXIT HANDLER FOR SQL_ERROR_CODE 1299
+        BEGIN
+            --SEARCH AND DELETE RECORD
+                DELETE FROM PROCESSING_REPORT_EXPORT_DATA WHERE HL_ID = IN_HL_ID AND OBJECT_TYPE = VA_OBJECT_TYPE;
+                SELECT ::ROWCOUNT into VA_DELETE_RESULT FROM DUMMY;
+            --*************************************************--
+        END;
+    --*********************************
+
+--END DECLARE VARIABLES*********************
+
+--INITIALIZE VARIABLES*****
+	VA_OBJECT_TYPE := '';
+	VA_DELETE_RESULT := 0;
+	VA_HL_EXIST := 0;	
+	VA_PATH := '';
+	VA_MA_HL :=0;
+	VA_STATUS := 0;
+	VA_PARENT_ID := 0;
+	VA_BUYING_CLASSIFICATION := '';
+--END INITIALIZE VARIABLES*****
+
+
+
+	--CHECK IF THE STATUS IS CORRECT AND SET VA_OBJECT_TYPE
+	        IF IN_HIERARCHY_LEVEL = 'HL4'
+                THEN
+                    VA_OBJECT_TYPE := 'MPL';
+                    SELECT TOP 1 HL4_STATUS_DETAIL_ID, HL3_ID INTO VA_STATUS, VA_PARENT_ID
+                    FROM HL4
+                    WHERE HL4.HL4_STATUS_DETAIL_ID
+                            IN (SELECT HL4_STATUS_DETAIL_ID
+                                FROM "MKTG_PLANNING_TOOL".HL4_STATUS_DETAIL
+                                WHERE DETAIL IN ('Load Data Entry',  'Update In CRM')) AND HL4.ENABLED = 1 AND HL4.DELETED = 0
+                                AND HL4.HL4_ID = IN_HL_ID;
+                ELSEIF IN_HIERARCHY_LEVEL = 'HL5'
+                    THEN VA_OBJECT_TYPE := 'CPG';
+                    SELECT TOP 1 HL5_STATUS_DETAIL_ID, HL4_ID INTO VA_STATUS, VA_PARENT_ID
+                    FROM HL5
+                    WHERE HL5.HL5_STATUS_DETAIL_ID
+                            IN (SELECT HL5_STATUS_DETAIL_ID
+                                FROM "MKTG_PLANNING_TOOL".HL5_STATUS_DETAIL
+                                WHERE DETAIL IN ('Load Data Entry',  'Update In CRM')) AND HL5.ENABLED = 1 AND HL5.DELETED = 0
+                                AND HL5.HL5_ID = IN_HL_ID;
+                ELSEIF IN_HIERARCHY_LEVEL = 'HL6'
+                    THEN VA_OBJECT_TYPE := 'CPT';
+                    SELECT TOP 1 HL6_STATUS_DETAIL_ID, HL5_ID INTO VA_STATUS, VA_PARENT_ID
+                    FROM HL6
+                    WHERE HL6.HL6_STATUS_DETAIL_ID
+                            IN (SELECT HL6_STATUS_DETAIL_ID
+                                FROM "MKTG_PLANNING_TOOL".HL6_STATUS_DETAIL
+                                WHERE DETAIL IN ('Load Data Entry',  'Update In CRM')) AND HL6.ENABLED = 1 AND HL6.DELETED = 0
+                                AND HL6.HL6_ID = IN_HL_ID;
+            END IF;
+	--**************************************************-
+
+	--SEARCH AND DELETE RECORD
+    DELETE FROM PROCESSING_REPORT_EXPORT_DATA WHERE HL_ID = IN_HL_ID AND OBJECT_TYPE = VA_OBJECT_TYPE;
+    SELECT ::ROWCOUNT into VA_DELETE_RESULT FROM DUMMY;
+    --*************************************************--
+
+    IF (:VA_STATUS <> 0)
+    THEN
+        --COLLECT DATA
+        IF VA_DELETE_RESULT = 0 THEN
+            IF VA_OBJECT_TYPE = 'MPL' --HL4
+                THEN --GET FROM HL4
+                 CALL "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_PATH_BY_LEVEL_PARENT"(4,VA_PARENT_ID,VA_PATH_TABLE); --GET ACRONYMS
+                 CALL "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_TRANSPOSED_CATEGORY_OPTION_BY_HL"(IN_HL_ID, 'HL4', VA_CATEGORY_OPTION);
+                 SELECT TOP 1 CONCAT('CRM-',CONCAT(L1_ACRONYM,CONCAT(BUDGET_YEAR,CONCAT('-',CONCAT(L3_ACRONYM,'')))))
+                 INTO VA_PATH FROM :VA_PATH_TABLE; --BUILD PARENT ACRONYM
+                 -- GET BUYING CLASSIFICATION CRM_KEY
+                 CALL "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_PROCESSING_REPORT_BUYING_CLASSIFICATION"(IN_HL_ID, 'HL4', VA_BUYING_CLASSIFICATION);
+
+                 VA_GET_HL = SELECT HL4_ID AS HL_ID,
+                             :VA_PATH AS EXTERNAL_ID_PARENT,
+                             :VA_OBJECT_TYPE AS OBJECT_TYPE,
+                             CONCAT(:VA_PATH,CONCAT('-',ACRONYM)) AS EXTERNAL_ID,
+                             HL4_CRM_DESCRIPTION AS TEXT1,
+                             'TBD' AS BNAME,
+                             '' AS OBJECTIVE, -- HL4 doesn't have this field
+                             '' AS CAMP_TYPE, -- HL4 doesn't have this field
+                             '' AS SUB_TYPE, -- HL4 doesn't have this field
+                             4 AS MKT_PROG_TYPE, --SHOULD ALWAYS BE 4
+                             '' AS MARKETING_ACTIVITYID, -- HL4 doesn't have this field
+                             BO.CRM_KEY AS BUSINESS_OWNER,
+                             PR.CRM_KEY AS PRIORITY,
+                             '' AS PLANSTART , -- HL4 doesn't have this field
+                             '' AS PLANFINISH, -- HL4 doesn't have this field
+                             '' AS ACTUALSTART , -- HL4 doesn't have this field
+                             '' AS ACTUALFINISH, -- HL4 doesn't have this field
+                             '' AS SHOW_CALENDAR, -- HL4 doesn't have this field
+                             '' AS MKT_ORG, -- HL4 doesn't have this field
+                             '' AS DIS_CHANNEL, -- HL4 doesn't have this field
+                             '' AS ROUTE_TO_MARKET, -- HL4 doesn't have this field
+                             '' AS COST_CENTER, -- HL4 doesn't have this field
+                              CO.IMP1,
+                              CO.ZZIMP_PERCENTAGE1,
+                              CO.IMP2,
+                              CO.ZZIMP_PERCENTAGE2,
+                              CO.IMP3,
+                              CO.ZZIMP_PERCENTAGE3,
+                              CO.IMP4,
+                              CO.ZZIMP_PERCENTAGE4,
+                              CO.IMP5,
+                              CO.ZZIMP_PERCENTAGE5,
+                              CO.MKTSEG1,
+                              CO.ZZMSEG_PERCENTAGE1,
+                              CO.MKTSEG2,
+                              CO.ZZMSEG_PERCENTAGE2,
+                              CO.MKTSEG3,
+                              CO.ZZMSEG_PERCENTAGE3,
+                              CO.MKTSEG4,
+                              CO.ZZMSEG_PERCENTAGE4,
+                              CO.MKTSEG5,
+                              CO.ZZMSEG_PERCENTAGE5,
+                              CO.INDUSTRY1,
+                              CO.ZZIND_PERCENTAGE1,
+                              CO.INDUSTRY2,
+                              CO.ZZIND_PERCENTAGE2,
+                              CO.INDUSTRY3,
+                              CO.ZZIND_PERCENTAGE3,
+                              CO.INDUSTRY4,
+                              CO.ZZIND_PERCENTAGE4,
+                              CO.INDUSTRY5,
+                              CO.ZZIND_PERCENTAGE5,
+                              CO.SOLUTION1,
+                              CO.ZZSOL_PERCENTAGE1,
+                              CO.SOLUTION2,
+                              CO.ZZSOL_PERCENTAGE2,
+                              CO.SOLUTION3,
+                              CO.ZZSOL_PERCENTAGE3,
+                              CO.SOLUTION4,
+                              CO.ZZSOL_PERCENTAGE4,
+                              CO.SOLUTION5,
+                              CO.ZZSOL_PERCENTAGE5,
+                              '' AS R3_TRANS_STATUS, --NO ENTRY NEEDED
+                              '' AS ORG_WWW, -- HL4 doesn't have this field
+                              '' AS VENUE,-- HL4 doesn't have this field
+                              '' AS NO_OF_PARTICIPANTS,-- HL4 doesn't have this field
+                              '' AS STREET,-- HL4 doesn't have this field
+                              '' AS CITY,-- HL4 doesn't have this field
+                              '' AS COUNTRY, -- HL4 doesn't have this field
+                              :VA_BUYING_CLASSIFICATION AS BUYING_CLASSIFICATION,
+                              'ZMMKTKR' AS PARTNER_FCT,
+                              '' AS PARTNER_NO
+                             FROM HL4
+                             JOIN :VA_CATEGORY_OPTION CO ON 1=1
+                             JOIN BUSINESS_OWNER BO ON UPPER(BO.DESCRIPTION) = 'MARKETING'
+                             LEFT JOIN PRIORITY PR ON UPPER(PR.NAME) = 'MEDIUM'
+                             WHERE HL4_ID = IN_HL_ID;
+
+                ELSEIF VA_OBJECT_TYPE = 'CPG' --HL5
+                    THEN  --GET FROM HL5
+                        CALL "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_PATH_BY_LEVEL_PARENT"(5,VA_PARENT_ID,VA_PATH_TABLE); --GET ACRONYMS
+
+                        SELECT TOP 1 CONCAT('CRM-',CONCAT(L1_ACRONYM,CONCAT(BUDGET_YEAR,CONCAT('-',CONCAT(L3_ACRONYM,CONCAT('-',CONCAT(L4_ACRONYM,'')))))))
+                        INTO VA_PATH FROM :VA_PATH_TABLE;--BUILD PARENT ACRONYM
+
+                        --GET MARKETING ACTIVITY FOR HL5
+                        SELECT MARKETING_ACTIVITY_ID INTO VA_MA_HL FROM HL5 WHERE HL5_ID = IN_HL_ID;
+                        IF(:VA_MA_HL <> 0) THEN
+                        CALL "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_MARKETING_ACTIVITY_BY_HL5_ID" (:VA_MA_HL,VA_MA_PATH );
+                        ELSE
+                        VA_MA_PATH := '';
+                        END IF;
+                        CALL "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_TRANSPOSED_CATEGORY_OPTION_BY_HL"(IN_HL_ID, 'HL5', VA_CATEGORY_OPTION);
+                        -- GET BUYING CLASSIFICATION CRM_KEY
+                        CALL "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_PROCESSING_REPORT_BUYING_CLASSIFICATION"(IN_HL_ID, 'HL5', VA_BUYING_CLASSIFICATION);
+
+                        VA_GET_HL = SELECT HL5_ID AS HL_ID,
+                                    :VA_PATH AS EXTERNAL_ID_PARENT,
+                                    :VA_OBJECT_TYPE AS OBJECT_TYPE,
+                                    CONCAT(:VA_PATH,CONCAT('',ACRONYM)) AS EXTERNAL_ID,
+                                    HL5_CRM_DESCRIPTION AS TEXT1,
+                                    'TBD' AS BNAME,
+                                    OB.CRM_KEY AS OBJECTIVE,
+                                    CT.CRM_KEY AS CAMP_TYPE,
+                                    CST.CRM_KEY AS SUB_TYPE,
+                                    4 AS MKT_PROG_TYPE, --SHOULD ALWAYS BE 4
+                                    :VA_MA_PATH AS MARKETING_ACTIVITYID,
+                                    BO.CRM_KEY AS BUSINESS_OWNER,
+                                    PR.CRM_KEY AS PRIORITY,
+                                    HL5.PLANNED_START_DATE AS PLANSTART,
+                                    HL5.PLANNED_END_DATE AS PLANFINISH,
+                                    HL5.ACTUAL_START_DATE AS ACTUALSTART,
+                                    HL5.ACTUAL_END_DATE AS ACTUALFINISH,
+                                    HL5.SHOW_ON_DG_CALENDAR AS SHOW_CALENDAR,
+                                    SO.CRM_KEY AS MKT_ORG,
+                                    DC.CRM_KEY AS DIS_CHANNEL,
+                                    RTM.CRM_KEY AS ROUTE_TO_MARKET,
+                                    CC.COST_CENTER_CODE AS COST_CENTER,
+                                    CO.IMP1,
+                                    CO.ZZIMP_PERCENTAGE1,
+                                    CO.IMP2,
+                                    CO.ZZIMP_PERCENTAGE2,
+                                    CO.IMP3,
+                                    CO.ZZIMP_PERCENTAGE3,
+                                    CO.IMP4,
+                                    CO.ZZIMP_PERCENTAGE4,
+                                    CO.IMP5,
+                                    CO.ZZIMP_PERCENTAGE5,
+                                    CO.MKTSEG1,
+                                    CO.ZZMSEG_PERCENTAGE1,
+                                    CO.MKTSEG2,
+                                    CO.ZZMSEG_PERCENTAGE2,
+                                    CO.MKTSEG3,
+                                    CO.ZZMSEG_PERCENTAGE3,
+                                    CO.MKTSEG4,
+                                    CO.ZZMSEG_PERCENTAGE4,
+                                    CO.MKTSEG5,
+                                    CO.ZZMSEG_PERCENTAGE5,
+                                    CO.INDUSTRY1,
+                                    CO.ZZIND_PERCENTAGE1,
+                                    CO.INDUSTRY2,
+                                    CO.ZZIND_PERCENTAGE2,
+                                    CO.INDUSTRY3,
+                                    CO.ZZIND_PERCENTAGE3,
+                                    CO.INDUSTRY4,
+                                    CO.ZZIND_PERCENTAGE4,
+                                    CO.INDUSTRY5,
+                                    CO.ZZIND_PERCENTAGE5,
+                                    CO.SOLUTION1,
+                                    CO.ZZSOL_PERCENTAGE1,
+                                    CO.SOLUTION2,
+                                    CO.ZZSOL_PERCENTAGE2,
+                                    CO.SOLUTION3,
+                                    CO.ZZSOL_PERCENTAGE3,
+                                    CO.SOLUTION4,
+                                    CO.ZZSOL_PERCENTAGE4,
+                                    CO.SOLUTION5,
+                                    CO.ZZSOL_PERCENTAGE5,
+                                    '' AS R3_TRANS_STATUS, --NO ENTRY NEEDED
+                                    HL5.URL AS ORG_WWW,
+                                    HL5.VENUE AS VENUE,
+                                    HL5.NUMBER_OF_PARTICIPANTS AS NO_OF_PARTICIPANTS,
+                                    HL5.STREET AS STREET,
+                                    HL5.CITY AS CITY,
+                                    HL5.COUNTRY AS COUNTRY,
+                                    :VA_BUYING_CLASSIFICATION AS BUYING_CLASSIFICATION,
+                                    'ZMMKTKR' AS PARTNER_FCT,
+                                    '' AS PARTNER_NO
+                                    FROM HL5
+                                    LEFT JOIN OBJECTIVE OB ON OB.OBJECTIVE_ID = HL5.CAMPAIGN_OBJECTIVE_ID
+                                    LEFT JOIN CAMPAIGN_TYPE CT ON CT.CAMPAIGN_TYPE_ID = HL5.CAMPAIGN_TYPE_ID
+                                    LEFT JOIN CAMPAIGN_SUB_TYPE CST ON CST.CAMPAIGN_SUB_TYPE_ID = HL5.CAMPAIGN_SUBTYPE_ID
+                                    LEFT JOIN BUSINESS_OWNER BO ON BO.BUSINESS_OWNER_ID = HL5.BUSINESS_OWNER_ID
+                                    LEFT JOIN PRIORITY PR ON PR.PRIORITY_ID = HL5.PRIORITY_ID
+                                    LEFT JOIN SALE_ORGANIZATION SO ON SO.SALES_ORGANIZATION_ID = HL5.SALES_ORGANIZATION_ID
+                                    LEFT JOIN DISTRIBUTION_CHANNEL DC ON DC.DISTRIBUTION_CHANNEL_ID = HL5.DISTRIBUTION_CHANNEL_ID
+                                    LEFT JOIN ROUTE_TO_MARKET RTM ON RTM.ROUTE_TO_MARKET_ID = HL5.ROUTE_TO_MARKET_ID
+                                    LEFT JOIN COST_CENTER CC ON CC.COST_CENTER_ID = HL5.COST_CENTER_ID
+                                    LEFT JOIN :VA_CATEGORY_OPTION CO ON 1=1
+                                    WHERE HL5_ID = IN_HL_ID;
+
+                    ELSE --GET FROM HL6
+                            CALL "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_PATH_BY_LEVEL_PARENT"(6,VA_PARENT_ID,VA_PATH_TABLE); --GET ACRONYMS
+
+                            SELECT TOP 1 CONCAT('CRM-',CONCAT(L1_ACRONYM,CONCAT(BUDGET_YEAR,CONCAT('-',CONCAT(L3_ACRONYM,CONCAT('-',CONCAT(L4_ACRONYM,CONCAT('',CONCAT(L5_ACRONYM,'')))))))))
+                            INTO VA_PATH FROM :VA_PATH_TABLE;--BUILD PARENT ACRONYM
+
+                            --GET MARKETING ACTIVITY FOR HL6
+                            SELECT MARKETING_ACTIVITY_ID INTO VA_MA_HL FROM HL6 WHERE HL6_ID = IN_HL_ID;
+                            IF(:VA_MA_HL <> 0) THEN
+                            CALL "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_MARKETING_ACTIVITY_BY_HL5_ID" (:VA_MA_HL,VA_MA_PATH );
+                            ELSE
+                            VA_MA_PATH := '';
+                            END IF;
+                            CALL "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_TRANSPOSED_CATEGORY_OPTION_BY_HL"(IN_HL_ID, 'HL6', VA_CATEGORY_OPTION);
+                            -- GET BUYING CLASSIFICATION CRM_KEY
+                            CALL "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_PROCESSING_REPORT_BUYING_CLASSIFICATION"(IN_HL_ID, 'HL6', VA_BUYING_CLASSIFICATION);
+
+                            VA_GET_HL = SELECT HL6_ID AS HL_ID,
+                                        :VA_PATH AS EXTERNAL_ID_PARENT,
+                                        :VA_OBJECT_TYPE AS OBJECT_TYPE,
+                                        CONCAT(:VA_PATH,CONCAT('',ACRONYM)) AS EXTERNAL_ID,
+                                        HL6_CRM_DESCRIPTION AS TEXT1,
+                                        'TBD' AS BNAME,
+                                        OB.CRM_KEY AS OBJECTIVE,
+                                        CT.CRM_KEY AS CAMP_TYPE,
+                                        CST.CRM_KEY AS SUB_TYPE,
+                                        4 AS MKT_PROG_TYPE, --SHOULD ALWAYS BE 4
+                                        :VA_MA_PATH AS MARKETING_ACTIVITYID,
+                                        BO.CRM_KEY AS BUSINESS_OWNER,
+                                        PR.CRM_KEY AS PRIORITY,
+                                        HL6.PLANNED_START_DATE AS PLANSTART,
+                                        HL6.PLANNED_END_DATE AS PLANFINISH,
+                                        HL6.ACTUAL_START_DATE AS ACTUALSTART,
+                                        HL6.ACTUAL_END_DATE AS ACTUALFINISH,
+                                        HL6.SHOW_ON_DG_CALENDAR AS SHOW_CALENDAR,
+                                        SO.CRM_KEY AS MKT_ORG,
+                                        DC.CRM_KEY AS DIS_CHANNEL,
+                                        RTM.CRM_KEY AS ROUTE_TO_MARKET,
+                                        CC.COST_CENTER_CODE AS COST_CENTER,
+                                        CO.IMP1,
+                                        CO.ZZIMP_PERCENTAGE1,
+                                        CO.IMP2,
+                                        CO.ZZIMP_PERCENTAGE2,
+                                        CO.IMP3,
+                                        CO.ZZIMP_PERCENTAGE3,
+                                        CO.IMP4,
+                                        CO.ZZIMP_PERCENTAGE4,
+                                        CO.IMP5,
+                                        CO.ZZIMP_PERCENTAGE5,
+                                        CO.MKTSEG1,
+                                        CO.ZZMSEG_PERCENTAGE1,
+                                        CO.MKTSEG2,
+                                        CO.ZZMSEG_PERCENTAGE2,
+                                        CO.MKTSEG3,
+                                        CO.ZZMSEG_PERCENTAGE3,
+                                        CO.MKTSEG4,
+                                        CO.ZZMSEG_PERCENTAGE4,
+                                        CO.MKTSEG5,
+                                        CO.ZZMSEG_PERCENTAGE5,
+                                        CO.INDUSTRY1,
+                                        CO.ZZIND_PERCENTAGE1,
+                                        CO.INDUSTRY2,
+                                        CO.ZZIND_PERCENTAGE2,
+                                        CO.INDUSTRY3,
+                                        CO.ZZIND_PERCENTAGE3,
+                                        CO.INDUSTRY4,
+                                        CO.ZZIND_PERCENTAGE4,
+                                        CO.INDUSTRY5,
+                                        CO.ZZIND_PERCENTAGE5,
+                                        CO.SOLUTION1,
+                                        CO.ZZSOL_PERCENTAGE1,
+                                        CO.SOLUTION2,
+                                        CO.ZZSOL_PERCENTAGE2,
+                                        CO.SOLUTION3,
+                                        CO.ZZSOL_PERCENTAGE3,
+                                        CO.SOLUTION4,
+                                        CO.ZZSOL_PERCENTAGE4,
+                                        CO.SOLUTION5,
+                                        CO.ZZSOL_PERCENTAGE5,
+                                        '' AS R3_TRANS_STATUS, --NO ENTRY NEEDED
+                                        HL6.URL AS ORG_WWW,
+                                        HL6.VENUE AS VENUE,
+                                        HL6.NUMBER_OF_PARTICIPANTS AS NO_OF_PARTICIPANTS,
+                                        HL6.STREET AS STREET,
+                                        HL6.CITY AS CITY,
+                                        HL6.COUNTRY AS COUNTRY,
+                                        :VA_BUYING_CLASSIFICATION AS BUYING_CLASSIFICATION,
+                                        'ZMMKTKR' AS PARTNER_FCT,
+                                        '' AS PARTNER_NO
+                                        FROM HL6
+                                        LEFT JOIN OBJECTIVE OB ON OB.OBJECTIVE_ID = HL6.CAMPAIGN_OBJECTIVE_ID
+                                        LEFT JOIN CAMPAIGN_TYPE CT ON CT.CAMPAIGN_TYPE_ID = HL6.CAMPAIGN_TYPE_ID
+                                        LEFT JOIN CAMPAIGN_SUB_TYPE CST ON CST.CAMPAIGN_SUB_TYPE_ID = HL6.CAMPAIGN_SUBTYPE_ID
+                                        LEFT JOIN BUSINESS_OWNER BO ON BO.BUSINESS_OWNER_ID = HL6.BUSINESS_OWNER_ID
+                                        LEFT JOIN PRIORITY PR ON PR.PRIORITY_ID = HL6.PRIORITY_ID
+                                        LEFT JOIN SALE_ORGANIZATION SO ON SO.SALES_ORGANIZATION_ID = HL6.SALES_ORGANIZATION_ID
+                                        LEFT JOIN DISTRIBUTION_CHANNEL DC ON DC.DISTRIBUTION_CHANNEL_ID = HL6.DISTRIBUTION_CHANNEL_ID
+                                        LEFT JOIN ROUTE_TO_MARKET RTM ON RTM.ROUTE_TO_MARKET_ID = HL6.ROUTE_TO_MARKET_ID
+                                        LEFT JOIN COST_CENTER CC ON CC.COST_CENTER_ID = HL6.COST_CENTER_ID
+                                        LEFT JOIN :VA_CATEGORY_OPTION CO ON 1=1
+                                        WHERE HL6_ID = IN_HL_ID;
+            END IF;
+
+            --SELECT TOP 1 CASE WHEN (HL_ID = NULL) THEN 0 ELSE 1 END into VA_HL_EXIST FROM :VA_GET_HL;
+        END IF;
+        --**********************************************--
+
+        --INSERT DATA
+        IF(VA_DELETE_RESULT = 0 )-- AND VA_HL_EXIST = 1)
+        THEN
+        INSERT INTO PROCESSING_REPORT_EXPORT_DATA
+        (HL_ID,
+         EXTERNAL_ID_PARENT,
+         OBJECT_TYPE,
+         EXTERNAL_ID,
+         TEXT1,
+         BNAME,
+         OBJECTIVE,
+         CAMP_TYPE,
+         SUB_TYPE,
+         MKT_PROG_TYPE,
+         MARKETING_ACTIVITYID,
+         BUSINESS_OWNER,
+         PRIORITY,
+         PLANSTART,
+         PLANFINISH,
+         ACTUALSTART,
+         ACTUALFINISH,
+         SHOW_CALENDAR,
+         MKT_ORG,
+         DIS_CHANNEL,
+         ROUTE_TO_MARKET,
+         COST_CENTER,
+         IMP1,
+         ZZIMP_PERCENTAGE1,
+         IMP2,
+         ZZIMP_PERCENTAGE2,
+         IMP3,
+         ZZIMP_PERCENTAGE3,
+         IMP4,
+         ZZIMP_PERCENTAGE4,
+         IMP5,
+         ZZIMP_PERCENTAGE5,
+         MKTSEG1,
+         ZZMSEG_PERCENTAGE1,
+         MKTSEG2,
+         ZZMSEG_PERCENTAGE2,
+         MKTSEG3,
+         ZZMSEG_PERCENTAGE3,
+         MKTSEG4,
+         ZZMSEG_PERCENTAGE4,
+         MKTSEG5,
+         ZZMSEG_PERCENTAGE5,
+         INDUSTRY1,
+         ZZIND_PERCENTAGE1,
+         INDUSTRY2,
+         ZZIND_PERCENTAGE2,
+         INDUSTRY3,
+         ZZIND_PERCENTAGE3,
+         INDUSTRY4,
+         ZZIND_PERCENTAGE4,
+         INDUSTRY5,
+         ZZIND_PERCENTAGE5,
+         SOLUTION1,
+         ZZSOL_PERCENTAGE1,
+         SOLUTION2,
+         ZZSOL_PERCENTAGE2,
+         SOLUTION3,
+         ZZSOL_PERCENTAGE3,
+         SOLUTION4,
+         ZZSOL_PERCENTAGE4,
+         SOLUTION5,
+         ZZSOL_PERCENTAGE5,
+         R3_TRANS_STATUS,
+         ORG_WWW,
+         VENUE,
+         NO_OF_PARTICIPANTS,
+         STREET,
+         CITY,
+         COUNTRY,
+         BUYING_CLASSIFICATION,
+         PARTNER_FCT,
+         PARTNER_NO,
+         CREATED_USER_ID)
+        SELECT *, 1 AS CREATED_USER_ID  FROM :VA_GET_HL;
+        END IF;
+        --************************************************--
+	END IF; --END IF STATUS
+	
+	SELECT ::ROWCOUNT into out_result FROM DUMMY;
+END;

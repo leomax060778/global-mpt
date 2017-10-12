@@ -1,0 +1,23 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_SEGMENTATION_TACTIC_BY_NAME"
+(
+        IN IN_NAME NVARCHAR(255),
+        OUT out_result TABLE(
+              SEGMENTATION_TACTIC_ID BIGINT
+            , NAME NVARCHAR(255)
+        )
+)
+LANGUAGE SQLSCRIPT
+SQL SECURITY INVOKER
+DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+AS
+BEGIN
+
+out_result =
+	select
+	 SEGMENTATION_TACTIC_ID
+	,NAME
+	FROM SEGMENTATION_TACTIC
+	WHERE
+	upper(name) = upper(IN_NAME)
+	and deleted = 0 and enabled = 1;
+END;

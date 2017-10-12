@@ -1,0 +1,14 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_OTHER_BUDGET_APPROVER" (
+	IN in_full_name NVARCHAR(255)
+   , IN in_email NVARCHAR(255)
+   , IN in_user_id bigint
+	,OUT out_result bigint
+	) 
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER 
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL" AS
+BEGIN
+	INSERT INTO OTHER_BUDGET_APPROVER (full_name ,email ,created_user_id) VALUES (in_full_name, in_email, in_user_id);
+	
+	SELECT TOP 1 CURRENT_IDENTITY_VALUE() INTO out_result FROM OTHER_BUDGET_APPROVER;
+END;

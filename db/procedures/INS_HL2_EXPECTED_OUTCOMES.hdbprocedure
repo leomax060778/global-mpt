@@ -1,0 +1,15 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_HL2_EXPECTED_OUTCOMES" (
+    IN in_hl2_id bigint,
+    IN in_comments NVARCHAR(3000),
+    IN in_created_user_id bigint, 
+    OUT out_hl2_expected_outcomes_id bigint
+) 
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER 
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL" AS
+BEGIN
+	INSERT INTO "MKTG_PLANNING_TOOL"."HL2_EXPECTED_OUTCOMES" (hl2_id,comments,created_user_id)
+	VALUES (in_hl2_id,in_comments,in_created_user_id);
+	
+	SELECT TOP 1 CURRENT_IDENTITY_VALUE() INTO out_hl2_expected_outcomes_id FROM "MKTG_PLANNING_TOOL"."HL2_EXPECTED_OUTCOMES";
+END;

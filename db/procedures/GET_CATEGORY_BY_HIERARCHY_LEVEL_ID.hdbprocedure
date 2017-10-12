@@ -23,6 +23,7 @@ BEGIN
     and ac.enabled = 1
     and ac.deleted = 0
     and acol.enabled = 1
-    and acol.deleted = 0;
+    and acol.deleted = 0
+    order by upper(ac.name) asc;
 
 END;

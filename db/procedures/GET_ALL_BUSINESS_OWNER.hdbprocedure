@@ -1,5 +1,5 @@
 PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_ALL_BUSINESS_OWNER" (
-	OUT output_result TABLE(BUSINESS_OWNER_ID BIGINT, DESCRIPTION NVARCHAR(100)) )
+	OUT output_result TABLE(BUSINESS_OWNER_ID BIGINT, DESCRIPTION NVARCHAR(100), CRM_KEY NVARCHAR(15)) )
 	LANGUAGE SQLSCRIPT
 	SQL SECURITY INVOKER 
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
@@ -8,8 +8,9 @@ BEGIN
 /***************************** 
 	Write your procedure logic 
  *****************************/
-	output_result = SELECT BUSINESS_OWNER_ID,
-						DESCRIPTION
+	output_result = SELECT BUSINESS_OWNER_ID
+						,DESCRIPTION
+						,CRM_KEY
 				 FROM BUSINESS_OWNER
 				 WHERE deleted = 0
 				 AND enabled = 1

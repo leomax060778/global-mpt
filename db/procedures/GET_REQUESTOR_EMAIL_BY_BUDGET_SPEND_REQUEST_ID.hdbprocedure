@@ -1,0 +1,20 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_REQUESTOR_EMAIL_BY_BUDGET_SPEND_REQUEST_ID" (
+	IN in_budget_spend_request_id bigint,
+	OUT out_result TABLE(
+						BUDGET_SPEND_REQUEST_ID BIGINT,
+						EMAIL NVARCHAR(255),
+						REQUESTOR_ID BIGINT
+						)
+ ) 
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+AS
+BEGIN
+	out_result = 	SELECT DISTINCT BSR.BUDGET_SPEND_REQUEST_ID,
+                                        U.EMAIL,
+                                        U.USER_ID AS REQUESTOR_ID
+                    FROM BUDGET_SPEND_REQUEST BSR
+                        INNER JOIN USER U ON U.USER_ID = BSR.CREATED_USER_ID
+                        WHERE BSR.BUDGET_SPEND_REQUEST_ID = in_budget_spend_request_id;
+END;

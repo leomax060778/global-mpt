@@ -1,0 +1,17 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_COUNT_FORM_SEGMENTATION_SALE_BY_SEGMENTATION_SALE_ID" (
+	IN in_segmentation_sale_id BIGINT,
+	OUT out_result BIGINT
+)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	READS SQL DATA AS
+BEGIN
+
+select
+coalesce(COUNT(sfs.SEGMENTATION_FORM_SEGMENTATION_SALE_ID),0) INTO out_result
+from SEGMENTATION_FORM_SEGMENTATION_SALE sfs
+where sfs.SEGMENTATION_SALE_ID = in_segmentation_sale_id
+ and sfs.deleted = 0 and sfs.enabled = 1;
+
+END;

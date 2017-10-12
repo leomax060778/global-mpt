@@ -2,7 +2,8 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_ALL_CAMPAIGN
 	OUT out_result TABLE (CAMPAIGN_SUB_TYPE_ID BIGINT, 
 						  NAME NVARCHAR(255),
 						  ROLLOVER_TEXT NVARCHAR(1000),
-                                      			EXAMPLE NVARCHAR(1000)
+                        EXAMPLE NVARCHAR(1000),
+                        CRM_KEY NVARCHAR(255)
 						)
 	) 
 	LANGUAGE SQLSCRIPT
@@ -15,6 +16,7 @@ CAMPAIGN_SUB_TYPE_ID
 ,NAME
 ,ROLLOVER_TEXT
 ,EXAMPLE
+, CRM_KEY
 from CAMPAIGN_SUB_TYPE
 where ENABLED = 1 AND DELETED = 0
 ORDER BY NAME ASC;

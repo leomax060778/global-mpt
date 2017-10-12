@@ -16,7 +16,7 @@ from user u
 inner join HL1_USER hl1User on hl1User.user_id=u.user_id
 inner join USER_ROLE userRole ON userRole.user_id = u.user_id
 inner join ROLE role ON role.role_id = userRole.role_id
-inner join BUDGET_SPEND_APPROVER on BUDGET_SPEND_APPROVER.user_id = u.user_id
+
 where hl1User.hl1_id = in_hl1_id
 and u.deleted = 0 and u.enabled = 1
 ;

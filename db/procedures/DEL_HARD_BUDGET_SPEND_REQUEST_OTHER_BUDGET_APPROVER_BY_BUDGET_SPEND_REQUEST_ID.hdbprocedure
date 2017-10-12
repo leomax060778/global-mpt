@@ -1,0 +1,15 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::DEL_HARD_BUDGET_SPEND_REQUEST_OTHER_BUDGET_APPROVER_BY_BUDGET_SPEND_REQUEST_ID"
+(
+	in in_budget_spend_request_id bigint,
+	out out_result bigint
+) 
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER 
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL" AS
+BEGIN
+
+	DELETE FROM BUDGET_SPEND_REQUEST_OTHER_BUDGET_APPROVER
+	where budget_spend_request_id = in_budget_spend_request_id;
+	
+	SELECT ::ROWCOUNT INTO out_result FROM DUMMY;
+END;

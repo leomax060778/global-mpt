@@ -1,0 +1,25 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_ALLOCATION_CATEGORY_OPTION_LEVEL_TO_DELETE" (
+    IN optionList TABLE(
+                in_allocation_option_id bigint
+        		),
+    IN in_allocation_category_id BIGINT,
+    IN in_level_id BIGINT,
+    OUT out_result  TABLE(
+                        NAME NVARCHAR(255),
+                       ALLOCATION_OPTION_ID BIGINT
+                    )
+)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER 
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL" AS
+BEGIN
+	out_result = select AO.NAME, ACOL.ALLOCATION_OPTION_ID
+        from ALLOCATION_CATEGORY_OPTION_LEVEL ACOL
+        INNER JOIN ALLOCATION_OPTION AO
+            ON AO.ALLOCATION_OPTION_ID = ACOL.ALLOCATION_OPTION_ID
+        WHERE ACOL.ALLOCATION_OPTION_ID
+            NOT IN (SELECT in_allocation_option_id FROM :optionList)
+        AND ACOL.DELETED = 0 AND ACOL.ENABLED = 1
+        AND ALLOCATION_CATEGORY_ID = in_allocation_category_id
+        AND HIERARCHY_LEVEL_ID = in_level_id;
+END;

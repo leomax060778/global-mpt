@@ -1,0 +1,23 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_INTERLOCK_REQUEST_INTERLOCK_ORGANIZATION" (
+	IN in_interlock_organization_id bigint,
+	IN in_interlock_request_id bigint,
+	IN in_created_user_id bigint,
+	IN in_interlock_organization_id_from bigint,
+	OUT out_id bigint
+	) 
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER 
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL" AS
+BEGIN
+	INSERT INTO "MKTG_PLANNING_TOOL"."INTERLOCK_REQUEST_INTERLOCK_ORGANIZATION" (interlock_request_id, 
+																				interlock_organization_id, 
+																				interlock_organization_id_from, 
+																				created_user_id
+																				)
+	VALUES (in_interlock_request_id, 
+			in_interlock_organization_id, 
+			in_interlock_organization_id_from,
+			in_created_user_id);
+
+	SELECT TOP 1 CURRENT_IDENTITY_VALUE() INTO out_id FROM "MKTG_PLANNING_TOOL"."INTERLOCK_REQUEST_INTERLOCK_ORGANIZATION";
+END;

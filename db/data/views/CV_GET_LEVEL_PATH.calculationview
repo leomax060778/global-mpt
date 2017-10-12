@@ -63,7 +63,63 @@
 		INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL1&quot; hl1 ON hl2.HL1_ID = hl1.HL1_ID
 		INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_BUDGET_YEAR&quot; BGY 
 			ON BGY.BUDGET_YEAR_ID = hl1.BUDGET_YEAR_ID
-    	WHERE HL5.ENABLED = 1 AND HL5.DELETED = 0);
+    	WHERE HL5.ENABLED = 1 AND HL5.DELETED = 0)
+    	
+    	UNION ALL
+    	
+    	(SELECT
+ 	 			hl3.HL3_ID AS HL_ID,
+ 	 			CONCAT( 'CRM-',
+        	         CONCAT(
+        	         		CONCAT(
+    	        				CONCAT(
+        	        				CONCAT(
+        	        			   		CONCAT(HL1.ACRONYM,SUBSTRING(TO_NVARCHAR(BGY.BUDGET_YEAR), 3, 2))
+        	    						,'-')
+        								, hl2.organization_acronym)
+        								,'-')
+										, hl3.acronym)
+        				)
+				 AS PATH
+		FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL3&quot; hl3 
+		INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL2&quot; hl2 ON hl3.HL2_ID = hl2.HL2_ID
+		INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL1&quot; hl1 ON hl2.HL1_ID = hl1.HL1_ID
+		INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_BUDGET_YEAR&quot; BGY 
+			ON BGY.BUDGET_YEAR_ID = hl1.BUDGET_YEAR_ID
+    	WHERE HL3.ENABLED = 1 AND HL3.DELETED = 0)
+    	
+    	UNION ALL
+    	
+    	(SELECT
+ 	 			hl2.HL2_ID AS HL_ID,
+ 	 			CONCAT( 'CRM-',
+        	         CONCAT(
+        	        				CONCAT(
+        	        			   		CONCAT(HL1.ACRONYM,SUBSTRING(TO_NVARCHAR(BGY.BUDGET_YEAR), 3, 2))
+        	    						,'-')
+        								, hl2.organization_acronym)
+        				)
+				 AS PATH
+		FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL2&quot; hl2 
+		INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL1&quot; hl1 ON hl2.HL1_ID = hl1.HL1_ID
+		INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_BUDGET_YEAR&quot; BGY 
+			ON BGY.BUDGET_YEAR_ID = hl1.BUDGET_YEAR_ID
+    	WHERE HL2.ENABLED = 1 AND HL2.DELETED = 0)
+    	
+    	UNION ALL
+    	
+    	(SELECT
+ 	 			hl1.HL1_ID AS HL_ID,
+ 	 			CONCAT( 'CRM-',
+ 	        			   		CONCAT(HL1.ACRONYM,SUBSTRING(TO_NVARCHAR(BGY.BUDGET_YEAR), 3, 2))
+      				)
+				 AS PATH
+		FROM  &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL1&quot; hl1 
+		INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_BUDGET_YEAR&quot; BGY 
+			ON BGY.BUDGET_YEAR_ID = hl1.BUDGET_YEAR_ID
+    	WHERE HL1.ENABLED = 1 AND HL1.DELETED = 0)
+    	
+    	;
 
 END /********* End Procedure Script ************/</definition>
     </calculationView>

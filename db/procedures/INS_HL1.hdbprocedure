@@ -9,6 +9,8 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_HL1" (
     ,IN in_team_type_id bigint
 	,IN in_implement_execution_level tinyint
 	,IN in_crt_related tinyint
+	,IN in_imported tinyint
+	,IN in_import_id bigint
 	,OUT out_hl1_id bigint
 	)
 	LANGUAGE SQLSCRIPT
@@ -27,6 +29,8 @@ BEGIN
 	,team_type_id
 	,implement_execution_level
 	,crt_related
+	,imported
+	,import_id
 	)
 	VALUES (
 	 in_acronym
@@ -39,6 +43,8 @@ BEGIN
 	,in_team_type_id
 	,in_implement_execution_level
 	,in_crt_related
+	,in_imported
+	,in_import_id
 	);
 
 	SELECT TOP 1 CURRENT_IDENTITY_VALUE() INTO out_hl1_id FROM "MKTG_PLANNING_TOOL"."HL1";

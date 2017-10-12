@@ -1,0 +1,36 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_ORGANIZATION_TYPE_FOR_INTERLOCK_ORGANIZATION" (
+	OUT out_result TABLE(
+		organization_type_id bigint,
+		name nvarchar(255)
+		),
+	OUT out_interlock_organization TABLE(
+		interlock_organization_id bigint,
+		name nvarchar(255),
+		organization_type_id bigint,
+		organization_type_interlock_organization_id bigint
+		)
+)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER 
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	READS SQL DATA AS
+BEGIN
+	out_result = SELECT	ORGANIZATION_TYPE_ID,
+						NAME
+				 FROM ORGANIZATION_TYPE
+				 	WHERE ORGANIZATION_RELATED_ID = 1
+				 		AND ENABLED = 1 
+				 		AND DELETED = 0;
+				 		
+	out_interlock_organization = SELECT IO.INTERLOCK_ORGANIZATION_ID, 
+										IO.NAME,
+										OTIO.ORGANIZATION_TYPE_ID,
+										OTIO.ORGANIZATION_TYPE_INTERLOCK_ORGANIZATION_ID
+								 FROM INTERLOCK_ORGANIZATION IO
+								 INNER JOIN ORGANIZATION_TYPE_INTERLOCK_ORGANIZATION OTIO
+									ON OTIO.INTERLOCK_ORGANIZATION_ID = IO.INTERLOCK_ORGANIZATION_ID
+										AND OTIO.ENABLED = 1
+										AND OTIO.DELETED = 0
+								 WHERE IO.ENABLED = 1
+								 	AND IO.DELETED = 0;
+END;

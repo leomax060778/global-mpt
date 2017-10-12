@@ -1,0 +1,20 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::UPD_SEGMENTATION_CATEGORY_OPTION" (
+	IN in_segmentation_category_option_id BIGINT,
+	IN in_name nvarchar(255),
+	IN in_user_id BIGINT,
+	OUT out_result BIGINT
+)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	AS
+BEGIN
+		UPDATE "MKTG_PLANNING_TOOL"."SEGMENTATION_CATEGORY_OPTION"
+		SET
+		NAME = in_name
+		,MODIFIED_USER_ID = in_user_id
+        ,MODIFIED_DATE_TZ = CURRENT_TIMESTAMP
+		where segmentation_category_option_id = in_segmentation_category_option_id
+		and enabled = 1 and deleted = 0;
+
+        SELECT ::ROWCOUNT into out_result FROM DUMMY;
+END;

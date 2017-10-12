@@ -2,6 +2,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_ALLOCATION_O
 	OUT out_result TABLE (
 	allocation_option_id BIGINT
 	, name NVARCHAR(60)
+	, CRM_KEY NVARCHAR(50)
  	)
  	)
 	LANGUAGE SQLSCRIPT
@@ -9,9 +10,8 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_ALLOCATION_O
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
 	READS SQL DATA AS
 BEGIN
-
 		out_result = SELECT allocation_option_id,
-			   name
+			   name,CRM_KEY
 		FROM ALLOCATION_OPTION
 		WHERE enabled = 1 AND deleted = 0
 		ORDER BY upper(name);

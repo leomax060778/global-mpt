@@ -1,0 +1,14 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_SEGMENTATION_CATEGORY_ID_BY_ALLOCATION_ID" (
+	IN in_allocation_category_id bigint,
+	OUT out_result bigint
+	)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL" AS
+BEGIN
+
+    SELECT sc.segmentation_category_id INTO out_result
+	from ALLOCATION_CATEGORY AC
+	inner join SEGMENTATION_CATEGORY sc on sc.ALLOCATION_CATEGORY_ID = AC.ALLOCATION_CATEGORY_ID
+	where sc.ALLOCATION_CATEGORY_ID = in_allocation_category_id;
+END;

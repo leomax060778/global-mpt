@@ -1,0 +1,655 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_TRANSPOSED_CATEGORY_OPTION_BY_HL" (
+    IN IN_HL_ID BIGINT,
+    IN IN_LEVEL NVARCHAR(3),
+	OUT OUT_RESULT TABLE(
+	    IMP1 NVARCHAR(255)
+	    ,ZZIMP_PERCENTAGE1  NVARCHAR(255)
+	    ,IMP2  NVARCHAR(255)
+	    ,ZZIMP_PERCENTAGE2  NVARCHAR(255)
+	    ,IMP3  NVARCHAR(255)
+	    ,ZZIMP_PERCENTAGE3  NVARCHAR(255)
+	    ,IMP4  NVARCHAR(255)
+	    ,ZZIMP_PERCENTAGE4  NVARCHAR(255)
+	    ,IMP5  NVARCHAR(255)
+	    ,ZZIMP_PERCENTAGE5  NVARCHAR(255)
+	    ,MKTSEG1  NVARCHAR(255)
+	    ,ZZMSEG_PERCENTAGE1  NVARCHAR(255)
+	    ,MKTSEG2  NVARCHAR(255)
+	    ,ZZMSEG_PERCENTAGE2  NVARCHAR(255)
+	    ,MKTSEG3  NVARCHAR(255)
+	    ,ZZMSEG_PERCENTAGE3  NVARCHAR(255)
+	    ,MKTSEG4  NVARCHAR(255)
+	    ,ZZMSEG_PERCENTAGE4  NVARCHAR(255)
+	    ,MKTSEG5  NVARCHAR(255)
+	    ,ZZMSEG_PERCENTAGE5  NVARCHAR(255)
+	    ,INDUSTRY1  NVARCHAR(255)
+	    ,ZZIND_PERCENTAGE1  NVARCHAR(255)
+	    ,INDUSTRY2  NVARCHAR(255)
+	    ,ZZIND_PERCENTAGE2  NVARCHAR(255)
+	    ,INDUSTRY3  NVARCHAR(255)
+	    ,ZZIND_PERCENTAGE3  NVARCHAR(255)
+	    ,INDUSTRY4  NVARCHAR(255)
+	    ,ZZIND_PERCENTAGE4  NVARCHAR(255)
+	    ,INDUSTRY5  NVARCHAR(255)
+	    ,ZZIND_PERCENTAGE5  NVARCHAR(255)
+	    ,SOLUTION1  NVARCHAR(255)
+	    ,ZZSOL_PERCENTAGE1  NVARCHAR(255)
+	    ,SOLUTION2  NVARCHAR(255)
+	    ,ZZSOL_PERCENTAGE2  NVARCHAR(255)
+	    ,SOLUTION3  NVARCHAR(255)
+	    ,ZZSOL_PERCENTAGE3  NVARCHAR(255)
+	    ,SOLUTION4  NVARCHAR(255)
+	    ,ZZSOL_PERCENTAGE4  NVARCHAR(255)
+	    ,SOLUTION5  NVARCHAR(255)
+	    ,ZZSOL_PERCENTAGE5  NVARCHAR(255)
+        )
+	)
+
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER 
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	READS SQL DATA AS
+BEGIN
+
+IF(IN_LEVEL = 'HL4') THEN
+-----------------------------HL4----------------------------------
+    VA_HL_IMP_OPTIONS = SELECT TOP 5 option_name,
+                                     option_percentage,
+                                     Row_number() OVER(ORDER BY option_percentage DESC) AS ROWNUM
+                        FROM   (SELECT O.NAME     AS OPTION_NAME,
+                                       HCP.amount AS OPTION_PERCENTAGE
+                                FROM   hl4_category_option HCP
+                                       RIGHT JOIN allocation_category_option_level ACOL
+                                               ON HCP.allocation_category_option_level_id =
+                                                  ACOL.allocation_category_option_level_id
+                                       LEFT JOIN hl4_category HC
+                                              ON HC.hl4_category_id = HCP.hl4_category_id
+                                       LEFT JOIN allocation_category C
+                                              ON C.allocation_category_id = ACOL.allocation_category_id
+                                       LEFT JOIN allocation_option O
+                                              ON O.allocation_option_id = ACOL.allocation_option_id
+                                WHERE  C.processing_report_export_key = 'IMP'
+                                       AND HCP.hl4_id = in_hl_id
+                                UNION ALL
+                                SELECT '' AS OPTION_NAME,
+                                       0  AS OPTION_PERCENTAGE
+                                FROM   dummy
+                                UNION ALL
+                                SELECT '' AS OPTION_NAME,
+                                       0  AS OPTION_PERCENTAGE
+                                FROM   dummy
+                                UNION ALL
+                                SELECT '' AS OPTION_NAME,
+                                       0  AS OPTION_PERCENTAGE
+                                FROM   dummy
+                                UNION ALL
+                                SELECT '' AS OPTION_NAME,
+                                       0  AS OPTION_PERCENTAGE
+                                FROM   dummy
+                                UNION ALL
+                                SELECT '' AS OPTION_NAME,
+                                       0  AS OPTION_PERCENTAGE
+                                FROM   dummy)
+                        ORDER  BY option_percentage DESC;
+
+
+
+    VA_HL_MKTSEG_OPTIONS = SELECT TOP 5 option_name,
+                                        option_percentage,
+                                        Row_number() OVER(ORDER BY option_percentage DESC) + 5 AS ROWNUM
+                           FROM   (SELECT O.NAME     AS OPTION_NAME,
+                                          HCP.amount AS OPTION_PERCENTAGE
+                                   FROM   hl4_category_option HCP
+                                          RIGHT JOIN allocation_category_option_level ACOL
+                                                  ON HCP.allocation_category_option_level_id =
+                                                     ACOL.allocation_category_option_level_id
+                                          LEFT JOIN hl4_category HC
+                                                 ON HC.hl4_category_id = HCP.hl4_category_id
+                                          LEFT JOIN allocation_category C
+                                                 ON C.allocation_category_id = ACOL.allocation_category_id
+                                          LEFT JOIN allocation_option O
+                                                 ON O.allocation_option_id = ACOL.allocation_option_id
+                                   WHERE  C.processing_report_export_key = 'MKTSEG'
+                                          AND HCP.hl4_id = in_hl_id
+                                   UNION ALL
+                                   SELECT '' AS OPTION_NAME,
+                                          0  AS OPTION_PERCENTAGE
+                                   FROM   dummy
+                                   UNION ALL
+                                   SELECT '' AS OPTION_NAME,
+                                          0  AS OPTION_PERCENTAGE
+                                   FROM   dummy
+                                   UNION ALL
+                                   SELECT '' AS OPTION_NAME,
+                                          0  AS OPTION_PERCENTAGE
+                                   FROM   dummy
+                                   UNION ALL
+                                   SELECT '' AS OPTION_NAME,
+                                          0  AS OPTION_PERCENTAGE
+                                   FROM   dummy
+                                   UNION ALL
+                                   SELECT '' AS OPTION_NAME,
+                                          0  AS OPTION_PERCENTAGE
+                                   FROM   dummy)
+                           ORDER  BY option_percentage DESC;
+
+
+
+
+    VA_HL_INDUSTRY_OPTIONS = SELECT TOP 5 option_name,
+                                         option_percentage,
+                                         Row_number() OVER(ORDER BY option_percentage DESC) + 10 AS ROWNUM
+                            FROM   (SELECT O.NAME     AS OPTION_NAME,
+                                           HCP.amount AS OPTION_PERCENTAGE
+                                    FROM   hl4_category_option HCP
+                                           RIGHT JOIN allocation_category_option_level ACOL
+                                                   ON HCP.allocation_category_option_level_id =
+                                                      ACOL.allocation_category_option_level_id
+                                           LEFT JOIN hl4_category HC
+                                                  ON HC.hl4_category_id = HCP.hl4_category_id
+                                           LEFT JOIN allocation_category C
+                                                  ON C.allocation_category_id = ACOL.allocation_category_id
+                                           LEFT JOIN allocation_option O
+                                                  ON O.allocation_option_id = ACOL.allocation_option_id
+                                    WHERE  C.processing_report_export_key = 'INDUSTRY'
+                                           AND HCP.hl4_id = in_hl_id
+                                    UNION ALL
+                                    SELECT '' AS OPTION_NAME,
+                                           0  AS OPTION_PERCENTAGE
+                                    FROM   dummy
+                                    UNION ALL
+                                    SELECT '' AS OPTION_NAME,
+                                           0  AS OPTION_PERCENTAGE
+                                    FROM   dummy
+                                    UNION ALL
+                                    SELECT '' AS OPTION_NAME,
+                                           0  AS OPTION_PERCENTAGE
+                                    FROM   dummy
+                                    UNION ALL
+                                    SELECT '' AS OPTION_NAME,
+                                           0  AS OPTION_PERCENTAGE
+                                    FROM   dummy
+                                    UNION ALL
+                                    SELECT '' AS OPTION_NAME,
+                                           0  AS OPTION_PERCENTAGE
+                                    FROM   dummy)
+                            ORDER  BY option_percentage DESC;
+
+
+
+    VA_HL_SOLUTION_OPTIONS = SELECT TOP 5 option_name,
+                                          option_percentage,
+                                          Row_number() OVER(ORDER BY option_percentage DESC) + 15 AS ROWNUM
+                             FROM   (SELECT O.NAME     AS OPTION_NAME,
+                                            HCP.amount AS OPTION_PERCENTAGE
+                                     FROM   hl4_category_option HCP
+                                            RIGHT JOIN allocation_category_option_level ACOL
+                                                    ON HCP.allocation_category_option_level_id =
+                                                       ACOL.allocation_category_option_level_id
+                                            LEFT JOIN hl4_category HC
+                                                   ON HC.hl4_category_id = HCP.hl4_category_id
+                                            LEFT JOIN allocation_category C
+                                                   ON C.allocation_category_id = ACOL.allocation_category_id
+                                            LEFT JOIN allocation_option O
+                                                   ON O.allocation_option_id = ACOL.allocation_option_id
+                                     WHERE  C.processing_report_export_key = 'SOLUTION'
+                                            AND HCP.hl4_id = in_hl_id
+                                     UNION ALL
+                                     SELECT '' AS OPTION_NAME,
+                                            0  AS OPTION_PERCENTAGE
+                                     FROM   dummy
+                                     UNION ALL
+                                     SELECT '' AS OPTION_NAME,
+                                            0  AS OPTION_PERCENTAGE
+                                     FROM   dummy
+                                     UNION ALL
+                                     SELECT '' AS OPTION_NAME,
+                                            0  AS OPTION_PERCENTAGE
+                                     FROM   dummy
+                                     UNION ALL
+                                     SELECT '' AS OPTION_NAME,
+                                            0  AS OPTION_PERCENTAGE
+                                     FROM   dummy
+                                     UNION ALL
+                                     SELECT '' AS OPTION_NAME,
+                                            0  AS OPTION_PERCENTAGE
+                                     FROM   dummy)
+                             ORDER  BY option_percentage DESC;
+
+
+
+---------------------------------------------------------------------------------
+ELSEIF(IN_LEVEL = 'HL5') THEN
+-----------------------------HL5-------------------------------------------------
+VA_HL_IMP_OPTIONS = SELECT TOP 5 option_name,
+                                     option_percentage,
+                                     Row_number() OVER(ORDER BY option_percentage DESC) AS ROWNUM
+                        FROM   (SELECT O.NAME     AS OPTION_NAME,
+                                       HCP.amount AS OPTION_PERCENTAGE
+                                FROM   hl5_category_option HCP
+                                       RIGHT JOIN allocation_category_option_level ACOL
+                                               ON HCP.allocation_category_option_level_id =
+                                                  ACOL.allocation_category_option_level_id
+                                       LEFT JOIN hl5_category HC
+                                              ON HC.hl5_category_id = HCP.hl5_category_id
+                                       LEFT JOIN allocation_category C
+                                              ON C.allocation_category_id = ACOL.allocation_category_id
+                                       LEFT JOIN allocation_option O
+                                              ON O.allocation_option_id = ACOL.allocation_option_id
+                                WHERE  C.processing_report_export_key = 'IMP'
+                                       AND HCP.hl5_id = in_hl_id
+                                UNION ALL
+                                SELECT '' AS OPTION_NAME,
+                                       0  AS OPTION_PERCENTAGE
+                                FROM   dummy
+                                UNION ALL
+                                SELECT '' AS OPTION_NAME,
+                                       0  AS OPTION_PERCENTAGE
+                                FROM   dummy
+                                UNION ALL
+                                SELECT '' AS OPTION_NAME,
+                                       0  AS OPTION_PERCENTAGE
+                                FROM   dummy
+                                UNION ALL
+                                SELECT '' AS OPTION_NAME,
+                                       0  AS OPTION_PERCENTAGE
+                                FROM   dummy
+                                UNION ALL
+                                SELECT '' AS OPTION_NAME,
+                                       0  AS OPTION_PERCENTAGE
+                                FROM   dummy)
+                        ORDER  BY option_percentage DESC;
+
+
+
+    VA_HL_MKTSEG_OPTIONS = SELECT TOP 5 option_name,
+                                        option_percentage,
+                                        Row_number() OVER(ORDER BY option_percentage DESC) + 5 AS ROWNUM
+                           FROM   (SELECT O.NAME     AS OPTION_NAME,
+                                          HCP.amount AS OPTION_PERCENTAGE
+                                   FROM   hl5_category_option HCP
+                                          RIGHT JOIN allocation_category_option_level ACOL
+                                                  ON HCP.allocation_category_option_level_id =
+                                                     ACOL.allocation_category_option_level_id
+                                          LEFT JOIN hl5_category HC
+                                                 ON HC.hl5_category_id = HCP.hl5_category_id
+                                          LEFT JOIN allocation_category C
+                                                 ON C.allocation_category_id = ACOL.allocation_category_id
+                                          LEFT JOIN allocation_option O
+                                                 ON O.allocation_option_id = ACOL.allocation_option_id
+                                   WHERE  C.processing_report_export_key = 'MKTSEG'
+                                          AND HCP.hl5_id = in_hl_id
+                                   UNION ALL
+                                   SELECT '' AS OPTION_NAME,
+                                          0  AS OPTION_PERCENTAGE
+                                   FROM   dummy
+                                   UNION ALL
+                                   SELECT '' AS OPTION_NAME,
+                                          0  AS OPTION_PERCENTAGE
+                                   FROM   dummy
+                                   UNION ALL
+                                   SELECT '' AS OPTION_NAME,
+                                          0  AS OPTION_PERCENTAGE
+                                   FROM   dummy
+                                   UNION ALL
+                                   SELECT '' AS OPTION_NAME,
+                                          0  AS OPTION_PERCENTAGE
+                                   FROM   dummy
+                                   UNION ALL
+                                   SELECT '' AS OPTION_NAME,
+                                          0  AS OPTION_PERCENTAGE
+                                   FROM   dummy)
+                           ORDER  BY option_percentage DESC;
+
+
+
+
+    VA_HL_INDUSTRY_OPTIONS = SELECT TOP 5 option_name,
+                                         option_percentage,
+                                         Row_number() OVER(ORDER BY option_percentage DESC) + 10 AS ROWNUM
+                            FROM   (SELECT O.NAME     AS OPTION_NAME,
+                                           HCP.amount AS OPTION_PERCENTAGE
+                                    FROM   hl5_category_option HCP
+                                           RIGHT JOIN allocation_category_option_level ACOL
+                                                   ON HCP.allocation_category_option_level_id =
+                                                      ACOL.allocation_category_option_level_id
+                                           LEFT JOIN hl5_category HC
+                                                  ON HC.hl5_category_id = HCP.hl5_category_id
+                                           LEFT JOIN allocation_category C
+                                                  ON C.allocation_category_id = ACOL.allocation_category_id
+                                           LEFT JOIN allocation_option O
+                                                  ON O.allocation_option_id = ACOL.allocation_option_id
+                                    WHERE  C.processing_report_export_key = 'INDUSTRY'
+                                           AND HCP.hl5_id = in_hl_id
+                                    UNION ALL
+                                    SELECT '' AS OPTION_NAME,
+                                           0  AS OPTION_PERCENTAGE
+                                    FROM   dummy
+                                    UNION ALL
+                                    SELECT '' AS OPTION_NAME,
+                                           0  AS OPTION_PERCENTAGE
+                                    FROM   dummy
+                                    UNION ALL
+                                    SELECT '' AS OPTION_NAME,
+                                           0  AS OPTION_PERCENTAGE
+                                    FROM   dummy
+                                    UNION ALL
+                                    SELECT '' AS OPTION_NAME,
+                                           0  AS OPTION_PERCENTAGE
+                                    FROM   dummy
+                                    UNION ALL
+                                    SELECT '' AS OPTION_NAME,
+                                           0  AS OPTION_PERCENTAGE
+                                    FROM   dummy)
+                            ORDER  BY option_percentage DESC;
+
+
+
+    VA_HL_SOLUTION_OPTIONS = SELECT TOP 5 option_name,
+                                          option_percentage,
+                                          Row_number() OVER(ORDER BY option_percentage DESC) + 15 AS ROWNUM
+                             FROM   (SELECT O.NAME     AS OPTION_NAME,
+                                            HCP.amount AS OPTION_PERCENTAGE
+                                     FROM   hl5_category_option HCP
+                                            RIGHT JOIN allocation_category_option_level ACOL
+                                                    ON HCP.allocation_category_option_level_id =
+                                                       ACOL.allocation_category_option_level_id
+                                            LEFT JOIN hl5_category HC
+                                                   ON HC.hl5_category_id = HCP.hl5_category_id
+                                            LEFT JOIN allocation_category C
+                                                   ON C.allocation_category_id = ACOL.allocation_category_id
+                                            LEFT JOIN allocation_option O
+                                                   ON O.allocation_option_id = ACOL.allocation_option_id
+                                     WHERE  C.processing_report_export_key = 'SOLUTION'
+                                            AND HCP.hl5_id = in_hl_id
+                                     UNION ALL
+                                     SELECT '' AS OPTION_NAME,
+                                            0  AS OPTION_PERCENTAGE
+                                     FROM   dummy
+                                     UNION ALL
+                                     SELECT '' AS OPTION_NAME,
+                                            0  AS OPTION_PERCENTAGE
+                                     FROM   dummy
+                                     UNION ALL
+                                     SELECT '' AS OPTION_NAME,
+                                            0  AS OPTION_PERCENTAGE
+                                     FROM   dummy
+                                     UNION ALL
+                                     SELECT '' AS OPTION_NAME,
+                                            0  AS OPTION_PERCENTAGE
+                                     FROM   dummy
+                                     UNION ALL
+                                     SELECT '' AS OPTION_NAME,
+                                            0  AS OPTION_PERCENTAGE
+                                     FROM   dummy)
+                             ORDER  BY option_percentage DESC;
+
+---------------------------------------------------------------------------------
+ELSEIF(IN_LEVEL = 'HL6') THEN
+-----------------------------HL6-------------------------------------------------
+VA_HL_IMP_OPTIONS = SELECT TOP 5 option_name,
+                                 option_percentage,
+                                 Row_number() OVER(ORDER BY option_percentage DESC)  AS ROWNUM
+                    FROM   (SELECT O.NAME     AS OPTION_NAME,
+                                   HCP.amount AS OPTION_PERCENTAGE
+                            FROM   hl6_category_option HCP
+                                   RIGHT JOIN allocation_category_option_level ACOL
+                                           ON HCP.allocation_category_option_level_id =
+                                              ACOL.allocation_category_option_level_id
+                                   LEFT JOIN hl6_category HC
+                                          ON HC.hl6_category_id = HCP.hl6_category_id
+                                   LEFT JOIN allocation_category C
+                                          ON C.allocation_category_id = ACOL.allocation_category_id
+                                   LEFT JOIN allocation_option O
+                                          ON O.allocation_option_id = ACOL.allocation_option_id
+                            WHERE  C.processing_report_export_key = 'IMP'
+                                   AND HCP.hl6_id = in_hl_id
+                            UNION ALL
+                            SELECT '' AS OPTION_NAME,
+                                   0  AS OPTION_PERCENTAGE
+                            FROM   dummy
+                            UNION ALL
+                            SELECT '' AS OPTION_NAME,
+                                   0  AS OPTION_PERCENTAGE
+                            FROM   dummy
+                            UNION ALL
+                            SELECT '' AS OPTION_NAME,
+                                   0  AS OPTION_PERCENTAGE
+                            FROM   dummy
+                            UNION ALL
+                            SELECT '' AS OPTION_NAME,
+                                   0  AS OPTION_PERCENTAGE
+                            FROM   dummy
+                            UNION ALL
+                            SELECT '' AS OPTION_NAME,
+                                   0  AS OPTION_PERCENTAGE
+                            FROM   dummy)
+                    ORDER  BY option_percentage DESC;
+
+
+
+VA_HL_MKTSEG_OPTIONS = SELECT TOP 5 option_name,
+                                    option_percentage,
+                                    Row_number() OVER(ORDER BY option_percentage DESC) + 5 AS ROWNUM
+                       FROM   (SELECT O.NAME     AS OPTION_NAME,
+                                      HCP.amount AS OPTION_PERCENTAGE
+                               FROM   hl6_category_option HCP
+                                      RIGHT JOIN allocation_category_option_level ACOL
+                                              ON HCP.allocation_category_option_level_id =
+                                                 ACOL.allocation_category_option_level_id
+                                      LEFT JOIN hl6_category HC
+                                             ON HC.hl6_category_id = HCP.hl6_category_id
+                                      LEFT JOIN allocation_category C
+                                             ON C.allocation_category_id = ACOL.allocation_category_id
+                                      LEFT JOIN allocation_option O
+                                             ON O.allocation_option_id = ACOL.allocation_option_id
+                               WHERE  C.processing_report_export_key = 'MKTSEG'
+                                      AND HCP.hl6_id = in_hl_id
+                               UNION ALL
+                               SELECT '' AS OPTION_NAME,
+                                      0  AS OPTION_PERCENTAGE
+                               FROM   dummy
+                               UNION ALL
+                               SELECT '' AS OPTION_NAME,
+                                      0  AS OPTION_PERCENTAGE
+                               FROM   dummy
+                               UNION ALL
+                               SELECT '' AS OPTION_NAME,
+                                      0  AS OPTION_PERCENTAGE
+                               FROM   dummy
+                               UNION ALL
+                               SELECT '' AS OPTION_NAME,
+                                      0  AS OPTION_PERCENTAGE
+                               FROM   dummy
+                               UNION ALL
+                               SELECT '' AS OPTION_NAME,
+                                      0  AS OPTION_PERCENTAGE
+                               FROM   dummy)
+                       ORDER  BY option_percentage DESC;
+
+
+
+
+VA_HL_INDUSTRY_OPTIONS = SELECT TOP 5 option_name,
+                                     option_percentage,
+                                     Row_number() OVER(ORDER BY option_percentage DESC) + 10 AS ROWNUM
+                        FROM   (SELECT O.NAME     AS OPTION_NAME,
+                                       HCP.amount AS OPTION_PERCENTAGE
+                                FROM   hl6_category_option HCP
+                                       RIGHT JOIN allocation_category_option_level ACOL
+                                               ON HCP.allocation_category_option_level_id =
+                                                  ACOL.allocation_category_option_level_id
+                                       LEFT JOIN hl6_category HC
+                                              ON HC.hl6_category_id = HCP.hl6_category_id
+                                       LEFT JOIN allocation_category C
+                                              ON C.allocation_category_id = ACOL.allocation_category_id
+                                       LEFT JOIN allocation_option O
+                                              ON O.allocation_option_id = ACOL.allocation_option_id
+                                WHERE  C.processing_report_export_key = 'INDUSTRY'
+                                       AND HCP.hl6_id = in_hl_id
+                                UNION ALL
+                                SELECT '' AS OPTION_NAME,
+                                       0  AS OPTION_PERCENTAGE
+                                FROM   dummy
+                                UNION ALL
+                                SELECT '' AS OPTION_NAME,
+                                       0  AS OPTION_PERCENTAGE
+                                FROM   dummy
+                                UNION ALL
+                                SELECT '' AS OPTION_NAME,
+                                       0  AS OPTION_PERCENTAGE
+                                FROM   dummy
+                                UNION ALL
+                                SELECT '' AS OPTION_NAME,
+                                       0  AS OPTION_PERCENTAGE
+                                FROM   dummy
+                                UNION ALL
+                                SELECT '' AS OPTION_NAME,
+                                       0  AS OPTION_PERCENTAGE
+                                FROM   dummy)
+                        ORDER  BY option_percentage DESC;
+
+
+
+VA_HL_SOLUTION_OPTIONS = SELECT TOP 5 option_name,
+                                      option_percentage,
+                                      Row_number() OVER(ORDER BY option_percentage DESC) + 15 AS ROWNUM
+                         FROM   (SELECT O.NAME     AS OPTION_NAME,
+                                        HCP.amount AS OPTION_PERCENTAGE
+                                 FROM   hl6_category_option HCP
+                                        RIGHT JOIN allocation_category_option_level ACOL
+                                                ON HCP.allocation_category_option_level_id =
+                                                   ACOL.allocation_category_option_level_id
+                                        LEFT JOIN hl6_category HC
+                                               ON HC.hl6_category_id = HCP.hl6_category_id
+                                        LEFT JOIN allocation_category C
+                                               ON C.allocation_category_id = ACOL.allocation_category_id
+                                        LEFT JOIN allocation_option O
+                                               ON O.allocation_option_id = ACOL.allocation_option_id
+                                 WHERE  C.processing_report_export_key = 'SOLUTION'
+                                        AND HCP.hl6_id = in_hl_id
+                                 UNION ALL
+                                 SELECT '' AS OPTION_NAME,
+                                        0  AS OPTION_PERCENTAGE
+                                 FROM   dummy
+                                 UNION ALL
+                                 SELECT '' AS OPTION_NAME,
+                                        0  AS OPTION_PERCENTAGE
+                                 FROM   dummy
+                                 UNION ALL
+                                 SELECT '' AS OPTION_NAME,
+                                        0  AS OPTION_PERCENTAGE
+                                 FROM   dummy
+                                 UNION ALL
+                                 SELECT '' AS OPTION_NAME,
+                                        0  AS OPTION_PERCENTAGE
+                                 FROM   dummy
+                                 UNION ALL
+                                 SELECT '' AS OPTION_NAME,
+                                        0  AS OPTION_PERCENTAGE
+                                 FROM   dummy)
+                         ORDER  BY option_percentage DESC;
+---------------------------------------------------------------------------------
+END IF;
+
+ VA_HL_ALL_OPTIONS =    SELECT OPTION_NAME, OPTION_PERCENTAGE, ROWNUM
+                            FROM :VA_HL_IMP_OPTIONS
+                            UNION
+                            SELECT OPTION_NAME, OPTION_PERCENTAGE, ROWNUM
+                            FROM :VA_HL_MKTSEG_OPTIONS
+                            UNION
+                            SELECT OPTION_NAME, OPTION_PERCENTAGE, ROWNUM
+                            FROM :VA_HL_INDUSTRY_OPTIONS
+                            UNION
+                            SELECT OPTION_NAME, OPTION_PERCENTAGE, ROWNUM
+                            FROM :VA_HL_SOLUTION_OPTIONS;
+
+   VA_IDENTITY_MATRIX = SELECT
+    CASE WHEN (V.ROWNUM = 1 )THEN OPTION_NAME ELSE '0' END AS IMP1,
+    CASE WHEN (V.ROWNUM = 1 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZIMP_PERCENTAGE1,
+    CASE WHEN (V.ROWNUM = 2 )THEN OPTION_NAME ELSE '0' END AS IMP2,
+    CASE WHEN (V.ROWNUM = 2 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZIMP_PERCENTAGE2,
+    CASE WHEN (V.ROWNUM = 3 )THEN OPTION_NAME ELSE '0' END AS IMP3,
+    CASE WHEN (V.ROWNUM = 3 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZIMP_PERCENTAGE3,
+    CASE WHEN (V.ROWNUM = 4 )THEN OPTION_NAME ELSE '0' END AS IMP4,
+    CASE WHEN (V.ROWNUM = 4 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZIMP_PERCENTAGE4,
+    CASE WHEN (V.ROWNUM = 5 )THEN OPTION_NAME ELSE '0' END AS IMP5,
+    CASE WHEN (V.ROWNUM = 5 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZIMP_PERCENTAGE5,
+    CASE WHEN (V.ROWNUM = 6 )THEN OPTION_NAME ELSE '0' END AS MKTSEG1,
+    CASE WHEN (V.ROWNUM = 6 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZMSEG_PERCENTAGE1,
+    CASE WHEN (V.ROWNUM = 7 )THEN OPTION_NAME ELSE '0' END AS MKTSEG2,
+    CASE WHEN (V.ROWNUM = 7 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZMSEG_PERCENTAGE2,
+    CASE WHEN (V.ROWNUM = 8 )THEN OPTION_NAME ELSE '0' END AS MKTSEG3,
+    CASE WHEN (V.ROWNUM = 8 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZMSEG_PERCENTAGE3,
+    CASE WHEN (V.ROWNUM = 9 )THEN OPTION_NAME ELSE '0' END AS MKTSEG4,
+    CASE WHEN (V.ROWNUM = 9 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZMSEG_PERCENTAGE4,
+    CASE WHEN (V.ROWNUM = 10 )THEN OPTION_NAME ELSE '0' END AS MKTSEG5,
+    CASE WHEN (V.ROWNUM = 10 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZMSEG_PERCENTAGE5,
+    CASE WHEN (V.ROWNUM = 11 )THEN OPTION_NAME ELSE '0' END AS INDUSTRY1,
+    CASE WHEN (V.ROWNUM = 11 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZIND_PERCENTAGE1,
+    CASE WHEN (V.ROWNUM = 12 )THEN OPTION_NAME ELSE '0' END AS INDUSTRY2,
+    CASE WHEN (V.ROWNUM = 12 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZIND_PERCENTAGE2,
+    CASE WHEN (V.ROWNUM = 13 )THEN OPTION_NAME ELSE '0' END AS INDUSTRY3,
+    CASE WHEN (V.ROWNUM = 13 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZIND_PERCENTAGE3,
+    CASE WHEN (V.ROWNUM = 14 )THEN OPTION_NAME ELSE '0' END AS INDUSTRY4,
+    CASE WHEN (V.ROWNUM = 14 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZIND_PERCENTAGE4,
+    CASE WHEN (V.ROWNUM = 15 )THEN OPTION_NAME ELSE '0' END AS INDUSTRY5,
+    CASE WHEN (V.ROWNUM = 15 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZIND_PERCENTAGE5,
+    CASE WHEN (V.ROWNUM = 16 )THEN OPTION_NAME ELSE '0' END AS SOLUTION1,
+    CASE WHEN (V.ROWNUM = 16 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZSOL_PERCENTAGE1,
+    CASE WHEN (V.ROWNUM = 17 )THEN OPTION_NAME ELSE '0' END AS SOLUTION2,
+    CASE WHEN (V.ROWNUM = 17 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZSOL_PERCENTAGE2,
+    CASE WHEN (V.ROWNUM = 18 )THEN OPTION_NAME ELSE '0' END AS SOLUTION3,
+    CASE WHEN (V.ROWNUM = 18 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZSOL_PERCENTAGE3,
+    CASE WHEN (V.ROWNUM = 19 )THEN OPTION_NAME ELSE '0' END AS SOLUTION4,
+    CASE WHEN (V.ROWNUM = 19 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZSOL_PERCENTAGE4,
+    CASE WHEN (V.ROWNUM = 20 )THEN OPTION_NAME ELSE '0' END AS SOLUTION5,
+    CASE WHEN (V.ROWNUM = 20 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZSOL_PERCENTAGE5
+
+    FROM :VA_HL_ALL_OPTIONS V;
+
+    OUT_RESULT = SELECT
+    MAX(IMP1) AS IMP1,
+    MAX(ZZIMP_PERCENTAGE1) AS ZZIMP_PERCENTAGE1,
+    MAX(IMP2) AS IMP2,
+    MAX(ZZIMP_PERCENTAGE2) AS ZZIMP_PERCENTAGE2,
+    MAX(IMP3) AS IMP3,
+    MAX(ZZIMP_PERCENTAGE3) AS ZZIMP_PERCENTAGE3,
+    MAX(IMP4) AS IMP4,
+    MAX(ZZIMP_PERCENTAGE4) AS ZZIMP_PERCENTAGE4,
+    MAX(IMP5) AS IMP5,
+    MAX(ZZIMP_PERCENTAGE5) AS ZZIMP_PERCENTAGE5,
+    MAX(MKTSEG1) AS MKTSEG1,
+    MAX(ZZMSEG_PERCENTAGE1) AS ZZMSEG_PERCENTAGE1,
+    MAX(MKTSEG2) AS MKTSEG2,
+    MAX(ZZMSEG_PERCENTAGE2) AS ZZMSEG_PERCENTAGE2,
+    MAX(MKTSEG3) AS MKTSEG3,
+    MAX(ZZMSEG_PERCENTAGE3) AS ZZMSEG_PERCENTAGE3,
+    MAX(MKTSEG4) AS MKTSEG4,
+    MAX(ZZMSEG_PERCENTAGE4) AS ZZMSEG_PERCENTAGE4,
+    MAX(MKTSEG5) AS MKTSEG5,
+    MAX(ZZMSEG_PERCENTAGE5) AS ZZMSEG_PERCENTAGE5,
+    MAX(INDUSTRY1) AS INDUSTRY1,
+    MAX(ZZIND_PERCENTAGE1) AS ZZIND_PERCENTAGE1,
+    MAX(INDUSTRY2) AS INDUSTRY2,
+    MAX(ZZIND_PERCENTAGE2) AS ZZIND_PERCENTAGE2,
+    MAX(INDUSTRY3) AS INDUSTRY3,
+    MAX(ZZIND_PERCENTAGE3) AS ZZIND_PERCENTAGE3,
+    MAX(INDUSTRY4) AS INDUSTRY4,
+    MAX(ZZIND_PERCENTAGE4) AS ZZIND_PERCENTAGE4,
+    MAX(INDUSTRY5) AS INDUSTRY5,
+    MAX(ZZIND_PERCENTAGE5) AS ZZIND_PERCENTAGE5,
+    MAX(SOLUTION1) AS SOLUTION1,
+    MAX(ZZSOL_PERCENTAGE1) AS ZZSOL_PERCENTAGE1,
+    MAX(SOLUTION2) AS SOLUTION2,
+    MAX(ZZSOL_PERCENTAGE2) AS ZZSOL_PERCENTAGE2,
+    MAX(SOLUTION3) AS SOLUTION3,
+    MAX(ZZSOL_PERCENTAGE3) AS ZZSOL_PERCENTAGE3,
+    MAX(SOLUTION4) AS SOLUTION4,
+    MAX(ZZSOL_PERCENTAGE4) AS ZZSOL_PERCENTAGE4,
+    MAX(SOLUTION5) AS SOLUTION5,
+    MAX(ZZSOL_PERCENTAGE5) AS ZZSOL_PERCENTAGE5
+
+    FROM :VA_IDENTITY_MATRIX;
+
+END;

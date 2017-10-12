@@ -23,6 +23,10 @@
       <descriptions defaultDescription="DELETED"/>
       <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="INTERLOCK_REQUEST_SUBREGION" columnName="DELETED"/>
     </attribute>
+    <attribute id="SUBREGION_ID_FROM" order="6" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="SUBREGION_ID_FROM"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="INTERLOCK_REQUEST_SUBREGION" columnName="SUBREGION_ID_FROM"/>
+    </attribute>
   </attributes>
   <calculatedAttributes/>
   <privateDataFoundation>

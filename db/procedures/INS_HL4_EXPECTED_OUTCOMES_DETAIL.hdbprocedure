@@ -1,17 +1,23 @@
 PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_HL4_EXPECTED_OUTCOMES_DETAIL" (
-    IN in_hl4_expected_outcomes_id bigint,
-    IN in_outcomes_id bigint,
-    IN in_euro_value DECIMAL(19, 6),
-    IN in_amount_value DECIMAL(19, 6),
-    IN in_created_user_id bigint,
-    OUT out_hl4_expected_outcomes_details_id bigint
+    IN l4Kpi TABLE (in_hl4_expected_outcomes_id bigint,
+        in_outcomes_id bigint,
+        in_euro_value DECIMAL(19, 6),
+        in_amount_value DECIMAL(19, 6),
+        in_created_user_id bigint)
+    ,OUT out_hl4_expected_outcomes_details_id bigint
 ) 
 	LANGUAGE SQLSCRIPT
 	SQL SECURITY INVOKER 
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL" AS
 BEGIN
 	INSERT INTO "MKTG_PLANNING_TOOL"."HL4_EXPECTED_OUTCOMES_DETAIL" (hl4_expected_outcomes_id,outcomes_id,euro_value,amount_value,created_user_id)
-	VALUES (in_hl4_expected_outcomes_id,in_outcomes_id,in_euro_value,in_amount_value,in_created_user_id);
-	
+	--VALUES (in_hl4_expected_outcomes_id,in_outcomes_id,in_euro_value,in_amount_value,in_created_user_id);
+	(select in_hl4_expected_outcomes_id
+            ,in_outcomes_id
+            ,in_euro_value
+            ,in_amount_value
+            ,in_created_user_id
+            from :l4Kpi
+            );
 	SELECT TOP 1 CURRENT_IDENTITY_VALUE() INTO out_hl4_expected_outcomes_details_id FROM "MKTG_PLANNING_TOOL"."HL4_EXPECTED_OUTCOMES_DETAIL";
 END;

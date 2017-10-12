@@ -1,0 +1,21 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::DEL_PRIORITY" (
+		IN in_priority_id BIGINT,
+		IN in_user_id BIGINT,
+		OUT out_result BIGINT
+	) 
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER 
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	AS
+BEGIN
+
+	UPDATE PRIORITY SET
+		enabled = 0,
+		deleted = 1,
+		modified_user_id = in_user_id,
+		modified_date_tz = CURRENT_TIMESTAMP,
+		deleted_token = (SELECT CAST(SYSUUID AS VARCHAR) AS "SYS_UNIQUE_NUMBER" FROM DUMMY)
+		where PRIORITY_ID = in_priority_id;
+	
+	SELECT ::ROWCOUNT INTO out_result FROM DUMMY;
+END;

@@ -1,0 +1,17 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_OTHER_BUDGET_APPROVER_BY_OTHER_BUDGET_APPROVER_ID" (
+	IN in_other_budget_approver_id bigint,
+	OUT out_result TABLE(
+						FULL_NAME NVARCHAR(255),
+						EMAIL NVARCHAR(255)
+						)
+ ) 
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+AS
+BEGIN
+	out_result = 	SELECT OBA.FULL_NAME
+	                        , OBA.EMAIL
+                    FROM OTHER_BUDGET_APPROVER OBA
+                        WHERE OBA.OTHER_BUDGET_APPROVER_ID = in_other_budget_approver_id;
+END;

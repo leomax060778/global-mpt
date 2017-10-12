@@ -1,0 +1,22 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_ORGANIZATION_TYPE_INTERLOCK_ORGANIZATION" (
+	IN in_organization_type_id bigint,
+	IN in_interlock_organization_id bigint,
+  	IN in_created_user_id bigint,
+  	OUT out_result bigint
+ )
+ LANGUAGE SQLSCRIPT
+ SQL SECURITY INVOKER
+ DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+ AS
+BEGIN
+ 	INSERT INTO ORGANIZATION_TYPE_INTERLOCK_ORGANIZATION(	ORGANIZATION_TYPE_ID,
+					 										INTERLOCK_ORGANIZATION_ID,
+					 										CREATED_USER_ID
+					 									)
+ 	VALUES (in_organization_type_id,
+ 			in_interlock_organization_id,
+ 			in_created_user_id
+ 			);
+ 
+ SELECT TOP 1 CURRENT_IDENTITY_VALUE() INTO out_result FROM "MKTG_PLANNING_TOOL"."ORGANIZATION_TYPE_INTERLOCK_ORGANIZATION";
+END;

@@ -1,0 +1,48 @@
+------- IMPORTANT: REMEMBER TO DO A BACKUP BEFORE EXCECUTE THIS MIGRATION ------
+
+ALTER TABLE HL4 ALTER ("IS_ANNUAL_PLAN" TINYINT NULL);
+
+--/*Delete Procedures HL4_BUDGET_REGION*/
+DROP PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_HL4_BUDGET_REGION";
+DROP PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL4_BUDGET_FILTER";
+DROP PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::DEL_HL4_BUDGET_REGION";
+DROP PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL4_BUDGET_BY_ID";
+DROP PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL4_BUDGET_REGION";
+DROP TABLE "MKTG_PLANNING_TOOL"."HL4_BUDGET_REGION";
+-- *************************************************************************************
+--/*Delete Procedures HL4_BUDGET_ROUTE*/
+DROP PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_HL4_BUDGET_ROUTE";
+DROP PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::DEL_HL4_BUDGET_GLOBAL_TEAM";
+DROP TABLE "MKTG_PLANNING_TOOL"."HL4_BUDGET_ROUTE";
+
+--/*Delete Procedures HL4_BUDGET_SUBREGION*/
+drop PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_HL4_BUDGET_SUBREGION";
+drop PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL4_BUDGET_SUBREGION";
+drop PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::DEL_HL4_BUDGET_SUBREGION";
+DROP TABLE "MKTG_PLANNING_TOOL"."HL4_BUDGET_SUBREGION";
+
+--/*Delete Procedures HL4_SALE_OTHER*/
+drop PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL4_SALE_BY_ID";
+drop PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_HL4_SALE_OTHER";
+drop PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::DEL_HL4_SALE_OTHER";
+DROP TABLE "MKTG_PLANNING_TOOL"."HL4_SALE_OTHER";
+
+--/*Delete Procedures HL4_SALE_REGION*/
+drop PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::DEL_HL4_SALE_REGION";
+drop PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_HL4_SALE_REGION";
+DROP TABLE "MKTG_PLANNING_TOOL"."HL4_SALE_REGION";
+
+--/*Delete Procedures HL4_SALE_ROUTE*/
+drop PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::DEL_HL4_SALE_GLOBAL_TEAM"
+drop PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_HL4_SALE_ROUTE"
+DROP TABLE "MKTG_PLANNING_TOOL"."HL4_SALE_ROUTE";
+
+
+
+
+
+-- Update schema version
+INSERT INTO SCHEMA_VERSION(VERSION, DESCRIPTION, SCRIPT)
+VALUES('V5.0.0-62', 'Extend KPIs', 'V201709131234.sql');
+
+COMMIT;

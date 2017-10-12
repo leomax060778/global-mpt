@@ -40,7 +40,8 @@
             from &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL2&quot; HL2 
             LEFT join &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL3&quot; HL3 ON HL3.HL2_ID = HL2.HL2_ID
             LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL4&quot; HL4 ON HL3.HL3_ID = HL4.HL3_ID AND HL4.DELETED = 0 AND HL4.ENABLED = 1
-            LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL4_BUDGET_REGION&quot; HL4_BR ON HL4_BR.HL4_ID = HL4.HL4_ID AND HL4_BR.ENABLED = 1 AND HL4_BR.DELETED = 0
+--            LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL4_BUDGET_REGION&quot; HL4_BR ON HL4_BR.HL4_ID = HL4.HL4_ID AND HL4_BR.ENABLED = 1 AND HL4_BR.DELETED = 0
+			LEFT JOIN (select null as REGION_ID, null as PERCENTAGE, null as HL4_ID, null as ENABLED, null as ENABLED FROM DUMMY ) HL4_BR ON HL4_BR.HL4_ID = HL4.HL4_ID
             left join &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_REGION&quot; R ON R.REGION_ID = HL4_BR.REGION_ID
             
             WHERE HL2.ENABLED = 1 AND HL2.DELETED = 0 

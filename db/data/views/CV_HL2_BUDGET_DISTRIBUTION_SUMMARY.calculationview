@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Calculation:scenario xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:Calculation="http://www.sap.com/ndb/BiModelCalculation.ecore" schemaVersion="2.3" id="CV_HL2_BUDGET_DISTRIBUTION_SUMMARY" applyPrivilegeType="ANALYTIC_PRIVILEGE" checkAnalyticPrivileges="true" defaultClient="$$client$$" defaultLanguage="$$language$$" hierarchiesSQLEnabled="false" translationRelevant="true" visibility="reportingEnabled" calculationScenarioType="SCRIPT_BASED" dataCategory="CUBE" enforceSqlExecution="false" executionSemantic="UNDEFINED" scriptParametersCaseSensitive="true">
+  <descriptions defaultDescription="CV_HL1_KPI_DATA"/>
+  <localVariables/>
+  <variableMappings/>
+  <informationModelLayout relativeWidthScenario="27"/>
+  <dataSources/>
+  <calculationViews>
+    <calculationView xsi:type="Calculation:SqlScriptView" id="Script_View">
+      <descriptions/>
+      <viewAttributes>
+        <viewAttribute datatype="BIGINT" id="HL2_ID"/>
+        <viewAttribute datatype="BIGINT" id="HL1_ID"/>
+        <viewAttribute datatype="DECIMAL" id="L2_BUDGET" length="10" scale="2"/>
+        <viewAttribute datatype="DECIMAL" id="L2_BUDGET_PERCENTAGE" length="10" scale="2"/>
+        <viewAttribute datatype="DECIMAL" id="L2_BUDGET_REMAINING" length="10" scale="2"/>
+        <viewAttribute datatype="DECIMAL" id="L2_BUDGET_ALLOCATED" length="10" scale="2"/>
+        <viewAttribute datatype="INTEGER" id="TOTAL_OF_PRIORITIES"/>
+        <viewAttribute datatype="NVARCHAR" id="L2_ACRONYM" length="255"/>
+        <viewAttribute datatype="TINYINT" id="IS_LOCKED"/>
+        <viewAttribute datatype="NVARCHAR" id="CATEGORY_NAME" length="255"/>
+        <viewAttribute datatype="NVARCHAR" id="OPTION_NAME" length="255"/>
+        <viewAttribute datatype="DECIMAL" id="BUDGET_DISTRIBUTION_PERCENTAGE" length="19" scale="2"/>
+        <viewAttribute datatype="DECIMAL" id="BUDGET_DISTRIBUTION_AMOUNT" length="19" scale="2"/>
+        <viewAttribute datatype="DECIMAL" id="HL2_BUDGET_ALLOCATED" length="19" scale="2"/>
+        <viewAttribute datatype="INTEGER" id="VERSION"/>
+        <viewAttribute datatype="DECIMAL" id="SUB_AMOUNT" length="19" scale="2"/>
+        <viewAttribute datatype="BIGINT" id="ALLOCATION_OPTION_ID"/>
+      </viewAttributes>
+      <calculatedViewAttributes/>
+      <definition>/********* Begin Procedure Script ************/ 
+BEGIN 
+
+va_hl1 = SELECT HL1.HL1_ID
+    , budgetYear.VERSIONED_END_DATE
+    , HL1.BUDGET
+	FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL1&quot; HL1
+	INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_BUDGET_YEAR&quot; budgetYear
+		ON budgetYear.BUDGET_YEAR_ID = HL1.BUDGET_YEAR_ID
+	WHERE HL1.ENABLED = 1
+	AND HL1.DELETED = 0;
+
+va_hl3 = SELECT HL3.HL2_ID
+	, COUNT(HL3.HL3_ID) AS HL2_TOTAL_PRIORITIES
+	, SUM(HL3.HL3_FNC_BUDGET_TOTAL) AS HL2_BUDGET_ALLOCATED
+	FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL3&quot; HL3
+	WHERE HL3.ENABLED = 1
+	AND HL3.DELETED = 0
+	GROUP BY HL3.HL2_ID;
+	
+va_l3 = SELECT HL3.HL2_ID, SUM(HL3_CO.AMOUNT * HL3.HL3_FNC_BUDGET_TOTAL / 100) AS SUB_AMOUNT, ACOL.ALLOCATION_OPTION_ID, AO.NAME
+ FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL3_CATEGORY_OPTION&quot; HL3_CO    	
+    LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_ALLOCATION_CATEGORY_OPTION_LEVEL&quot; ACOL
+    	ON HL3_CO.ALLOCATION_CATEGORY_OPTION_LEVEL_ID = ACOL.ALLOCATION_CATEGORY_OPTION_LEVEL_ID
+    LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_ALLOCATION_CATEGORY&quot; AC
+    	ON AC.ALLOCATION_CATEGORY_ID = ACOL.ALLOCATION_CATEGORY_ID
+    LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_ALLOCATION_OPTION&quot; AO
+    	ON AO.ALLOCATION_OPTION_ID = ACOL.ALLOCATION_OPTION_ID
+    LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL3&quot; HL3 ON HL3.HL3_ID = HL3_CO.HL3_ID
+    GROUP BY HL3.HL2_ID,ACOL.ALLOCATION_OPTION_ID,AO.NAME;
+
+var_out = select hl2.HL2_ID 
+, hl2.HL1_ID
+, hl2.HL2_BUDGET_TOTAL AS L2_BUDGET
+, (hl2.HL2_BUDGET_TOTAL * 100 / T.BUDGET) AS L2_BUDGET_PERCENTAGE
+, (hl2.HL2_BUDGET_TOTAL - COALESCE(K.HL2_BUDGET_ALLOCATED,0) ) AS L2_BUDGET_REMAINING
+, (
+	COALESCE(K.HL2_BUDGET_ALLOCATED,0) * 100 / (CASE WHEN hl2.HL2_BUDGET_TOTAL = 0 THEN 1 ELSE hl2.HL2_BUDGET_TOTAL END)
+	) AS L2_BUDGET_ALLOCATED
+,  COALESCE(K.HL2_TOTAL_PRIORITIES,0) AS TOTAL_OF_PRIORITIES
+ , hl2.ORGANIZATION_ACRONYM AS L2_ACRONYM
+ , (CASE WHEN T.VERSIONED_END_DATE >= CURRENT_TIMESTAMP THEN 0 ELSE 1 END) AS IS_LOCKED
+ , AC.NAME AS CATEGORY_NAME
+ , AO.NAME AS OPTION_NAME
+ , HL2_CO.AMOUNT AS BUDGET_DISTRIBUTION_PERCENTAGE
+ , (hl2.HL2_BUDGET_TOTAL * HL2_CO.AMOUNT / 100) AS BUDGET_DISTRIBUTION_AMOUNT
+ , k.HL2_BUDGET_ALLOCATED
+ , THL2.VERSION
+ , G.SUB_AMOUNT AS SUB_AMOUNT
+     , G.ALLOCATION_OPTION_ID
+FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL2&quot; hl2
+INNER JOIN :va_hl1 T ON T.HL1_ID = hl2.HL1_ID
+LEFT JOIN :va_hl3 K ON K.HL2_ID = hl2.HL2_ID
+LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL2_CATEGORY_OPTION&quot; HL2_CO
+	ON (HL2_CO.HL2_ID = hl2.HL2_ID AND HL2_CO.AMOUNT > 0 AND HL2_CO.AMOUNT IS NOT NULL)
+LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_ALLOCATION_CATEGORY_OPTION_LEVEL&quot; ACOL
+	ON HL2_CO.ALLOCATION_CATEGORY_OPTION_LEVEL_ID = ACOL.ALLOCATION_CATEGORY_OPTION_LEVEL_ID
+LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_ALLOCATION_CATEGORY&quot; AC
+	ON AC.ALLOCATION_CATEGORY_ID = ACOL.ALLOCATION_CATEGORY_ID
+LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_ALLOCATION_OPTION&quot; AO
+	ON AO.ALLOCATION_OPTION_ID = ACOL.ALLOCATION_OPTION_ID
+JOIN &quot;MKTG_PLANNING_TOOL&quot;.&quot;HL2&quot; THL2 ON hl2.HL2_ID = THL2.HL2_ID
+LEFT JOIN :va_l3 G ON (G.HL2_ID = hl2.HL2_ID  AND G.ALLOCATION_OPTION_ID = AO.ALLOCATION_OPTION_ID)
+where hl2.DELETED = 0 AND hl2.ENABLED = 1 AND T.BUDGET &lt;>0
+ORDER BY hl2.ORGANIZATION_ACRONYM;
+END /********* End Procedure Script ************/</definition>
+    </calculationView>
+  </calculationViews>
+  <logicalModel id="Script_View">
+    <descriptions/>
+    <attributes>
+      <attribute id="HL2_ID" order="1">
+        <descriptions/>
+        <keyMapping columnObjectName="Script_View" columnName="HL2_ID"/>
+      </attribute>
+      <attribute id="L2_BUDGET" order="3">
+        <descriptions/>
+        <keyMapping columnObjectName="Script_View" columnName="L2_BUDGET"/>
+      </attribute>
+      <attribute id="L2_BUDGET_PERCENTAGE" order="4">
+        <descriptions/>
+        <keyMapping columnObjectName="Script_View" columnName="L2_BUDGET_PERCENTAGE"/>
+      </attribute>
+      <attribute id="L2_ACRONYM" order="8">
+        <descriptions/>
+        <keyMapping columnObjectName="Script_View" columnName="L2_ACRONYM"/>
+      </attribute>
+      <attribute id="CATEGORY_NAME" order="10">
+        <descriptions/>
+        <keyMapping columnObjectName="Script_View" columnName="CATEGORY_NAME"/>
+      </attribute>
+      <attribute id="OPTION_NAME" order="11">
+        <descriptions/>
+        <keyMapping columnObjectName="Script_View" columnName="OPTION_NAME"/>
+      </attribute>
+    </attributes>
+    <calculatedAttributes/>
+    <privateDataFoundation>
+      <tableProxies/>
+      <joins/>
+      <layout>
+        <shapes/>
+      </layout>
+    </privateDataFoundation>
+    <baseMeasures>
+      <measure id="HL1_ID" order="2" aggregationType="sum" measureType="simple">
+        <descriptions/>
+        <measureMapping columnObjectName="Script_View" columnName="HL1_ID"/>
+      </measure>
+      <measure id="L2_BUDGET_REMAINING" order="5" aggregationType="sum" measureType="simple">
+        <descriptions/>
+        <measureMapping columnObjectName="Script_View" columnName="L2_BUDGET_REMAINING"/>
+      </measure>
+      <measure id="L2_BUDGET_ALLOCATED" order="6" aggregationType="sum" measureType="simple">
+        <descriptions/>
+        <measureMapping columnObjectName="Script_View" columnName="L2_BUDGET_ALLOCATED"/>
+      </measure>
+      <measure id="TOTAL_OF_PRIORITIES" order="7" aggregationType="sum" measureType="simple">
+        <descriptions/>
+        <measureMapping columnObjectName="Script_View" columnName="TOTAL_OF_PRIORITIES"/>
+      </measure>
+      <measure id="IS_LOCKED" order="9" aggregationType="sum" measureType="simple">
+        <descriptions/>
+        <measureMapping columnObjectName="Script_View" columnName="IS_LOCKED"/>
+      </measure>
+      <measure id="BUDGET_DISTRIBUTION_PERCENTAGE" order="12" aggregationType="sum" measureType="simple">
+        <descriptions/>
+        <measureMapping columnObjectName="Script_View" columnName="BUDGET_DISTRIBUTION_PERCENTAGE"/>
+      </measure>
+      <measure id="BUDGET_DISTRIBUTION_AMOUNT" order="13" aggregationType="sum" measureType="simple">
+        <descriptions/>
+        <measureMapping columnObjectName="Script_View" columnName="BUDGET_DISTRIBUTION_AMOUNT"/>
+      </measure>
+      <measure id="HL2_BUDGET_ALLOCATED" order="14" aggregationType="sum" measureType="simple">
+        <descriptions defaultDescription="HL2_BUDGET_ALLOCATED"/>
+        <measureMapping columnObjectName="Script_View" columnName="HL2_BUDGET_ALLOCATED"/>
+      </measure>
+      <measure id="VERSION" order="15" aggregationType="sum" measureType="simple">
+        <descriptions defaultDescription="VERSION"/>
+        <measureMapping columnObjectName="Script_View" columnName="VERSION"/>
+      </measure>
+      <measure id="SUB_AMOUNT" order="16" aggregationType="sum" measureType="simple">
+        <descriptions defaultDescription="SUB_AMOUNT"/>
+        <measureMapping columnObjectName="Script_View" columnName="SUB_AMOUNT"/>
+      </measure>
+      <measure id="ALLOCATION_OPTION_ID" order="17" aggregationType="sum" measureType="simple">
+        <descriptions defaultDescription="ALLOCATION_OPTION_ID"/>
+        <measureMapping columnObjectName="Script_View" columnName="ALLOCATION_OPTION_ID"/>
+      </measure>
+    </baseMeasures>
+    <calculatedMeasures/>
+    <restrictedMeasures/>
+    <localDimensions/>
+  </logicalModel>
+  <layout>
+    <shapes>
+      <shape modelObjectName="Output" modelObjectNameSpace="MeasureGroup">
+        <upperLeftCorner x="40" y="85"/>
+      </shape>
+    </shapes>
+  </layout>
+</Calculation:scenario>

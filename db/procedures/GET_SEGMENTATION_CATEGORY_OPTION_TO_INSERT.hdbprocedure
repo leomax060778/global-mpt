@@ -1,0 +1,20 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_SEGMENTATION_CATEGORY_OPTION_TO_INSERT" (
+    IN options TABLE(
+                in_allocation_option_id bigint
+        		),
+    OUT out_result  TABLE(
+                       NAME NVARCHAR(255)
+                    )
+)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER 
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL" AS
+BEGIN
+	out_result = select AO.NAME
+    from ALLOCATION_OPTION AO
+    LEFT JOIN SEGMENTATION_CATEGORY_OPTION SCO
+    	ON UPPER(AO.NAME) = UPPER(SCO.NAME) and SCO.DELETED = 0 AND SCO.ENABLED = 1
+    WHERE AO.ALLOCATION_OPTION_ID
+        IN (SELECT in_allocation_option_id FROM :options)
+    AND SCO.NAME IS NULL;
+END;

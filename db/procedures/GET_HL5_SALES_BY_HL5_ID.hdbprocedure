@@ -9,7 +9,10 @@ amount decimal(19, 6),
 budget_spend_request_status_id bigint,
 budget_spend_request_id bigint,
 organization_name nvarchar(255),
-message nvarchar(255)
+message nvarchar(255),
+full_name nvarchar(255),
+email nvarchar(255),
+other_budget_approver_id bigint
 )
 )
 	LANGUAGE SQLSCRIPT
@@ -53,9 +56,14 @@ out_result = select
                 T3.BUDGET_SPEND_REQUEST_STATUS_ID,
                 T3.BUDGET_SPEND_REQUEST_ID,
                 T.ORGANIZATION_NAME,
-                T3.DESCRIPTION AS MESSAGE
+                T3.DESCRIPTION AS MESSAGE,
+                OBA.FULL_NAME,
+                OBA.EMAIL,
+                OBA.OTHER_BUDGET_APPROVER_ID
             from :sub_out_result T
             INNER JOIN HL5_SALE_BUDGET_SPEND_REQUEST T2 ON T.HL5_SALES_ID = T2.HL5_SALES_ID
             INNER JOIN CURRENCY ON CURRENCY.EURO_CONVERSION_ID = T.CURRENCY_ID
-            INNER JOIN BUDGET_SPEND_REQUEST T3 ON T2.BUDGET_SPEND_REQUEST_ID = T3.BUDGET_SPEND_REQUEST_ID;
+            INNER JOIN BUDGET_SPEND_REQUEST T3 ON T2.BUDGET_SPEND_REQUEST_ID = T3.BUDGET_SPEND_REQUEST_ID
+            LEFT JOIN BUDGET_SPEND_REQUEST_OTHER_BUDGET_APPROVER BSR_OBA ON BSR_OBA.BUDGET_SPEND_REQUEST_ID = T3.BUDGET_SPEND_REQUEST_ID
+            LEFT JOIN OTHER_BUDGET_APPROVER OBA ON BSR_OBA.OTHER_BUDGET_APPROVER_ID = OBA.OTHER_BUDGET_APPROVER_ID;
 END;

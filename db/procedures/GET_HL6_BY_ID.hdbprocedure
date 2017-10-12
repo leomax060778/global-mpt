@@ -9,6 +9,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL6_BY_ID"(
 			route_to_market_id INTEGER,
 			campaign_objective_id INTEGER,
 			campaign_type_id INTEGER,
+			show_additional_fields tinyint,
 			campaign_subtype_id INTEGER,
 			marketing_program_id INTEGER,
 			marketing_activity_id INTEGER,
@@ -52,6 +53,8 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL6_BY_ID"(
             , CO_FUNDED TINYINT
             , ALLOW_BUDGET_ZERO TINYINT
             , IS_POWER_USER TINYINT
+            , budget_spend_request_status_id nvarchar(255)
+            , budget_spend_request_status nvarchar(255)
 		)
 	)
 	LANGUAGE SQLSCRIPT
@@ -60,59 +63,67 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL6_BY_ID"(
 	READS SQL DATA
 AS
 BEGIN
-	out_result = SELECT HL6_ID, 
-				HL6_CRM_DESCRIPTION, 
-				ACRONYM, 
-				BUDGET, 
-				HL5_ID, 
-				ROUTE_TO_MARKET_ID, 
-				CAMPAIGN_OBJECTIVE_ID, 
-				CAMPAIGN_TYPE_ID, 
-				CAMPAIGN_SUBTYPE_ID, 
-				MARKETING_PROGRAM_ID, 
-				MARKETING_ACTIVITY_ID, 
-				ACTUAL_START_DATE, 
-				ACTUAL_END_DATE, 
-				SHOW_ON_DG_CALENDAR, 
-				BUSINESS_OWNER_ID, 
-				EMPLOYEE_RESPONSIBLE_ID, 
-				COST_CENTER_ID, 
-				IN_BUDGET, 
-				BUDGET_SPEND_Q1, 
-				BUDGET_SPEND_Q2, 
-				BUDGET_SPEND_Q3, 
-				BUDGET_SPEND_Q4, 
-				EURO_CONVERSION_ID, 
-				HL6_STATUS_DETAIL_ID, 
-				SALES_ORGANIZATION_ID, 
-				CREATED_DATE_TZ, 
-				MODIFIED_DATE_TZ, 
-				CREATED_USER_ID, 
-				MODIFIED_USER_ID, 
-				ENABLED, 
-				DELETED, 
-				DISTRIBUTION_CHANNEL_ID, 
-				VENUE, 
-				CITY, 
-				COUNTRY, 
-				URL, 
-				RESULTS_CAMPAIGN_Q1, 
-				RESULTS_CAMPAIGN_Q2, 
-				RESULTS_CAMPAIGN_Q3, 
-				RESULTS_CAMPAIGN_Q4, 
-				PLANNED_START_DATE, 
-				PLANNED_END_DATE, 
-				STREET, 
-				POSTAL_CODE
-				,REGION
-                ,EVENT_OWNER
-                ,NUMBER_OF_PARTICIPANTS
-                ,PRIORITY_ID
-                , CO_FUNDED
-                , ALLOW_BUDGET_ZERO
-                , IS_POWER_USER
+	out_result = SELECT
+                HL6.HL6_ID
+				, HL6.HL6_CRM_DESCRIPTION
+				, HL6.ACRONYM
+				, HL6.BUDGET
+				, HL6.HL5_ID
+				, HL6.ROUTE_TO_MARKET_ID
+				, HL6.CAMPAIGN_OBJECTIVE_ID
+				, HL6.CAMPAIGN_TYPE_ID
+				, C_TYPE.show_additional_fields
+				, HL6.CAMPAIGN_SUBTYPE_ID
+				, HL6.MARKETING_PROGRAM_ID
+				, HL6.MARKETING_ACTIVITY_ID
+				, HL6.ACTUAL_START_DATE
+				, HL6.ACTUAL_END_DATE
+				, HL6.SHOW_ON_DG_CALENDAR
+				, HL6.BUSINESS_OWNER_ID
+				, HL6.EMPLOYEE_RESPONSIBLE_ID
+				, HL6.COST_CENTER_ID
+				, HL6.IN_BUDGET
+				, HL6.BUDGET_SPEND_Q1
+				, HL6.BUDGET_SPEND_Q2
+				, HL6.BUDGET_SPEND_Q3
+				, HL6.BUDGET_SPEND_Q4
+				, HL6.EURO_CONVERSION_ID
+				, HL6.HL6_STATUS_DETAIL_ID
+				, HL6.SALES_ORGANIZATION_ID
+				, HL6.CREATED_DATE_TZ
+				, HL6.MODIFIED_DATE_TZ
+				, HL6.CREATED_USER_ID
+				, HL6.MODIFIED_USER_ID
+				, HL6.ENABLED
+				, HL6.DELETED
+				, HL6.DISTRIBUTION_CHANNEL_ID
+				, HL6.VENUE
+				, HL6.CITY
+				, HL6.COUNTRY
+				, HL6.URL
+				, HL6.RESULTS_CAMPAIGN_Q1
+				, HL6.RESULTS_CAMPAIGN_Q2
+				, HL6.RESULTS_CAMPAIGN_Q3
+				, HL6.RESULTS_CAMPAIGN_Q4
+				, HL6.PLANNED_START_DATE
+				, HL6.PLANNED_END_DATE
+				, HL6.STREET
+				, HL6.POSTAL_CODE
+				, HL6.REGION
+                , HL6.EVENT_OWNER
+                , HL6.NUMBER_OF_PARTICIPANTS
+                , HL6.PRIORITY_ID
+                , HL6.CO_FUNDED
+                , HL6.ALLOW_BUDGET_ZERO
+                , HL6.IS_POWER_USER
+                , BSRS.budget_spend_request_status_id
+                , BSRS.display_name as budget_spend_request_status
 			FROM HL6
-			WHERE HL6_ID = in_hl6_id
-				AND ENABLED = 1
-				AND DELETED = 0;
+			LEFT JOIN BUDGET_SPEND_REQUEST BSR ON BSR.HL_ID = HL6.HL6_ID
+                                AND BSR.HIERARCHY_LEVEL_ID = 3 AND BSR.BUDGET_SPEND_REQUEST_TYPE_ID = 1
+                             LEFT JOIN BUDGET_SPEND_REQUEST_STATUS BSRS ON BSRS.BUDGET_SPEND_REQUEST_STATUS_ID = BSR.BUDGET_SPEND_REQUEST_STATUS_ID
+            LEFT JOIN CAMPAIGN_TYPE C_TYPE ON C_TYPE.CAMPAIGN_TYPE_ID = HL6.CAMPAIGN_TYPE_ID
+			WHERE HL6.HL6_ID = in_hl6_id
+				AND HL6.ENABLED = 1
+				AND HL6.DELETED = 0;
 END;

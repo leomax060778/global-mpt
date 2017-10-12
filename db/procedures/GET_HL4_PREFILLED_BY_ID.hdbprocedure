@@ -1,0 +1,24 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL4_PREFILLED_BY_ID" (
+IN in_hl4_prefilled_id bigint,
+OUT out_result TABLE(	hl4_prefilled_id bigint, 
+  						acronym nvarchar(25), 
+  						crm_description nvarchar(100), 
+  						details nvarchar(3000), 
+  						business_details nvarchar(3000)
+  						)
+)
+LANGUAGE SQLSCRIPT
+SQL SECURITY INVOKER
+DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+READS SQL DATA AS
+BEGIN
+  out_result = SELECT 	hl4_prefilled_id, 
+  						acronym, 
+  						crm_description, 
+  						details, 
+  						business_details
+              FROM "HL4_PREFILLED" 
+              	WHERE hl4_prefilled_id = in_hl4_prefilled_id
+              		AND ENABLED = 1 
+              		AND DELETED = 0;
+END;

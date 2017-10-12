@@ -1,0 +1,22 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::DEL_INTERLOCK_ENTITY" (
+	IN in_interlock_entity_id bigint,
+	IN in_user_id bigint,
+	OUT out_result bigint
+)
+	
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	AS
+BEGIN
+
+	UPDATE INTERLOCK_ENTITY
+	SET
+		deleted = 1,
+	    enabled = 0,
+	    modified_user_id = in_user_id,
+	    modified_date_tz = CURRENT_TIMESTAMP
+    WHERE interlock_entity_id = in_interlock_entity_id;
+
+	SELECT ::ROWCOUNT INTO out_result FROM DUMMY;
+END;

@@ -15,6 +15,8 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL5_BY_USER_
             , REMAINING DECIMAL(19,2)
             , IMPORTED tinyint
             , CRM_DESCRIPTION NVARCHAR(255)
+            , BUDGET_SPEND_REQUEST_STATUS_ID bigint
+            , BUDGET_SPEND_REQUEST_STATUS nvarchar(255)
         )
 )
 LANGUAGE SQLSCRIPT
@@ -32,6 +34,8 @@ va_intermidate = SELECT
         ,hl5.BUDGET AS HL5_BUDGET
         ,HL5.IMPORTED as IMPORTED
         ,HL5.HL5_CRM_DESCRIPTION AS CRM_DESCRIPTION
+        , BSRS.BUDGET_SPEND_REQUEST_STATUS_ID
+        , BSRS.DISPLAY_NAME as BUDGET_SPEND_REQUEST_STATUS
     FROM HL5 Hl5
     INNER JOIN HL4 hl4 ON hl4.hl4_id=hl5.hl4_id AND hl4.enabled=1 AND hl4.deleted=0
 --    INNER JOIN HL3 hl3 ON hl3.hl3_id=hl4.hl3_id AND hl3.enabled=1 AND hl3.deleted=0
@@ -40,6 +44,9 @@ va_intermidate = SELECT
  --   INNER JOIN BUDGET_YEAR BGY ON hl1.budget_year_id = BGY.budget_year_id AND BGY.enabled=1 AND BGY.deleted=0
     INNER JOIN hl5_status_detail hl5_status_detail ON hl5_status_detail.hl5_status_detail_id = hl5.hl5_status_detail_id
     INNER JOIN USER userTable ON userTable.USER_ID = hl5.created_user_id
+    LEFT JOIN BUDGET_SPEND_REQUEST BSR ON BSR.HL_ID = HL5.HL5_ID
+                        AND BSR.HIERARCHY_LEVEL_ID = 2 AND BSR.BUDGET_SPEND_REQUEST_TYPE_ID = 1
+                     LEFT JOIN BUDGET_SPEND_REQUEST_STATUS BSRS ON BSRS.BUDGET_SPEND_REQUEST_STATUS_ID = BSR.BUDGET_SPEND_REQUEST_STATUS_ID
     WHERE hl5.enabled=1 AND hl5.deleted=0
 	AND hl5.created_user_id = in_user_id;
 
@@ -56,7 +63,8 @@ aux_out_result = SELECT
 		, COALESCE(SUM(BSR.AMOUNT),0) AS ALLOCATED
 		, COALESCE((va_hl5.HL5_BUDGET - SUM(BSR.AMOUNT)), va_hl5.HL5_BUDGET) AS REMAINING
         ,va_hl5.IMPORTED
-
+        , va_hl5.BUDGET_SPEND_REQUEST_STATUS_ID
+        , va_hl5.BUDGET_SPEND_REQUEST_STATUS
     FROM :va_intermidate va_hl5
     LEFT JOIN HL6 hl6 ON hl6.HL5_ID = va_hl5.hl5_id AND hl6.enabled=1 AND hl6.deleted=0
     LEFT JOIN BUDGET_SPEND_REQUEST BSR ON BSR.HL_ID = HL6.HL6_ID AND HIERARCHY_LEVEL_ID = 3 AND BSR.BUDGET_SPEND_REQUEST_TYPE_ID = 1
@@ -71,7 +79,9 @@ aux_out_result = SELECT
     ,va_hl5.HL5_BUDGET
     ,BSR.AMOUNT
     ,va_hl5.IMPORTED
-    ,va_hl5.CRM_DESCRIPTION;
+    ,va_hl5.CRM_DESCRIPTION
+    , va_hl5.BUDGET_SPEND_REQUEST_STATUS_ID
+    , va_hl5.BUDGET_SPEND_REQUEST_STATUS;
 
 if(in_issa = 1) then
     temp_l4_result =
@@ -131,6 +141,8 @@ select
 ,SUM(T.REMAINING) AS REMAINING
 ,T.IMPORTED
 ,T.CRM_DESCRIPTION
+, T.BUDGET_SPEND_REQUEST_STATUS_ID
+, T.BUDGET_SPEND_REQUEST_STATUS
 from :temp_l4_result T2
 inner join :aux_out_result T on T2.HL4_ID = T.HL4_ID
 GROUP BY
@@ -143,6 +155,8 @@ T.HL5_ID
 ,T.HL5_BUDGET
 ,T.IMPORTED
 ,T.CRM_DESCRIPTION
+, T.BUDGET_SPEND_REQUEST_STATUS_ID
+, T.BUDGET_SPEND_REQUEST_STATUS
 ORDER BY T2.HL4_PATH ASC;
 
 END;

@@ -13,7 +13,6 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL4_BY_HL3_I
             , OWNER_EMAIL NVARCHAR(500)
             , IS_SEND_MAIL BIGINT
             , HL4_BUDGET DECIMAL
-            , EURO_CONVERSION_ID BIGINT
             , IMPLEMENT_EXECUTION_LEVEL TINYINT
             , TOTAL_HL5 INT
             , QUANTITY_HL5_OUT_BUDGET INT
@@ -56,7 +55,6 @@ va_intermidate = SELECT
         ,userTable.EMAIL AS OWNER_EMAIL
         ,hl4.IS_SEND_MAIL AS IS_SEND_MAIL
         ,hl4.HL4_FNC_BUDGET_TOTAL_MKT AS HL4_BUDGET
-        ,euro_conversions.euro_conversion_id AS EURO_CONVERSION_ID
         ,HL2.IMPLEMENT_EXECUTION_LEVEL
         
         FROM HL4 hl4
@@ -64,7 +62,6 @@ va_intermidate = SELECT
     INNER JOIN HL2 hl2 ON hl2.hl2_id = hl3.hl2_id AND hl2.enabled=1 AND hl2.deleted=0
     INNER JOIN HL1 hl1 ON hl1.hl1_id = hl2.hl1_id AND hl1.enabled=1 AND hl1.deleted=0
     INNER JOIN BUDGET_YEAR BGY ON hl1.budget_year_id = BGY.budget_year_id AND BGY.enabled=1 AND BGY.deleted=0
-    INNER JOIN CURRENCY euro_conversions ON hl4.euro_conversion_id = euro_conversions.euro_conversion_id  AND euro_conversions.enabled=1 AND euro_conversions.deleted=0
     INNER JOIN hl4_status_detail hl4_status_detail ON hl4_status_detail.hl4_status_detail_id = hl4.hl4_status_detail_id
     INNER JOIN "MKTG_PLANNING_TOOL"."USER" userTable ON userTable.USER_ID = hl4.created_user_id
     WHERE hl4.enabled=1 AND hl4.deleted=0
@@ -83,7 +80,6 @@ out_result = SELECT
 		,va_hl4.OWNER_EMAIL
 		,va_hl4.IS_SEND_MAIL
 		,va_hl4.HL4_BUDGET
-		,va_hl4.EURO_CONVERSION_ID
 		,va_hl4.IMPLEMENT_EXECUTION_LEVEL
 		
 		, COUNT(DISTINCT HL5.HL5_ID) AS TOTAL_HL5
@@ -98,7 +94,7 @@ out_result = SELECT
 	GROUP BY 
 	va_hl4.HL4_ID,va_hl4.HL4_CRM_DESCRIPTION,va_hl4.HL4_ACRONYM,va_hl4.CRM_ID,va_hl4.IN_BUDGET,va_hl4.READ_ONLY,va_hl4.STATUS_ID,
 		va_hl4.STATUS_DETAIL,va_hl4.CREATED_BY,va_hl4.OWNER_EMAIL,va_hl4.IS_SEND_MAIL,va_hl4.HL4_BUDGET,
-		va_hl4.EURO_CONVERSION_ID,va_hl4.IMPLEMENT_EXECUTION_LEVEL
+		va_hl4.IMPLEMENT_EXECUTION_LEVEL
 		ORDER BY va_hl4.HL4_ACRONYM ASC;
 		
 		

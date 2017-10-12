@@ -1,0 +1,18 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_OTHER_BUDGET_APPROVERS_BY_BUDGET_SPEND_REQUEST_ID" (
+	IN in_budgetSpendRequestId bigint,
+	OUT out_result TABLE(
+	                    other_budget_approver_id bigint,
+						email nvarchar(255),
+						full_name nvarchar(255)
+						)
+ )
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	READS SQL DATA AS
+BEGIN
+	out_result = 	select ba.other_budget_approver_id, ba.email, ba.full_name
+                    from BUDGET_SPEND_REQUEST_OTHER_BUDGET_APPROVER bra
+                    inner join OTHER_BUDGET_APPROVER ba on ba.OTHER_BUDGET_APPROVER_ID = bra.OTHER_BUDGET_APPROVER_ID
+                    where bra.BUDGET_SPEND_REQUEST_ID = in_budgetSpendRequestId;
+END;

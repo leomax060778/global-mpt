@@ -49,7 +49,7 @@ BEGIN
                                    inner join hl2_user hlu on hlu.user_id = u.user_id
                                    inner join USER_ROLE userRole ON userRole.user_id = u.user_id
                                    inner join ROLE role ON role.role_id = userRole.role_id
-                                   inner join BUDGET_SPEND_APPROVER approver on approver.user_id = u.user_id
+                                   --inner join BUDGET_SPEND_APPROVER approver on approver.user_id = u.user_id
 
                                     where bsa.hl2_id = in_hl2_id;
 
@@ -64,7 +64,7 @@ BEGIN
                                     inner join HL1_USER hl1User on hl1User.user_id=u.user_id
                                     inner join USER_ROLE userRole ON userRole.user_id = u.user_id
                                     inner join ROLE role ON role.role_id = userRole.role_id
-                                    inner join BUDGET_SPEND_APPROVER on BUDGET_SPEND_APPROVER.user_id = u.user_id
+                                    --inner join BUDGET_SPEND_APPROVER on BUDGET_SPEND_APPROVER.user_id = u.user_id
                                     where u.user_id not in (select user_id from :budget_approver_assigned)
                                     and hl1User.hl1_id = in_hl1_id
                                     and u.deleted = 0 and u.enabled = 1
@@ -97,7 +97,7 @@ BEGIN
                                                 , role.NAME as ROLE_NAME
                                     from HL2_USER L2
                                     inner join user u on L2.user_id = u.user_id
-                                    inner join BUDGET_SPEND_APPROVER on BUDGET_SPEND_APPROVER.user_id = L2.user_id
+                                    --inner join BUDGET_SPEND_APPROVER on BUDGET_SPEND_APPROVER.user_id = L2.user_id
                                     inner join USER_ROLE userRole ON userRole.user_id = u.user_id
                                     inner join ROLE role ON role.role_id = userRole.role_id                                    
                                     where L2.hl2_id = in_hl2_id;

@@ -20,8 +20,13 @@ BEGIN
 					ON ilrs.subregion_id = subregion.subregion_id
 					where ilrs.deleted = 0 and ilrs.enabled = 1 and ilrs.INTERLOCK_REQUEST_ID = in_interlock_id)
 					UNION
-					(SELECT hl2.hl2_id as id,
-					hl2.organization_acronym as name from INTERLOCK_REQUEST_ROUTE ilrr INNER JOIN HL2 hl2
-					ON ilrr.route_id = hl2.hl2_id
-					where ilrr.deleted = 0 and ilrr.enabled = 1 and ilrr.INTERLOCK_REQUEST_ID = in_interlock_id);
+					--(SELECT hl2.hl2_id as id,
+					--hl2.organization_acronym as name from INTERLOCK_REQUEST_ROUTE ilrr INNER JOIN HL2 hl2
+					--ON ilrr.route_id = hl2.hl2_id
+					--where ilrr.deleted = 0 and ilrr.enabled = 1 and ilrr.INTERLOCK_REQUEST_ID = in_interlock_id);*/
+					(SELECT IO.INTERLOCK_ORGANIZATION_ID as id,
+                    IO.NAME as name
+                    from INTERLOCK_REQUEST_INTERLOCK_ORGANIZATION ILCT
+                    INNER JOIN INTERLOCK_ORGANIZATION IO ON IO.INTERLOCK_ORGANIZATION_ID = ILCT.INTERLOCK_ORGANIZATION_ID
+                    where ILCT.deleted = 0 and ILCT.enabled = 1 and ILCT.INTERLOCK_REQUEST_ID = in_interlock_id);
 END;

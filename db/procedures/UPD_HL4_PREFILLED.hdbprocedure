@@ -1,0 +1,26 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::UPD_HL4_PREFILLED" (
+	IN in_hl4_prefilled_id bigint,
+ 	IN in_acronym NVARCHAR(25),
+  	IN in_crm_description nvarchar(100),
+	IN in_details nvarchar(3000),
+  	IN in_business_details nvarchar(3000),
+ 	IN in_modified_user_id bigint,
+  OUT out_result bigint
+)
+LANGUAGE SQLSCRIPT
+SQL SECURITY INVOKER
+DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+AS
+BEGIN
+	UPDATE hl4p
+	SET hl4p.acronym = in_acronym,
+		hl4p.crm_description = in_crm_description,
+		hl4p.details = in_details,
+		hl4p.business_details = in_business_details,
+		hl4p.modified_date_tz = CURRENT_TIMESTAMP,
+		hl4p.modified_user_id = in_modified_user_id
+	FROM "HL4_PREFILLED" hl4p
+	WHERE hl4p.hl4_prefilled_id = in_hl4_prefilled_id;
+			
+SELECT ::ROWCOUNT into out_result FROM DUMMY;
+END;

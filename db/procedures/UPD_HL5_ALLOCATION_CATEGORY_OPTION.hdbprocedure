@@ -3,7 +3,8 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::UPD_HL5_ALLOCATI
     	    in_category_option_level_id bigint,
     	    in_amount DECIMAL(19, 2),
     	    in_user_id bigint,
-    	    in_updated TINYINT
+    	    in_updated TINYINT,
+    	    in_hl5_id bigint
     		),
     	OUT out_result int
     )
@@ -17,9 +18,10 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::UPD_HL5_ALLOCATI
     		modified_date_tz = CURRENT_TIMESTAMP,
     		updated = T.IN_UPDATED
     		from HL5_CATEGORY_OPTION, (
-    		    select IN_AMOUNT, IN_USER_ID, IN_UPDATED, IN_CATEGORY_OPTION_LEVEL_ID from :myTable
+    		    select IN_AMOUNT, IN_USER_ID, IN_UPDATED, IN_CATEGORY_OPTION_LEVEL_ID, IN_HL5_ID from :myTable
     		) T
-    		where allocation_category_option_level_id = T.IN_CATEGORY_OPTION_LEVEL_ID;
+    		where allocation_category_option_level_id = T.IN_CATEGORY_OPTION_LEVEL_ID
+    		AND HL5_ID = IN_HL5_ID;
 
             SELECT ::ROWCOUNT INTO out_result FROM DUMMY;
 END;

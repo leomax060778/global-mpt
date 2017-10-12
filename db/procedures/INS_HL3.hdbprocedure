@@ -6,8 +6,10 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_HL3" (
 	IN in_business_owner_id BIGINT,
 	IN in_hl3_fnc_budget_total DECIMAL(19, 2),
 	IN in_in_budget TINYINT,
-	IN in_user_id BIGINT,
-	OUT out_hl3_id BIGINT
+	IN in_user_id BIGINT
+    ,IN in_imported tinyint
+    ,IN in_import_id bigint
+	,OUT out_hl3_id BIGINT
 ) 
 	LANGUAGE SQLSCRIPT
 	SQL SECURITY INVOKER 
@@ -15,8 +17,8 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_HL3" (
 	AS
 BEGIN
 
-	INSERT INTO HL3(hl3_description, acronym, business_owner_id, hl2_id, crm_id, hl3_hierarchy_id, hl3_status_detail_id, created_user_id, hl3_fnc_budget_total, in_budget)
-    VALUES (in_hl3_description, in_acronym, in_business_owner_id, in_hl2_id, in_crm_id, NULL, 1, in_user_id, in_hl3_fnc_budget_total, in_in_budget);
+	INSERT INTO HL3(hl3_description, acronym, business_owner_id, hl2_id, crm_id, hl3_hierarchy_id, hl3_status_detail_id, created_user_id, hl3_fnc_budget_total, in_budget,imported,import_id)
+    VALUES (in_hl3_description, in_acronym, in_business_owner_id, in_hl2_id, in_crm_id, NULL, 1, in_user_id, in_hl3_fnc_budget_total, in_in_budget,in_imported,in_import_id);
 		
 	SELECT TOP 1 CURRENT_IDENTITY_VALUE() INTO out_hl3_id FROM "MKTG_PLANNING_TOOL"."HL3";
 END;

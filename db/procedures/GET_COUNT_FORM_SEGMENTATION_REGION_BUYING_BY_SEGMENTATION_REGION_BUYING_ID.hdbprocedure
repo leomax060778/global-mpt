@@ -1,0 +1,17 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_COUNT_FORM_SEGMENTATION_REGION_BUYING_BY_SEGMENTATION_REGION_BUYING_ID" (
+	IN in_segmentation_region_buying_id BIGINT,
+	OUT out_result BIGINT
+)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	READS SQL DATA AS
+BEGIN
+
+select
+coalesce(COUNT(t.SEGMENTATION_FORM_ID),0) INTO out_result
+from SEGMENTATION_FORM t
+where t.REGIONAL_BUYING_CLASSIFICATION_ID = in_segmentation_region_buying_id
+ and t.deleted = 0 and t.enabled = 1;
+
+END;

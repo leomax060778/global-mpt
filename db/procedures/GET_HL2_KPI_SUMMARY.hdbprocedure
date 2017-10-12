@@ -1,0 +1,39 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL2_KPI_SUMMARY" (
+	 IN in_hl1_id BIGINT
+	,IN in_user_id BIGINT
+	,IN in_is_super_Admin tinyint
+	,OUT out_result TABLE (
+		KPI_TYPE_NAME NVARCHAR(255)
+        , KPI_OPTION_NAME NVARCHAR(255)
+        , TOTAL_VALUE DECIMAL(10,2)
+        , TOTAL_VOLUME DECIMAL(10,2)
+        , TOTAL_VALUE_ALLOCATED DECIMAL(10,2)
+        , TOTAL_VOLUME_ALLOCATED DECIMAL(10,2)
+        , L2_ACRONYM NVARCHAR(255)
+        , HL1_ID BIGINT
+        , HL2_ID BIGINT
+        , IS_LOCKED TINYINT
+		)
+) 
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER 
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	READS SQL DATA AS
+BEGIN
+	out_result = SELECT SUMMARY_VIEW.KPI_TYPE_NAME
+                         , SUMMARY_VIEW.KPI_OPTION_NAME
+                         , coalesce(SUMMARY_VIEW.TOTAL_VALUE,0) as TOTAL_VALUE
+                         , coalesce(SUMMARY_VIEW.TOTAL_VOLUME,0) as TOTAL_VOLUME
+                         , coalesce(SUMMARY_VIEW.TOTAL_VALUE_ALLOCATED,0) as TOTAL_VALUE_ALLOCATED
+                         , coalesce(SUMMARY_VIEW.TOTAL_VOLUME_ALLOCATED,0) as TOTAL_VOLUME_ALLOCATED
+                         , UPPER(SUMMARY_VIEW.L2_ACRONYM) as L2_ACRONYM
+                         , SUMMARY_VIEW.HL1_ID
+                         , SUMMARY_VIEW.HL2_ID
+                         , SUMMARY_VIEW.IS_LOCKED
+                         FROM "_SYS_BIC"."mktgplanningtool.db.data.views/CV_HL2_KPI_SUMMARY" SUMMARY_VIEW
+	WHERE SUMMARY_VIEW.HL1_ID = in_hl1_id
+	    AND SUMMARY_VIEW.HL2_ID IN (SELECT HL2_ID FROM HL2_USER WHERE USER_ID = in_user_id OR in_is_super_Admin = 1)
+        order by UPPER(SUMMARY_VIEW.L2_ACRONYM);
+
+END;
+

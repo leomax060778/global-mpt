@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Dimension:dimension xmlns:Dimension="http://www.sap.com/ndb/BiModelDimension.ecore" schemaVersion="1.2" id="AT_LOG_INTERLOCK_REQUEST_STATUS" applyPrivilegeType="ANALYTIC_PRIVILEGE" checkAnalyticPrivileges="true" defaultClient="$$client$$" defaultLanguage="$$language$$" hierarchiesSQLEnabled="false" translationRelevant="true" visibility="internal" dimensionType="Standard">
+  <descriptions defaultDescription="AT_LOG_INTERLOCK_REQUEST_STATUS"/>
+  <informationModelLayout relativeWidthScenario="27"/>
+  <attributes>
+    <attribute id="LOG_INTERLOCK_REQUEST_STATUS_ID" order="1" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="LOG_INTERLOCK_REQUEST_STATUS_ID"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="LOG_INTERLOCK_REQUEST_STATUS" columnName="LOG_INTERLOCK_REQUEST_STATUS_ID"/>
+    </attribute>
+    <attribute id="INTERLOCK_STATUS_ID" order="2" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="INTERLOCK_STATUS_ID"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="LOG_INTERLOCK_REQUEST_STATUS" columnName="INTERLOCK_STATUS_ID"/>
+    </attribute>
+    <attribute id="INTERLOCK_REQUEST_ID" order="3" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="INTERLOCK_REQUEST_ID"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="LOG_INTERLOCK_REQUEST_STATUS" columnName="INTERLOCK_REQUEST_ID"/>
+    </attribute>
+    <attribute id="CREATED_DATE_TZ" order="4" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="CREATED_DATE_TZ"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="LOG_INTERLOCK_REQUEST_STATUS" columnName="CREATED_DATE_TZ"/>
+    </attribute>
+    <attribute id="REQUESTER_EMAIL" order="5" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="REQUESTER_EMAIL"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="LOG_INTERLOCK_REQUEST_STATUS" columnName="REQUESTER_EMAIL"/>
+    </attribute>
+    <attribute id="MODIFIED_DATE_TZ" order="6" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="MODIFIED_DATE_TZ"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="LOG_INTERLOCK_REQUEST_STATUS" columnName="MODIFIED_DATE_TZ"/>
+    </attribute>
+  </attributes>
+  <calculatedAttributes/>
+  <privateDataFoundation>
+    <tableProxies>
+      <tableProxy>
+        <table schemaName="MKTG_PLANNING_TOOL" columnObjectName="LOG_INTERLOCK_REQUEST_STATUS"/>
+      </tableProxy>
+    </tableProxies>
+    <joins/>
+    <layout>
+      <shapes>
+        <shape modelObjectName="LOG_INTERLOCK_REQUEST_STATUS" modelObjectNameSpace="MKTG_PLANNING_TOOL" modelObjectType="catalog">
+          <upperLeftCorner x="70" y="30"/>
+        </shape>
+        <shape modelObjectName="DataFoundation" modelObjectNameSpace="DataFoundation" modelObjectType="repository">
+          <upperLeftCorner x="40" y="85"/>
+          <rectangleSize height="0" width="0"/>
+        </shape>
+      </shapes>
+    </layout>
+  </privateDataFoundation>
+  <hierarchies/>
+</Dimension:dimension>

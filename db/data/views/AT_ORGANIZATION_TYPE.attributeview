@@ -11,9 +11,9 @@
       <descriptions defaultDescription="NAME"/>
       <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="ORGANIZATION_TYPE" columnName="NAME"/>
     </attribute>
-    <attribute id="TYPE" order="3" attributeHierarchyActive="false" displayAttribute="false">
-      <descriptions defaultDescription="TYPE"/>
-      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="ORGANIZATION_TYPE" columnName="TYPE"/>
+    <attribute id="ORGANIZATION_RELATED_ID" order="3" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="ORGANIZATION_RELATED_ID"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="ORGANIZATION_TYPE" columnName="ORGANIZATION_RELATED_ID"/>
     </attribute>
   </attributes>
   <calculatedAttributes/>

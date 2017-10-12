@@ -1,0 +1,57 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL5_EXPECTED_OUTCOME_TOTAL_AVAILABLE_BY_HL_ID_LEVEL_ID" (
+	IN in_parent_id bigint,
+	IN in_child_id bigint,
+	OUT out_result TABLE (
+		EXPECTED_OUTCOME_ID BIGINT
+        , EXPECTED_OUTCOME_OPTION_ID BIGINT
+        , PARENT_TOTAL_VALUE DECIMAL(10,2)
+        , PARENT_TOTAL_VOLUME DECIMAL(10,2)
+        , VALUE_AVAILABLE_TO_ALLOCATE DECIMAL(10,2)
+        , VOLUME_AVAILABLE_TO_ALLOCATE DECIMAL(10,2)
+        , VALUE_ALLOCATED DECIMAL(10,2)
+        , VOLUME_ALLOCATED DECIMAL(10,2)
+	)) 
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER 
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	READS SQL DATA AS
+BEGIN
+    va_children = SELECT eol.EXPECTED_OUTCOME_ID
+                   , eol.EXPECTED_OUTCOME_OPTION_ID
+                   , SUM(hl5_eod.EURO_VALUE) AS VALUE_ALLOCATED
+                   , SUM(hl5_eod.VOLUME_VALUE) AS VOLUME_ALLOCATED
+                   FROM HL5_EXPECTED_OUTCOMES hl5_eo
+                   INNER JOIN hl5 ON hl5_eo.hl5_id = hl5.hl5_id AND HL5.DELETED = 0 AND HL5.ENABLED = 1 AND HL5.HL5_ID != in_child_id
+                   INNER JOIN HL5_EXPECTED_OUTCOMES_DETAIL hl5_eod
+                   ON hl5_eo.HL5_EXPECTED_OUTCOMES_ID = hl5_eod.HL5_EXPECTED_OUTCOMES_ID
+                   INNER JOIN EXPECTED_OUTCOME_LEVEL eol
+                   ON hl5_eod.OUTCOMES_ID = eol.EXPECTED_OUTCOME_LEVEL_ID
+                   WHERE HL5.HL4_ID = in_parent_id
+                   AND hl5_eod.DELETED = 0 AND hl5_eod.ENABLED = 1
+                   GROUP BY eol.EXPECTED_OUTCOME_ID, eol.EXPECTED_OUTCOME_OPTION_ID;
+
+
+    va_parent = SELECT eol.EXPECTED_OUTCOME_ID, eol.EXPECTED_OUTCOME_OPTION_ID
+                                 , hl4_eod.EURO_VALUE AS TOTAL_VALUE, hl4_eod.AMOUNT_VALUE AS TOTAL_VOLUME
+                                 FROM HL4_EXPECTED_OUTCOMES hl4_eo
+                                 INNER JOIN hl4 ON hl4_eo.hl4_id = hl4.hl4_id AND HL4.DELETED = 0 AND HL4.ENABLED = 1
+                                 INNER JOIN HL4_EXPECTED_OUTCOMES_DETAIL hl4_eod
+                                 ON hl4_eo.HL4_EXPECTED_OUTCOMES_ID = hl4_eod.HL4_EXPECTED_OUTCOMES_ID
+                                 INNER JOIN EXPECTED_OUTCOME_LEVEL eol
+                                 ON hl4_eod.OUTCOMES_ID = eol.EXPECTED_OUTCOME_LEVEL_ID
+                                 WHERE HL4.HL4_ID = in_parent_id
+                                 AND hl4_eod.DELETED = 0 AND hl4_eod.ENABLED = 1;
+
+	out_result = SELECT PARENT.EXPECTED_OUTCOME_ID
+                 , PARENT.EXPECTED_OUTCOME_OPTION_ID
+                 , COALESCE(PARENT.TOTAL_VALUE,0) AS PARENT_TOTAL_VALUE
+                 , COALESCE(PARENT.TOTAL_VOLUME,0) AS PARENT_TOTAL_VOLUME
+                 , COALESCE(PARENT.TOTAL_VALUE,0) - COALESCE(CHILDREN.VALUE_ALLOCATED,0) AS VALUE_AVAILABLE_TO_ALLOCATE
+                 , COALESCE(PARENT.TOTAL_VOLUME,0) - COALESCE(CHILDREN.VOLUME_ALLOCATED,0) AS VOLUME_AVAILABLE_TO_ALLOCATE
+                 , CHILDREN.VALUE_ALLOCATED
+                 , CHILDREN.VOLUME_ALLOCATED
+                 FROM :va_children CHILDREN
+                 RIGHT JOIN :va_parent PARENT
+                 ON PARENT.EXPECTED_OUTCOME_ID = CHILDREN.EXPECTED_OUTCOME_ID
+                 AND PARENT.EXPECTED_OUTCOME_OPTION_ID = CHILDREN.EXPECTED_OUTCOME_OPTION_ID;
+END;

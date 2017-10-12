@@ -24,7 +24,7 @@ out_result =
     from expected_outcome_level eol
     inner join expected_outcome_option eoo on eoo.expected_outcome_option_id = eol.expected_outcome_option_id
     inner join expected_outcome eo on eo.expected_outcome_id = eol.expected_outcome_id
-    inner join hierarchy_level hl on hl.hierarchy_level_id = eol.hierarchy_level_id
+    --inner join hierarchy_level hl on hl.hierarchy_level_id = eol.hierarchy_level_id
     where upper(hl.description) = upper(in_hierarchy_level_name)
     and upper(eoo.name) = upper(in_option_name)
     and eol.expected_outcome_id = in_outcome_id

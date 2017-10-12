@@ -5,6 +5,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_ALL_BUDGET_S
         budget_spend_request_id bigint,
         budget_spend_request_status_id bigint,
         budget_spend_request_type_id bigint
+        BUDGET_SPEND_REQUEST_OTHER_BUDGET_APPROVER bigint
 	 )
 )
 	LANGUAGE SQLSCRIPT

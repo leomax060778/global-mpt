@@ -51,6 +51,10 @@
       <descriptions defaultDescription="DELETED"/>
       <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL1" columnName="DELETED"/>
     </attribute>
+    <attribute id="VERSION" order="13" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="VERSION"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL1" columnName="VERSION"/>
+    </attribute>
   </attributes>
   <calculatedAttributes/>
   <privateDataFoundation>

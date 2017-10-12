@@ -1,0 +1,29 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_BUDGET_SPEND_REQUEST_BY_BUDGET_SPEND_REQUEST_ID" (
+	IN in_budget_spend_request_id bigint,
+	OUT out_result TABLE(
+						BUDGET_SPEND_REQUEST_ID bigint
+                        , HL_ID bigint
+                        , HIERARCHY_LEVEL_ID bigint
+                        , DESCRIPTION NVARCHAR
+                        , AMOUNT DECIMAL(19,6)
+                        , BUDGET_SPEND_REQUEST_STATUS_ID bigint
+                        , BUDGET_SPEND_REQUEST_TYPE_ID bigint
+						)
+ ) 
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+AS
+BEGIN
+
+	out_result = SELECT BUDGET_SPEND_REQUEST_ID
+                        , HL_ID
+                        , HIERARCHY_LEVEL_ID
+                        , DESCRIPTION
+                        , AMOUNT
+                        , BUDGET_SPEND_REQUEST_STATUS_ID
+                        , BUDGET_SPEND_REQUEST_TYPE_ID
+                FROM BUDGET_SPEND_REQUEST
+	            WHERE BUDGET_SPEND_REQUEST_ID = in_budget_spend_request_id;
+					
+END;

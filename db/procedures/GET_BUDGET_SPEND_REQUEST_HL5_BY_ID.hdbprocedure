@@ -23,9 +23,10 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_BUDGET_SPEND
 						HL5_CRM_DESCRIPTION NVARCHAR(255),
 						BUDGET NVARCHAR(255),
 						HL5_MODIFIED_DATE TIMESTAMP,
-						HL5_PATH NVARCHAR(255),
+						PARENT_PATH NVARCHAR(255),
 						ROUTE_TO_MARKET NVARCHAR(25),
-						STATUS_NAME NVARCHAR(255)
+						STATUS_NAME NVARCHAR(255),
+						HL5_ACRONYM NVARCHAR(255)
 						),
 	OUT out_messages TABLE(
 						MESSAGE NVARCHAR(3000),
@@ -166,7 +167,6 @@ BEGIN
 									HL5.BUDGET,
 									HL5.MODIFIED_DATE_TZ AS HL5_MODIFIED_DATE,
 									CONCAT(
-			                        CONCAT(
 			                            CONCAT(
 			                                CONCAT(
 			                                    CONCAT(
@@ -175,11 +175,11 @@ BEGIN
 			                                    '-'),
 			                                HL3.ACRONYM),
 			                            '-'),
-			                        HL4.ACRONYM),
-			                     HL5.ACRONYM)
-			            		 AS HL5_PATH,
+			                        HL4.ACRONYM)
+			            		 AS PARENT_PATH,
 			            		 RTM.NAME AS ROUTE_TO_MARKET,
-			            		 HL5_STATUS.DETAIL AS STATUS_NAME
+			            		 HL5_STATUS.DETAIL AS STATUS_NAME,
+			            		 HL5.ACRONYM AS HL5_ACRONYM
             		 
 				FROM :obtain_currency OB_CUR
 					INNER JOIN "MKTG_PLANNING_TOOL"."HL5" HL5

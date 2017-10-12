@@ -1,0 +1,113 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_INTERLOCK_BY_USER_ID_ORIGIN_ID" (
+	IN in_user_id bigint,
+	IN in_origin_id bigint,
+	OUT out_result_from TABLE(
+		interlock_request_id BIGINT
+		, organization_name NVARCHAR(255)
+		, ORGANIZATION_ID BIGINT
+		, organization_type NVARCHAR(255)
+		, entity NVARCHAR(255)
+	    ),
+OUT out_result_to TABLE(
+		interlock_request_id BIGINT
+        ,organization_name NVARCHAR(255)
+        ,entity_id BIGINT
+        ,entity NVARCHAR(255)
+        ,organization_type_id BIGINT
+        ,organization_type NVARCHAR(255)
+        ,requested_resource NVARCHAR(255)
+        ,budget DECIMAL(19, 6)
+        ,status_id BIGINT
+        ,status NVARCHAR(255)
+        ,created_user_id BIGINT
+        ,requester_email NVARCHAR(255)
+	    ),
+	OUT out_contact_data TABLE(
+		interlock_contact_data_id bigint,
+		interlock_request_id bigint,
+		email nvarchar(255),
+		hash nvarchar(255),
+		created_user_id bigint
+	)
+) 
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER 
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	READS SQL DATA AS
+BEGIN
+
+aux_requestMessage =
+select
+distinct ir_from.INTERLOCK_REQUEST_ID
+,irm_from.interlock_request_origin_id
+from INTERLOCK_REQUEST ir_from
+INNER JOIN INTERLOCK_REQUEST_MESSAGE irm_from ON ir_from.INTERLOCK_REQUEST_ID = irm_from.INTERLOCK_REQUEST_ID;
+
+out_result_from =
+select
+  ir_from.INTERLOCK_REQUEST_ID
+, coalesce(io_from.NAME, r_from.REGION_NAME,sr_from.SUBREGION_NAME) as ORGANIZATION_NAME
+, coalesce(iro_from.interlock_organization_id_from, irr_from.REGION_ID_FROM, irsr_from.SUBREGION_ID_FROM) as ORGANIZATION_ID
+, ot_from.NAME as ORGANIZATION_TYPE
+, ie_from.NAME as ENTITY
+
+from INTERLOCK_REQUEST ir_from
+left join INTERLOCK_REQUEST_INTERLOCK_ORGANIZATION iro_from on iro_from.INTERLOCK_REQUEST_ID = ir_from.INTERLOCK_REQUEST_ID
+inner join ORGANIZATION_TYPE ot_from on ot_from.ORGANIZATION_TYPE_ID = ir_from.ORGANIZATION_TYPE_ID_FROM
+inner join INTERLOCK_ENTITY ie_from on ie_from.INTERLOCK_ENTITY_ID = ir_from.ENTITY_ID_FROM
+left join INTERLOCK_ORGANIZATION io_from on iro_from.INTERLOCK_ORGANIZATION_ID_FROM = io_from.INTERLOCK_ORGANIZATION_ID
+left join INTERLOCK_REQUEST_REGION irr_from on irr_from.INTERLOCK_REQUEST_ID = ir_from.INTERLOCK_REQUEST_ID
+left join REGION r_from on r_from.REGION_ID = irr_from.REGION_ID_FROM
+left join INTERLOCK_REQUEST_SUBREGION irsr_from on irsr_from.INTERLOCK_REQUEST_ID = ir_from.INTERLOCK_REQUEST_ID
+left join SUBREGION sr_from on sr_from.SUBREGION_ID = irsr_from.SUBREGION_ID_FROM
+--INNER JOIN INTERLOCK_REQUEST_MESSAGE irm_from ON ir_from.INTERLOCK_REQUEST_ID = irm_from.INTERLOCK_REQUEST_ID
+inner join :aux_requestMessage irm_from ON ir_from.INTERLOCK_REQUEST_ID = irm_from.INTERLOCK_REQUEST_ID
+where ir_from.enabled = 1
+and ir_from.deleted = 0
+AND ir_from.created_user_id  = in_user_id
+AND irm_from.interlock_request_origin_id  = in_origin_id
+order by ir_from.INTERLOCK_REQUEST_ID asc;
+
+out_result_to =
+select
+  ir_to.INTERLOCK_REQUEST_ID
+, coalesce(io_to.NAME, r.REGION_NAME, sr.SUBREGION_NAME) as ORGANIZATION_NAME
+, ie_to.INTERLOCK_ENTITY_ID as ENTITY_ID
+, ie_to.NAME as ENTITY
+, ot_to.organization_type_id
+, ot_to.NAME as ORGANIZATION_TYPE
+, ir_to.REQUESTED_RESOURCE as REQUESTED_RESOURCE
+, ir_to.REQUESTED_BUDGET as budget
+, istat.INTERLOCK_STATUS_ID as STATUS_ID
+, istat.DISPLAY_NAME as STATUS
+, ir_to.created_user_id
+, ir_to.requester_email
+from INTERLOCK_REQUEST ir_to
+left join INTERLOCK_REQUEST_INTERLOCK_ORGANIZATION iro_to on iro_to.INTERLOCK_REQUEST_ID = ir_to.INTERLOCK_REQUEST_ID
+inner join ORGANIZATION_TYPE ot_to on ot_to.ORGANIZATION_TYPE_ID = ir_to.ORGANIZATION_TYPE_ID
+inner join INTERLOCK_ENTITY ie_to on ie_to.INTERLOCK_ENTITY_ID = ir_to.ENTITY_ID
+left join INTERLOCK_ORGANIZATION io_to on iro_to.INTERLOCK_ORGANIZATION_ID = io_to.INTERLOCK_ORGANIZATION_ID
+left join INTERLOCK_REQUEST_REGION irr_from on irr_from.INTERLOCK_REQUEST_ID = ir_to.INTERLOCK_REQUEST_ID
+left join REGION r on r.REGION_ID = irr_from.REGION_ID
+left join INTERLOCK_REQUEST_SUBREGION irsr_to on irsr_to.INTERLOCK_REQUEST_ID = ir_to.INTERLOCK_REQUEST_ID
+left join SUBREGION sr on sr.SUBREGION_ID = irsr_to.SUBREGION_ID
+inner join INTERLOCK_STATUS istat on istat.INTERLOCK_STATUS_ID = ir_to.INTERLOCK_STATUS_ID
+--INNER JOIN INTERLOCK_REQUEST_MESSAGE irm_to ON ir_to.INTERLOCK_REQUEST_ID = irm_to.INTERLOCK_REQUEST_ID
+inner join :aux_requestMessage irm_to ON ir_to.INTERLOCK_REQUEST_ID = irm_to.INTERLOCK_REQUEST_ID
+where ir_to.enabled = 1
+and ir_to.deleted = 0
+AND ir_to.created_user_id  = in_user_id
+AND irm_to.interlock_request_origin_id  = in_origin_id
+order by ir_to.INTERLOCK_REQUEST_ID asc;
+
+out_contact_data =
+    SELECT	interlock_contact_data_id,
+    interlock_request_id,
+    email,
+    hash,
+    created_user_id
+    FROM INTERLOCK_CONTACT_DATA ICD
+    WHERE ICD.CREATED_USER_ID = in_user_id
+    AND ENABLED = 1
+    AND DELETED = 0;
+END;

@@ -1,0 +1,19 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_ORGANIZATION_TYPE_BY_ID" ( 
+	IN in_organization_type_id bigint,
+	OUT out_result TABLE(
+		organization_type_id bigint,
+		name nvarchar(255)
+		)
+)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER 
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	READS SQL DATA AS
+BEGIN
+	out_result = SELECT	ORGANIZATION_TYPE_ID,
+						NAME
+				 FROM ORGANIZATION_TYPE
+				 	WHERE 	ORGANIZATION_TYPE_ID = in_organization_type_id
+				 		AND ENABLED = 1 
+				 		AND DELETED = 0;
+END;

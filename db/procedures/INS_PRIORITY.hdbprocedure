@@ -1,0 +1,15 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_PRIORITY" (
+	IN in_name NVARCHAR(255),
+	IN in_crm_key NVARCHAR(16),
+	IN in_user_id BIGINT,
+	OUT out_result BIGINT
+)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	AS
+BEGIN
+		INSERT INTO "MKTG_PLANNING_TOOL"."PRIORITY"(name, crm_key, created_user_id)
+		VALUES(in_name, in_crm_key, in_user_id);
+
+		SELECT TOP 1 CURRENT_IDENTITY_VALUE() INTO out_result FROM "MKTG_PLANNING_TOOL"."PRIORITY";
+END;

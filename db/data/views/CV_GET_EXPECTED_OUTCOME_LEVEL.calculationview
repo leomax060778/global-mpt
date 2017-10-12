@@ -24,7 +24,8 @@
 , EOL.HIERARCHY_LEVEL_ID
 FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_OPTION&quot; EOO 
 INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_LEVEL&quot; EOL ON EOL.EXPECTED_OUTCOME_OPTION_ID = EOO.EXPECTED_OUTCOME_OPTION_ID
-WHERE EOO.CSV_ALIAS IS NOT NULL);
+--WHERE EOO.CSV_ALIAS IS NOT NULL
+);
 
 END /********* End Procedure Script ************/</definition>
     </calculationView>

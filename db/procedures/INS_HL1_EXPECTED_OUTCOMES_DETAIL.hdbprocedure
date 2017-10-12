@@ -1,0 +1,23 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_HL1_EXPECTED_OUTCOMES_DETAIL" (
+    IN hl1ExpectedOutcomesDetail TABLE (in_hl1_expected_outcomes_id bigint,
+    in_expected_outcome_level_id bigint,
+    in_euro_value DECIMAL(19, 6),
+    in_volume_value DECIMAL(19, 6),
+    in_created_user_id bigint),
+    OUT out_hl1_expected_outcomes_details_id bigint
+) 
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER 
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL" AS
+BEGIN
+	INSERT INTO HL1_EXPECTED_OUTCOMES_DETAIL (hl1_expected_outcomes_id,expected_outcome_level_id,euro_value,volume_value
+	,created_user_id)
+
+	(SELECT IN_HL1_EXPECTED_OUTCOMES_ID,
+            IN_EXPECTED_OUTCOME_LEVEL_ID,
+            IN_EURO_VALUE,
+            IN_VOLUME_VALUE,
+            IN_CREATED_USER_ID FROM :hl1ExpectedOutcomesDetail);
+
+	SELECT TOP 1 CURRENT_IDENTITY_VALUE() INTO out_hl1_expected_outcomes_details_id FROM HL1_EXPECTED_OUTCOMES_DETAIL;
+END;

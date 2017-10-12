@@ -4,6 +4,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_OBJECTIVE_BY
         OUT out_result TABLE(
               OBJECTIVE_ID BIGINT
             , NAME NVARCHAR(255)
+            , CRM_KEY NVARCHAR(255)
         )
 )
 LANGUAGE SQLSCRIPT
@@ -16,6 +17,7 @@ out_result =
 	select 
 	 OBJECTIVE_ID
 	,NAME
+	, CRM_KEY
 	FROM OBJECTIVE 
 	WHERE 
 	upper(name) = upper(IN_NAME)

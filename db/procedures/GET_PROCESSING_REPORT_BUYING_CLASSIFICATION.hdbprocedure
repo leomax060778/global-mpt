@@ -1,0 +1,89 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_PROCESSING_REPORT_BUYING_CLASSIFICATION" ( 
+	IN IN_HL_ID BIGINT,
+	IN IN_LEVEL NVARCHAR(3),
+	OUT OUT_CRM_KEY NVARCHAR(15)
+) 
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER 
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	READS SQL DATA AS
+BEGIN
+    DECLARE VA_MAX_COUNT INTEGER;
+    --ERROR HANDLER TO NO DATA FOUND ERROR
+            DECLARE EXIT HANDLER FOR SQL_ERROR_CODE 1299
+            BEGIN
+                --SEARCH AND DELETE RECORD
+                    SELECT 'NO DATA FOUND' INTO OUT_CRM_KEY FROM DUMMY;
+                --*************************************************--
+            END;
+        --*********************************
+    VA_MAX_COUNT := 0;
+
+    IF (IN_LEVEL = 'HL4') THEN
+        VA_OPTIONS = SELECT O.NAME AS OPTION_NAME,
+                                                   HCP.amount AS OPTION_PERCENTAGE, O.CRM_KEY
+                                            FROM   hl4_category_option HCP
+                                                   RIGHT JOIN allocation_category_option_level ACOL
+                                                           ON HCP.allocation_category_option_level_id =
+                                                              ACOL.allocation_category_option_level_id
+                                                   LEFT JOIN hl4_category HC
+                                                          ON HC.hl4_category_id = HCP.hl4_category_id
+                                                   LEFT JOIN allocation_category C
+                                                          ON C.allocation_category_id = ACOL.allocation_category_id
+                                                   LEFT JOIN allocation_option O
+                                                          ON O.allocation_option_id = ACOL.allocation_option_id
+                                            WHERE  C.processing_report_export_key = 'BUYING_CLASSIFICATION'
+                                                   AND HCP.hl4_id = IN_HL_ID ORDER  BY option_percentage DESC;
+   ELSEIF (IN_LEVEL = 'HL5') THEN
+        VA_OPTIONS = SELECT O.NAME AS OPTION_NAME,
+                                                           HCP.amount AS OPTION_PERCENTAGE, O.CRM_KEY
+                                                    FROM   hl5_category_option HCP
+                                                           RIGHT JOIN allocation_category_option_level ACOL
+                                                                   ON HCP.allocation_category_option_level_id =
+                                                                      ACOL.allocation_category_option_level_id
+                                                           LEFT JOIN hl5_category HC
+                                                                  ON HC.hl5_category_id = HCP.hl5_category_id
+                                                           LEFT JOIN allocation_category C
+                                                                  ON C.allocation_category_id = ACOL.allocation_category_id
+                                                           LEFT JOIN allocation_option O
+                                                                  ON O.allocation_option_id = ACOL.allocation_option_id
+                                                    WHERE  C.processing_report_export_key = 'BUYING_CLASSIFICATION'
+                                                           AND HCP.hl5_id = IN_HL_ID ORDER  BY option_percentage DESC;
+   ELSEIF (IN_LEVEL = 'HL6') THEN
+   VA_OPTIONS = SELECT O.NAME AS OPTION_NAME,
+                                                      HCP.amount AS OPTION_PERCENTAGE, O.CRM_KEY
+                                               FROM   hl6_category_option HCP
+                                                      RIGHT JOIN allocation_category_option_level ACOL
+                                                              ON HCP.allocation_category_option_level_id =
+                                                                 ACOL.allocation_category_option_level_id
+                                                      LEFT JOIN hl6_category HC
+                                                             ON HC.hl6_category_id = HCP.hl6_category_id
+                                                      LEFT JOIN allocation_category C
+                                                             ON C.allocation_category_id = ACOL.allocation_category_id
+                                                      LEFT JOIN allocation_option O
+                                                             ON O.allocation_option_id = ACOL.allocation_option_id
+                                               WHERE  C.processing_report_export_key = 'BUYING_CLASSIFICATION'
+                                                      AND HCP.hl6_id = IN_HL_ID ORDER  BY option_percentage DESC;
+   END IF;
+
+
+
+    VA_MAX_OPTIONS = SELECT option_name, option_percentage,Row_number() OVER(ORDER BY option_percentage DESC) AS ROWNUM, CRM_KEY
+    	FROM :VA_OPTIONS
+    	WHERE option_percentage IN (
+    	                    SELECT MAX(option_percentage) AS option_percentage
+    						FROM :VA_OPTIONS
+                            );
+    SELECT MAX(ROWNUM) INTO VA_MAX_COUNT FROM :VA_MAX_OPTIONS;
+    IF(:VA_MAX_COUNT = 1)
+       THEN
+          SELECT CRM_KEY INTO OUT_CRM_KEY FROM :VA_MAX_OPTIONS WHERE ROWNUM = :VA_MAX_COUNT;
+   ELSE
+          SELECT CRM_KEY INTO OUT_CRM_KEY FROM ALLOCATION_CATEGORY_OPTION_LEVEL ACOL
+             JOIN ALLOCATION_OPTION AO ON
+                ACOL.ALLOCATION_OPTION_ID = AO.ALLOCATION_OPTION_ID
+             JOIN ALLOCATION_CATEGORY AC ON
+                ACOL.ALLOCATION_CATEGORY_ID = AC.ALLOCATION_CATEGORY_ID
+            WHERE UPPER(AO.NAME) = 'ALL' AND AC.PROCESSING_REPORT_EXPORT_KEY = 'BUYING_CLASSIFICATION';
+    END IF;
+END;

@@ -1,5 +1,6 @@
 PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_ALLOCATION_OPTION" (
 	IN in_name NVARCHAR(255),
+	IN in_crm_id NVARCHAR(50),
 	IN in_user_id BIGINT,
 	OUT out_option_id BIGINT
 ) 
@@ -7,8 +8,8 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_ALLOCATION_O
 	SQL SECURITY INVOKER 
 	AS
 BEGIN
-		INSERT INTO "MKTG_PLANNING_TOOL"."ALLOCATION_OPTION"(name,created_user_id)
-		VALUES(in_name, in_user_id);
+		INSERT INTO "MKTG_PLANNING_TOOL"."ALLOCATION_OPTION"(name,crm_key, created_user_id)
+		VALUES(in_name,in_crm_id, in_user_id);
 		
 		SELECT TOP 1 CURRENT_IDENTITY_VALUE() INTO out_option_id FROM "MKTG_PLANNING_TOOL"."ALLOCATION_OPTION";
 END;

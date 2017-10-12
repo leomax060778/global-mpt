@@ -9,6 +9,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL5_BY_ID" (
 		, hl4_id integer
 		, campaign_objective_id integer
 		, campaign_type_id integer
+		, show_additional_fields tinyint
 		, campaign_subtype_id integer
 		, marketing_program_id integer
 		, marketing_activity_id integer
@@ -48,6 +49,8 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL5_BY_ID" (
         , co_funded tinyint
         , allow_budget_zero tinyint
         , is_power_user tinyint
+        , budget_spend_request_status_id nvarchar(255)
+        , budget_spend_request_status nvarchar(255)
 		)
 		
 ) 
@@ -57,54 +60,61 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL5_BY_ID" (
 	READS SQL DATA AS
 BEGIN
 out_result = select 
-                hl5_id
-                , hl5_crm_description
-                , acronym
-                , distribution_channel_id
-                , budget
-                , hl4_id
-                , campaign_objective_id
-                , campaign_type_id
-                , campaign_subtype_id
-                , marketing_program_id
-                , marketing_activity_id
-                , actual_start_date
-                , actual_end_date
-                , show_on_dg_calendar
-                , business_owner_id
-                , employee_responsible_id
-                , cost_center_id
-                , in_budget
-                , budget_spend_q1
-                , budget_spend_q2
-                , budget_spend_q3
-                , budget_spend_q4
-                , euro_conversion_id
-                , hl5_status_detail_id
-                , created_date_tz
-                , modified_date_tz
-                , created_user_id
-                , modified_user_id
-                , enabled
-                , deleted
-                , route_to_market_id
-                , venue
-                , city
-                , country
-                , url
-                , sales_organization_id
-                , planned_start_date
-                , planned_end_date
-                , street
-                , postal_code
-                , region
-                , event_owner
-                , number_of_participants
-                , priority_id
-                , co_funded
-                , allow_budget_zero
-                , is_power_user
+                HL5.hl5_id
+                , HL5.hl5_crm_description
+                , HL5.acronym
+                , HL5.distribution_channel_id
+                , HL5.budget
+                , HL5.hl4_id
+                , HL5.campaign_objective_id
+                , HL5.campaign_type_id
+                , C_TYPE.show_additional_fields
+                , HL5.campaign_subtype_id
+                , HL5.marketing_program_id
+                , HL5.marketing_activity_id
+                , HL5.actual_start_date
+                , HL5.actual_end_date
+                , HL5.show_on_dg_calendar
+                , HL5.business_owner_id
+                , HL5.employee_responsible_id
+                , HL5.cost_center_id
+                , HL5.in_budget
+                , HL5.budget_spend_q1
+                , HL5.budget_spend_q2
+                , HL5.budget_spend_q3
+                , HL5.budget_spend_q4
+                , HL5.euro_conversion_id
+                , HL5.hl5_status_detail_id
+                , HL5.created_date_tz
+                , HL5.modified_date_tz
+                , HL5.created_user_id
+                , HL5.modified_user_id
+                , HL5.enabled
+                , HL5.deleted
+                , HL5.route_to_market_id
+                , HL5.venue
+                , HL5.city
+                , HL5.country
+                , HL5.url
+                , HL5.sales_organization_id
+                , HL5.planned_start_date
+                , HL5.planned_end_date
+                , HL5.street
+                , HL5.postal_code
+                , HL5.region
+                , HL5.event_owner
+                , HL5.number_of_participants
+                , HL5.priority_id
+                , HL5.co_funded
+                , HL5.allow_budget_zero
+                , HL5.is_power_user
+                , BSRS.budget_spend_request_status_id
+                , BSRS.display_name as budget_spend_request_status
                  FROM HL5
+                 LEFT JOIN BUDGET_SPEND_REQUEST BSR ON BSR.HL_ID = HL5.HL5_ID
+                    AND BSR.HIERARCHY_LEVEL_ID = 2 AND BSR.BUDGET_SPEND_REQUEST_TYPE_ID = 1
+                 LEFT JOIN BUDGET_SPEND_REQUEST_STATUS BSRS ON BSRS.BUDGET_SPEND_REQUEST_STATUS_ID = BSR.BUDGET_SPEND_REQUEST_STATUS_ID
+                 LEFT JOIN CAMPAIGN_TYPE C_TYPE ON C_TYPE.CAMPAIGN_TYPE_ID = HL5.CAMPAIGN_TYPE_ID
                  WHERE HL5_ID = in_hl5_id
-                 AND ENABLED = 1 AND DELETED = 0;
+                 AND HL5.ENABLED = 1 AND HL5.DELETED = 0;
 END;

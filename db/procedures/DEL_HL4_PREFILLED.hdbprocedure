@@ -1,0 +1,20 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::DEL_HL4_PREFILLED" (
+	IN in_hl4_prefilled_id bigint,
+ 	IN in_modified_user_id bigint,
+	OUT out_result bigint
+ ) 
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER 
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	AS
+BEGIN
+  UPDATE hl4p
+  	SET hl4p.deleted = 1,
+   		hl4p.enabled = 0,
+   		hl4p.modified_user_id = in_modified_user_id,
+   		hl4p.modified_date_tz = CURRENT_TIMESTAMP
+   FROM "HL4_PREFILLED" hl4p
+  WHERE hl4p.hl4_prefilled_id = in_hl4_prefilled_id;
+  
+ SELECT ::ROWCOUNT into out_result FROM DUMMY;
+END;

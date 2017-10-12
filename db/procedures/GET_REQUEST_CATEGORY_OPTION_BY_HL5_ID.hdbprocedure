@@ -17,7 +17,8 @@ BEGIN
     va_hl5_reuqest_category_option = SELECT SERVICE_REQUEST_CATEGORY_OPTION_LEVEL_ID
                                   , 1 AS IS_CHECKED
                                   FROM HL5_REQUEST_CATEGORY_OPTION
-                                  WHERE HL5_ID = in_hl_id;
+                                  WHERE HL5_ID = in_hl_id
+                                  and deleted = 0 and enabled = 1;
 
     va_hl5_category_option = (SELECT SERVICE_REQUEST_CATEGORY_OPTION_LEVEL_ID
                                      , IS_CHECKED

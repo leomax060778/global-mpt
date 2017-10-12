@@ -1,0 +1,22 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::DEL_ORGANIZATION_TYPE" (
+	IN in_organization_type_id bigint,
+	IN in_user_id bigint,
+	OUT out_result bigint
+)
+	
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	AS
+BEGIN
+
+	UPDATE ORGANIZATION_TYPE
+	SET
+		deleted = 1,
+	    enabled = 0,
+	    modified_user_id = in_user_id,
+	    modified_date_tz = CURRENT_TIMESTAMP
+    WHERE organization_type_id = in_organization_type_id;
+
+	SELECT ::ROWCOUNT INTO out_result FROM DUMMY;
+END;

@@ -3,6 +3,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_ALLOCATION_C
     IN in_hierarchy_level_id bigint,
 	OUT out_result TABLE (	
 	IN_PROCESSING_REPORT TINYINT
+	, SHOW_COPY_OPTION_TO_SEGMENTATION_CHECK_BOX TINYINT
 	)
  	)
 	LANGUAGE SQLSCRIPT
@@ -12,7 +13,8 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_ALLOCATION_C
 BEGIN
 
 		out_result =
-		 SELECT ACOL.IN_PROCESSING_REPORT
+		 SELECT ACOL.IN_PROCESSING_REPORT,
+		 ACOL.SHOW_COPY_OPTION_TO_SEGMENTATION_CHECK_BOX
 		 FROM ALLOCATION_CATEGORY_OPTION_LEVEL ACOL
 		 WHERE ACOL.allocation_category_id = in_allocation_category_id
 		 AND ACOL.hierarchy_level_id = in_hierarchy_level_id

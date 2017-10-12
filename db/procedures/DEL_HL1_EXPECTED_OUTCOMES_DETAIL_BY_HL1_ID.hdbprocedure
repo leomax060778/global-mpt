@@ -1,0 +1,23 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::DEL_HL1_EXPECTED_OUTCOMES_DETAIL_BY_HL1_ID" (
+	IN in_hl1_id BIGINT,
+	IN in_user_id BIGINT,
+	OUT out_result BIGINT) 
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER 
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	AS
+BEGIN
+
+		UPDATE HL1_EXPECTED_OUTCOMES_DETAIL
+	SET deleted = 1,
+	enabled = 0,
+		modified_user_id = in_user_id,
+		modified_date_tz = CURRENT_TIMESTAMP
+	WHERE HL1_EXPECTED_OUTCOMES_ID in (
+		select DISTINCT HL1_EXPECTED_OUTCOMES_ID FROM HL1_EXPECTED_OUTCOMES
+		WHERE hl1_id = in_hl1_id and enabled = 1 and deleted = 0
+	);
+	
+	SELECT ::ROWCOUNT INTO out_result FROM DUMMY;
+
+END;

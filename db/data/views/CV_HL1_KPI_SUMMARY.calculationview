@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Calculation:scenario xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:Calculation="http://www.sap.com/ndb/BiModelCalculation.ecore" id="CV_HL1_KPI_SUMMARY" applyPrivilegeType="ANALYTIC_PRIVILEGE" dataCategory="CUBE" schemaVersion="2.3" defaultClient="$$client$$" visibility="reportingEnabled" calculationScenarioType="SCRIPT_BASED" scriptParametersCaseSensitive="true" enforceSqlExecution="false">
+<descriptions defaultDescription="CV_HL1_KPI_DATA"/>
+<localVariables/>
+<variableMappings/>
+<dataSources/>
+<calculationViews>
+  <calculationView xsi:type="Calculation:SqlScriptView" id="Script_View">
+    <viewAttributes>
+      <viewAttribute id="KPI_TYPE_NAME" datatype="NVARCHAR" length="255"/>
+    
+      <viewAttribute id="KPI_OPTION_NAME" datatype="NVARCHAR" length="255"/>
+      <viewAttribute id="TOTAL_VALUE" datatype="DECIMAL" length="10" scale="2"/>
+      <viewAttribute id="TOTAL_VOLUME" datatype="DECIMAL" length="10" scale="2"/>
+      <viewAttribute id="TOTAL_VALUE_ALLOCATED" datatype="DECIMAL" length="10" scale="2"/>
+      <viewAttribute id="TOTAL_VOLUME_ALLOCATED" datatype="DECIMAL" length="10" scale="2"/>
+      <viewAttribute id="L1_ACRONYM" datatype="NVARCHAR" length="255"/>
+      <viewAttribute id="BUDGET_YEAR" datatype="NVARCHAR" length="255"/>
+      <viewAttribute id="REGION_NAME" datatype="NVARCHAR" length="255"/>
+      <viewAttribute id="MARKET_UNIT_NAME" datatype="NVARCHAR" length="255"/>
+    
+      <viewAttribute id="HL1_ID" datatype="BIGINT"/>
+      <viewAttribute id="BUDGET_YEAR_ID" datatype="BIGINT"/>
+      <viewAttribute id="REGION_ID" datatype="BIGINT"/>
+      <viewAttribute id="SUBREGION_ID" datatype="BIGINT"/>
+      <viewAttribute id="IS_LOCKED" datatype="TINYINT"/>
+    </viewAttributes>
+    <calculatedViewAttributes/>
+    <definition>/********* Begin Procedure Script ************/ 
+BEGIN 
+    va_hl1 = select eol.EXPECTED_OUTCOME_ID
+                    , eoT.NAME AS KPI_TYPE_NAME
+                 , eol.EXPECTED_OUTCOME_OPTION_ID
+                 , eoo.NAME AS KPI_OPTION_NAME
+                 , hl1_eod.EURO_VALUE AS TOTAL_VALUE
+                 , hl1_eod.VOLUME_VALUE AS TOTAL_VOLUME
+                 , hl1.HL1_ID 
+                 , hl1.ACRONYM AS L1_ACRONYM
+                 , budgetYear.BUDGET_YEAR
+                 , IFNULL(region.REGION_NAME,'') AS REGION_NAME
+                 , IFNULL(subregion.SUBREGION_NAME,'') AS MARKET_UNIT_NAME
+                 , hl1.BUDGET_YEAR_ID
+                 , hl1.REGION_ID
+                 , hl1.SUBREGION_ID
+                 , (CASE WHEN budgetYear.VERSIONED_END_DATE &gt;= CURRENT_TIMESTAMP THEN 0 ELSE 1 END) AS IS_LOCKED          
+                FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL1&quot; hl1
+                LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_BUDGET_YEAR&quot; budgetYear
+                    ON budgetYear.BUDGET_YEAR_ID = hl1.BUDGET_YEAR_ID
+                LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_REGION&quot; region
+                    ON region.REGION_ID = hl1.REGION_ID
+                LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_SUBREGION&quot; subregion
+                    ON subregion.SUBREGION_ID = hl1.SUBREGION_ID
+                LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL1_EXPECTED_OUTCOMES&quot; hl1_eo 
+                    ON hl1_eo.hl1_id = hl1.hl1_id AND hl1_eo.DELETED = 0 AND hl1_eo.ENABLED = 1
+                LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL1_EXPECTED_OUTCOMES_DETAIL&quot; hl1_eod
+                    ON hl1_eo.HL1_EXPECTED_OUTCOMES_ID = hl1_eod.HL1_EXPECTED_OUTCOMES_ID
+                    AND hl1_eod.DELETED = 0 AND hl1_eod.ENABLED = 1
+                LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_LEVEL&quot; eol
+                    ON hl1_eod.EXPECTED_OUTCOME_LEVEL_ID = eol.EXPECTED_OUTCOME_LEVEL_ID
+                    AND eol.HIERARCHY_LEVEL_ID = 6
+                LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOMES&quot; eot
+                    ON eot.EXPECTED_OUTCOME_ID = eol.EXPECTED_OUTCOME_ID
+                 LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_OPTION&quot; eoo
+                    ON eoo.EXPECTED_OUTCOME_OPTION_ID = eol.EXPECTED_OUTCOME_OPTION_ID
+                where hl1.DELETED = 0 AND hl1.ENABLED = 1;
+    
+    va_hl2 = SELECT eol.EXPECTED_OUTCOME_ID
+                   , eol.EXPECTED_OUTCOME_OPTION_ID
+                   , SUM(hl2_eod.EURO_VALUE) AS TOTAL_VALUE_ALLOCATED
+                   , SUM(hl2_eod.VOLUME_VALUE) AS TOTAL_VOLUME_ALLOCATED
+                   , hl2.HL1_ID
+                   FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL2_EXPECTED_OUTCOMES&quot; hl2_eo
+                   INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL2&quot; hl2
+                   ON hl2_eo.hl2_id = hl2.hl2_id AND HL2.DELETED = 0 AND HL2.ENABLED = 1
+                   INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL2_EXPECTED_OUTCOMES_DETAIL&quot; hl2_eod
+                   ON hl2_eo.HL2_EXPECTED_OUTCOMES_ID = hl2_eod.HL2_EXPECTED_OUTCOMES_ID
+                   INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_LEVEL&quot; eol
+                   ON hl2_eod.EXPECTED_OUTCOME_LEVEL_ID = eol.EXPECTED_OUTCOME_LEVEL_ID
+                   and  eol.HIERARCHY_LEVEL_ID = 5
+                   WHERE hl2_eod.DELETED = 0 AND hl2_eod.ENABLED = 1
+                   GROUP BY eol.EXPECTED_OUTCOME_ID, eol.EXPECTED_OUTCOME_OPTION_ID, hl2.HL1_ID;
+
+   var_out = SELECT hl1.KPI_TYPE_NAME
+                 , hl1.KPI_OPTION_NAME
+                 , COALESCE(hl1.TOTAL_VALUE,0) AS TOTAL_VALUE
+                 , COALESCE(hl1.TOTAL_VOLUME,0) AS TOTAL_VOLUME
+                 , COALESCE(hl2.TOTAL_VALUE_ALLOCATED,0) AS TOTAL_VALUE_ALLOCATED
+                 , COALESCE(hl2.TOTAL_VOLUME_ALLOCATED,0) AS TOTAL_VOLUME_ALLOCATED
+                 , hl1.L1_ACRONYM
+                 , hl1.BUDGET_YEAR
+                 , hl1.REGION_NAME
+                 , hl1.MARKET_UNIT_NAME
+                 , hl1.HL1_ID 
+                 , hl1.BUDGET_YEAR_ID
+                 , hl1.REGION_ID
+                 , hl1.SUBREGION_ID
+                 , hl1.IS_LOCKED
+                 FROM :va_hl1 hl1
+                 LEFT JOIN :va_hl2 hl2 
+                 ON hl1.EXPECTED_OUTCOME_ID = hl2.EXPECTED_OUTCOME_ID
+                 AND hl1.EXPECTED_OUTCOME_OPTION_ID = hl2.EXPECTED_OUTCOME_OPTION_ID
+                 AND hl1.HL1_ID = hl2.HL1_ID
+                 ORDER BY hl1.BUDGET_YEAR, hl1.L1_ACRONYM, hl1.KPI_TYPE_NAME, hl1.KPI_OPTION_NAME;
+
+END /********* End Procedure Script ************/</definition>
+  </calculationView>
+</calculationViews>
+<logicalModel id="Script_View">
+  <attributes>
+    <attribute id="KPI_TYPE_NAME" order="1" semanticType="empty">
+      <descriptions defaultDescription="COL"/>
+      <keyMapping columnObjectName="Script_View" columnName="KPI_TYPE_NAME"/>
+    </attribute>
+    <attribute id="KPI_OPTION_NAME" order="2">
+      <keyMapping columnObjectName="Script_View" columnName="KPI_OPTION_NAME"/>
+    </attribute>
+    <attribute id="TOTAL_VALUE" order="3" semanticType="empty">
+      <keyMapping columnObjectName="Script_View" columnName="TOTAL_VALUE"/>
+    </attribute>
+    <attribute id="TOTAL_VOLUME" order="4" semanticType="empty">
+      <keyMapping columnObjectName="Script_View" columnName="TOTAL_VOLUME"/>
+    </attribute>
+    <attribute id="L1_ACRONYM" order="7">
+      <keyMapping columnObjectName="Script_View" columnName="L1_ACRONYM"/>
+    </attribute>
+    <attribute id="BUDGET_YEAR" order="8">
+      <keyMapping columnObjectName="Script_View" columnName="BUDGET_YEAR"/>
+    </attribute>
+    <attribute id="REGION_NAME" order="9">
+      <keyMapping columnObjectName="Script_View" columnName="REGION_NAME"/>
+    </attribute>
+    <attribute id="MARKET_UNIT_NAME" order="10">
+      <keyMapping columnObjectName="Script_View" columnName="MARKET_UNIT_NAME"/>
+    </attribute>
+  
+    <attribute id="HL1_ID" order="11" semanticType="empty">
+  
+      <keyMapping columnObjectName="Script_View" columnName="HL1_ID"/>
+  
+    </attribute>
+  </attributes>
+  <calculatedAttributes/>
+  <baseMeasures>
+    <measure id="TOTAL_VALUE_ALLOCATED" order="5" aggregationType="sum" measureType="simple">
+      <measureMapping columnObjectName="Script_View" columnName="TOTAL_VALUE_ALLOCATED"/>
+    </measure>
+    <measure id="TOTAL_VOLUME_ALLOCATED" order="6" aggregationType="sum" measureType="simple">
+      <measureMapping columnObjectName="Script_View" columnName="TOTAL_VOLUME_ALLOCATED"/>
+    </measure>
+  
+    <measure id="BUDGET_YEAR_ID" order="12" aggregationType="sum" measureType="simple">
+  
+      <measureMapping columnObjectName="Script_View" columnName="BUDGET_YEAR_ID"/>
+  
+    </measure>
+    <measure id="REGION_ID" order="13" aggregationType="sum" measureType="simple">
+      <measureMapping columnObjectName="Script_View" columnName="REGION_ID"/>
+    </measure>
+    <measure id="SUBREGION_ID" order="14" aggregationType="sum" measureType="simple">
+      <measureMapping columnObjectName="Script_View" columnName="SUBREGION_ID"/>
+    </measure>
+    <measure id="IS_LOCKED" order="15" aggregationType="sum" measureType="simple">
+      <measureMapping columnObjectName="Script_View" columnName="IS_LOCKED"/>
+    </measure>
+  </baseMeasures>
+  <calculatedMeasures/>
+  <restrictedMeasures/>
+  <localDimensions/>
+</logicalModel>
+<layout>
+  <shapes>
+    <shape expanded="true" modelObjectName="Output" modelObjectNameSpace="MeasureGroup">
+      <upperLeftCorner x="40" y="85"/>
+    </shape>
+  </shapes>
+</layout>
+</Calculation:scenario>
