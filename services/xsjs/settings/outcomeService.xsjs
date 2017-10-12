@@ -5,6 +5,7 @@ var httpUtil = mapper.getHttp();
 var outcomesLib = mapper.getOutcomes();
 var ErrorLib = mapper.getErrors();
 var config = mapper.getDataConfig();
+var expectedOutcomesLib = mapper.getExpectedOutcomes();
 /******************************************/
 var methodGetAll = "getAll";
 
@@ -36,7 +37,12 @@ function handleGet(params, userId) {
 		result = outcomesLib.getOutcomesByOtId(in_outcome_type_id);
 	} else if(method == 'GET_WIZARD_QUESTIONS'){
         result = outcomesLib.getWizardQuestions();
-	};
+	} else if(method == 'KPI_CARRY_OVER'){
+		var parentId = $.request.parameters.get("PARENT_ID");
+		var level = $.request.parameters.get("LEVEL");
+		result = expectedOutcomesLib.getExpectedOutcomesByParentIdLevel(parentId, level);
+	}
+
 	return httpUtil.handleResponse(result,httpUtil.OK,httpUtil.AppJson);
 };
 

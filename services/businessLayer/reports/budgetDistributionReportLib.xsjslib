@@ -17,8 +17,8 @@ function getHl4ByFilter2(reqBody,userSessionID){
 	if(myBudget){
 		myBudget.forEach(function(obj) {
 			var aux = util.extractObject(obj);
-			aux.budget_region = dataBudget.getBudgetRegionByHl4(aux.HL4_ID);
-			aux.budget_subregion = dataBudget.getBudgetSubRegionByHl4(aux.HL4_ID);
+			aux.budget_region = {};//dataBudget.getBudgetRegionByHl4(aux.HL4_ID);
+			aux.budget_subregion = {};//dataBudget.getBudgetSubRegionByHl4(aux.HL4_ID);
 			aux.budget_globalteam = dataBudget.getBudgetGlobalTeamByHl4(aux.HL4_ID);
 			result.push(aux);
 		});

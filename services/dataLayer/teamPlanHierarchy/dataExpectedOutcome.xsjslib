@@ -121,15 +121,8 @@ function insertHl5ExpectedOutcomes(in_hl5_id, in_comments, in_created_user_id){
 	return rdo;
 }
 
-function insertHl5ExpectedOutcomesDetail(in_hl5_expected_outcomes_id, in_outcomes_id, in_euro_value, in_volume_value, in_created_user_id){
-	var parameters = {};
-	parameters.in_hl5_expected_outcomes_id = in_hl5_expected_outcomes_id;
-	parameters.in_outcomes_id = in_outcomes_id;
-	parameters.in_euro_value = in_euro_value;
-	parameters.in_volume_value = in_volume_value;
-	parameters.in_created_user_id = in_created_user_id;
-	
-	var rdo = db.executeScalarManual(spInsertHl5ExpOutcomeDetail, parameters, 'out_hl5_expected_outcomes_details_id');
+function insertHl5ExpectedOutcomesDetail(hl5ExpectedOutcomesDetail){
+	var rdo = db.executeScalarManual(spInsertHl5ExpOutcomeDetail, hl5ExpectedOutcomesDetail, 'out_hl5_expected_outcomes_details_id');
 	return rdo;
 }
 

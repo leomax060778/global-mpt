@@ -61,9 +61,10 @@ function insertOption(option,userId){
 }
 
 /*********************************************************************************************************/
-function insertAllocationOption(name, userId, autoCommit) {
+function insertAllocationOption(name,crmId, userId, autoCommit) {
 	var params = {
 		'in_name': name,
+		'in_crm_id':crmId,
 		'in_user_id': userId
 	};
 	var rdo;
@@ -132,12 +133,14 @@ function getAllocationOptionCountByCategoryIdLevelId(categoryId, level){
 	return null;
 }
 
-function updateAllocationOption(optionId,name, userId, autoCommit) {
+function updateAllocationOption(optionId,name,crm_key, userId, autoCommit) {
 	var params = {
 		'in_option_id': optionId,
 		'in_name': name,
+		'in_crm_key': crm_key,
 		'in_user_id': userId
 	};
+	
 	var rdo;
 	if (autoCommit) {
 		rdo = db.executeScalar(UPD_ALLOCATION_OPTION, params, 'out_result');

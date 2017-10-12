@@ -14,14 +14,17 @@ var setStatusInCRM = "SETINCRM";
 var changeStatus = "CHANGESTATUS";
 var sendInCrmNotificationMail = "SENDMAIL";
 var getHl5ByUserId = 'GET_HL5_BY_USER_ID';
+var getNewSerialAcronym = "GET_SERIAL";
 
 /******************************************/
+
 
 function processRequest(){
 	return httpUtil.processRequest(handleGet,handlePost,handlePut,handleDelete,false, config.getResourceIdByName(config.level4()));	
 }
 
 function handleGet(params, userId) {
+	var newSerial = httpUtil.getUrlParameters().get(getNewSerialAcronym);
 	var in_hl4_id = httpUtil.getUrlParameters().get("HL4_ID");
 	var in_hl5_id = httpUtil.getUrlParameters().get("HL5_ID");
 	var param_section = httpUtil.getUrlParameters().get("section");
@@ -30,7 +33,10 @@ function handleGet(params, userId) {
 	var budgetYearId = httpUtil.getUrlParameters().get("BUDGET_YEAR");
 	var currentHl5Id = httpUtil.getUrlParameters().get("CURRENT_HL5");
 	var result = {};
-	if(in_hl4_id && !dataType){
+	if(newSerial)
+	{
+		result = hl5.getNewSerialAcronym(in_hl4_id);
+	}else if(in_hl4_id && !dataType){
         hl4.checkPermission(userId, null, in_hl4_id);
 		result = hl5.getHl5ByHl4Id(in_hl4_id);
 	} else if (in_hl5_id) {
@@ -43,8 +49,6 @@ function handleGet(params, userId) {
         var limit = httpUtil.getUrlParameters().get("LIMIT") || null;
         var offset = httpUtil.getUrlParameters().get("OFFSET") || null;
 		result = hl5.getLevel5ForSearch(budgetYearId, regionId, subRegionId, limit, offset, userId);
-	} else if (dataType && dataType == "DISTRIBUTION_CHANNEL"){
-		result = hl5.getAllDistributionChannel();
 	} else if (dataType && dataType == "MARKETING_PROGRAM"){
 		result = hl5.getAllMarketingProgram();
 	} else if (dataType && dataType == "MARKETING_ACTIVITY"){
@@ -68,7 +72,7 @@ function handlePut(reqBody, userId){
 
 	if(parameters.length > 0){
 		var aCmd = parameters.get('method');
-		var hl5Id = parameters.get('HL5_ID');
+		var hl5Id = !reqBody ? parameters.get('HL5_ID') : reqBody.hl5Ids;
 		switch (aCmd) {
 			case sendInCrmNotificationMail:
 					hl5.sendProcessingReportEmail(hl5Id, userId);

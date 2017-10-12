@@ -5,9 +5,11 @@ var db = mapper.getdbHelper();
 var ErrorLib = mapper.getErrors();
 /*************************************************/
 var GET_ALLOCATION_OPTION_LEVEL = "GET_ALLOCATION_OPTION_LEVEL";
+var GET_ALLOCATION_CATEGORY_OPTION = "GET_ALLOCATION_CATEGORY_OPTION";
 var GET_ALLOCATION_CATEGORY_BY_CAT_ID_LEVEL_ID = "GET_ALLOCATION_CATEGORY_BY_CAT_ID_LEVEL_ID";
 var GET_ALLOCATION_CATEGORY_OPTION_LEVEL_BY_LEVEL = "GET_ALLOCATION_CATEGORY_OPTION_LEVEL_BY_LEVEL";
 var GET_ALLOCATION_CATEGORY_OPTION_LEVEL_COUNT_BY_CATEGORY = "GET_ALLOCATION_CATEGORY_OPTION_LEVEL_COUNT_BY_CATEGORY";
+var GET_ALLOCATION_CATEGORY_OPTION_LEVEL_TO_DELETE = "GET_ALLOCATION_CATEGORY_OPTION_LEVEL_TO_DELETE";
 var INS_ALLOCATION_CATEGORY_OPTION_LEVEL = "INS_ALLOCATION_CATEGORY_OPTION_LEVEL";
 var UPD_ALLOCATION_CAT_OPT_LEV_PROCESSING_REPORT = "UPD_ALLOCATION_CAT_OPT_LEV_PROCESSING_REPORT";
 var UPD_ALLOCATION_CATEGORY_OPTION_LEVEL = "UPD_ALLOCATION_CATEGORY_OPTION_LEVEL";
@@ -15,6 +17,8 @@ var DEL_ALLOCATION_RELATIONSHIP = "DEL_ALLOCATION_RELATIONSHIP";
 var DEL_ALLOCATION_RELATIONSHIP_BY_CATEGORY_ID = "DEL_ALLOCATION_RELATIONSHIP_BY_CATEGORY_ID";
 /*********************************************************************************************************/
 var hierarchyLevel = {
+	"hl1": 6,
+	"hl2": 5,
 	"hl3": 4,
 	"hl4": 1,
 	"hl5": 2,
@@ -145,7 +149,7 @@ function getAllocationOptionByCategoryAndLevelId(level, hlId){
 
 function getAllocationOptionByCategoryAndLevel(allocation_category_id, level){
 	if(allocation_category_id && level){
-		var storedProcedure = "GET_"+ level.toUpperCase() +"_ALLOCATION_OPTION_BY_CATEGORY_LEVEL";
+		var storedProcedure = "GET_HL6_ALLOCATION_OPTION_BY_CATEGORY_LEVEL";
 		var rdo = db.executeProcedureManual(storedProcedure,{'in_allocation_category_id':allocation_category_id, 'in_hierarchy_level_id': hierarchyLevel[level]});
 		return db.extractArray(rdo.out_option);
 	}
@@ -158,6 +162,28 @@ function getAllocationOptionLevelByCategoryAndLevelId(allocation_category_id, le
 		return db.extractArray(rdo.out_result)[0];
 	}
 	return null;
+}
+
+function getAllocationCategoryOptionByOptionIdLevelId(level, optionId){
+    if(optionId && level){
+    	var parameters = {
+			'in_hierarchy_level_id': hierarchyLevel[level.toLowerCase()]
+			, 'in_option_id':optionId
+    	};
+        var rdo = db.executeProcedureManual(GET_ALLOCATION_CATEGORY_OPTION,parameters);
+        return db.extractArray(rdo.out_result)[0];
+    }
+    return null;
+}
+
+function getAllocationCategoryOptionLevelToDelete(allocationCategoryId, levelId, optionList) {
+	var parameters = {
+		in_allocation_category_id: allocationCategoryId,
+		in_level_id: levelId,
+		optionList: optionList
+	};
+    var rdo = db.executeProcedureManual(GET_ALLOCATION_CATEGORY_OPTION_LEVEL_TO_DELETE,parameters);
+    return db.extractArray(rdo.out_result);
 }
 
 function insertCategoryOption(data, level){
@@ -182,6 +208,12 @@ function deleteCategoryOption(id, userId, level){
 	var storedProcedure = "DEL_"+ level.toUpperCase() +"_ALLOCATION_CATEGORY_OPTION";
 	var rdo = db.executeScalarManual(storedProcedure, parameters, 'out_result');
 	return rdo;
+}
+
+function deleteCategoryOptionById(data, level){
+    var storedProcedure = "DEL_"+ level.toUpperCase() +"_ALLOCATION_CATEGORY_OPTION_BY_ID";
+    var rdo = db.executeScalarManual(storedProcedure, data, 'out_result');
+    return rdo;
 }
 
 function resetHl4CategoryOptionUpdated(id, level, userId){

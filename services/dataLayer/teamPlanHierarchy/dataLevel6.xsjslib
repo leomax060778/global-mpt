@@ -163,8 +163,8 @@ function getHl6RemainingBudgetByHl5Id(hl5Id, total_budget) {
 	return db.executeDecimalManual(spGetHl6RemainingBudgetByHl5Id, params, 'out_result');
 }
 
-function getHl6ByUserId(userId, isSA){
-    var params = {'in_user_id': userId, 'in_issa': isSA};
+function getHl6ByHl5IdUserId(hl5Id, userId, isSA){
+    var params = {'in_hl5_id': hl5Id, 'in_user_id': userId, 'in_issa': isSA};
     var rdo = db.executeProcedureManual(GET_HL6_BY_USER_ID,params);
     return db.extractArray(rdo.out_result);
 }

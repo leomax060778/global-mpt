@@ -12,6 +12,8 @@ var EXPECTED_OUTCOME_OPTION_ALREADY_EXIST = "An Option with the same Name alread
 var HIERARCHY_LEVEL_INVALID = "Invalid hierarchy level.";
 
 var HIERARCHY_LEVEL = {
+    L1: 6,
+    L2: 5,
     L3: 4,
     L4: 1,
     L5: 2,

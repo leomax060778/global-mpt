@@ -9,8 +9,10 @@ var spGET_DICTIONARY_BY_PATH = "GET_DICTIONARY_BY_PATH";
 var spGET_DICTIONARY_PATH_BY_USER_ID = "GET_DICTIONARY_PATH_BY_USER_ID";
 var spDEL_DICTIONARY_L5_L6 = "DEL_DICTIONARY_L5_L6";
 var spINS_DICTIONARY = "INS_DICTIONARY_L5_L6";
+var spINS_DICTIONARY_KPI = "INS_DICTIONARY_KPI";
 var spGET_MAP_HL_EXCEL = "GET_MAP_HL_EXCEL";
 var spGET_MAP_HL1_EXCEL = "GET_MAP_HL1_EXCEL";
+var spGET_MAP_L1L2L3_EXCEL = "GET_MAP_L1L2L3_EXCEL";
 var spGET_ALL_PATH_FROM_DICTIONARY_L5_L6 = "GET_ALL_PATH_FROM_DICTIONARY_L5_L6";
 var spGET_HL5_PATH_FROM_DICTIONARY_L5_L6 = "GET_HL5_PATH_FROM_DICTIONARY_L5_L6";
 var spGET_HL6_PATH_FROM_DICTIONARY_L5_L6 = "GET_HL6_PATH_FROM_DICTIONARY_L5_L6";
@@ -21,21 +23,24 @@ var GET_UPLOAD_L5_L6_LOG = "GET_UPLOAD_L5_L6_LOG";
 var GET_IMPORT = "GET_IMPORT";
 var UPD_IMPORT_L5_L6 = "UPD_IMPORT_L5_L6";
 var DEL_DICTIONARY_L5_L6_BY_USER_ID = "DEL_DICTIONARY_L5_L6_BY_USER_ID";
-
+var INS_IMPORT_HL = "INS_IMPORT_HL";
+var UPD_IMPORT_HL = "UPD_IMPORT_HL";
 /******************************************************/
-
-
-
-/********************************************************/
-
 var hierarchyLevel = {
+    "hl1": 6,
+    "hl2": 5,
+    "hl3": 4,
     "hl5": 2,
-    "hl6": 3,
-    "hl1": 4
+    "hl6": 3
 }
 
 function getMapHL1Excel(){
     var rdo = db.executeProcedure(spGET_MAP_HL1_EXCEL, {});
+    return db.extractArray(rdo.OUT_RESULT);
+}
+
+function getMapForL1L2L3(){
+    var rdo = db.executeProcedure(spGET_MAP_L1L2L3_EXCEL, {});
     return db.extractArray(rdo.OUT_RESULT);
 }
 
@@ -81,10 +86,22 @@ function insertDictionary(path, key, value, hl, userId){
         'IN_PATH' : path,
         'IN_KEY': key,
         'IN_VALUE': value,
-        'HIERARCHY_LEVEL_ID' :  hl ? hierarchyLevel[hl] : 0,
+        'HIERARCHY_LEVEL_ID' :  hl ? hierarchyLevel[hl.toLowerCase()] : 0,
         'IN_USER_ID' : userId
     };
     var rdo = db.executeScalarManual(spINS_DICTIONARY, params, "OUT_RESULT");
+    return rdo;
+}
+
+function insertDictionaryKPI(path, key, value, hl, userId){
+    var params = {
+        'IN_PATH' : path,
+        'IN_KEY': key,
+        'IN_VALUE': value,
+        'HIERARCHY_LEVEL_ID' :  hl ? hierarchyLevel[hl.toLowerCase()] : 0,
+        'IN_USER_ID' : userId
+    };
+    var rdo = db.executeScalarManual(spINS_DICTIONARY_KPI, params, "OUT_RESULT");
     return rdo;
 }
 
@@ -101,6 +118,13 @@ function getDictionaryL5L6ByPath(path, userId){
 function deleteDictionaryL5L6(userId){
     var rdo = db.executeScalarManual(spDEL_DICTIONARY_L5_L6, {'in_user_id':userId}, "OUT_RESULT");
     return rdo;
+}
+
+function getParentIdByPath(path){
+    var tablename = '"_SYS_BIC"."mktgplanningtool.db.data.views/CV_GET_LEVEL_PATH"';
+    var columnreference = 'HL_ID';
+    var columnFilter = 'PATH';
+    return getForeignId(tablename, columnreference, columnFilter, path);
 }
 
 function getForeignId(tableName, columnReference, columnFilter, findValue, otherFilter, operator){
@@ -151,6 +175,11 @@ function getDataFromDictionaryByPath(path, userId){
     return db.extractArray(rdo.OUT_RESULT);
 }
 
+function getDataFromUploadDictionaryByPath(path, userId){
+    return getDataFromDictionaryByPath(path, userId);
+}
+
+
 function updateImport(importId, userId){
     var params = {
         'in_import_id' : importId,
@@ -167,4 +196,33 @@ function deleteDictionary(userId){
     var rdo = db.executeScalarManual(DEL_DICTIONARY_L5_L6_BY_USER_ID, params, "out_result");
     return rdo;
 
+}
+
+function getDictionaryPathByUser(userId, level){
+    var param = {'IN_USER_ID': userId };
+    if(level)
+        param.IN_LEVEL = hierarchyLevel[level.toLowerCase()];// level.toUpperCase();
+    else
+        param.IN_LEVEL = '';
+
+    var rdo = db.executeProcedure(spGET_DICTIONARY_PATH_BY_USER_ID, param);
+    return db.extractArray(rdo.OUT_RESULT);
+}
+
+function insertImportHl(description, userId){
+    var params = {
+        'in_description' : description,
+        'in_user_id': userId
+    };
+    var rdo = db.executeScalarManual(INS_IMPORT_HL, params, "OUT_IMPORT_ID");
+    return rdo;
+}
+
+function updateImportHl(importId, userId){
+    var params = {
+        'in_import_id' : importId,
+        'in_user_id': userId
+    };
+    var rdo = db.executeScalarManual(UPD_IMPORT_HL, params, "out_result");
+    return rdo;
 }

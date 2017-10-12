@@ -21,6 +21,7 @@ var spGetAllHl4 = "GET_ALL_HL4";
 var spGetHl4CategoryOptionByHl4IdOptionId = "GET_HL4_CATEGORY_OPTION_BY_HL4_ID_OPTION_ID";
 var spGET_COUNT_HL5_BY_HL4_ID = "GET_COUNT_HL5_BY_HL4_ID";
 var GET_IMPLEMENT_EXECUTION_LEVEL_BY_HL4_ID = "GET_IMPLEMENT_EXECUTION_LEVEL_BY_HL4_ID";
+var GET_HL4_BY_BUDGET_YEAR = "GET_HL4_BY_BUDGET_YEAR";
 
 var spInsertHl4 = "INS_HL4";
 var spInsertHl4_Category = "INS_HL4_CATEGORY";
@@ -82,8 +83,13 @@ function getHl4ById(id){
 	return null;
 }
 
+/**
+ * @deprecated
+ * @param parameters
+ @returns {}
+ */
 function getHl4MyBudgetByHl4Id(id){
-	if(id){
+	/*if(id){
 		var rdo = db.executeProcedure(spGetHl4MyBudgetByHl4Id,{'in_hl4_id':id});
 		var myBudget = {
 			"region": db.extractArray(rdo.out_budget_region),
@@ -92,15 +98,21 @@ function getHl4MyBudgetByHl4Id(id){
 		};
 		return myBudget;
 	}	
-	return null;
+	return null;*/
 }
+
 function getAllHl4Category(){
 	var rdo = db.executeProcedure(spGetHl4CategoryByCategoryId,{});
 	return db.extractArray(rdo.out_hl4_category);
 }
 
+/**
+ * @deprecated
+ * @param parameters
+ @returns {}
+ */
 function getHl4SalesByHl4Id(id){
-	if(id){
+	/*if(id){
 		var rdo = db.executeProcedure(spGetHl4SalesByHl4Id,{'in_hl4_id':id});
 		var sales = {
 			"region": db.extractArray(rdo.out_sale_region),
@@ -110,7 +122,7 @@ function getHl4SalesByHl4Id(id){
 		};
 		return sales;
 	}	
-	return null;
+	return null;*/
 }
 
 function getHl4ByAcronym(acronym, hl2_id){
@@ -184,6 +196,11 @@ function getImplementExecutionLevel(hl4Id) {
     return rdo;
 }
 
+function getHl4ByBudgetYear(hl4Id){
+    var rdo = db.executeProcedureManual(GET_HL4_BY_BUDGET_YEAR,{'in_hl4_id':hl4Id});
+    return db.extractArray(rdo.out_result);
+}
+
 function insertHl4(parameters){
 		var rdo = db.executeScalarManual(spInsertHl4, parameters, 'out_hl4_id');
 		return rdo;
@@ -199,24 +216,42 @@ function insertHl4CategoryOption(parameters){
 		return rdo;
 }
 
+/**
+ * @deprecated
+ * @param parameters
+ @returns {}
+ */
 function insertHl4BudgetRegion(parameters){
-	var rdo = db.executeScalarManual(spInsertHl4BudgetRegion, parameters, 'out_hl4_budget_region_id');
-	return rdo;
+	/*var rdo = db.executeScalarManual(spInsertHl4BudgetRegion, parameters, 'out_hl4_budget_region_id');
+	return rdo;*/
 }
 
+/**
+ * @deprecated
+ * @param parameters
+ @returns {}
+ */
 function insertHl4BudgetSubRegion(parameters){
-	var rdo = db.executeScalarManual(spInsertHl4BudgetSubregion, parameters, 'out_hl4_budget_subregion_id');
-	return rdo;
+	/*var rdo = db.executeScalarManual(spInsertHl4BudgetSubregion, parameters, 'out_hl4_budget_subregion_id');
+	return rdo;*/
 }
 
+/**
+ * @deprecated
+ * @param parameters
+ */
 function insertHl4BudgetRoute(parameters){
-	var rdo = db.executeScalarManual(spInsertHl4BudgetRoute, parameters, 'out_hl4_budget_route_id');
-	return rdo;
+	/*var rdo = db.executeScalarManual(spInsertHl4BudgetRoute, parameters, 'out_hl4_budget_route_id');
+	return rdo;*/
 }
 
+/**
+ * @deprecated
+ * @param parameters
+ */
 function insertHl4SaleRegion(parameters){
-	var rdo = db.executeScalarManual(spInsertHl4SaleRegion, parameters, 'out_hl4_sale_region_id');
-	return rdo;
+	/*var rdo = db.executeScalarManual(spInsertHl4SaleRegion, parameters, 'out_hl4_sale_region_id');
+	return rdo;*/
 }
 
 function insertHl4SaleSubRegion(parameters){
@@ -224,9 +259,14 @@ function insertHl4SaleSubRegion(parameters){
 	return rdo;
 }
 
+/**
+ * @deprecated
+ * @param parameters
+ * @returns {*}
+ */
 function insertHl4SaleRoute(parameters){
-	var rdo = db.executeScalarManual(spInsertHl4SaleRoute, parameters, 'out_hl4_sale_route_id');
-	return rdo;
+/*	var rdo = db.executeScalarManual(spInsertHl4SaleRoute, parameters, 'out_hl4_sale_route_id');
+	return rdo;*/
 }
 
 function insertHl4SaleOther(parameters){
@@ -282,29 +322,54 @@ function deleteHl4CategoryOption(parameters){
 	return rdo;
 }
 
+/**
+ * @deprecated
+ * @param parameters
+ @returns {}
+ */
 function deleteHl4BudgetRegion(parameters){
-	var rdo = db.executeScalarManual(spDeleteHl4BudgetRegion, parameters, 'out_result');
-	return rdo;
+	/*var rdo = db.executeScalarManual(spDeleteHl4BudgetRegion, parameters, 'out_result');
+	return rdo;*/
 }
 
+/**
+ * @deprecated
+ * @param parameters
+ * @returns {*}
+ */
 function deleteHl4BudgetSubRegion(parameters){
-	var rdo = db.executeScalarManual(spDeleteHl4BudgetSubregion, parameters, 'out_result');
-	return rdo;
+	/*var rdo = db.executeScalarManual(spDeleteHl4BudgetSubregion, parameters, 'out_result');
+	return rdo;*/
 }
 
+/**
+ * @deprecated
+ * @param parameters
+ * @returns {*}
+ */
 function deleteHl4BudgetRoute(parameters){
-	var rdo = db.executeScalarManual(spDeleteHl4BudgetRoute, parameters, 'out_result');
-	return rdo;
+	/*var rdo = db.executeScalarManual(spDeleteHl4BudgetRoute, parameters, 'out_result');
+	return rdo;*/
 }
 
+/**
+ * @deprecated
+ * @param parameters
+ * @returns {*}
+ */
 function deleteHl4SaleRegion(parameters){
-	var rdo = db.executeScalarManual(spDeleteHl4SaleRegion, parameters, 'out_result');
-	return rdo;
+	/*var rdo = db.executeScalarManual(spDeleteHl4SaleRegion, parameters, 'out_result');
+	return rdo;*/
 }
 
+/**
+ * @deprecated
+ * @param parameters
+ * @returns {*}
+ */
 function deleteHl4SaleRoute(parameters){
-	var rdo = db.executeScalarManual(spDeleteHl4SaleRoute, parameters, 'out_result');
-	return rdo;
+	/*var rdo = db.executeScalarManual(spDeleteHl4SaleRoute, parameters, 'out_result');
+	return rdo;*/
 }
 
 function deleteHl4SaleOther(parameters){

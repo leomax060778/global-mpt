@@ -6,6 +6,7 @@ var db = mapper.getdbHelper();
 //STORE PROCEDURE LIST NAME
 var GET_HL2_BY_USER_ID = "GET_HL2_BY_USER_ID";
 var GET_ALL_HL2 = "GET_ALL_HL2";
+var GET_HL2_KPI_SUMMARY = "GET_HL2_KPI_SUMMARY";
 var GET_HL2_BY_ID = "GET_HL2_BY_ID";
 var GET_HL2_BY_HL1_ID = "GET_HL2_BY_HL1_ID";
 var spGetHl2ForSerach = "GET_HL2_FOR_SEARCH";
@@ -51,7 +52,7 @@ function getLevel2ById(objLevel2){
 }
 
 function getAllCentralTeam(centralTeamId, budgetYearId){
-	var parameters = {'in_hl2_id': centralTeamId, 'in_budget_year_id': budgetYearId || 0};
+	var parameters = {'in_budget_year_id': budgetYearId || 0};
 	var result = db.executeProcedureManual(GET_ALL_CENTRAL_TEAM,parameters);
 	return db.extractArray(result.out_result);
 
@@ -89,6 +90,21 @@ function getAllLevel2(hl1Id){
 		return db.extractArray(result.out_result);
 	}
 	return null;
+
+}
+
+function getHl2KpiSummary(hl1Id, userId, isSA){
+
+    if(hl1Id){
+        var parameters = {
+            in_user_id: userId,
+            in_is_super_Admin: isSA ? 1 : 0,
+            in_hl1_id: hl1Id
+        };
+        var result = db.executeProcedureManual(GET_HL2_KPI_SUMMARY, parameters);
+        return db.extractArray(result.out_result);
+    }
+    return null;
 
 }
 
@@ -140,6 +156,8 @@ function insertLevel2(objLevel2, userId){
 	parameters.in_hl1_id = objLevel2.IN_PLAN_ID;
 	parameters.in_in_budget = objLevel2.IN_IN_BUDGET;
 	parameters.in_allow_automatic_budget_approval = objLevel2.ALLOW_AUTOMATIC_BUDGET_APPROVAL || 0 ;
+	parameters.in_import_id = objLevel2.import_id ? objLevel2.import_id : null;
+	parameters.in_imported = objLevel2.imported ? objLevel2.imported : 0;
 	return db.executeScalarManual(INS_HL2,parameters,"out_hl2_id");
 }
 

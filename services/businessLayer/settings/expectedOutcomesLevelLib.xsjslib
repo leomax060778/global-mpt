@@ -7,6 +7,8 @@ var db = mapper.getdbHelper();
 /** ********************************************** */
 
 var HIERARCHY_LEVEL = {
+    L1: 6,
+    L2: 5,
     L3: 4,
     L4: 1,
     L5: 2,

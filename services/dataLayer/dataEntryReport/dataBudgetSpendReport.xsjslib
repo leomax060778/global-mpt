@@ -7,7 +7,10 @@ var ErrorLib = mapper.getErrors();
 /** PROCEDURE VARIABLES **/
 //GET
 var GET_BUDGET_SPEND_REQUEST_HL5 = "GET_BUDGET_SPEND_REQUEST_HL5";
+var GET_BUDGET_SPEND_REQUEST_HL5_BY_HL5_ID = "GET_BUDGET_SPEND_REQUEST_HL5_BY_HL5_ID";
 var GET_BUDGET_SPEND_REQUEST_HL6 = "GET_BUDGET_SPEND_REQUEST_HL6";
+var GET_BUDGET_SPEND_REQUEST_HL6_BY_HL6_ID = "GET_BUDGET_SPEND_REQUEST_HL6_BY_HL6_ID";
+var GET_BUDGET_SPEND_REQUEST_IN_PENDING_STATUS = "GET_BUDGET_SPEND_REQUEST_IN_PENDING_STATUS";
 
 var GET_BUDGET_SPEND_REQUEST_HL5_BY_ID = "GET_BUDGET_SPEND_REQUEST_HL5_BY_ID";
 var GET_BUDGET_SPEND_REQUEST_HL6_BY_ID = "GET_BUDGET_SPEND_REQUEST_HL6_BY_ID";
@@ -29,6 +32,25 @@ function getL5SpendBudgetReport(excludedStatusId, userId){
 	params.in_excluded_status_id = excludedStatusId;
 	var rdo = db.executeProcedure(GET_BUDGET_SPEND_REQUEST_HL5, params);
 	return db.extractArray(rdo.out_result);
+}
+
+function getSpendBudgetReportByRequestorId(excludedStatusId, requestorId, level, budgetSpendRequestId){
+	var sp = "GET_" + level + "_BUDGET_SPEND_REQUEST_BY_REQUESTOR_ID";
+    var params = {};
+    params.in_requestor_id = requestorId;
+    params.in_excluded_status_id = excludedStatusId;
+    params.in_budget_spend_request_id = budgetSpendRequestId || null;
+    var rdo = db.executeProcedure(sp, params);
+    return db.extractArray(rdo.out_result);
+}
+
+function getL5SpendBudgetRequestByL5Id(l5Id, excludedStatusId, userId){
+    var params = {};
+    params.in_user_id = userId;
+    params.in_excluded_status_id = excludedStatusId;
+    params.in_hl5_id = l5Id;
+    var rdo = db.executeProcedure(GET_BUDGET_SPEND_REQUEST_HL5_BY_HL5_ID, params);
+    return db.extractArray(rdo.out_result);
 }
 
 function getL5SpendBudgetReportById(l5Id, budgetSpendRequestId, excludedStatus, userId){
@@ -60,6 +82,15 @@ function getL6SpendBudgetReport(excludedStatusId, userId){
 	var rdo = db.executeProcedure(GET_BUDGET_SPEND_REQUEST_HL6, params);
 	
 	return db.extractArray(rdo.out_result);
+}
+
+function getL6SpendBudgetRequestByL6Id(l6Id, excludedStatusId, userId){
+    var params = {};
+    params.in_user_id = userId;
+    params.in_excluded_status_id = excludedStatusId;
+    params.in_hl6_id = l6Id;
+    var rdo = db.executeProcedure(GET_BUDGET_SPEND_REQUEST_HL6_BY_HL6_ID, params);
+    return db.extractArray(rdo.out_result);
 }
 
 function getL6SpendBudgetReportById(l6Id, budgetSpendRequestId, excludedStatus, userId){
@@ -142,4 +173,9 @@ function rejectBudgetSpendRequest(reqBody){
 
 function deleteBudgetSpendRequest(reqBody){
 	return db.executeScalar(UPD_STATUS, reqBody, "out_result");
+}
+
+function getBudgetSpendRequestForNotification(){
+    var rdo = db.executeProcedure(GET_BUDGET_SPEND_REQUEST_IN_PENDING_STATUS, {});
+    return db.extractArray(rdo.out_result);
 }

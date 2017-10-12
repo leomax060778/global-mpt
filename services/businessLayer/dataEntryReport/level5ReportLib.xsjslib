@@ -34,6 +34,9 @@ function getAllL5DEReport(userId) {
 
     return allHl5;
 }
+function getAllL5DEReportForDownload(userId) {
+    return dataL5DER.getAllLevel5ReportForDownload(userId);
+}
 
 function getL5ChangedFieldsByHl5Id(hl5Id, userId) {
     var l5ReportFields = this.getProcessingReportFields();

@@ -37,6 +37,7 @@ function report() { return "report"}
 function search() { return "search"}
 function userAccess() { return "User access"}
 function budgetSpendRequest() { return "SpendBudgetRequests" }
+function interlock() { return "Interlock" }
 /**************************/
 
 var spGetPermissionByName = "GET_PERMISSION_BY_NAME";
@@ -151,6 +152,19 @@ function getHash() {
 	if (rdo['OUT_RESULT']) {
 		return rdo['OUT_RESULT'][0]['SYS_UNIQUE_NUMBER'];
 	}
+}
+
+/********************** ENVIRONMENT ***********************/
+
+function getEnvironment(){
+	var environment = getConfigurationByName("Environment");
+	return environment[0].VALUE;
+}
+
+function getMailEnvironment() {
+	var environment = getEnvironment();
+	environment = (environment !== "Production")? '('+environment+')' : "";
+	return environment;
 }
 
 

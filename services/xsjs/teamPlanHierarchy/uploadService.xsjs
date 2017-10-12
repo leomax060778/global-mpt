@@ -14,6 +14,7 @@ var GET_IMPORTS = "GET_IMPORTS";
 var GET_PATHS = "GET_PATHS";
 var GET_L1_PATHS = "GET_L1_PATHS";
 var HL1 = "HL1";
+var UPLOAD_HLKPI = "UPLOAD_HLKPI";
 
 function processRequest() {
     return httpUtil.processRequest(handleGet,handlePost,handlePut,handleDelete,false,"",true);
@@ -29,7 +30,9 @@ function handlePost(reqBody, userSessionID) {
     else if (strUPLOADL5_L6 == UPLOADL5_L6_BUDGET){
         rdo = blUpload.insertDictionary(reqBody, userSessionID);
     }else if (method == UPLOAD_L1){
-        rdo = blUpload.insertDictionaryHl1(reqBody, userSessionID);
+        rdo = blUpload.insertDictionaryHL(reqBody, userSessionID);
+    }else if (method == UPLOAD_HLKPI){
+    	rdo = blUpload.insertDictionaryHlKPI(reqBody, userSessionID);
     }else{
         throw ErrorLib.getErrors().BadRequest("","uploadL5L6Service/handlePost","invalid parameter name (can be: UPLOADL5_L6 or UPLOADL5_L6_BUDGET)");
     }

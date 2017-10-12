@@ -9,6 +9,8 @@ var config = mapper.getDataConfig();
 var section = "FOR_SEARCH";
 var GET_ALL_HL3 = "GET_ALL_HL3";
 var GET_BY_HL3_ID = "GET_BY_HL3_ID";
+var GET_DATA_KPI = "GET_DATA_KPI";
+var categories = "HL2_CATEGORIES";
 
 // Main function
 function processRequest() {
@@ -25,6 +27,8 @@ function handlePost(reqBody, userSessionID) {
 // function to manage an get request
 function handleGet(parameters, userSessionID) {
 	var rdo = {};
+	var hl2_categories = httpUtil.getUrlParameters().get("HL2_CATEGORIES");
+	var in_hl2_id = httpUtil.getUrlParameters().get("HL2_ID");
 	if (parameters.length > 0) {
         var budgetYearId = parameters[1] && parameters[1].name == "BUDGET_YEAR_ID" ? parameters[1].value : null;
         var regionId = parameters[2] && parameters[2].name == "REGION_ID" ? parameters[2].value : null;
@@ -40,6 +44,9 @@ function handleGet(parameters, userSessionID) {
 			rdo = businessLavel3.getLevel3ById(parameters[0].value,
 					userSessionID);
 			httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
+		} else if (parameters[0].name === GET_DATA_KPI) {
+			rdo = businessLavel3.getLevel3Kpi(httpUtil.getUrlParameters().get("HL2_ID"), userSessionID);
+			httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
 		} else if (parameters[0].value == section){
 			var budgetYearId = httpUtil.getUrlParameters().get("BUDGET_YEAR_ID") || null;
 			var regionId = httpUtil.getUrlParameters().get("REGION_ID") || null;
@@ -52,10 +59,13 @@ function handleGet(parameters, userSessionID) {
             rdo = businessLavel3.getAllHl3GroupByHl1(budgetYearId, regionId, subRegionId);
             httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
         } else if (parameters[0] && parameters[0].value == 'BY_USER'){
-
             rdo = businessLavel3.getHl3ByUserGroupByHl1(userSessionID, budgetYearId, regionId, subRegionId);
             httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
-        } else {
+		}else if(hl2_categories && in_hl2_id && hl2_categories == categories){
+			rdo = businessLavel3.getHl3Categories(in_hl2_id);
+			httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
+		}
+		else {
 			throw ErrorLib.getErrors().BadRequest(
 					"",
 					"hl3Services/handleGet",

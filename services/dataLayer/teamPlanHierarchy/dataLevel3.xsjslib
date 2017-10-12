@@ -9,6 +9,7 @@ var INS_HL3 = "INS_HL3";
 // var GET_HL3_BY_USER = "GET_HL3_BY_USER";
 var GET_HL3_BY_HL2_ID = "GET_HL3_BY_HL2_ID";
 var GET_HL3_PATH_BY_USER_ID = "GET_HL3_PATH_BY_USER_ID";
+var GET_HL3_KPI_SUMMARY = "GET_HL3_KPI_SUMMARY";
 var spGetHl3AllocatedBudget = "GET_HL3_ALLOCATED_BUDGET";
 var spGetHl3ForSerach = "GET_HL3_FOR_SEARCH";
 var UPD_HL3 = "UPD_HL3";
@@ -21,6 +22,7 @@ var GET_ALL_HL3_VERSION_BY_HL3_ID = "GET_ALL_HL3_VERSION_BY_HL3_ID";
 var INS_HL3_VERSION = "INS_HL3_VERSION";
 var GET_HL3_VERSION_BY_FILTER = "GET_HL3_VERSION_BY_FILTER";
 var GET_HL3_VERSION_BY_ID = "GET_HL3_VERSION_BY_ID";
+var spGetHl3RemainingBudgetByHl3Id = "GET_HL3_REMAINING_BUDGET_BY_HL3_ID";
 
 // Insert a new hl3
 function insertHl3(objHl3, userId) {
@@ -33,8 +35,22 @@ function insertHl3(objHl3, userId) {
 	parameters.in_hl3_fnc_budget_total = objHl3.IN_HL3_FNC_BUDGET_TOTAL;
 	parameters.in_in_budget = objHl3.IN_IN_BUDGET;
 	parameters.in_user_id = userId;
+	parameters.in_import_id = objHl3.in_import_id ? objHl3.in_import_id : null;
+	parameters.in_imported = objHl3.imported ? objHl3.imported : 0;
 	parameters.out_hl3_id = '?';
 	return db.executeScalarManual(INS_HL3, parameters, 'out_hl3_id');
+}
+
+function insertHl3FromUpload(objHl3, userId){
+	var obj = {}
+		obj.IN_ACRONYM = objHl3.ACRONYM;
+		obj.IN_HL2_ID = objHl3.PARENT_ID;
+		obj.IN_HL3_DESCRIPTION = objHl3.HL3_DESCRIPTION;
+		obj.IN_BUSINESS_OWNER_ID = 0;
+		obj.IN_HL3_FNC_BUDGET_TOTAL = objHl3.HL3_FNC_BUDGET_TOTAL;
+		obj.IN_IN_BUDGET = null;
+		obj.in_import_id = objHl3.IMPORT_ID ? objHl3.IMPORT_ID : null;
+	return insertHl3(obj,userId);
 }
 
 /* Execute query to update an HL3 */
@@ -70,6 +86,21 @@ function getAllLevel3(objHl2, userId, isSA) {
 	result.out_total_budget = list.out_total_budget;
 	result.out_remaining_budget = list.out_remaining_budget;
 	return result;
+}
+
+function getHl3KpiSummary(hl2Id, userId, isSA){
+
+    if(hl2Id){
+    	var parameters = {
+            in_user_id: userId,
+            in_is_super_Admin: isSA ? 1 : 0,
+            in_hl2_id: hl2Id
+		};
+        var result = db.executeProcedureManual(GET_HL3_KPI_SUMMARY, parameters);
+        return db.extractArray(result.out_result);
+    }
+    return null;
+
 }
 
 function getHl3PathByUserId(userId, isSA, budgetYearId, regionId, subRegionId) {
@@ -124,6 +155,16 @@ function getHl3AllocatedBudget(hl3Id, hl4Id) {
 		return rdo;
 	}
 	return null;
+}
+
+function getHl3RemainingBudgetByHl3Id(hl3Id) {
+    var params = { 'in_hl3_id': hl3Id};
+
+    if(hl3Id){
+        var rdo = db.executeDecimalManual(spGetHl3RemainingBudgetByHl3Id, params, 'out_result');
+        return rdo;
+    }
+    return null;
 }
 
 function getLevel3ForSearch(userSessionID, isSA, budget_id, region_id, subregion_id, offset, limit){

@@ -21,13 +21,13 @@ function getAllMarketingOrganizationByLevelHlId(level, hlId){
 
 function InsertMarketingOrganization(organization, userId){
 	if(organization)
-		return dbMO.InsertMarketingOrganization(organization.NAME, userId, true);
+		return dbMO.InsertMarketingOrganization(organization.NAME, organization.CRM_KEY, userId, true);
 	return ErrorLib.getErrors().BadRequest("","","Marketing Organization is empty");
 }
 
 function UpdateMarketingOrganization(organization, userId){
 	if(organization)
-		return dbMO.UpdateMarketingOrganization(organization.SALES_ORGANIZATION_ID, organization.NAME, userId, true);
+		return dbMO.UpdateMarketingOrganization(organization.SALES_ORGANIZATION_ID, organization.NAME, organization.CRM_KEY, userId, true);
 	return ErrorLib.getErrors().BadRequest("","","Marketing Organization is empty");
 }
 

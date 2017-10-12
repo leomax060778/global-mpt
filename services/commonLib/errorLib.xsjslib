@@ -118,14 +118,15 @@ function getErrors(){
         return e;
     }
 
-    Errors.Hl6AcronymError  = function(message,stack, details){
+    Errors.AcronymError  = function(message,stack, details){
         var e={};
-        e.name = "Hl6 Acronym error";
-        e.message = message || "Hl6 Acronym error";
+        e.name = "Acronym error";
+        e.message = message || "Acronym error";
         e.code = 453;
         e.stack = stack || commonStack;
         e.details = details || "An unexpected error occurred, please try again!";
         e.data = "";
+        e.level = "";
         e.toString = function (){return "name:"+e.name+" -message:"+e.message+" -code:"+
             e.code+" -stack:"+e.stack+" -details:"+e.details};
         return e;
@@ -181,6 +182,33 @@ function getErrors(){
             e.code+" -stack:"+e.stack+" -details:"+e.details};
         return e;
     }
+
+
+    Errors.CRMConstraintError  = function(message,stack, details){
+        var e={};
+        e.name = "CRM Constraint Error";
+        e.message = message || "THE CRM ID IS ALREADY IN USE. PLEASE TRY TO SAVE THE RECORD AGAIN.";
+        e.code = 458;
+        e.stack = stack || commonStack;
+        e.details = details || "THE CRM ID IS ALREADY IN USE. PLEASE TRY TO SAVE THE RECORD AGAIN.";
+        e.row = {};
+        e.toString = function (){return "name:"+e.name+" -message:"+e.message+" -code:"+
+            e.code+" -stack:"+e.stack+" -details:"+e.details};
+        return e;
+    }
+
+    Errors.ConstraintError  = function(message,stack, details){
+        var e={};
+        e.name = "Data Constraint Error";
+        e.message = message || "THE DATA IS ALREADY IN USE. PLEASE CHECK AND TRY AGAIN.";
+        e.code = 459;
+        e.stack = stack || commonStack;
+        e.details = details || "THE DATA IS ALREADY IN USE. PLEASE CHECK AND TRY AGAIN.";
+        e.row = {};
+        e.toString = function (){return "name:"+e.name+" -message:"+e.message+" -code:"+
+            e.code+" -stack:"+e.stack+" -details:"+e.details};
+        return e;
+    };
     /******************* 500 **********************************************/
     Errors.InternalServerError  = function(message,stack, details){
     	var e={};
@@ -257,11 +285,13 @@ function getErrors(){
         '450':  Errors.CustomError(),
         '451':  Errors.LoginError(),
         '452':  Errors.MailError(),
-        '453':  Errors.Hl6AcronymError(),
+        '453':  Errors.AcronymError(),
         '454':  Errors.OutOfRange(),
         '455':  Errors.NoCurrencyForBudgetYear(),
         '456':  Errors.ImportError(),
         '457':  Errors.ConfirmDelete(),
+        '458':  Errors.CRMConstraintError(),
+        '459':  Errors.ConstraintError(),
         '500':  Errors.InternalServerError(),
         '501':  Errors.NotImplemented(),
         '503':  Errors.ServiceUnavailable(),

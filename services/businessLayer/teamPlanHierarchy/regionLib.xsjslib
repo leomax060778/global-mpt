@@ -9,6 +9,17 @@ function getAllRegions() {
 	return dataRegion.getAllRegions();
 }
 
+function getRegionSubregion(){
+	var regions = getAllRegions();
+    regions = JSON.parse(JSON.stringify(regions));
+
+    regions.forEach(function (region) {
+    	region.MARKET_UNIT = dataSubRegion.getSubRegionsByRegionId(region.REGION_ID);
+	});
+
+    return regions;
+}
+
 function getRegionById(regionId) {
 	return dataRegion.getRegionById(regionId);
 }

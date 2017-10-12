@@ -6,6 +6,10 @@ var dataCampaignObjective = mapper.getDataCampaignObjective();
 /** ***********END INCLUDE LIBRARIES*************** */
 
 var OBJECTIVE_EXISTS = "Already exists an Objective with the name you want to enter.";
+var OBJECTIVE_DATA = "No data found.";
+var OBJECTIVE_CRM_KEY_EXISTS = "Another Objective has the same CRM key.";
+var OBJECTIVE_NAME = "Objective Name is missing.";
+var OBJECTIVE_CRM_KEY= "Objective CRM key is missing.";
 
 function getObjectiveAnswerByObjectiveId(objectiveAnswer, objectiveId){
 	return objectiveAnswer.OBJECTIVE_ID == objectiveId;
@@ -45,7 +49,8 @@ function checkInUseObjectiveById(objectiveData, userId){
 }
 
 function updateObjective(objectiveData, userId){
-	return dataObjective.updateObjective(objectiveData.IN_OBJECTIVE_ID, objectiveData.IN_NAME, userId);
+    validateObjective(objectiveData);
+	return dataObjective.updateObjective(objectiveData.IN_OBJECTIVE_ID, objectiveData.IN_NAME, objectiveData.IN_CRM_KEY, userId);
 }
 
 function deleteObjective(objectiveData, userId, confirm){
@@ -73,17 +78,27 @@ function deleteObjective(objectiveData, userId, confirm){
 }
 
 function insertObjective(objectiveData, userId) {
-	
-	if(existObjectiveByName(objectiveData))
-		throw ErrorLib.getErrors().BadRequest("", "objectivesService/handlePost/insertObjective", OBJECTIVE_EXISTS);
-	
-	return dataObjective.insertObjective(objectiveData.IN_NAME, userId);
+    validateObjective(objectiveData);
+	return dataObjective.insertObjective(objectiveData.IN_NAME, objectiveData.IN_CRM_KEY, userId);
 }
 
-function existObjectiveByName(objectiveData){
-	var aux = dataObjective.getObjectiveByName(objectiveData.IN_NAME);
-	
-	if(aux)
-		return true;
-	return false;
+function validateObjective(data) {
+    if(!data)
+        throw ErrorLib.getErrors().CustomError("", "objectiveService/handlePost/validateObjective", OBJECTIVE_DATA);
+
+    if(!data.IN_NAME)
+        throw ErrorLib.getErrors().CustomError("", "objectiveService/handlePost/validateObjective", OBJECTIVE_NAME);
+
+    if(!data.IN_CRM_KEY)
+        throw ErrorLib.getErrors().CustomError("", "objectiveService/handlePost/validateObjective", OBJECTIVE_CRM_KEY);
+
+    var objective = dataObjective.getObjectiveByName(data.IN_NAME);
+    if(objective && Number(data.IN_OBJECTIVE_ID) !== Number(objective.OBJECTIVE_ID))
+        throw ErrorLib.getErrors().CustomError("", "objectiveService/handlePost/validateObjective", OBJECTIVE_EXISTS);
+
+    objective = dataObjective.getObjectiveByCrmKey(data.IN_CRM_KEY);
+    if(objective && Number(data.IN_OBJECTIVE_ID) !== Number(objective.OBJECTIVE_ID))
+        throw ErrorLib.getErrors().CustomError("", "objectiveService/handlePost/validateObjective", OBJECTIVE_CRM_KEY_EXISTS);
+
+    return true;
 }

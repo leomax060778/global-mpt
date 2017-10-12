@@ -14,11 +14,25 @@ var businessError = mapper.getLogError();
 var businessBudget = mapper.getBudgetYear();
 var dataHl2User = mapper.getDataLevel2User();
 var level2 = mapper.getLevel2();
+var expectedOutcomesLib = mapper.getExpectedOutcomes();
+var dataExOut = mapper.getDataExpectedOutcome();
+var dataCategoryOptionLevel = mapper.getDataCategoryOptionLevel();
+var dataCategory = mapper.getDataCategory();
+
 /** ***********END INCLUDE LIBRARIES*************** */
 
 var TEAM_TYPE = {
     REGIONAL: 1,
     CENTRAL: 2
+};
+
+var HIERARCHY_LEVEL = {
+    HL1: 6,
+    HL2: 5,
+    HL3: 4,
+    HL4: 1,
+    HL5: 2,
+    HL6: 3
 };
 
 var map = {
@@ -32,7 +46,16 @@ var map = {
     IN_TEAM_TYPE_ID: "TEAM_TYPE_ID",
     IN_REGION_ID: "REGION_ID",
     IN_SUBREGION_ID: "SUBREGION_ID",
-    IN_USER_ID: "USER_ID"
+    IN_USER_ID: "USER_ID",
+    IN_OPTION_ID: "OPTION_ID",
+    IN_OPTION_NAME: "OPTION_NAME",
+    IN_CATEGORY_OPTION_LEVEL_ID: "CATEGORY_OPTION_LEVEL_ID",
+    IN_AMOUNT: "AMOUNT",
+    IN_CATEGORY_NAME: "CATEGORY_NAME",
+    IN_CATEGORY_ID: "CATEGORY_ID",
+    IN_UPDATED: "UPDATED",
+    IN_ALLOCATION_CATEGORY_ID: "ALLOCATION_CATEGORY_ID",
+    IN_HL1_CATEGORY_OPTION_ID: "HL1_CATEGORY_OPTION_ID"
 };
 
 var L1_MSG_LEVEL_1_EXISTS = "Another Plan with the same acronym and budget year already exists";
@@ -42,16 +65,45 @@ var L1_MSG_PLAN_CANT_DELETE = "The selected Plan can not be deleted because has 
 var L1_MSG_USER_NOT_FOUND = "The User can not be found.";
 var L1_MSG_TYPE_VALUE_ERROR = "Some values are not valid.";
 var L1_MSG_MARKET_UNIT_ERROR = "Market Unit is not valid for the selected Region.";
+var L1_CAMPAIGN_FORECASTING_KPIS_COMMENT = "Please enter a comment to explain expected outcomes as you didn't select any Campaign type.";
+var L1_CAMPAIGN_FORECASTING_KPIS_DETAILS = "Campaign Forecasting / KPIS details amount value is not valid.";
+var L1_CAMPAIGN_FORECASTING_KPIS_DETAILS_EURO = "Campaign Forecasting / KPIS details euro value is not valid.";
+var L1_CAMPAIGN_FORECASTING_KPIS_NOT_VALID = "Campaign Forecasting / KPIS is not valid.";
+var L1_CAMPAIGN_FORECASTING_KPIS_VOLUME = "Campaign Forecasting / KPIS volume must be equal or lower than available volume.";
+var L1_CAMPAIGN_FORECASTING_KPIS_VALUE = "Campaign Forecasting / KPIS value must be equal or lower than available value.";
+
+
+var L1_CATEGORY_NOT_EMPTY = "Category cannot be empty.";
+var L1_CATEGORY_INCORRECT_NUMBER = "Incorrect number of categories.";
+var L1_CATEGORY_NOT_VALID = "Category is not valid.";
+var L1_CATEGORY_OPTIONS_INCORRECT_NUMBER = "Incorrect number of options.";
+var L1_CATEGORY_OPTION_NOT_VALID = "Option is not valid.";
+var L1_CATEGORY_TOTAL_PERCENTAGE = "Budget Distribution should be equal to 100%.";
+var L1_BUDGET_ZERO_CATEGORY_TOTAL_PERCENTAGE_ZERO = "When Plan budget is zero then Category total percentage should be equal to 0%.";
+var L1_CATEGORY_OPTIONS_NOT_EMPTY = "Option percentage should be less than or equal to 100%.";
+
 
 function getAllLevel1() {
     return dataHl1.getAllLevel1();
 }
 
-function getLevel1ById(hl1Id) {
+function getLevel1ById(hl1Id, carryOver) {
     if (!hl1Id)
         throw ErrorLib.getErrors().BadRequest("The Parameter hl1Id is not found", "level1Services/handleGet/getLevel1ById", L1_MSG_PLAN_NOT_FOUND);
 
-    return dataHl1.getLevel1ById(hl1Id);
+    var hl1Result = {};
+    hl1Result = JSON.parse(JSON.stringify(dataHl1.getLevel1ById(hl1Id)));
+    var hl1BudgetAllocated = dataHl1.getHl1AllocatedBudget(hl1Result.HL1_ID, 0);
+    hl1Result.expectedOutcomes = expectedOutcomesLib.getExpectedOutcomesByHL1Id(hl1Id);
+
+    if (carryOver) {
+        hl1Result.hl2_category = level2.getCarryOverHl1CategoryOption(hl1Id);
+    } else {
+        hl1Result.hl1_category = getCategoryOption(hl1Id);
+    }
+
+    hl1Result.HL1_BUDGET_REMAINING = Number(hl1Result.BUDGET) - Number(hl1BudgetAllocated);
+    return hl1Result;
 }
 
 /*INSERT A NEW HL2 WITH CREO O MORE USERS ASICIATIONS*/
@@ -85,6 +137,10 @@ function insertHl1(data, userId) {
             }
         }
     }
+
+    insertExpectedOutcomes(data, userId);
+    insertCategoryOption(data, userId);
+
     return hl1_id;
 }
 
@@ -94,7 +150,7 @@ function insertHl1FromUpload(data, userId) {
     validateHl1ForUpload(data);
 
     var hl1_id = dataHl1.insertLevel1(data.ACRONYM, data.DESCRIPTION, data.BUDGET_YEAR_ID, data.REGION_ID, data.SUBREGION_ID
-        , userId, data.BUDGET, data.TEAM_TYPE_ID, data.IMPLEMENT_EXECUTION_LEVEL, data.CRT_RELATED);
+        , userId, data.BUDGET, data.TEAM_TYPE_ID, data.IMPLEMENT_EXECUTION_LEVEL, data.CRT_RELATED, data.IMPORT_ID, 1);
 
     //INSERT USERS RELATED TO HL2
     data.HL1_ID = hl1_id;
@@ -123,21 +179,21 @@ function insertHl1FromUpload(data, userId) {
 }
 
 //Insert new HL1 version based on the current HL1.
-function insertLevel1Version(currentHL1, userId){
-	//Insert the new version
-	return dataHl1.insertLevel1Version(	currentHL1.HL1_ID, 
-								currentHL1.VERSION,
-								currentHL1.ACRONYM,
-								currentHL1.DESCRIPTION,
-								currentHL1.BUDGET_YEAR_ID,
-								currentHL1.REGION_ID,
-								currentHL1.SUBREGION_ID,
-								userId, 
-								currentHL1.BUDGET,
-								currentHL1.TEAM_TYPE_ID,
-								currentHL1.IMPLEMENT_EXECUTION_LEVEL,
-								currentHL1.CRT_RELATED
-								);
+function insertLevel1Version(currentHL1, userId) {
+    //Insert the new version
+    return dataHl1.insertLevel1Version(currentHL1.HL1_ID,
+        currentHL1.VERSION,
+        currentHL1.ACRONYM,
+        currentHL1.DESCRIPTION,
+        currentHL1.BUDGET_YEAR_ID,
+        currentHL1.REGION_ID,
+        currentHL1.SUBREGION_ID,
+        userId,
+        currentHL1.BUDGET,
+        currentHL1.TEAM_TYPE_ID,
+        currentHL1.IMPLEMENT_EXECUTION_LEVEL,
+        currentHL1.CRT_RELATED
+    );
 }
 
 function updateHl1(data, userId) {
@@ -147,13 +203,13 @@ function updateHl1(data, userId) {
     var hl1Id = data.HL1_ID;
     var currentHL1 = dataHl1.getLevel1ById(data.HL1_ID);
     currentHL1 = JSON.parse(JSON.stringify(currentHL1));
-    
+
     var budgetChanged = Number(currentHL1.BUDGET) != Number(data.BUDGET);
-    
+
     //Insert new HL1 version, if the date is into the valid range
-    if(businessBudget.getLockFlagByHlIdLevel(hl1Id, 'HL1') && validateChanges(currentHL1, data)){
-    	insertLevel1Version(currentHL1, userId);
-    	currentHL1.VERSION += 1;
+    if (businessBudget.getLockFlagByHlIdLevel(hl1Id, 'HL1') && validateChanges(currentHL1, data)) {
+        insertLevel1Version(currentHL1, userId);
+        currentHL1.VERSION += 1;
     }
     var updated = dataHl1.updateLevel1(data.HL1_ID, data.ACRONYM, data.DESCRIPTION, data.BUDGET_YEAR_ID, data.REGION_ID, data.SUBREGION_ID, userId, data.BUDGET, data.TEAM_TYPE_ID, data.IMPLEMENT_EXECUTION_LEVEL, data.CRT_RELATED, currentHL1.VERSION);
 
@@ -217,6 +273,9 @@ function updateHl1(data, userId) {
             dataHl2User.delAllLevel2User(hl2.HL2_ID, userId);
         });
     }
+
+    updateExpectedOutcomes(data, userId);
+    updateCategoryoption(data, userId);
     return updated;
 }
 
@@ -239,6 +298,9 @@ function deleteHl1(hl1, userId) {
     if (dataHl1.countRelatedObjects(hl1Id))
         throw ErrorLib.getErrors().CustomError("", "hl2Services/handlePost/deleteHl2", L1_MSG_PLAN_CANT_DELETE);
 
+    dataExOut.deleteHl1ExpectedOutcomesDetail(hl1Id, userId);
+    dataExOut.deleteHl1ExpectedOutcomes(hl1Id, userId);
+    dataCategoryOptionLevel.deleteCategoryOption(hl1Id, userId, 'HL1');
     return dataHl1.deleteHl1(hl1Id, userId);
 }
 
@@ -290,11 +352,83 @@ function getLevel1ByUser(userId) {
 
 function getLevel1ByFilters(budgetYearId, regionId, subRegionId, userId) {
     var isSA = false;
-
+    var result = {};
     if (config.getApplySuperAdminToAllInitiatives()) {
         isSA = userbl.isSuperAdmin(userId);
     }
-    return dataHl1.getLevel1ByFilters(budgetYearId, regionId, subRegionId, userId, isSA);
+
+    var list = JSON.parse(JSON.stringify(dataHl1.getLevel1ByFilters(budgetYearId, regionId, subRegionId, userId, isSA)));
+    result.out_result = {};
+    list.out_result.forEach(function (row) {
+        result.out_result[row.ACRONYM] = result.out_result[row.ACRONYM] || row;
+        result.out_result[row.ACRONYM].BUDGET = row.L1_BUDGET;
+        result.out_result[row.ACRONYM].L1_BUDGET_PERCENTAGE = row.L1_BUDGET_PERCENTAGE;
+        result.out_result[row.ACRONYM].L1_BUDGET_REMAINING = row.L1_BUDGET_REMAINING;
+        result.out_result[row.ACRONYM].L1_BUDGET_ALLOCATED = row.L1_BUDGET_ALLOCATED;
+        result.out_result[row.ACRONYM].CHILDREN = result.out_result[row.ACRONYM].CHILDREN || [];
+        if (row.BUDGET_DISTRIBUTION_AMOUNT) {
+            result.out_result[row.ACRONYM].CHILDREN.push({
+                CATEGORY_NAME: row.CATEGORY_NAME,
+                OPTION_NAME: row.OPTION_NAME,
+                BUDGET_DISTRIBUTION_PERCENTAGE: row.BUDGET_DISTRIBUTION_PERCENTAGE,
+                BUDGET_DISTRIBUTION_AMOUNT: row.BUDGET_DISTRIBUTION_AMOUNT,
+                SUB_AMOUNT: row.SUB_AMOUNT
+            });
+        }
+    });
+    // v Object.values(result.out_result) v //
+    result.out_result = Object.keys(result.out_result).map(function (k) {
+        return result.out_result[k];
+    });
+
+    result.out_total_budget = list.out_total_budget;
+    return result;
+}
+
+function getLevel1Kpi(budgetYearId, regionId, subRegionId, userId) {
+    var isSA = false;
+    var result = {};
+    if (config.getApplySuperAdminToAllInitiatives()) {
+        isSA = userbl.isSuperAdmin(userId);
+    }
+
+    var listFromData = dataHl1.getHl1KpiSummary(budgetYearId, regionId, subRegionId, userId, isSA);
+
+    var mapKpi = {};
+
+    listFromData.forEach(function (hl) {
+        mapKpi[hl.L1_ACRONYM] = mapKpi[hl.L1_ACRONYM] || {
+            HL1_ID: hl.HL1_ID,
+            ACRONYM: hl.L1_ACRONYM,
+            BUDGET_YEAR: hl.BUDGET_YEAR,
+            REGION_NAME: hl.REGION_NAME,
+            SUBREGION_NAME: hl.MARKET_UNIT_NAME
+        };
+        var auxKpi = mapKpi[hl.L1_ACRONYM].kpi || [];
+        if (hl.KPI_TYPE_NAME) {
+            auxKpi.push({
+                ALLOCATED_VALUE: hl.TOTAL_VALUE_ALLOCATED
+                , ALLOCATED_VOLUME: hl.TOTAL_VOLUME_ALLOCATED
+                , OUTCOMES_NAME: hl.KPI_TYPE_NAME
+                , OUTCOMES_TYPE_NAME: hl.KPI_OPTION_NAME
+                , TOTAL_VALUE: hl.TOTAL_VALUE
+                , TOTAL_VOLUME: hl.TOTAL_VOLUME
+            });
+        }
+        mapKpi[hl.L1_ACRONYM].kpi = auxKpi;
+    });
+
+    var result = {};
+    result.out_result = Object.keys(mapKpi).map(function (e) {
+        return mapKpi[e]
+    });
+    return result;
+}
+
+
+function getExpectedOutcomeByL1Id(hl1Id) {
+    var listEO = expectedOutcomesLib.getExpectedOutcomesByHL1Id(hl1Id, true);
+    return listEO.detail;
 }
 
 function getLevel1ForSearch(budgetYearId, regionId, subRegionId, limit, offset, userSessionID) {
@@ -369,6 +503,9 @@ function validateHl1(data) {
         if (oldHl1 && oldHl1.HL1_ID != data.HL1_ID)
             throw ErrorLib.getErrors().CustomError("", "hl1Services/handlePost/insertHl1", L1_MSG_LEVEL_1_EXISTS);
 
+        validateKpi(data);
+        validateCategoryOption(data);
+
         isValid = true;
     } catch (e) {
         if (e.code == 450)
@@ -390,7 +527,6 @@ function validateHl1ForUpload(data) {
         'ACRONYM',
         'DESCRIPTION',
         'BUDGET_YEAR_ID',
-        'BUDGET',
         'TEAM_TYPE_ID',
         'IMPLEMENT_EXECUTION_LEVEL',
         'CRT_RELATED'
@@ -408,8 +544,10 @@ function validateHl1ForUpload(data) {
     }
 
     //validate data types
+    var currentKey = "";
     try {
         keys.forEach(function (key) {
+            currentKey = key;
             if (data[key] === null || data[key] === undefined) {
                 errors[key] = null;
                 throw BreakException;
@@ -445,7 +583,7 @@ function validateHl1ForUpload(data) {
     } catch (e) {
         if (e == BreakException) {
             //throw ErrorLib.getErrors().CustomError("", "hl1Services/handlePost/validateHl1ForUpload", JSON.stringify(errors));
-            var error = ErrorLib.getErrors().ImportError("", "hl1Services/handlePost/validateHl1ForUpload", L1_MSG_TYPE_VALUE_ERROR);
+            var error = ErrorLib.getErrors().ImportError("", "hl1Services/handlePost/validateHl1ForUpload: (" + currentKey + ")", L1_MSG_TYPE_VALUE_ERROR);
             error.row = valuesToArray(errors);
             throw error;
         }
@@ -460,12 +598,12 @@ function validateHl1ForUpload(data) {
     }
 
     //validate regional plan
-    if(data.REGIONAL_TEAM == TEAM_TYPE.REGIONAL){
+    if (data.REGIONAL_TEAM == TEAM_TYPE.REGIONAL) {
         //case not region = ALL, Market Unit = NONE
-        if(data.REGION_ID){
-            if(data.SUBREGION_ID){
+        if (data.REGION_ID) {
+            if (data.SUBREGION_ID) {
                 valid = dataRegion.validateRegionAndMarketUnit(data.REGION_ID, data.SUBREGION_ID);
-                if (!valid){
+                if (!valid) {
                     var error = ErrorLib.getErrors().ImportError("", "hl1Services/handlePost/validateHl1ForUpload", L1_MSG_MARKET_UNIT_ERROR);
                     error.row = valuesToArray(data);
                     throw error;
@@ -501,7 +639,7 @@ function validateType(key, value) {
             valid = !isNaN(value) && value > 0;
             break;
         case 'BUDGET':
-            valid = Number(value) > 0;
+            valid = Number(value) >= 0;
             break;
     }
     return valid;
@@ -581,71 +719,267 @@ function checkPermission(userSessionID, method, hl1Id) {
     }
 }
 
-function validateChanges(originalHL1, newHL1){
-	var validation = false;
-	
-	Object.keys(newHL1).forEach(function(key){
-		switch(key){
-			case 'BUDGET_YEAR_ID':
-				if(Number(originalHL1.BUDGET_YEAR_ID) !== Number(newHL1.BUDGET_YEAR_ID)){
-					validation = true;
-				}
-				break;
-			case 'ACRONYM':
-				if(originalHL1.ACRONYM !== newHL1.ACRONYM){
-					validation = true;
-				}
-				break;
-			case 'DESCRIPTION':
-				if(originalHL1.DESCRIPTION !== newHL1.DESCRIPTION){
-					validation = true;
-				}
-				break;
-			case 'BUDGET':
-				if(Number(originalHL1.BUDGET) !==  Number(newHL1.BUDGET)){
-					validation = true;
-				}
-				break;
-			case 'IMPLEMENT_EXECUTION_LEVEL':
-				if(originalHL1.IMPLEMENT_EXECUTION_LEVEL !== newHL1.IMPLEMENT_EXECUTION_LEVEL){
-					validation = true;
-				}
-				break;
-			case 'CRT_RELATED':
-				if(originalHL1.CRT_RELATED !== newHL1.CRT_RELATED){
-					validation = true;
-				}
-				break;
-			case 'REGION_ID':
-				if(originalHL1.REGION_ID !== newHL1.REGION_ID){
-					validation = true;
-				}
-				break;
-			case 'SUBREGION_ID':
-				if(originalHL1.SUBREGION_ID !== newHL1.SUBREGION_ID){
-					validation = true;
-				}
-				break;
-			case 'TEAM_TYPE_ID':
-				if(Number(originalHL1.TEAM_TYPE_ID) !== Number(newHL1.TEAM_TYPE_ID)){
-					validation = true;
-				}
-				break;
-		}
-	});
-	
-	return validation;
+function validateChanges(originalHL1, newHL1) {
+    var validation = false;
+
+    Object.keys(newHL1).forEach(function (key) {
+        switch (key) {
+            case 'BUDGET_YEAR_ID':
+                if (Number(originalHL1.BUDGET_YEAR_ID) !== Number(newHL1.BUDGET_YEAR_ID)) {
+                    validation = true;
+                }
+                break;
+            case 'ACRONYM':
+                if (originalHL1.ACRONYM !== newHL1.ACRONYM) {
+                    validation = true;
+                }
+                break;
+            case 'DESCRIPTION':
+                if (originalHL1.DESCRIPTION !== newHL1.DESCRIPTION) {
+                    validation = true;
+                }
+                break;
+            case 'BUDGET':
+                if (Number(originalHL1.BUDGET) !== Number(newHL1.BUDGET)) {
+                    validation = true;
+                }
+                break;
+            case 'IMPLEMENT_EXECUTION_LEVEL':
+                if (originalHL1.IMPLEMENT_EXECUTION_LEVEL !== newHL1.IMPLEMENT_EXECUTION_LEVEL) {
+                    validation = true;
+                }
+                break;
+            case 'CRT_RELATED':
+                if (originalHL1.CRT_RELATED !== newHL1.CRT_RELATED) {
+                    validation = true;
+                }
+                break;
+            case 'REGION_ID':
+                if (originalHL1.REGION_ID !== newHL1.REGION_ID) {
+                    validation = true;
+                }
+                break;
+            case 'SUBREGION_ID':
+                if (originalHL1.SUBREGION_ID !== newHL1.SUBREGION_ID) {
+                    validation = true;
+                }
+                break;
+            case 'TEAM_TYPE_ID':
+                if (Number(originalHL1.TEAM_TYPE_ID) !== Number(newHL1.TEAM_TYPE_ID)) {
+                    validation = true;
+                }
+                break;
+        }
+    });
+
+    return validation;
 }
 
-function getHistory(HL1_ID){
+function getHistory(HL1_ID) {
     return dataHl1.getAllHl1VersionByHl1Id(HL1_ID);
 }
 
-function getHistoryDetail(HL_ID, VERSION){
+function getHistoryDetail(HL_ID, VERSION) {
     return dataHl1.getLevel1VersionById(HL_ID, VERSION);
 }
 
-function getHistoryAllFirstVersion(budgetYearId, regionId, subRegionId, userSessionID){
+function getHistoryAllFirstVersion(budgetYearId, regionId, subRegionId, userSessionID) {
     return dataHl1.getLevel1VersionForFilter(budgetYearId, regionId, subRegionId,
         userSessionID, userbl.isSuperAdmin(userSessionID));
+}
+
+function insertExpectedOutcomes(data, userId) {
+    var outcome = {};
+    outcome.CREATED_USER_ID = userId;
+    outcome.HL1_ID = data.HL1_ID;
+    outcome.COMMENTS = data.hl1_expected_outcomes.COMMENTS || "";
+    var hl1_expected_outcomes_id = dataExOut.insertHL1ExpectedOutcomes(outcome.HL1_ID, outcome.COMMENTS, outcome.CREATED_USER_ID);
+
+    if (data.hl1_expected_outcomes.hl1_expected_outcomes_details.length) {
+        var hl1ExpectedOutcomesDetail = [];
+        data.hl1_expected_outcomes.hl1_expected_outcomes_details.forEach(function (expectedOutcomeDetail) {
+            var hl1Detail = {
+                in_hl1_expected_outcomes_id: hl1_expected_outcomes_id,
+                in_expected_outcome_level_id: dataExOut.getExpectedOutcomeLevelByLevelAndOptionId(HIERARCHY_LEVEL.HL1, expectedOutcomeDetail.OUTCOMES_ID).EXPECTED_OUTCOME_LEVEL_ID,
+                in_euro_value: expectedOutcomeDetail.EURO_VALUE,
+                in_volume_value: Number(expectedOutcomeDetail.VOLUME_VALUE),
+                in_created_user_id: userId
+            };
+            hl1ExpectedOutcomesDetail.push(hl1Detail);
+            // expectedOutcomeDetail.CREATED_USER_ID = userId;
+            // expectedOutcomeDetail.HL1_EXPECTED_OUTCOMES_ID = hl1_expected_outcomes_id;
+            // expectedOutcomeDetail.VOLUME_VALUE = Number(expectedOutcomeDetail.VOLUME_VALUE);
+            // expectedOutcomeDetail.EXPECTED_OUTCOME_LEVEL_ID = dataExOut.getExpectedOutcomeLevelByLevelAndOptionId(HIERARCHY_LEVEL.HL1, expectedOutcomeDetail.OUTCOMES_ID).EXPECTED_OUTCOME_LEVEL_ID;
+            // dataExOut.insertHL1ExpectedOutcomesDetail(expectedOutcomeDetail.HL1_EXPECTED_OUTCOMES_ID, expectedOutcomeDetail.EXPECTED_OUTCOME_LEVEL_ID, expectedOutcomeDetail.EURO_VALUE, expectedOutcomeDetail.VOLUME_VALUE, expectedOutcomeDetail.CREATED_USER_ID || userId);
+        });
+
+        dataExOut.insertHL1ExpectedOutcomesDetail(hl1ExpectedOutcomesDetail);
+    }
+}
+
+function updateExpectedOutcomes(data, userId) {
+    dataExOut.deleteHl1ExpectedOutcomesDetail(data.HL1_ID, userId);
+    dataExOut.deleteHl1ExpectedOutcomes(data.HL1_ID, userId);
+    insertExpectedOutcomes(data, userId);
+}
+
+function validateKpi(data) {
+    if (data.hl1_expected_outcomes) {
+
+        if ((!data.hl1_expected_outcomes.hl1_expected_outcomes_details || !data.hl1_expected_outcomes.hl1_expected_outcomes_details.length)
+            && !data.hl1_expected_outcomes.COMMENTS)
+            throw ErrorLib.getErrors().CustomError("", "hl1Services/handlePost/insertHl1", L1_CAMPAIGN_FORECASTING_KPIS_COMMENT);
+
+        data.hl1_expected_outcomes.hl1_expected_outcomes_details.forEach(function (kpiDetail) {
+            if (Number(kpiDetail.VOLUME_VALUE) != 0 && !Number(kpiDetail.VOLUME_VALUE))
+                throw ErrorLib.getErrors().CustomError("", "hl1Services/handlePost/insertHl1", L1_CAMPAIGN_FORECASTING_KPIS_DETAILS);
+            if (!kpiDetail.EURO_VALUE || !Number(kpiDetail.EURO_VALUE))
+                throw ErrorLib.getErrors().CustomError("", "hl1Services/handlePost/insertHl1", L1_CAMPAIGN_FORECASTING_KPIS_DETAILS_EURO);
+            if (!kpiDetail.OUTCOMES_ID || !Number(kpiDetail.OUTCOMES_ID))
+                throw ErrorLib.getErrors().CustomError("", "hl1Services/handlePost/insertHl1", L1_CAMPAIGN_FORECASTING_KPIS_NOT_VALID);
+        });
+    }
+    return true;
+}
+
+function validateCategoryOption(data) {
+    if (!data.hl1_category || !data.hl1_category.length)
+        throw ErrorLib.getErrors().CustomError("", "hl1Services/handlePost/validateCategoryOption", L1_CATEGORY_NOT_EMPTY);
+
+    if (!data.HL1_ID && data.hl1_category.length !== dataCategory.getAllocationCategoryCountByHlId("hl1"))
+        throw ErrorLib.getErrors().CustomError("", "hl1Services/handlePost/validateCategoryOption", L1_CATEGORY_INCORRECT_NUMBER);
+    var percentagePerOption = 0;
+    for (var i = 0; i < data.hl1_category.length; i++) {
+        var hl1Category = data.hl1_category[i];
+
+        if (!hl1Category.CATEGORY_ID || !Number(hl1Category.CATEGORY_ID))
+            throw ErrorLib.getErrors().CustomError("", "hl1Services/handlePost/validateCategoryOption", L1_CATEGORY_NOT_VALID);
+
+        if (!hl1Category.hl1_category_option || !hl1Category.hl1_category_option.length)
+            throw ErrorLib.getErrors().CustomError("", "hl1Services/handlePost/validateCategoryOption", L1_CATEGORY_OPTIONS_NOT_EMPTY);
+
+        // if (!data.HL1_ID && hl1Category.hl1_category_option.length !== dataOption.getAllocationOptionCountByCategoryIdLevelId(hl1Category.CATEGORY_ID, 'hl1'))
+        //     throw ErrorLib.getErrors().CustomError("", "hl1Services/handlePost/validateCategoryOption", L1_CATEGORY_OPTIONS_INCORRECT_NUMBER);
+
+        hl1Category.hl1_category_option.forEach(function (option) {
+            if (!option.OPTION_ID || !Number(option.OPTION_ID))
+                throw ErrorLib.getErrors().CustomError("", "hl1Services/handlePost/validateCategoryOption", L1_CATEGORY_OPTION_NOT_VALID);
+            if ((parseFloat(option.AMOUNT) && !Number(option.AMOUNT)) || Number(option.AMOUNT) > 100 || Number(option.AMOUNT) < 0)
+                throw ErrorLib.getErrors().CustomError("", "hl1Services/handlePost/validateCategoryOption", "Option value is not valid (actual value " + option.AMOUNT + ")");
+
+            percentagePerOption = percentagePerOption + Number(option.AMOUNT || 0);
+        });
+    }
+    if ((Number(data.BUDGET) == 0) && percentagePerOption != 0) {
+        throw ErrorLib.getErrors().CustomError("", "hl1Services/handlePost/validateCategoryOption", L1_BUDGET_ZERO_CATEGORY_TOTAL_PERCENTAGE_ZERO);
+    }
+
+    if ((Number(data.BUDGET) > 0) && percentagePerOption != 100) {
+        throw ErrorLib.getErrors().CustomError("", "hl1Services/handlePost/validateCategoryOption", L1_CATEGORY_TOTAL_PERCENTAGE);
+    }
+
+    return true;
+}
+
+function getCategoryOption(hl1_id) {
+    var hl1Categories = dataCategoryOptionLevel.getAllocationCategory(hl1_id, 'hl1');
+    var result = [];
+    if (hl1Categories && hl1Categories.length) {
+        var allocationOptions = util.getAllocationOptionByCategoryAndLevelId('hl1', hl1_id);
+        hl1Categories.forEach(function (catgory) {
+            var aux = util.extractObject(catgory);
+            var hl1Category = {};
+            aux.hl1_category_option = allocationOptions[aux.CATEGORY_ID];
+            hl1Category.hl1_category_option = [];
+            Object.keys(aux).forEach(function (key) {
+                if (key === "hl1_category_option") {
+                    for (var i = 0; i < aux[key].length; i++) {
+                        var option = {};
+                        Object.keys(aux[key][i]).forEach(function (auxKey) {
+                            option[auxKey] = aux[key][i][auxKey];
+                        });
+                        hl1Category.hl1_category_option.push(option);
+                    }
+                } else {
+                    hl1Category[key] = aux[key];
+                }
+            });
+            result.push(hl1Category);
+        });
+    } else {
+        result = allocationCategory.getCategoryByHierarchyLevelId(HIERARCHY_LEVEL.HL1).results;
+    }
+    return {result: result};
+}
+
+function insertCategoryOption(data, userId) {
+    var categoryOptionBulk = [];
+    // var mapAvailableCOL = util.getMapAvailableCategoryOptionByLevel('hl1');
+    var mapCOL = util.getMapCategoryOption('hl1');
+
+    data.hl1_category.forEach(function (hl1Category) {
+        hl1Category.hl1_category_option.forEach(function (hl1CategoryOption) {
+            // hl1Category.categoryOptionLevelId = mapAvailableCOL[hl1Category.CATEGORY_ID][hl1CategoryOption.OPTION_ID];
+            hl1Category.categoryOptionLevelId = mapCOL[hl1Category.CATEGORY_ID][hl1CategoryOption.OPTION_ID];
+            // if(hl1Category.categoryOptionLevelId) {
+            categoryOptionBulk.push({
+                in_hl1_id: data.HL1_ID
+                , in_category_option_level_id: hl1Category.categoryOptionLevelId
+                , in_amount: hl1CategoryOption.AMOUNT || 0
+                , in_user_id: userId
+                , in_updated: 0
+            });
+            // }
+        });
+    });
+    dataCategoryOptionLevel.insertCategoryOption(categoryOptionBulk, 'hl1');
+
+    return true;
+}
+
+function updateCategoryoption(data, userId) {
+    var insertBulk = [];
+    var updateBulk = [];
+    // var deleteBulk = [];
+    // var mapAvailableCOL = util.getMapAvailableCategoryOptionByLevel('hl1');
+    var mapCOL = util.getMapCategoryOption('hl1');
+    data.hl1_category.forEach(function (hl1Category) {
+        hl1Category.hl1_category_option.forEach(function (hl1CategoryOption) {
+            // hl1Category.categoryOptionLevelId = mapAvailableCOL[hl1Category.CATEGORY_ID][hl1CategoryOption.OPTION_ID];
+            hl1Category.categoryOptionLevelId = mapCOL[hl1Category.CATEGORY_ID][hl1CategoryOption.OPTION_ID];
+            // if(hl1Category.categoryOptionLevelId){
+            var categoryOption = {
+                in_category_option_level_id: hl1Category.categoryOptionLevelId
+                , in_amount: hl1CategoryOption.AMOUNT || 0
+                , in_user_id: userId
+                , in_updated: 0
+                , in_hl1_id: data.HL1_ID
+            };
+            if (!hl1CategoryOption.HL1_CATEGORY_OPTION_ID) {
+                categoryOption.in_hl1_id = data.HL1_ID;
+                insertBulk.push(categoryOption);
+            } else {
+                updateBulk.push(categoryOption);
+            }
+            /*} else {
+                var categoryOptionLevelId = mapCOL[hl1Category.CATEGORY_ID][hl1CategoryOption.OPTION_ID];
+                deleteBulk.push({
+                    in_category_option_level_id: categoryOptionLevelId
+                    , in_user_id: userId
+                    , in_hl1_id: data.HL1_ID
+                });
+            }*/
+        });
+    });
+
+    if (updateBulk && updateBulk.length)
+        dataCategoryOptionLevel.updateCategoryOption(updateBulk, 'hl1');
+
+    if (insertBulk && insertBulk.length)
+        dataCategoryOptionLevel.insertCategoryOption(insertBulk, 'hl1');
+
+    // if (deleteBulk && deleteBulk.length)
+    //     dataCategoryOptionLevel.deleteCategoryOption(deleteBulk, 'hl1');
+
+    return true;
 }

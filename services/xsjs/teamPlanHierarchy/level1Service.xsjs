@@ -11,6 +11,7 @@ var method = "GET_ALL";
 var section = "FOR_SEARCH";
 var hl1Id = "HL1_ID";
 var GET_HL1_BY_FILTER = "GET_HL1_BY_FILTER";
+var GET_DATA_KPI = "GET_DATA_KPI";
 
 function processRequest(){
 	return httpUtil.processRequest(handleGet,handlePost,handlePut,handleDelete,false, config.getResourceIdByName(config.level1()));
@@ -26,7 +27,8 @@ function handleGet(parameters, userSessionID){
 			httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);				
 		}
 		else if (parameters[0].name == hl1Id){
-			var rdo = blLevel1.getLevel1ById(parameters[0].value);
+			var isCarryOver = httpUtil.getUrlParameters().get("METHOD") == "CARRY_OVER";
+			var rdo = blLevel1.getLevel1ById(parameters[0].value, isCarryOver);
 			httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
 		}
 		else if (parameters[0].name == GET_HL1_BY_FILTER){
@@ -46,6 +48,14 @@ function handleGet(parameters, userSessionID){
             var offset = httpUtil.getUrlParameters().get("OFFSET") || null;
 
 			var rdo = blLevel1.getLevel1ForSearch(budgetYearId, regionId, subRegionId, limit, offset, userSessionID);
+			httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
+		}
+		else if (parameters[0].name == GET_DATA_KPI){
+			var budgetYearId = httpUtil.getUrlParameters().get("BUDGET_YEAR_ID") || null;
+			var regionId = httpUtil.getUrlParameters().get("REGION_ID") || null;
+			var subRegionId = httpUtil.getUrlParameters().get("SUBREGION_ID") || null;
+
+			var rdo = blLevel1.getLevel1Kpi(budgetYearId, regionId, subRegionId, userSessionID);
 			httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
 		}
 		else{

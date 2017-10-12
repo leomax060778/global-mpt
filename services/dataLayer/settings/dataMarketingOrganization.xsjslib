@@ -36,9 +36,10 @@ function getAllMarketingOrganizationByHlIdLevel(levelId, hlId) {
 	return db.extractArray(data.out_result);
 }
 
-function InsertMarketingOrganization(name, userId, autoCommit){
+function InsertMarketingOrganization(name, crmKey,userId, autoCommit){
 	var params = {
 		'IN_NAME': name,
+		'IN_CRM_KEY': crmKey,
 		'IN_CREATED_USER_ID' : userId
 	};
 	var rdo;
@@ -50,10 +51,11 @@ function InsertMarketingOrganization(name, userId, autoCommit){
 	return rdo;
 }
 
-function UpdateMarketingOrganization(SALES_ORGANIZATION_ID, name, userId, autoCommit){
+function UpdateMarketingOrganization(SALES_ORGANIZATION_ID, name, crmKey, userId, autoCommit){
 	var params = {
 		'IN_SALES_ORGANIZATION_ID': SALES_ORGANIZATION_ID,
 		'IN_NAME': name,
+		'IN_CRM_KEY': crmKey,
 		'IN_MODIFIED_USER_ID' : userId
 	};
 	var rdo;

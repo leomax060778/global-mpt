@@ -16,7 +16,7 @@ function deleteAllocationOption(optionId, userId){
 }
 
 function updateAllocationOption(reqbody, userId) {
-	return dbOption.updateAllocationOption(reqbody.ALLOCATION_OPTION_ID,reqbody.IN_NAME, userId);
+	return dbOption.updateAllocationOption(reqbody.ALLOCATION_OPTION_ID,reqbody.IN_NAME,reqbody.CRM_KEY, userId);
 }
 
 function insertAllocationOption(reqBody, userId) {
@@ -25,7 +25,7 @@ function insertAllocationOption(reqBody, userId) {
 	if(objOption)
 		throw ErrorLib.getErrors().CustomError("","AllocationOptionService", "Cannot create the option beacause exists another with same name");
 
-	return dbOption.insertAllocationOption(reqBody.IN_NAME, userId);
+	return dbOption.insertAllocationOption(reqBody.IN_NAME,reqBody.CRM_KEY, userId);
 }
 function getAllocationOption(){
 	return dbOption.getAllocationOption();

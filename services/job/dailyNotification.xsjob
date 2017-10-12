@@ -1,0 +1,13 @@
+{
+    "description": "Send daily notifications by email",
+    "action": "mktgplanningtool.services.businessLayer:dailyNotificationLib.xsjs::sendDailyNotification",
+    "schedules": [
+       {
+          "description": "Send daily notifications by email",
+          "xscron": "* * * * 5 0 0",
+          "parameter": {
+                "app": "MPT"
+             }
+       }
+    ]
+}

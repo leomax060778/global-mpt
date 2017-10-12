@@ -85,3 +85,13 @@ function getExpectedOutcomeLevelIdByOptionNameAndLevelId(optionName, levelId){
     else
         return null;
 }
+
+function getExpectedOutcomeTotalAvailableByHlIdLevelId(parentId, level, childId){
+    var parameters = {
+        'in_parent_id': parentId,
+        'in_child_id': childId
+    };
+    var spName = 'GET_' + level.toUpperCase() + '_EXPECTED_OUTCOME_TOTAL_AVAILABLE_BY_HL_ID_LEVEL_ID';
+    var list = db.executeProcedureManual(spName, parameters);
+    return db.extractArray(list.out_result);
+}

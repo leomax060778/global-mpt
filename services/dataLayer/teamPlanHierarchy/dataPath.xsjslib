@@ -12,6 +12,7 @@ var UPD_CRM_PARENT_PATH = "UPD_CRM_PARENT_PATH";
 var DEL_CRM_PARENT_PATH = "DEL_CRM_PARENT_PATH";
 
 var HIERARCHY_LEVEL = {
+    'hl2': 5,
     'hl3': 4,
     'hl4': 1,
     'hl5': 2,

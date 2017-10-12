@@ -31,6 +31,8 @@ var DEL_ALLOCATION_CATEGORY = "DEL_ALLOCATION_CATEGORY";
 /******************************************************/
 
 var hierarchyLevel = {
+		"hl1": 6,
+		"hl2": 5,
 		"hl3": 4,
 		"hl4": 1,
 		"hl5": 2,

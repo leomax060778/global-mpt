@@ -16,8 +16,6 @@ var spGetHl5ForSearch = "GET_HL5_FOR_SEARCH";
 var spGetHl5TotalBudgetByHl4Id = "GET_ALL_HL5_TOTAL_BUDGET";
 var spGetHl5RemainingBudgetByHl4Id = "GET_ALL_HL5_REMAINING_BUDGET";
 var spExistsInCrm = "HL5_EXISTS_IN_CRM";
-var spGetAllDistributionChannel = "GET_ALL_DISTRIBUTION_CHANNEL";
-var spGetDistributionChannelById = "GET_DISTRIBUTION_CHANNEL_BY_ID";
 var spGetHl5MyBudgetByHl5Id = "GET_HL5_BUDGET_BY_ID";
 var spGetHl5CategoryOptionByHl5IdOptionId = "GET_HL5_CATEGORY_OPTION_BY_HL5_ID_OPTION_ID";
 var spGetHl5CategoryOption = "GET_HL5_OPTION_BY_CATEGORY_ID";
@@ -745,22 +743,6 @@ function deleteHardHl5RequestCategoryOption(hl5Id){
 function deleteHl5RequestCategoryOption(hl5Id, userId){
     var params = {'in_hl5_id': hl5Id, 'in_user_id': userId};
     return db.executeScalar(spDelHl5RequestCategoryOption,params,'out_result');
-}
-
-function getAllDistributionChannel(){
-	var rdo = db.executeProcedureManual(spGetAllDistributionChannel, {});
-	return db.extractArray(rdo.out_result);
-}
-
-function getDistributionChannelById(distributionChannelId){
-	if(distributionChannelId){
-		var params = {
-			'in_distribution_channel_id': distributionChannelId
-		};
-		var rdo = db.executeProcedureManual(spGetDistributionChannelById,params);
-		return db.extractArray(rdo.out_result)[0];
-	}
-	return null;
 }
 
 function getHl5AllocatedBudget(hl5Id, hl6Id) {

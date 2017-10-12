@@ -10,6 +10,9 @@ var permissions = mapper.getPermission();
 /******************************************/
 
 var hierarchyLevel = {
+	'HL1' : 6,
+	'HL2' : 5,
+	'HL3' : 4,
 	'HL4' : 1,
 	'HL5' : 2,
 	'HL6' : 3
@@ -30,10 +33,14 @@ function handleGet(params,userId){
 			if(!params.get("GET_ASSIGNED")){
 				result.availables = AllocationOptionLib.getAvailableOptionByCategoryIdByLevelId(categoryId,levelId);
 				result.assigned = AllocationOptionLib.getAssignedOptionByCategoryIdByLevelId(categoryId,levelId);
-				result.in_processing_report = AllocationOptionLib.getAllocationCategoryByCategoryIdLevelId(categoryId, levelId);
-				if(result.in_processing_report.length > 0)
-				{result.in_processing_report = result.in_processing_report[0].IN_PROCESSING_REPORT;}
-				else{result.in_processing_report = 0;}
+				var flags = AllocationOptionLib.getAllocationCategoryByCategoryIdLevelId(categoryId, levelId)[0];
+				if(flags) {
+					result.in_processing_report = flags.IN_PROCESSING_REPORT;
+					result.in_show_copy_configuration_check_box = !!flags.SHOW_COPY_OPTION_TO_SEGMENTATION_CHECK_BOX;
+				} else {
+					result.in_processing_report = 0;
+					result.in_show_copy_configuration_check_box = false;
+				}
 			} else {
 				result.results = AllocationOptionLib.getAssignedOptionByCategoryIdByLevelId(categoryId,levelId, true);
 			}
@@ -60,6 +67,7 @@ function handleDelete(reqBody, userId){
 }
 
 function handlePut(reqBody, userId){
+
 	var result = AllocationOptionLib.updateAllocationOption(reqBody, userId);
 	return httpUtil.handleResponse(result,httpUtil.OK,httpUtil.AppJson);
 }

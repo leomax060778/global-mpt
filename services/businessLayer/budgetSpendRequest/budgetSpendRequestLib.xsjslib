@@ -3,6 +3,8 @@ var mapper = $.mktgplanningtool.services.commonLib.mapper;
 var dataBudgetSpendRequest = mapper.getDataBudgetSpendRequest();
 var dataBudgetReport = mapper.getDataBudgetSpendReport();
 var dataHl2 = mapper.getDataLevel2();
+var util = mapper.getUtil();
+var budgetReportLib = mapper.getBudgetSpendReportLib();
 /** ***********END INCLUDE LIBRARIES*************** */
 var BUDGET_SPEND_REQUEST_ORIGIN = {
     BUDGET_REQUESTOR: 1,
@@ -10,6 +12,7 @@ var BUDGET_SPEND_REQUEST_ORIGIN = {
 };
 
 var HIERARCHY_LEVEL = {
+    HL2: 5,
     HL3: 4,
     HL4: 1,
     HL5: 2,
@@ -57,7 +60,7 @@ function getL2BudgetApproverByL2Id(l2Id) {
 }
 
 function insertL2BudgetApprover(l2Id, budgetApproverIds, userId) {
-    if(budgetApproverIds && budgetApproverIds.length){
+    if (budgetApproverIds && budgetApproverIds.length) {
         var l2BudgetApproverToInsert = budgetApproverIds.map(function (elem) {
             return {
                 in_hl2_id: l2Id,
@@ -94,6 +97,7 @@ function insertOwnMoneyBudgetSpendRequest(amount, id, level, userId, budgetReque
 function insertSalesBudgetSpendRequest(sales, id, level, conversionValue, userId) {
     var aux = {};
     var arrSaleHl = [];
+    var arrBudgetSpendRequestOtherBudgetApprover = [];
     sales
         .forEach(function (sale) {
             if (!aux[sale.ORGANIZATION_ID]
@@ -140,6 +144,26 @@ function insertSalesBudgetSpendRequest(sales, id, level, conversionValue, userId
                                 });
                         }
                     });
+
+                sale.otherBudgetApprovers.forEach(function (otherBudgetApprover) {
+
+                    var budgetApprover = dataBudgetSpendRequest.getOtherBudgetApproverByEmail(otherBudgetApprover.EMAIL);
+
+                    var otherBudgetApproverId = 0;
+                    if(!budgetApprover || !budgetApprover.OTHER_BUDGET_APPROVER_ID)
+                        otherBudgetApproverId = insertOtherBudgetApprover(otherBudgetApprover, userId);
+                    else
+                        otherBudgetApproverId = budgetApprover.OTHER_BUDGET_APPROVER_ID;
+
+                    arrBudgetSpendRequestOtherBudgetApprover
+                        .push({
+                            in_other_budget_approver_id: otherBudgetApproverId,
+                            in_budget_spend_request_id: budgetSpendRequestId,
+                            in_hash: util.getHash(),
+                            in_user_id: userId
+                        });
+                });
+
                 arrBudgetSpendRequestMessage
                     .push({
                         in_budget_spend_request_id: budgetSpendRequestId,
@@ -150,12 +174,15 @@ function insertSalesBudgetSpendRequest(sales, id, level, conversionValue, userId
             }
         });
     if (arrBudgetSpendRequestMessage.length)
-        dataBudgetSpendRequest
-            .insertBudgetSpendRequestMessage(arrBudgetSpendRequestMessage);
+        dataBudgetSpendRequest.insertBudgetSpendRequestMessage(arrBudgetSpendRequestMessage);
+
+    if (arrBudgetSpendRequestOtherBudgetApprover.length) {
+        dataBudgetSpendRequest.insertBudgetSpendRequestOtherBudgetApprover(arrBudgetSpendRequestOtherBudgetApprover);
+        notifyOtherBudgetApprover(arrBudgetSpendRequestOtherBudgetApprover, userId);
+    }
 
     if (arrSaleHl.length)
-        return dataBudgetSpendRequest.insertSaleBudgetSpendRequest(arrSaleHl,
-            level);
+        return dataBudgetSpendRequest.insertSaleBudgetSpendRequest(arrSaleHl, level);
 
     return null;
 }
@@ -164,6 +191,7 @@ function updateSalesBudgetSpendRequest(sales, id, level, conversionValue, userId
     var arrBudgetSpendRequestToUpdate = [];
     var arrBudgetSpendRequestMessageToInsert = [];
     var arrBudgetSpendRequestMessageToUpdate = [];
+    var arrBudgetSpendRequestOtherBudgetApprover = [];
     var arrSaleHl = [];
 
     sales
@@ -194,7 +222,77 @@ function updateSalesBudgetSpendRequest(sales, id, level, conversionValue, userId
                         in_message: sale.MESSAGE,
                         in_user_id: userId
                     });
+
+                    // dataBudgetSpendRequest.deleteHardBudgetSpendRequestOtherBudgetApproverByBudgetSpendRequestId(budgetSpendRequestId);
                 }
+
+                var otherBudgetApprovers = [];
+                if(insertMessage){
+                    sale.otherBudgetApprovers.forEach(function (otherBudgetApprover) {
+                        if(otherBudgetApprover.FULL_NAME && otherBudgetApprover.EMAIL) {
+
+                            var budgetApprover = dataBudgetSpendRequest.getOtherBudgetApproverByEmail(otherBudgetApprover.EMAIL);
+
+                            var otherBudgetApproverId = 0;
+                            if (!budgetApprover || !budgetApprover.OTHER_BUDGET_APPROVER_ID) {
+                                otherBudgetApproverId = insertOtherBudgetApprover(otherBudgetApprover, userId);
+                            }
+                            else {
+                                otherBudgetApproverId = budgetApprover.OTHER_BUDGET_APPROVER_ID;
+                            }
+
+                            arrBudgetSpendRequestOtherBudgetApprover
+                                .push({
+                                    in_other_budget_approver_id: otherBudgetApproverId,
+                                    in_budget_spend_request_id: budgetSpendRequestId,
+                                    in_hash: util.getHash(),
+                                    in_user_id: userId
+                                });
+
+                            otherBudgetApprovers.push({
+                                    in_other_budget_approver_id: otherBudgetApproverId,
+                                    in_budget_spend_request_id: budgetSpendRequestId
+                                }
+                            );
+                        }
+                    });
+                }
+                else {
+                    var otherBudgetApproversEmail = dataBudgetSpendRequest.getOtherBudgetApproversByBudgetSpendRequestId(budgetSpendRequestId);
+
+
+                    sale.otherBudgetApprovers.forEach(function (otherBudgetApprover) {
+                        if(otherBudgetApprover.FULL_NAME && otherBudgetApprover.EMAIL) {
+
+                            var ba = otherBudgetApproversEmail.filter(function(elem){
+                                return elem.EMAIL == otherBudgetApprover.EMAIL;
+                            });
+
+                            if(!ba.length){
+                                var otherBudgetApproverId = insertOtherBudgetApprover(otherBudgetApprover, userId);
+
+                                arrBudgetSpendRequestOtherBudgetApprover
+                                    .push({
+                                        in_other_budget_approver_id: otherBudgetApproverId,
+                                        in_budget_spend_request_id: budgetSpendRequestId,
+                                        in_hash: util.getHash(),
+                                        in_user_id: userId
+                                    });
+
+                                otherBudgetApprovers.push({
+                                        in_other_budget_approver_id: otherBudgetApproverId,
+                                        in_budget_spend_request_id: budgetSpendRequestId
+                                    }
+                                );
+                            }
+                        }
+                    });
+                }
+
+
+                if(otherBudgetApprovers.length)
+                    dataBudgetSpendRequest.deleteBudgetSpendRequestOtherBudgetApprover(otherBudgetApprovers);
+
                 var message = {
                     in_budget_spend_request_id: budgetSpendRequestId,
                     in_message: sale.MESSAGE,
@@ -213,6 +311,11 @@ function updateSalesBudgetSpendRequest(sales, id, level, conversionValue, userId
         dataBudgetSpendRequest
             .updateBudgetSpendRequest(arrBudgetSpendRequestToUpdate);
 
+    if (arrBudgetSpendRequestOtherBudgetApprover.length) {
+        dataBudgetSpendRequest.insertBudgetSpendRequestOtherBudgetApprover(arrBudgetSpendRequestOtherBudgetApprover);
+        notifyOtherBudgetApprover(arrBudgetSpendRequestOtherBudgetApprover, userId);
+    }
+
     if (arrBudgetSpendRequestMessageToInsert.length)
         dataBudgetSpendRequest
             .insertBudgetSpendRequestMessage(arrBudgetSpendRequestMessageToInsert);
@@ -221,7 +324,7 @@ function updateSalesBudgetSpendRequest(sales, id, level, conversionValue, userId
         dataBudgetSpendRequest
             .updateBudgetSpendRequestMessage(arrBudgetSpendRequestMessageToUpdate);
 
-    if(arrSaleHl.length)
+    if (arrSaleHl.length)
         dataBudgetSpendRequest.insertSaleBudgetSpendRequest(arrSaleHl, level);
     return 1;
 }
@@ -273,7 +376,7 @@ function deleteBudgetSpendRequestBySale(arrSaleToDelete, level) {
     var aux = JSON.parse(JSON.stringify(arrSaleToDelete));
     deleteBudgetSpendRequest(arrSaleToDelete);
     return dataBudgetSpendRequest
-        .deleteBudgetSpendRequestBySale(aux,level);
+        .deleteBudgetSpendRequestBySale(aux, level);
 }
 
 function deleteBudgetSpendRequest(budgetSpendRequests) {
@@ -290,7 +393,7 @@ function deleteBudgetSpendRequest(budgetSpendRequests) {
     dataBudgetSpendRequest
         .insertBudgetSpendRequestMessage(arrBudgetSpendRequestMessageToInsert);
 
-    budgetSpendRequests.forEach(function(bsr){
+    budgetSpendRequests.forEach(function (bsr) {
         bsr.in_status_id = BUDGET_SPEND_REQUEST_STATUS.NO_LONGER_REQUESTED;
     });
 
@@ -417,11 +520,11 @@ function countPendingBudgetRequestByHl6Id(hl6Id) {
     }
 }
 
-function setBudgetSpendRequestStatusNoLongerRequested(hlId, level, userId){
+function setBudgetSpendRequestStatusNoLongerRequested(hlId, level, userId) {
     return setBudgetSpendRequestStatus(hlId, level, userId, BUDGET_SPEND_REQUEST_STATUS.NO_LONGER_REQUESTED);
 }
 
-function setBudgetSpendRequestStatus(hlId, level, userId, status){
+function setBudgetSpendRequestStatus(hlId, level, userId, status) {
     var budgetSpendRequests = dataBudgetSpendRequest
         .getAllBudgetSpendRequestByHlIdAndLevel(hlId, level);
 
@@ -429,6 +532,7 @@ function setBudgetSpendRequestStatus(hlId, level, userId, status){
     var arrBudgSpendStatusLog = [];
     var arrBudgetSpendRequestMessage = [];
 
+   // throw JSON.stringify(budgetSpendRequests);
     budgetSpendRequests.forEach(function (request) {
         arrBudgSpendStatus.push({
             in_budget_spend_request_id: request.BUDGET_SPEND_REQUEST_ID
@@ -436,23 +540,70 @@ function setBudgetSpendRequestStatus(hlId, level, userId, status){
             , in_user_id: userId
         });
         arrBudgetSpendRequestMessage.push({
-                in_budget_spend_request_id: request.BUDGET_SPEND_REQUEST_ID,
-                in_message: DEFAULT_DELETE_MESSAGE,
-                in_budget_spend_request_origin_id: BUDGET_SPEND_REQUEST_ORIGIN.BUDGET_REQUESTOR,
-                in_user_id: userId
+            in_budget_spend_request_id: request.BUDGET_SPEND_REQUEST_ID,
+            in_message: DEFAULT_DELETE_MESSAGE,
+            in_budget_spend_request_origin_id: BUDGET_SPEND_REQUEST_ORIGIN.BUDGET_REQUESTOR,
+            in_user_id: userId
         });
 
         arrBudgSpendStatusLog.push({
             in_budget_spend_request_id: request.BUDGET_SPEND_REQUEST_ID
-            ,in_status_id: request.BUDGET_SPEND_REQUEST_STATUS_ID
-            ,in_created_user_id: userId
+            , in_status_id: request.BUDGET_SPEND_REQUEST_STATUS_ID
+            , in_created_user_id: userId
+            ,in_other_budget_approver_id : request.BUDGET_SPEND_REQUEST_OTHER_BUDGET_APPROVER || null
         });
     });
+    
 
-    if(arrBudgSpendStatus.length){
+    if (arrBudgSpendStatus.length) {
         dataBudgetReport.insertBudgetSpendRequestStatusLog(arrBudgSpendStatusLog);
         dataBudgetSpendRequest.insertBudgetSpendRequestMessage(arrBudgetSpendRequestMessage);
         dataBudgetReport.deleteBudgetSpendRequest(arrBudgSpendStatus);
     }
     return true;
+}
+
+function insertOtherBudgetApprover(otherBudgetApprover, userId) {
+    return dataBudgetSpendRequest.insertOtherBudgetApprover(otherBudgetApprover.FULL_NAME, otherBudgetApprover.EMAIL, userId);
+}
+
+function getHlSalesByHlId(id, level) {
+    var saleRequests = dataBudgetSpendRequest.getHlSalesByHlId(id, level);
+    var result = {};
+
+    saleRequests.forEach(function (request) {
+        if (request.FULL_NAME && request.EMAIL) {
+            if (result[request.BUDGET_SPEND_REQUEST_ID]) {
+                result[request.BUDGET_SPEND_REQUEST_ID].otherBudgetApprovers.push({
+                    full_name: request.FULL_NAME,
+                    email: request.EMAIL
+                });
+            } else {
+                result[request.BUDGET_SPEND_REQUEST_ID] = JSON.parse(JSON.stringify(request));
+                result[request.BUDGET_SPEND_REQUEST_ID].otherBudgetApprovers = [{full_name: request.FULL_NAME, email: request.EMAIL, other_budget_approver_id: request.OTHER_BUDGET_APPROVER_ID}];
+            }
+        } else {
+            result[request.BUDGET_SPEND_REQUEST_ID] = request;
+        }
+    });
+    return util.objectToArray(result);
+}
+
+function notifyOtherBudgetApprover(arrBudgetSpendRequestOtherBudgetApprover, userId){
+    var appUrl = config.getAppUrl();
+    arrBudgetSpendRequestOtherBudgetApprover.forEach(function (elem) {
+        var link = '<p>A budget spend request has been created and needs your approval. Please follow the link: </p>';
+        link += '<p>' + appUrl + '/#BudgetSpendRequestManagement/' + elem.in_hash + '</p>';
+        var budgetApprover = dataBudgetSpendRequest.getOtherBudgetApproverByOtherBudgetApproverId(elem.in_other_budget_approver_id);
+        var budgetRequest = dataBudgetSpendRequest.getBudgetSpendRequestByBudgetSpendRequestId(elem.in_budget_spend_request_id);
+        var mailObject = {
+            BUDGET_SPEND_REQUEST_ID: elem.in_budget_spend_request_id
+            ,HL5_ID: budgetRequest.HIERARCHY_LEVEL_ID == HIERARCHY_LEVEL.HL5 ? budgetRequest.HL_ID : undefined
+            ,HL6_ID: budgetRequest.HIERARCHY_LEVEL_ID == HIERARCHY_LEVEL.HL6 ? budgetRequest.HL_ID : undefined
+            ,RECIPIENTS: [{address: budgetApprover.EMAIL}]
+            ,NOTE: link
+        };
+
+        budgetReportLib.sendBudgetSpendRequestInformationByEmail(mailObject, userId);
+    });
 }

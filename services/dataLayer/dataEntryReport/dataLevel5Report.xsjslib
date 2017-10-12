@@ -7,9 +7,11 @@ var ErrorLib = mapper.getErrors();
 // List of stored procedures
 var GET_ALL_HL5_DE_REPORT = "GET_HL5_DE_REPORT";
 var GET_HL5_FOR_PROCESSING_REPORT = "GET_HL5_FOR_PROCESSING_REPORT";
+var GET_PROCESSING_REPORT_FOR_DOWNLOAD = "GET_PROCESSING_REPORT_FOR_DOWNLOAD";
 var spGetL5ChangedFieldsByHl5Id = "GET_HL5_CHANGED_FIELDS_BY_HL5_ID";
 var spGetL5ChangedFieldsByHl5IdByField = "GET_HL5_CHANGED_FIELDS_BY_HL5_ID_BY_FIELD";
 var spDelL5ChangedFieldsByHl5Id = "DEL_HL5_CRM_BINDING";
+var UPD_PROCESSING_REPORT_EXPORT_DATA = "UPD_PROCESSING_REPORT_EXPORT_DATA";
 
 /*********** END LIST OF PROCEDURES ***************/
 
@@ -22,6 +24,15 @@ function getAllLevel5Report(userId) {
 		spResult.push(list[key]);
 	});
 	return spResult;
+}
+function getAllLevel5ReportForDownload() {
+    var data = db.executeProcedureManual(GET_PROCESSING_REPORT_FOR_DOWNLOAD, {in_object_type: 'CPG'});
+    return db.extractArray(data.out_result);
+}
+
+function updateLevel5ReportForDownload(HL5_ID) {
+	var data = db.executeProcedureManual(UPD_PROCESSING_REPORT_EXPORT_DATA, {IN_HL_ID:HL4_ID, IN_HIERARCHY_LEVEL: 'HL5'});
+	return db.extractArray(data.out_result);
 }
 
 function getL5ChangedFieldsByHl5Id(id){

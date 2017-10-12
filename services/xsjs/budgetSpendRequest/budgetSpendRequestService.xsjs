@@ -6,6 +6,8 @@ var businessPlan = mapper.getLevel4DEReport();
 var errors = mapper.getErrors();
 var config = mapper.getDataConfig();
 var budgetSpendRequest = mapper.getBudgetSpendRequest();
+var budgetReportLib = mapper.getBudgetSpendReportLib();
+var ErrorLib = mapper.getErrors();
 /******************************************/
 
 function processRequest(){
@@ -21,6 +23,10 @@ function handleGet(param){
 		case 'NO_CO_FUNDED':
             result = budgetSpendRequest.checkCountBudgetSpendRequestByHlIdLevel(hlId, level);
 			break;
+        case 'OTHER_BUDGET_APPROVER_VIEW':
+            var hash = httpUtil.getUrlParameters().get("HASH");
+            result = budgetReportLib.getSpendBudgetReportByHash(hash);
+            break;
 		default:
             throw ErrorLib.getErrors().BadRequest("","BudgetSpendRequestService/handleGet","Invalid parameter name");
 	}

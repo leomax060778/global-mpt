@@ -56,6 +56,7 @@ function handleErrorResponse(value){
 		error.stack =value.stack;
 		error.details = value.details;
 		error.data = value.data;
+		error.level = value.level;
         error.message = value.message;
 		$.response.contentType = "application/json";
 		$.response.status = error.code;

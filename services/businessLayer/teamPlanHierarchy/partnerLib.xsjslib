@@ -11,6 +11,7 @@ var util = mapper.getUtil();
 
 //Hierarchy level map
 var HIERARCHY_LEVEL = {
+    HL2: 5,
     HL3: 4,
     HL4: 1,
     HL5: 2,

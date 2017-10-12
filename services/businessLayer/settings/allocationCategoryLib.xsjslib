@@ -45,7 +45,14 @@ function getCategoryInUseByCategoryId(categoryId){
 }
 
 function getCategoryByHierarchyLevelId(hierarchy_level_id){
-	return dbCategory.getCategoryByHierarchyLevelId(hierarchy_level_id);
+	var categories = JSON.parse(JSON.stringify(dbCategory.getCategoryByHierarchyLevelId(hierarchy_level_id)));
+
+	categories.results.forEach(function(cat){
+		cat.Options = getOptionByLevelByCategory(hierarchy_level_id, cat.CATEGORY_ID);
+	});
+
+	return categories;
+
 
 }
 

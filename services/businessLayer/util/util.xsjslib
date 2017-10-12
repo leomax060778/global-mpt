@@ -5,6 +5,7 @@ var dataCategoryOptionLevel = mapper.getDataCategoryOptionLevel();
 var dataL6DER = mapper.getDataLevel6Report();
 var dataL5DER = mapper.getDataLevel5Report();
 var dataCategory = mapper.getDataCategory();
+var dataUtil = mapper.getDataUtil();
 /** ***********END INCLUDE LIBRARIES*************** */
 function validateIsNumber(value){
 	return !isNaN(value);
@@ -101,7 +102,7 @@ function extractObject(object) {
 
 function validateDateEndMayorStart(dateStart,dateEnd)
 {
-	if(dateStart>=dateEnd)
+	if(dateStart>dateEnd)
 	{
 		return true;
 	}
@@ -132,10 +133,25 @@ function getMapCategoryOption(level){
 	return mapCategoryOption;
 }
 
+function getMapAvailableCategoryOptionByLevel(level){
+    var mapCategoryOption = {};
+    var sp_result = dataCategoryOptionLevel.getAllocationCategoryOptionLevelByLevelId(level);
+
+    for (var i = 0; i < sp_result.length; i++) {
+        var obj = sp_result[i];
+        if(Number(obj.ENABLED) && !Number(obj.DELETED)){
+            if(!mapCategoryOption[obj.CATEGORY_ID])
+                mapCategoryOption[obj.CATEGORY_ID] = {};
+
+            mapCategoryOption[obj.CATEGORY_ID][obj.OPTION_ID] = obj.CATEGORY_OPTION_LEVEL_ID
+		}
+    }
+    return mapCategoryOption;
+}
+
 function getAllocationOptionByCategoryAndLevelId(level, hlId){
 	var mapCategoryOption = {};
 	var sp_result = dataCategoryOptionLevel.getAllocationOptionByCategoryAndLevelId(level, hlId);
-
 	for (var i = 0; i < sp_result.length; i++) {
 		var obj = sp_result[i];
 
@@ -191,4 +207,8 @@ function getCategoryById(level){
 	return mapFields;
 
 
+}
+
+function getHash() {
+    return dataUtil.getHash();
 }

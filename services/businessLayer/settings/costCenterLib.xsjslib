@@ -146,7 +146,8 @@ function insCostCenterTeams(costCenterId, costCenterTeams, userId, marketingOrga
         return {in_cost_center_id: costCenterId, in_hl3_id : elem, in_user_id: userId}
     });
 
-	dataCostCenter.insCostCenterTeams(insCostCenterTeams);
+    if(insCostCenterTeams.length)
+		dataCostCenter.insCostCenterTeams(insCostCenterTeams);
 }
 
 function existCostCentermarketingOrganizationTeams(marketingOrganizationId, teamIdsCollection, costCenterId){

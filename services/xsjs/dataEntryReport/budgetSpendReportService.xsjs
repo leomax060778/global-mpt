@@ -14,6 +14,7 @@ return	httpUtil.processRequest(handleGet,handlePost,handlePut,handleDelete, fals
 function handleGet(parameters, userId){
     var rdo = {};
     if (parameters.length > 0) {
+    	var method = parameters[1] ? parameters[1].value : null;
         if (parameters[0].name === "GET_L5_SPEND_BUDGET_REPORT") {
             rdo = budgetReportLib.getL5SpendBudgetReport(userId);
         } else if (parameters[0].name === "GET_L6_SPEND_BUDGET_REPORT") {
@@ -22,6 +23,10 @@ function handleGet(parameters, userId){
         		rdo = budgetReportLib.getL5SpendBudgetReportById(parameters[0].value, parameters[1].value, userId);
         } else if (parameters[0].name === "GET_L6_SPEND_BUDGET_REPORT_BY_ID" && parameters[1].name === "BUDGET_SPEND_REQUEST_ID") {
     			rdo = budgetReportLib.getL6SpendBudgetReportById(parameters[0].value, parameters[1].value, userId);
+        } else if (parameters[0].name === "GET_L5_SPEND_BUDGET_REPORT_BY_ID" && method === "GET_SPEND_BUDGET_REQUEST") {
+            rdo = budgetReportLib.getL5SpendBudgetRequestByL5Id(parameters[0].value, userId);
+        } else if (parameters[0].name === "GET_L6_SPEND_BUDGET_REPORT_BY_ID" && method === "GET_SPEND_BUDGET_REQUEST") {
+            rdo = budgetReportLib.getL6SpendBudgetRequestByL6Id(parameters[0].value, userId);
         } else {
             throw ErrorLib.getErrors().BadRequest(
                 "",

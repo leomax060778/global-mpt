@@ -10,14 +10,17 @@ var spUpdateOutcomesType = "UPD_OUTCOMES_TYPE";
 var spDeleteOutcomesType = "DEL_OUTCOMES_TYPE";
 /******************************************************/
 var hierarchyLevel = {
-		"hl3": 1, //Ex HL4
-		"hl4": 2, //Ex HL5
-		"hl5": 3 //Ex HL6
+	"hl0": 6, //HL1
+    "hl1": 5, //HL2
+    "hl2": 4, //HL3
+    "hl3": 1, //HL4
+    "hl4": 2, //HL5
+    "hl5": 3  //HL6
 }
 
 function getOutcomesTypeByHlId(hl){
 	if(hl){
-		var rdo = db.executeProcedure(spGetOutcomesTypeByHlId, {'in_hl_id':hierarchyLevel[hl]});
+		var rdo = db.executeProcedure(spGetOutcomesTypeByHlId, {'in_hl_id':hierarchyLevel[hl.toLowerCase()]});
 		return db.extractArray(rdo.out_outcomes_type);
 	}	
 	return null;

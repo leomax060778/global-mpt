@@ -10,10 +10,32 @@ var EXPECTED_OUTCOMES_NOT_FOUND = "Expected Outcomes can not be found.";
 var EXPECTED_OUTCOME_NAME_NOT_FOUND = "Expected Outcome Name not found";
 var EXPECTED_OUTCOME_IN_USE = "Expected Outcome can not be deleted because it is in use.";
 var EXPECTED_OUTCOME_ALREADY_EXIST = "A Expected Outcome with the same Name already exist.";
+var LEVEL_NOT_SUPPORTED = "Level is not supported.";
 
 var map = {
     'IN_EXPECTED_OUTCOME_ID': 'EXPECTED_OUTCOME_ID',
     'IN_NAME': 'EXPECTED_OUTCOME_NAME'
+};
+
+var getExpectedOutcomeByHlIdMap = {
+    HL1: dataExpectedOutcome.getExpectedOutcomeByHL1Id,
+    HL2: dataExpectedOutcome.getExpectedOutcomeByHL1Id,//getExpectedOutcomeByHl2Id,
+    HL3: dataExpectedOutcome.getExpectedOutcomeByHl2Id,//getExpectedOutcomeByHl3Id,
+    HL4: dataExpectedOutcome.getExpectedOutcomeByHl3Id
+};
+
+var getExpectedOutcomeDetailByIdMap = {
+    HL1: dataExpectedOutcome.getHL1ExpectedOutcomeDetailById,
+    HL2: dataExpectedOutcome.getHL1ExpectedOutcomeDetailById,//getHl2ExpectedOutcomeDetailById,
+    HL3: dataExpectedOutcome.getHl2ExpectedOutcomeDetailById,//getHl3ExpectedOutcomeDetailById,
+    HL4: dataExpectedOutcome.getHl3ExpectedOutcomeDetailById
+};
+
+var hlExpectedOutcomesIdMap = {
+    HL1: 'HL1_EXPECTED_OUTCOMES_ID',
+    HL2: 'HL1_EXPECTED_OUTCOMES_ID',//'HL2_EXPECTED_OUTCOMES_ID',
+    HL3: 'HL2_EXPECTED_OUTCOMES_ID',//'HL3_EXPECTED_OUTCOMES_ID',
+    HL4: 'HL3_EXPECTED_OUTCOMES_ID'
 };
 
 function getAllExpectedOutcomes() {
@@ -85,39 +107,220 @@ function uiToServerParser(object) {
     return data;
 }
 
-function getOutcomesLevelByOptionNameOutcomeIdAndLevelId(optionName, expectedOutcomeId, hlName){
+function getOutcomesLevelByOptionNameOutcomeIdAndLevelId(optionName, expectedOutcomeId, hlName) {
     return dataExpectedOutcomeLevel.getOutcomesLevelByOptionNameOutcomeIdAndLevelId(optionName, expectedOutcomeId, hlName);
 }
 
-function getExpectedOutcomesByHl4Id(hl4_id){
+function getExpectedOutcomesByParentIdLevel(parentId, level) {
+    var result = [];
+
+    if (!hlExpectedOutcomesIdMap[level.toUpperCase()])
+        throw ErrorLib.getErrors().CustomError("", "expectedOutcomeServices/handleGet/getExpectedOutcomesByParentIdLevel", LEVEL_NOT_SUPPORTED);
+
+    var expectedOutcomes = getExpectedOutcomeByHlIdMap[level.toUpperCase()](parentId);
+    if (expectedOutcomes && expectedOutcomes.length) {
+        expectedOutcomes.forEach(function (eo) {
+            var aux = util.extractObject(eo);
+            var expectedOutcomesId = aux[hlExpectedOutcomesIdMap[level.toUpperCase()]];
+            var detail = getExpectedOutcomeDetailByIdMap[level.toUpperCase()](expectedOutcomesId);
+            aux.detail = addParentKpiDataToDetail(parentId, level, detail);
+            result.push(aux);
+        });
+
+    } else {
+        result.push({COMMENT: '', detail: []});
+    }
+    return result[0];
+}
+
+function getExpectedOutcomesByHL1Id(hl1_id, FROMgRID) {
+    var expectedOutcomes = dataExpectedOutcome.getExpectedOutcomeByHL1Id(hl1_id);
+    var result = [];
+    if (expectedOutcomes && expectedOutcomes.length) {
+        expectedOutcomes.forEach(function (eo) {
+            var aux = util.extractObject(eo);
+            aux.detail = dataExpectedOutcome.getHL1ExpectedOutcomeDetailById(aux.HL1_EXPECTED_OUTCOMES_ID);
+            if (aux.detail.length) {
+                aux.detail = FROMgRID ? addParentKpiDataToDetail(hl1_id, 'HL2', aux.detail, FROMgRID) : aux.detail;
+            } else {
+                aux.detail = [];
+            }
+            result.push(aux);
+        });
+
+    } else {
+        result.push({COMMENT: '', detail: []});
+    }
+
+    return result[0];
+}
+
+function getExpectedOutcomesByHl2Id(hl2_id, hl1_id, FROMgRID) {
+    var result = [];
+    var expectedOutcomes = dataExpectedOutcome.getExpectedOutcomeByHl2Id(hl2_id);
+    if (expectedOutcomes && expectedOutcomes.length) {
+        expectedOutcomes.forEach(function (eo) {
+            var aux = util.extractObject(eo);
+            var detail = dataExpectedOutcome.getHl2ExpectedOutcomeDetailById(aux.HL2_EXPECTED_OUTCOMES_ID);
+
+            if (detail.length) {
+                aux.detail = FROMgRID ? addParentKpiDataToDetail(hl2_id, 'HL3', detail, FROMgRID) : addParentKpiDataToDetail(hl1_id, 'HL2', detail);
+            } else {
+                aux.detail = [];
+                aux.parentValues = getExpectedOutcomeTotalAvailableByHlIdLevelId(hl1_id, 'HL2');
+            }
+            result.push(aux);
+        });
+
+    } else {
+        result.push({COMMENT: '', detail: []});
+    }
+    return result[0];
+}
+
+function getExpectedOutcomesByHl3Id(hl3_id, hl2_id, FROMgRID) {
+    var expectedOutcomes = dataExpectedOutcome.getExpectedOutcomeByHl3Id(hl3_id);
+    var result = [];
+    if (expectedOutcomes && expectedOutcomes.length) {
+        expectedOutcomes.forEach(function (eo) {
+            var aux = util.extractObject(eo);
+            var detail = dataExpectedOutcome.getHl3ExpectedOutcomeDetailById(aux.HL3_EXPECTED_OUTCOMES_ID);
+
+            if (detail.length) {
+                aux.detail = FROMgRID ? addParentKpiDataToDetail(hl3_id, 'HL4', detail, FROMgRID) : addParentKpiDataToDetail(hl2_id, 'HL3', detail);
+            } else {
+                aux.detail = [];
+                aux.parentValues = getExpectedOutcomeTotalAvailableByHlIdLevelId(hl2_id, 'HL3');
+            }
+
+            result.push(aux);
+        });
+    } else {
+        result.push({COMMENT: '', detail: []});
+    }
+    return result[0];
+}
+
+function getExpectedOutcomesByHl4Id(hl4_id, hl3_id) {
     var expectedOutcomes = dataExpectedOutcome.getExpectedOutcomeByHl4Id(hl4_id);
     var result = [];
-    expectedOutcomes.forEach(function(eo){
-        var aux = util.extractObject(eo);
-        aux["detail"] = dataExpectedOutcome.getExpectedOutcomeDetailById(aux.HL4_EXPECTED_OUTCOMES_ID);
-        result.push(aux);
-    });
+    if (expectedOutcomes && expectedOutcomes.length) {
+        expectedOutcomes.forEach(function (eo) {
+            var aux = util.extractObject(eo);
+            var detail = dataExpectedOutcome.getExpectedOutcomeDetailById(aux.HL4_EXPECTED_OUTCOMES_ID);
+            if (detail.length) {
+                aux.detail = addParentKpiDataToDetail(hl3_id, 'HL4', detail);
+            } else {
+                aux.detail = [];
+                aux.parentValues = getExpectedOutcomeTotalAvailableByHlIdLevelId(hl3_id, 'HL4');
+            }
+            result.push(aux);
+        });
+    } else {
+        result.push({COMMENT: '', detail: []});
+    }
     return result[0];
 }
 
-function getExpectedOutcomesByHl5Id(hl5_id){
+function getExpectedOutcomesByHl5Id(hl5_id, hl4_id) {
     var expectedOutcomes = dataExpectedOutcome.getExpectedOutcomeByHl5Id(hl5_id);
     var result = [];
-    expectedOutcomes.forEach(function(eo){
-        var aux = util.extractObject(eo);
-        aux["detail"] = dataExpectedOutcome.getHl5ExpectedOutcomeDetailById(aux.HL5_EXPECTED_OUTCOMES_ID);
-        result.push(aux);
-    });
+    if (expectedOutcomes && expectedOutcomes.length) {
+        expectedOutcomes.forEach(function (eo) {
+            var aux = util.extractObject(eo);
+            var detail = dataExpectedOutcome.getHl5ExpectedOutcomeDetailById(aux.HL5_EXPECTED_OUTCOMES_ID);
+            if (!hl4_id) {
+                aux.detail = detail;
+            } else {
+                if (detail.length) {
+                    aux.detail = addParentKpiDataToDetail(hl4_id, 'HL5', detail);
+                } else {
+                    aux.detail = [];
+                    aux.parentValues = getExpectedOutcomeTotalAvailableByHlIdLevelId(hl4_id, 'HL5');
+                }
+            }
+            result.push(aux);
+        });
+    } else {
+        result.push({COMMENT: '', detail: []});
+    }
     return result[0];
 }
 
-function getExpectedOutcomesByHl6Id(hl6_id){
+function getExpectedOutcomesByHl6Id(hl6_id, hl5_id) {
     var expectedOutcomes = dataExpectedOutcome.getExpectedOutcomeByHl6Id(hl6_id);
     var result = [];
-    expectedOutcomes.forEach(function(eo){
-        var aux = util.extractObject(eo);
-        aux["detail"] = dataExpectedOutcome.getHl6ExpectedOutcomeDetailById(aux.HL6_EXPECTED_OUTCOMES_ID);
-        result.push(aux);
-    });
+    if (expectedOutcomes && expectedOutcomes.length) {
+        expectedOutcomes.forEach(function (eo) {
+            var aux = util.extractObject(eo);
+            var detail = dataExpectedOutcome.getHl6ExpectedOutcomeDetailById(aux.HL6_EXPECTED_OUTCOMES_ID);
+            if (!hl5_id) {
+                aux.detail = detail;
+            } else {
+                if (detail.length) {
+                    aux.detail = addParentKpiDataToDetail(hl5_id, 'HL6', detail);
+                } else {
+                    aux.detail = [];
+                    aux.parentValues = getExpectedOutcomeTotalAvailableByHlIdLevelId(hl5_id, 'HL6');
+                }
+            }
+            result.push(aux);
+        });
+    } else {
+        result.push({COMMENT: '', detail: []});
+    }
     return result[0];
+}
+
+function getExpectedOutcomeTotalAvailableByHlIdLevelId(parentId, level, childId) {
+    var totalAvailable = dataExpectedOutcomeLevel.getExpectedOutcomeTotalAvailableByHlIdLevelId(parentId, level, childId || 0);
+
+    var result = {};
+    totalAvailable.forEach(function (kpi) {
+        if (!result[kpi.EXPECTED_OUTCOME_ID])
+            result[kpi.EXPECTED_OUTCOME_ID] = {};
+
+        result[kpi.EXPECTED_OUTCOME_ID][kpi.EXPECTED_OUTCOME_OPTION_ID] = {
+            PARENT_TOTAL_VALUE: kpi.PARENT_TOTAL_VALUE,
+            PARENT_TOTAL_VOLUME: kpi.PARENT_TOTAL_VOLUME,
+            VALUE_AVAILABLE_TO_ALLOCATE: kpi.VALUE_AVAILABLE_TO_ALLOCATE,
+            VOLUME_AVAILABLE_TO_ALLOCATE: kpi.VOLUME_AVAILABLE_TO_ALLOCATE,
+            ALLOCATED_VALUE: kpi.ALLOCATED_VALUE,
+            ALLOCATED_VOLUME: kpi.ALLOCATED_VOLUME
+        }
+    });
+    return result;
+}
+
+function addParentKpiDataToDetail(parentId, level, detail, FROMgRID) {
+    var totalAvailable = getExpectedOutcomeTotalAvailableByHlIdLevelId(parentId, level);
+    return addTotalAvailable(detail, totalAvailable, FROMgRID);
+}
+
+function addTotalAvailable(detail, totalAvailable, FROMgRID) {
+    detail = JSON.parse(JSON.stringify(detail));
+    detail.forEach(function (elem) {
+        elem.PARENT_TOTAL_VALUE = null;
+        elem.PARENT_TOTAL_VOLUME = null;
+        elem.VALUE_AVAILABLE_TO_ALLOCATE = null;
+        elem.VOLUME_AVAILABLE_TO_ALLOCATE = null;
+
+        if (totalAvailable) {
+            if (totalAvailable[elem.OUTCOMES_TYPE_ID] && totalAvailable[elem.OUTCOMES_TYPE_ID][elem.OUTCOMES_ID]) {
+                elem.PARENT_TOTAL_VALUE = totalAvailable[elem.OUTCOMES_TYPE_ID][elem.OUTCOMES_ID].PARENT_TOTAL_VALUE || null;
+                elem.PARENT_TOTAL_VOLUME = totalAvailable[elem.OUTCOMES_TYPE_ID][elem.OUTCOMES_ID].PARENT_TOTAL_VOLUME || null;
+                elem.VALUE_AVAILABLE_TO_ALLOCATE = totalAvailable[elem.OUTCOMES_TYPE_ID][elem.OUTCOMES_ID].VALUE_AVAILABLE_TO_ALLOCATE > 0
+                    ? totalAvailable[elem.OUTCOMES_TYPE_ID][elem.OUTCOMES_ID].VALUE_AVAILABLE_TO_ALLOCATE : 0;
+                elem.VOLUME_AVAILABLE_TO_ALLOCATE = totalAvailable[elem.OUTCOMES_TYPE_ID][elem.OUTCOMES_ID].VOLUME_AVAILABLE_TO_ALLOCATE > 0
+                    ? totalAvailable[elem.OUTCOMES_TYPE_ID][elem.OUTCOMES_ID].VOLUME_AVAILABLE_TO_ALLOCATE : 0;
+
+                if (FROMgRID) {
+                    elem.ALLOCATED_VALUE = totalAvailable[elem.OUTCOMES_TYPE_ID][elem.OUTCOMES_ID].ALLOCATED_VALUE || null;
+                    elem.ALLOCATED_VOLUME = totalAvailable[elem.OUTCOMES_TYPE_ID][elem.OUTCOMES_ID].ALLOCATED_VOLUME || null;
+                }
+            }
+        }
+    });
+
+    return detail;
 }

@@ -2,7 +2,7 @@
 $.import("mktgplanningtool.services.commonLib", "mapper");
 var mapper = $.mktgplanningtool.services.commonLib.mapper;
 var httpUtil = mapper.getHttp();
-var blExpectedOutcomes = mapper.getExpectedOutcomeLib();
+var blExpectedOutcomes = mapper.getExpectedOutcomes();
 var ErrorLib = mapper.getErrors();
 /** *************************************** */
 

@@ -67,26 +67,36 @@ function getPlansUser(userId){
 	return arrPlanUser;
 }
 
+/**
+ * @deprecated
+ * @param parameters
+ @returns {}
+ */
 function getBudgetRegionByHl4(hl4Id) {
-	if (hl4Id) {
+	/*if (hl4Id) {
 		var filter = "HL4_ID = " + hl4Id;
 		var rdo = db.executeProcedure(GET_HL4_BUDGET_REGION, {
 			'in_filter' : filter
 		});
 		return db.extractArray(rdo.out_result);
 	}
-	return null;
+	return null;*/
 }
 
+/**
+ * @deprecated
+ * @param parameters
+ @returns {}
+ */
 function getBudgetSubRegionByHl4(hl4Id) {
-	if (hl4Id) {
+	/*if (hl4Id) {
 		var filter = "HL4_ID = " + hl4Id;
 		var rdo = db.executeProcedure(GET_HL4_BUDGET_SUBREGION, {
 			'in_filter' : filter
 		});
 		return db.extractArray(rdo.out_result);
 	}
-	return null;
+	return null;*/
 }
 
 function getBudgetGlobalTeamByHl4(hl4Id) {

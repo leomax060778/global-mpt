@@ -5,6 +5,7 @@ var ErrorLib = mapper.getErrors();
 var dataCategoryOptionLevel = mapper.getDataServiceRequest();
 /*************************************************/
 var HIERARCHY_LEVEL = {
+    HL2: 5,
 	HL3: 4,
 	HL4: 1,
 	HL5: 2,
@@ -31,7 +32,7 @@ function updateCategoryOptionLevel(data, userId) {
             for(var i = 0; i < totalOptions; i++){
                 var categoryOptionLevel = dataCategoryOptionLevel.getServiceRequestCategoryOptionLevel(data.IN_CATEGORY_ID, level, data.IN_OPTION_LIST[i]);
 
-                if(categoryOptionLevel && categoryOptionLevel.ALLOCATION_CATEGORY_OPTION_LEVEL_ID){
+                if(categoryOptionLevel && categoryOptionLevel.SERVICE_REQUEST_CATEGORY_OPTION_LEVEL_ID){
                     dataCategoryOptionLevel.updateServiceRequestCategoryOptionLevel(
                         data.IN_CATEGORY_ID,
                         data.IN_OPTION_LIST[i],

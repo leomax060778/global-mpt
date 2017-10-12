@@ -19,6 +19,7 @@ var ErrorLib = mapper.getErrors();
 var util = mapper.getUtil();
 var dataPriority = mapper.getDataPriority();
 var dataCategoryOptionLevel = mapper.getDataCategoryOptionLevel();
+
 /** ***********END INCLUDE LIBRARIES*************** */
 
 function getAllL6DEReport(userId) {
@@ -34,6 +35,10 @@ function getAllL6DEReport(userId) {
     });
 
     return allHl6;
+}
+
+function getAllL6DEReportForDownload(userId) {
+    return dataL6DER.getAllLevel6ReportForDownload(userId);
 }
 
 function getL6ChangedFieldsByHl6Id(hl6Id, userId) {
@@ -52,7 +57,7 @@ function getL6ChangedFieldsByHl6Id(hl6Id, userId) {
     Object.keys(l6ReportFields).forEach(function (field) {
         if (field == "CATEGORY") {
             hl6Categories.forEach(function (hl6Category) {
-                if(hl6Category.IN_PROCESSING_REPORT){
+                if (hl6Category.IN_PROCESSING_REPORT) {
                     var object = {};
                     object.option = [];
                     object.display_name = hl6Category.CATEGORY_NAME;
@@ -74,7 +79,7 @@ function getL6ChangedFieldsByHl6Id(hl6Id, userId) {
             object.display_name = l6ReportFields[field];
             var CRM_ACRONYM = "CRM";
             //var path = dataPath.getPathByLevelParent(6, hl6['HL5_ID']);
-            var parentPath = CRM_ACRONYM + "-" + hl6.L1_ACRONYM + hl6.BUDGET_YEAR + "-" + hl6.L3_ACRONYM + "-" + hl6.L4_ACRONYM  + hl6.L5_ACRONYM;
+            var parentPath = CRM_ACRONYM + "-" + hl6.L1_ACRONYM + hl6.BUDGET_YEAR + "-" + hl6.L3_ACRONYM + "-" + hl6.L4_ACRONYM + hl6.L5_ACRONYM;
             switch (field) {
                 case "ACRONYM":
                     object.value = parentPath + hl6.ACRONYM;
@@ -159,8 +164,8 @@ function getL6ChangedFieldsByHl6Id(hl6Id, userId) {
             }
             var fieldToCheck = field == "DISTRIBUTION_CHANNEL_DESC" ? "DISTRIBUTION_CHANNEL_ID"
                 : field == "MARKETING_PROGRAM_DESC" ? "MARKETING_PROGRAM_ID"
-                : field == "MARKETING_ACTIVITY_DESC" ? "MARKETING_ACTIVITY_ID"
-                : field;
+                    : field == "MARKETING_ACTIVITY_DESC" ? "MARKETING_ACTIVITY_ID"
+                        : field;
 
             object.changed = checkChangedField(changedFields, fieldToCheck);
             data.hl6.push(object);
@@ -183,7 +188,7 @@ function checkChangedField(changedFields, field, value) {
     return hasChanged;
 }
 
-function getProcessingReportFields(){
+function getProcessingReportFields() {
     return {
         "ACRONYM": "ID"
         , "HL6_CRM_DESCRIPTION": "Description"

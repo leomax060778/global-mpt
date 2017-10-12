@@ -10,6 +10,7 @@ var GET_CAMPAIGN_SUB_TYPE_BY_CAMPAIGN_TYPE_ID = "GET_CAMPAIGN_SUB_TYPE_BY_CAMPAI
 var GET_ALL_AVAILABLE_CAMPAIGN_SUB_TYPE_BY_CAMPAIGN_TYPE_ID = "GET_ALL_AVAILABLE_CAMPAIGN_SUB_TYPE_BY_CAMPAIGN_TYPE_ID";
 var GET_CAMPAIGN_SUB_TYPE_BY_ID = "GET_CAMPAIGN_SUB_TYPE_BY_ID";
 var GET_CAMPAIGN_SUB_TYPE_BY_NAME = "GET_CAMPAIGN_SUB_TYPE_BY_NAME";
+var GET_CAMPAIGN_SUB_TYPE_BY_CRM_KEY = "GET_CAMPAIGN_SUB_TYPE_BY_CRM_KEY";
 var INS_CAMPAIGN_SUB_TYPE = "INS_CAMPAIGN_SUB_TYPE";
 var UPD_CAMPAIGN_SUB_TYPE = "UPD_CAMPAIGN_SUB_TYPE";
 var DEL_CAMPAIGN_SUB_TYPE = "DEL_CAMPAIGN_SUB_TYPE";
@@ -49,9 +50,10 @@ function getCampaignSubTypeById(idCampaignSubType) {
         return null;
 }
 
-function insertCampaignSubType(name, userId) {
+function insertCampaignSubType(name, crmKey, userId) {
     var parameters = {};
     parameters.IN_NAME = name;
+    parameters.IN_CRM_KEY = crmKey;
     parameters.IN_CREATED_USER_ID = userId;
     return db.executeScalarManual(INS_CAMPAIGN_SUB_TYPE, parameters, "out_result");
 }
@@ -64,10 +66,21 @@ function getCampaignSubTypeByName(name) {
         return result[0];
     return null;
 }
-function updateCampaignSubType(campaignTypeId, name, userId) {
+
+function getCampaignSubTypeByCrmKey(crmKey) {
+    var parameters = {'IN_CRM_KEY': crmKey};
+    var list = db.executeProcedureManual(GET_CAMPAIGN_SUB_TYPE_BY_CRM_KEY, parameters);
+    var result = db.extractArray(list.out_result);
+    if (result.length)
+        return result[0];
+    return null;
+}
+
+function updateCampaignSubType(campaignTypeId, name, crmKey, userId) {
     var parameters = {};
     parameters.IN_CAMPAIGN_SUB_TYPE_ID = campaignTypeId;
     parameters.IN_NAME = name;
+    parameters.IN_CRM_KEY = crmKey;
     parameters.IN_MODIFIED_USER_ID = userId;
     return db.executeScalarManual(UPD_CAMPAIGN_SUB_TYPE, parameters, "out_result");
 }

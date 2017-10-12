@@ -5,7 +5,11 @@ var dataCampaignObjective = mapper.getDataCampaignObjective();
 /** ***********END INCLUDE LIBRARIES*************** */
 
 
-var CAMPAIGN_SUB_TYPE_EXISTS = "The campaign type already exists.";
+var CAMPAIGN_SUB_TYPE_EXISTS = "The campaign subtype already exists.";
+var CAMPAIGN_SUB_TYPE_DATA = "No data found.";
+var CAMPAIGN_SUB_TYPE_CRM_KEY_EXISTS = "Another campaign subtype has the same CRM key.";
+var CAMPAIGN_SUB_TYPE_NAME = "Campaign subtype Name is missing.";
+var CAMPAIGN_SUB_TYPE_CRM_KEY= "Campaign subtype CRM key is missing.";
 
 function getAllCampaignSubType(idCampaignType) {
     return dataCampaignSubType.getAllCampaignSubType();
@@ -37,20 +41,38 @@ function getAllCampaignSubTypeById(idCampaignSubType) {
     return dataCampaignSubType.getCampaignSubTypeById(idCampaignSubType);
 }
 function insertCampaignSubType(payload, userId) {
-
-    if (existCampaignSubTypeByName(payload)) {
-        throw ErrorLib.getErrors().BadRequest("", "campaignTypeService/handlePost/insertCampaignSubType", CAMPAIGN_TYPE_EXISTS);
-    }
-
-    return dataCampaignSubType.insertCampaignSubType(payload.IN_NAME, userId);
+    validateCampaignType(payload);
+    return dataCampaignSubType.insertCampaignSubType(payload.IN_NAME, payload.IN_CRM_KEY, userId);
 }
-function existCampaignSubTypeByName(payload) {
-    return !!dataCampaignSubType.getCampaignSubTypeByName(payload.IN_NAME);
 
+function validateCampaignType(data) {
+    if(!data)
+        throw ErrorLib.getErrors().CustomError("", "campaignSubTypeService/handlePost/validateCampaignType", CAMPAIGN_SUB_TYPE_DATA);
+
+    if(!data.IN_NAME)
+        throw ErrorLib.getErrors().CustomError("", "campaignSubTypeService/handlePost/validateCampaignType", CAMPAIGN_SUB_TYPE_NAME);
+
+    if(!data.IN_CRM_KEY)
+        throw ErrorLib.getErrors().CustomError("", "campaignSubTypeService/handlePost/validateCampaignType", CAMPAIGN_SUB_TYPE_CRM_KEY);
+
+    var campaignSubType = dataCampaignSubType.getCampaignSubTypeByName(data.IN_NAME);
+    if(campaignSubType && Number(data.IN_CAMPAIGN_SUB_TYPE_ID) !== Number(campaignSubType.CAMPAIGN_SUB_TYPE_ID))
+        throw ErrorLib.getErrors().CustomError("", "campaignSubTypeService/handlePost/validateCampaignType", CAMPAIGN_SUB_TYPE_EXISTS);
+
+    campaignSubType = dataCampaignSubType.getCampaignSubTypeByCrmKey(data.IN_CRM_KEY);
+    if(campaignSubType && Number(data.IN_CAMPAIGN_SUB_TYPE_ID) !== Number(campaignSubType.CAMPAIGN_SUB_TYPE_ID))
+        throw ErrorLib.getErrors().CustomError("", "campaignSubTypeService/handlePost/validateCampaignType", CAMPAIGN_SUB_TYPE_CRM_KEY_EXISTS);
+
+    return true;
 }
 
 function updateCampaignSubType(campaignSubTypeData, userId) {
-    return dataCampaignSubType.updateCampaignSubType(campaignSubTypeData.IN_CAMPAIGN_SUB_TYPE_ID, campaignSubTypeData.IN_NAME, userId);
+    validateCampaignType(campaignSubTypeData);
+    return dataCampaignSubType.updateCampaignSubType(
+        campaignSubTypeData.IN_CAMPAIGN_SUB_TYPE_ID
+        , campaignSubTypeData.IN_NAME
+        , campaignSubTypeData.IN_CRM_KEY
+        , userId);
 }
 
 function updateDateRules(data, userId){

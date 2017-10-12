@@ -14,6 +14,7 @@ var section = "FOR_SEARCH";
 var hl2Id = "HL2_ID";
 var HL1_ID = "HL1_ID";
 var GET_ALL_CENTRAL_TEAM = "GET_ALL_CENTRAL_TEAM";
+var GET_DATA_KPI = "GET_DATA_KPI";
 
 function processRequest(){
 	return httpUtil.processRequest(handleGet,handlePost,handlePut,handleDelete,false, config.getResourceIdByName(config.level1()));
@@ -26,8 +27,8 @@ function handleGet(parameters, userSessionID){
 		if (parameters[0].name == hl2Id){
 			var objLevel2 = {};
 			objLevel2.IN_HL2_ID = parameters[0].value;
-			
-			var rdo = blLevel2.getLevel2ById(objLevel2);
+			var isCarryOver = httpUtil.getUrlParameters().get("METHOD") == "CARRY_OVER";
+			var rdo = blLevel2.getLevel2ById(objLevel2, isCarryOver);
 			httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
 		}
 		else if (parameters[0].name == GET_ALL_CENTRAL_TEAM){
@@ -38,6 +39,10 @@ function handleGet(parameters, userSessionID){
 		}
 		else if (parameters[0].name == HL1_ID){
 			var rdo = blLevel2.getHl2ByHl1Id(parameters[0].value, userSessionID);
+			httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
+		}
+		else if (parameters[0].name == GET_DATA_KPI){
+			var rdo = blLevel2.getLevel2Kpi(httpUtil.getUrlParameters().get("HL1_ID"), userSessionID);
 			httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
 		}
 		else if (parameters[0].value == section){

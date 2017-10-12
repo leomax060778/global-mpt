@@ -36,6 +36,8 @@ function handleGet(params, userId) {
 	var in_hl3_id = httpUtil.getUrlParameters().get("HL3_ID");
 	var in_hl4_id = httpUtil.getUrlParameters().get("HL4_ID");
 	var param_section = httpUtil.getUrlParameters().get("section");
+    var method = httpUtil.getUrlParameters().get("METHOD");
+    var parentId = httpUtil.getUrlParameters().get("PARENT_ID");
 	var result = {};
 
 	if(in_hl3_id){
@@ -51,7 +53,9 @@ function handleGet(params, userId) {
         var limit = httpUtil.getUrlParameters().get("LIMIT") || null;
         var offset = httpUtil.getUrlParameters().get("OFFSET") || null;
 		result = hl4.getLevel4ForSearch(budgetYearId, regionId, subRegionId, limit, offset, userId);
-	} else{
+	} else if (parentId && method && method == "GET_PARENT_REMAINING_BUDGET"){
+        result = hl4.getParentRemainingBudgetByParentId(parentId);
+    } else{
 		throw ErrorLib.getErrors().BadRequest("","level4Services/handleGet","invalid parameter name (can be: HL3_ID, HL4_ID or section)");
 	}
 	
@@ -64,7 +68,8 @@ function handlePut(reqBody, userId){
     hl4.checkPermission(userId, null, parameters.get('HL4_ID') || reqBody.hl4.in_hl4_id);
 	if(parameters.length > 0){
 		var aCmd = parameters.get('method');
-		var hl4Id = parameters.get('HL4_ID');
+		var hl4Id = !reqBody ? parameters.get('HL4_ID') : reqBody.hl4Ids;
+
 		switch (aCmd) {
 			case sendInCrmNotificationMail:
 					hl4.sendProcessingReportEmail(hl4Id, userId);

@@ -37,7 +37,7 @@ function handleGet(params, userId) {
 		result = acronym ? acronym : 0;
 
 	}else
-	if(in_hl5_id && !hl5_categories && !hl5_expectedOutcomes){
+	if(in_hl5_id && !hl5_categories && !hl5_expectedOutcomes && !param_section){
         hl5.checkPermission(userId, null, in_hl5_id);
 		result = hl6.getHl6ByHl5Id(in_hl5_id);
 	}else
@@ -56,8 +56,8 @@ function handleGet(params, userId) {
 		result = hl6.getHl6Categories(in_hl5_id);
 	}else if(hl5_expectedOutcomes && in_hl5_id && hl5_expectedOutcomes == expectedOutcomes) {
 		result = hl6.getHl6ExpectedOutcomesOptions(in_hl5_id);
-	} else if(param_section && param_section == getHl6ByUserId){
-        result = hl6.getHl6ByUserId(userId);
+	} else if(in_hl5_id && param_section && param_section == getHl6ByUserId){
+        result = hl6.getHl6ByHl5IdUserId(in_hl5_id, userId);
     } else{
 		throw ErrorLib.getErrors().BadRequest("","level6Services/handleGet","invalid parameter name (can be: HL5_ID, HL6_ID or section)");
 	}
@@ -70,7 +70,7 @@ function handlePut(reqBody, userId){
     hl6.checkPermission(userId, null, parameters.get('HL6_ID') || reqBody.hl6.in_hl6_id);
 	if(parameters.length > 0){
 		var aCmd = parameters.get('method');
-		var hl6Id = parameters.get('HL6_ID');
+		var hl6Id = !reqBody ? parameters.get('HL6_ID') : reqBody.hl6Ids;
 		switch (aCmd) {
 			case sendInCrmNotificationMail:
 					hl6.sendProcessingReportEmail(hl6Id, userId);

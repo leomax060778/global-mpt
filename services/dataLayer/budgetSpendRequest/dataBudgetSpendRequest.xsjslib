@@ -5,6 +5,9 @@ var ErrorLib = mapper.getErrors();
 /*************END INCLUDE LIBRARIES****************/
 //L2
 var GET_L2_BUDGET_SPEND_APPROVER_BY_L2_ID = "GET_L2_BUDGET_SPEND_APPROVER_BY_L2_ID";
+var GET_OTHER_BUDGET_APPROVER_BY_EMAIL = "GET_OTHER_BUDGET_APPROVER_BY_EMAIL";
+var INS_OTHER_BUDGET_APPROVER = "INS_OTHER_BUDGET_APPROVER";
+var INS_BUDGET_SPEND_REQUEST_OTHER_BUDGET_APPROVER = "INS_BUDGET_SPEND_REQUEST_OTHER_BUDGET_APPROVER";
 var INS_L2_BUDGET_SPEND_APPROVER = "INS_L2_BUDGET_SPEND_APPROVER";
 var DEL_L2_BUDGET_SPEND_APPROVER = "DEL_L2_BUDGET_SPEND_APPROVER";
 //BUDGET SPEND REQUEST
@@ -20,12 +23,23 @@ var UPD_BUDGET_SPEND_REQUEST_MESSAGE = "UPD_BUDGET_SPEND_REQUEST_MESSAGE";
 var DEL_BUDGET_SPEND_REQUEST_MESSAGE_BY_HL_ID = "DEL_BUDGET_SPEND_REQUEST_MESSAGE_BY_HL_ID";
 //BUDGET SPEND REQUEST LOG STATUS
 var DEL_ALL_BUDGET_SPEND_REQUEST_LOG_STATUS_BY_HL_ID = "DEL_ALL_BUDGET_SPEND_REQUEST_LOG_STATUS_BY_HL_ID";
+var DEL_HARD_BUDGET_SPEND_REQUEST_OTHER_BUDGET_APPROVER_BY_BUDGET_SPEND_REQUEST_ID = "DEL_HARD_BUDGET_SPEND_REQUEST_OTHER_BUDGET_APPROVER_BY_BUDGET_SPEND_REQUEST_ID";
 //HL5
 var GET_COUNT_BUDGET_SPEND_REQUEST_BY_HL5_ID_BUDGET_REQUEST_STATUS_ID = "GET_COUNT_BUDGET_SPEND_REQUEST_BY_HL5_ID_BUDGET_REQUEST_STATUS_ID";
 //HL6
 var GET_COUNT_BUDGET_SPEND_REQUEST_BY_HL6_ID_BUDGET_REQUEST_STATUS_ID = "GET_COUNT_BUDGET_SPEND_REQUEST_BY_HL6_ID_BUDGET_REQUEST_STATUS_ID";
 
+var GET_HL5_BUDGET_APPROVER_EMAIL_BY_LEVEL_ID_USER_ID = "GET_HL5_BUDGET_APPROVER_EMAIL_BY_LEVEL_ID_USER_ID";
+var GET_HL6_BUDGET_APPROVER_EMAIL_BY_LEVEL_ID_USER_ID = "GET_HL6_BUDGET_APPROVER_EMAIL_BY_LEVEL_ID_USER_ID";
+var GET_REQUESTOR_EMAIL_BY_BUDGET_SPEND_REQUEST_ID = "GET_REQUESTOR_EMAIL_BY_BUDGET_SPEND_REQUEST_ID";
+var GET_BUDGET_SPEND_REQUEST_BY_BUDGET_SPEND_REQUEST_ID = "GET_BUDGET_SPEND_REQUEST_BY_BUDGET_SPEND_REQUEST_ID";
+var GET_OTHER_BUDGET_APPROVER_BY_OTHER_BUDGET_APPROVER_ID = "GET_OTHER_BUDGET_APPROVER_BY_OTHER_BUDGET_APPROVER_ID";
+var GET_BUDGET_SPEND_REQUEST_BY_HASH = "GET_BUDGET_SPEND_REQUEST_BY_HASH";
+var DEL_BUDGET_SPEND_REQUEST_OTHER_BUDGET_APPROVER = "DEL_BUDGET_SPEND_REQUEST_OTHER_BUDGET_APPROVER";
+var GET_OTHER_BUDGET_APPROVERS_BY_BUDGET_SPEND_REQUEST_ID = "GET_OTHER_BUDGET_APPROVERS_BY_BUDGET_SPEND_REQUEST_ID";
+
 var HIERARCHY_LEVEL = {
+    HL2: 5,
     HL3: 4,
     HL4: 1,
     HL5: 2,
@@ -112,6 +126,13 @@ function getAllBudgetSpendRequestByHlIdAndLevel(hlId, level){
     return db.extractArray(rdo.out_result);
 }
 
+function getBudgetSpendRequestByBudgetSpendRequestId(budgetSpendRequestId){
+    var parameters = {};
+    parameters.in_budget_spend_request_id = budgetSpendRequestId;
+    var rdo = db.executeProcedureManual(GET_BUDGET_SPEND_REQUEST_BY_BUDGET_SPEND_REQUEST_ID, parameters);
+    return db.extractArray(rdo.out_result)[0];
+}
+
 function getHlSalesByHlId(hlId, level){
     var sp = "GET_"+level+"_SALES_BY_"+ level+"_ID";
 
@@ -142,6 +163,11 @@ function getHl5CountBudgetSpendRequestByBudgetRequestStatus(hl5Id, budgetRequest
     };
 
     return db.executeScalarManual(GET_COUNT_BUDGET_SPEND_REQUEST_BY_HL5_ID_BUDGET_REQUEST_STATUS_ID, parameters, 'out_result');
+}
+
+function getOtherBudgetApproversByBudgetSpendRequestId(budgetSpendRequestId){
+    var rdo = db.executeProcedureManual(GET_OTHER_BUDGET_APPROVERS_BY_BUDGET_SPEND_REQUEST_ID, {in_budgetSpendRequestId: Number(budgetSpendRequestId)});
+    return db.extractArray(rdo.out_result);
 }
 
 function getHl6CountBudgetSpendRequestByBudgetRequestStatus(hl6Id, budgetRequestStatusId, hierarchyLevelId) {
@@ -189,4 +215,68 @@ function delAllBudgetSpendRequestMessageByHlId(hl_id, userId, level){
         , in_user_id: userId
     };
     return db.executeScalarManual(DEL_BUDGET_SPEND_REQUEST_MESSAGE_BY_HL_ID, parameters, 'out_result');
+}
+
+function getOtherBudgetApproverByEmail(email){
+    var rdo = db.executeProcedureManual(GET_OTHER_BUDGET_APPROVER_BY_EMAIL, {in_email: email});
+    return db.extractArray(rdo.out_result)[0];
+}
+
+function insertOtherBudgetApprover(fullName, email, userId){
+    var parameters = {
+        in_full_name: fullName
+        , in_email: email
+        , in_user_id: userId
+    };
+    return db.executeScalarManual(INS_OTHER_BUDGET_APPROVER, parameters, 'out_result');
+}
+
+function insertBudgetSpendRequestOtherBudgetApprover(data) {
+    return db.executeScalarManual(INS_BUDGET_SPEND_REQUEST_OTHER_BUDGET_APPROVER, data, 'out_result');
+}
+
+function deleteHardBudgetSpendRequestOtherBudgetApproverByBudgetSpendRequestId(budgetSpendRequestId){
+    return db.executeScalarManual(DEL_HARD_BUDGET_SPEND_REQUEST_OTHER_BUDGET_APPROVER_BY_BUDGET_SPEND_REQUEST_ID, {in_budget_spend_request_id: budgetSpendRequestId}, 'out_result');
+}
+
+function getHl5BudgetApproverEmailByLevelIdUserId(statusId, userId, levelId) {
+    var parameters = {
+        in_excluded_status_id: statusId
+        , in_user_id: userId
+        , in_level_id: levelId
+    };
+    var rdo = db.executeProcedureManual(GET_HL5_BUDGET_APPROVER_EMAIL_BY_LEVEL_ID_USER_ID, parameters);
+    return db.extractArray(rdo.out_result);
+}
+
+function getHl6BudgetApproverEmailByLevelIdUserId(statusId, userId, levelId) {
+    var parameters = {
+        in_excluded_status_id: statusId
+        , in_user_id: userId
+        , in_level_id: levelId
+    };
+    var rdo = db.executeProcedureManual(GET_HL6_BUDGET_APPROVER_EMAIL_BY_LEVEL_ID_USER_ID, parameters);
+    return db.extractArray(rdo.out_result);
+}
+
+function getRequestorEmailByBudgetSpendRequestId(budgetSpendRequestId) {
+    var parameters = {
+        in_budget_spend_request_id: budgetSpendRequestId
+    };
+    var rdo = db.executeProcedureManual(GET_REQUESTOR_EMAIL_BY_BUDGET_SPEND_REQUEST_ID, parameters);
+    return db.extractArray(rdo.out_result)[0];
+}
+
+function getOtherBudgetApproverByOtherBudgetApproverId(otherBudgetApproverId){
+    var rdo = db.executeProcedureManual(GET_OTHER_BUDGET_APPROVER_BY_OTHER_BUDGET_APPROVER_ID, {in_other_budget_approver_id: otherBudgetApproverId});
+    return db.extractArray(rdo.out_result)[0];
+}
+
+function getBudgetSpendRequestByHash(hash){
+    var rdo = db.executeProcedureManual(GET_BUDGET_SPEND_REQUEST_BY_HASH, {in_hash: hash});
+    return db.extractArray(rdo.out_result)[0];
+}
+
+function deleteBudgetSpendRequestOtherBudgetApprover(otherBudgetApprovers) {
+    return db.executeScalarManual(DEL_BUDGET_SPEND_REQUEST_OTHER_BUDGET_APPROVER, {otherBudgetApprovers: otherBudgetApprovers}, 'out_result');
 }

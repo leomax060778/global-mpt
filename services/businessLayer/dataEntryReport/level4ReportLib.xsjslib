@@ -7,6 +7,7 @@ var dataCategoryOptionLevel = mapper.getDataCategoryOptionLevel();
 var dataPath = mapper.getDataPath();
 var ErrorLib = mapper.getErrors();
 var util = mapper.getUtil();
+
 /** ***********END INCLUDE LIBRARIES*************** */
 
 function getAllL4DEReport(userId) {
@@ -22,6 +23,10 @@ function getAllL4DEReport(userId) {
     });
 
     return allHl4;
+}
+
+function getAllL4DEReportForDownload(userId) {
+    return dataL4DER.getAllLevel4ReportForDownload(userId);
 }
 
 function getL4CrmBindingFieldsByHl4Id(hl4Id) {
@@ -142,11 +147,11 @@ function getProcessingReportFields() {
     };
 
     Object.keys(processingReportFields.deReportDisplayName).forEach(function (field) {
-        if(field == "HL4_FNC_BUDGET_TOTAL_MKT"){
+        /*if(field == "HL4_FNC_BUDGET_TOTAL_MKT"){
             processingReportFields.crmBindingFields.hl4_fnc.push(field);
-        } else {
-            processingReportFields.crmBindingFields.hl4.push(field);
-        }
+        } else {*/
+        processingReportFields.crmBindingFields.hl4.push(field);
+        // }
     });
 
     return processingReportFields

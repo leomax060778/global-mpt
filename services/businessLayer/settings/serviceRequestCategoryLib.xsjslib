@@ -3,8 +3,8 @@ $.import("mktgplanningtool.services.commonLib","mapper");
 var mapper = $.mktgplanningtool.services.commonLib.mapper;
 var ErrorLib = mapper.getErrors();
 var dbCategory = mapper.getDataServiceRequest();
+var dataCategory = mapper.getDataCategory();
 /*************************************************/
-
 
 function getServiceRequestCategory(){
 	return dbCategory.getServiceRequestCategory();
