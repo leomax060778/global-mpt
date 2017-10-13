@@ -1669,6 +1669,7 @@ function setHl6Status(hl6_id, status_id, userId) {
             resetHl6CategoryOptionUpdated(hl6_id, userId)
         }
     }
+    dataL6Report.updateLevel6ReportForDownload(hl6_id);
     return updateOK;
 }
 

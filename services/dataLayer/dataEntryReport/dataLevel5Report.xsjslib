@@ -31,7 +31,7 @@ function getAllLevel5ReportForDownload() {
 }
 
 function updateLevel5ReportForDownload(HL5_ID) {
-	var data = db.executeProcedureManual(UPD_PROCESSING_REPORT_EXPORT_DATA, {IN_HL_ID:HL4_ID, IN_HIERARCHY_LEVEL: 'HL5'});
+	var data = db.executeProcedureManual(UPD_PROCESSING_REPORT_EXPORT_DATA, {IN_HL_ID:HL5_ID, IN_HIERARCHY_LEVEL: 'HL5'});
 	return db.extractArray(data.out_result);
 }
 

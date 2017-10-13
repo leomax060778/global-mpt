@@ -12,6 +12,11 @@ var dataHl5 = mapper.getDataLevel5();
 var mailHL6 = mapper.getLevel6Mail();
 var mailHL5 = mapper.getLevel5Mail();
 
+var mailProcessingReport = mapper.getProcessingReportMailLib();
+var hl4ProcessingReport = mapper.getLevel4DEReport();
+var hl5ProcessingReport = mapper.getLevel5DEReport();
+var hl6ProcessingReport = mapper.getLevel6DEReport();
+
 var pathLib = mapper.getPath();
 var userLib = mapper.getUser();
 //---
@@ -191,7 +196,64 @@ function getAttachmentPart(part){
 }
 //******************************************
 
+function sendProcessingReportNightlyReport() {
+    var userEmailAddresses = null;
+    var mailObj = null;
+    var env = config.getMailEnvironment();
+    var dataEntryRoleId = config.getRoleEnum().Data_Entry;
+    var dataEntryUsers = userLib.getUserByRoleId(dataEntryRoleId);
+    if (dataEntryUsers && dataEntryUsers.length) {
+        var levels = {
+            HL4: hl4ProcessingReport.getAllL4DEReport(),
+            HL5: hl5ProcessingReport.getAllL5DEReport(),
+            HL6: hl6ProcessingReport.getAllL6DEReport()
+        };
 
+        var list = {
+            HL4: {
+                "Create In CRM": []
+                , "Update In CRM": []
+            },
+            HL5: {
+                "Create In CRM": []
+                , "Update In CRM": []
+            },
+            HL6: {
+                "Create In CRM": []
+                , "Update In CRM": []
+            }
+        };
+
+        Object.keys(levels).forEach(function (level) {
+            levels[level].forEach(function (elem) {
+                var obj = {
+                    CRM_ID: elem[level + '_PATH'],
+                    DAYS: (new Date() - new Date(elem.CHANGE_STATUS_DATE)) / (1000 * 60 * 60 * 24)
+                };
+
+                if (elem.STATUS_NAME == 'Load Data Entry') {
+                    list[level]["Create In CRM"].push(obj);
+                } else {
+                    list[level]["Update In CRM"].push(obj);
+                }
+            });
+        });
+        userEmailAddresses = dataEntryUsers.map(function (user) {
+            return {"address": user.EMAIL}
+        });
+
+        mailObj = mailProcessingReport.parseNightlyReport(list, {"ENVIRONMENT": env});
+
+        if (userEmailAddresses && userEmailAddresses.length && mailObj) {
+            userEmailAddresses.forEach(function (dataEntryEmail) {
+                var mailObject = getJson(dataEntryEmail, mailObj.subject, mailObj.body);
+                sendMail(mailObject, true);
+            });
+        }
+    }
+
+    return true;
+}
 
 function getDefaultHeader(){
 	var newPart = new $.net.Mail.Part();

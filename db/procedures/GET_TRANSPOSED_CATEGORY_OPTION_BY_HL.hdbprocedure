@@ -51,8 +51,51 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_TRANSPOSED_C
 	READS SQL DATA AS
 BEGIN
 
+/**
+   Gets all category options and transposes them into the correct CRM format:
+   10 columns for each category divided in 5 groups of 2: name and amount.
+
+   It starts by getting all category options and joining them, creating a
+   2 ( + 1 row number to use as a pivot) x 20 matrix
+
+                +-------------+-------------------+------------+
+                | option_name | option_percentage | row_number |
+                +-------------+-------------------+------------+
+                | option1     |                50 |          1 |
+                | option2     |                25 |          2 |
+                | ...         |               ... |        ... |
+                | option20    |                30 |         20 |
+                +-------------+-------------------+------------+
+, then transforming that matrix
+   into a 'diagonal' or 'identity' matrix
+
++--------------+-------------------+----------------------+-----+----------------------+
+|     imp1     | zzimp1_percentage | imp2 imp2_percentage | ... | solution5_percentage |
++--------------+-------------------+----------------------+-----+----------------------+
+| option1_name | ?                 | ?                    | ?   | ?                    |
+| ?            | 50                | ?                    | ?   | ?                    |
+| ...          | ...               | ...                  | ... | ...                  |
+| ?            | ?                 | ?                    | ?   | 30                   |
++--------------+-------------------+----------------------+-----+----------------------+
+
+
+
+, later collapsing it into a single row of 40 columns.
+
++--------------+-------------------+----------------------+-----+----------------------+
+|     imp1     | zzimp1_percentage | imp2 imp2_percentage | ... | solution5_percentage |
++--------------+-------------------+----------------------+-----+----------------------+
+| option1_name |                50 | option_name2         | ... |                   30 |
++--------------+-------------------+----------------------+-----+----------------------+
+
+The size of the matrix is not dynamic, in order to add a new category to the T` matrix, code changes need to be done.
+
+**/
+
 IF(IN_LEVEL = 'HL4') THEN
 -----------------------------HL4----------------------------------
+
+-- Get exactly 5 allocation_category_option, ordered by amount.
     VA_HL_IMP_OPTIONS = SELECT TOP 5 option_name,
                                      option_percentage,
                                      Row_number() OVER(ORDER BY option_percentage DESC) AS ROWNUM
@@ -70,6 +113,7 @@ IF(IN_LEVEL = 'HL4') THEN
                                               ON O.allocation_option_id = ACOL.allocation_option_id
                                 WHERE  C.processing_report_export_key = 'IMP'
                                        AND HCP.hl4_id = in_hl_id
+                        -- Padding with empty rows so the row count is always 5
                                 UNION ALL
                                 SELECT '' AS OPTION_NAME,
                                        0  AS OPTION_PERCENTAGE
@@ -94,6 +138,7 @@ IF(IN_LEVEL = 'HL4') THEN
 
 
 
+-- Get exactly 5 allocation_category_option, ordered by amount.
     VA_HL_MKTSEG_OPTIONS = SELECT TOP 5 option_name,
                                         option_percentage,
                                         Row_number() OVER(ORDER BY option_percentage DESC) + 5 AS ROWNUM
@@ -111,6 +156,7 @@ IF(IN_LEVEL = 'HL4') THEN
                                                  ON O.allocation_option_id = ACOL.allocation_option_id
                                    WHERE  C.processing_report_export_key = 'MKTSEG'
                                           AND HCP.hl4_id = in_hl_id
+                          -- Padding with empty rows so the row count is always 5
                                    UNION ALL
                                    SELECT '' AS OPTION_NAME,
                                           0  AS OPTION_PERCENTAGE
@@ -135,7 +181,7 @@ IF(IN_LEVEL = 'HL4') THEN
 
 
 
-
+-- Get exactly 5 allocation_category_option, ordered by amount.
     VA_HL_INDUSTRY_OPTIONS = SELECT TOP 5 option_name,
                                          option_percentage,
                                          Row_number() OVER(ORDER BY option_percentage DESC) + 10 AS ROWNUM
@@ -153,6 +199,7 @@ IF(IN_LEVEL = 'HL4') THEN
                                                   ON O.allocation_option_id = ACOL.allocation_option_id
                                     WHERE  C.processing_report_export_key = 'INDUSTRY'
                                            AND HCP.hl4_id = in_hl_id
+                                    -- Padding with empty rows so the row count is always 5
                                     UNION ALL
                                     SELECT '' AS OPTION_NAME,
                                            0  AS OPTION_PERCENTAGE
@@ -177,6 +224,7 @@ IF(IN_LEVEL = 'HL4') THEN
 
 
 
+-- Get exactly 5 allocation_category_option, ordered by amount.
     VA_HL_SOLUTION_OPTIONS = SELECT TOP 5 option_name,
                                           option_percentage,
                                           Row_number() OVER(ORDER BY option_percentage DESC) + 15 AS ROWNUM
@@ -194,6 +242,7 @@ IF(IN_LEVEL = 'HL4') THEN
                                                    ON O.allocation_option_id = ACOL.allocation_option_id
                                      WHERE  C.processing_report_export_key = 'SOLUTION'
                                             AND HCP.hl4_id = in_hl_id
+                                     -- Padding with empty rows so the row count is always 5
                                      UNION ALL
                                      SELECT '' AS OPTION_NAME,
                                             0  AS OPTION_PERCENTAGE
@@ -221,6 +270,8 @@ IF(IN_LEVEL = 'HL4') THEN
 ---------------------------------------------------------------------------------
 ELSEIF(IN_LEVEL = 'HL5') THEN
 -----------------------------HL5-------------------------------------------------
+
+-- Get exactly 5 allocation_category_option, ordered by amount.
 VA_HL_IMP_OPTIONS = SELECT TOP 5 option_name,
                                      option_percentage,
                                      Row_number() OVER(ORDER BY option_percentage DESC) AS ROWNUM
@@ -238,6 +289,7 @@ VA_HL_IMP_OPTIONS = SELECT TOP 5 option_name,
                                               ON O.allocation_option_id = ACOL.allocation_option_id
                                 WHERE  C.processing_report_export_key = 'IMP'
                                        AND HCP.hl5_id = in_hl_id
+                               -- Padding with empty rows so the row count is always 5
                                 UNION ALL
                                 SELECT '' AS OPTION_NAME,
                                        0  AS OPTION_PERCENTAGE
@@ -262,6 +314,7 @@ VA_HL_IMP_OPTIONS = SELECT TOP 5 option_name,
 
 
 
+-- Get exactly 5 allocation_category_option, ordered by amount.
     VA_HL_MKTSEG_OPTIONS = SELECT TOP 5 option_name,
                                         option_percentage,
                                         Row_number() OVER(ORDER BY option_percentage DESC) + 5 AS ROWNUM
@@ -279,6 +332,7 @@ VA_HL_IMP_OPTIONS = SELECT TOP 5 option_name,
                                                  ON O.allocation_option_id = ACOL.allocation_option_id
                                    WHERE  C.processing_report_export_key = 'MKTSEG'
                                           AND HCP.hl5_id = in_hl_id
+                                  -- Padding with empty rows so the row count is always 5
                                    UNION ALL
                                    SELECT '' AS OPTION_NAME,
                                           0  AS OPTION_PERCENTAGE
@@ -303,6 +357,7 @@ VA_HL_IMP_OPTIONS = SELECT TOP 5 option_name,
 
 
 
+-- Get exactly 5 allocation_category_option, ordered by amount.
 
     VA_HL_INDUSTRY_OPTIONS = SELECT TOP 5 option_name,
                                          option_percentage,
@@ -321,6 +376,7 @@ VA_HL_IMP_OPTIONS = SELECT TOP 5 option_name,
                                                   ON O.allocation_option_id = ACOL.allocation_option_id
                                     WHERE  C.processing_report_export_key = 'INDUSTRY'
                                            AND HCP.hl5_id = in_hl_id
+                                    -- Padding with empty rows so the row count is always 5
                                     UNION ALL
                                     SELECT '' AS OPTION_NAME,
                                            0  AS OPTION_PERCENTAGE
@@ -345,6 +401,7 @@ VA_HL_IMP_OPTIONS = SELECT TOP 5 option_name,
 
 
 
+-- Get exactly 5 allocation_category_option, ordered by amount.
     VA_HL_SOLUTION_OPTIONS = SELECT TOP 5 option_name,
                                           option_percentage,
                                           Row_number() OVER(ORDER BY option_percentage DESC) + 15 AS ROWNUM
@@ -366,6 +423,7 @@ VA_HL_IMP_OPTIONS = SELECT TOP 5 option_name,
                                      SELECT '' AS OPTION_NAME,
                                             0  AS OPTION_PERCENTAGE
                                      FROM   dummy
+                                     -- Padding with empty rows so the row count is always 5
                                      UNION ALL
                                      SELECT '' AS OPTION_NAME,
                                             0  AS OPTION_PERCENTAGE
@@ -387,6 +445,8 @@ VA_HL_IMP_OPTIONS = SELECT TOP 5 option_name,
 ---------------------------------------------------------------------------------
 ELSEIF(IN_LEVEL = 'HL6') THEN
 -----------------------------HL6-------------------------------------------------
+
+-- Get exactly 5 allocation_category_option, ordered by amount.
 VA_HL_IMP_OPTIONS = SELECT TOP 5 option_name,
                                  option_percentage,
                                  Row_number() OVER(ORDER BY option_percentage DESC)  AS ROWNUM
@@ -404,6 +464,7 @@ VA_HL_IMP_OPTIONS = SELECT TOP 5 option_name,
                                           ON O.allocation_option_id = ACOL.allocation_option_id
                             WHERE  C.processing_report_export_key = 'IMP'
                                    AND HCP.hl6_id = in_hl_id
+                           -- Padding with empty rows so the row count is always 5
                             UNION ALL
                             SELECT '' AS OPTION_NAME,
                                    0  AS OPTION_PERCENTAGE
@@ -428,6 +489,7 @@ VA_HL_IMP_OPTIONS = SELECT TOP 5 option_name,
 
 
 
+-- Get exactly 5 allocation_category_option, ordered by amount.
 VA_HL_MKTSEG_OPTIONS = SELECT TOP 5 option_name,
                                     option_percentage,
                                     Row_number() OVER(ORDER BY option_percentage DESC) + 5 AS ROWNUM
@@ -445,6 +507,7 @@ VA_HL_MKTSEG_OPTIONS = SELECT TOP 5 option_name,
                                              ON O.allocation_option_id = ACOL.allocation_option_id
                                WHERE  C.processing_report_export_key = 'MKTSEG'
                                       AND HCP.hl6_id = in_hl_id
+                              -- Padding with empty rows so the row count is always 5
                                UNION ALL
                                SELECT '' AS OPTION_NAME,
                                       0  AS OPTION_PERCENTAGE
@@ -469,7 +532,7 @@ VA_HL_MKTSEG_OPTIONS = SELECT TOP 5 option_name,
 
 
 
-
+-- Get exactly 5 allocation_category_option, ordered by amount.
 VA_HL_INDUSTRY_OPTIONS = SELECT TOP 5 option_name,
                                      option_percentage,
                                      Row_number() OVER(ORDER BY option_percentage DESC) + 10 AS ROWNUM
@@ -487,6 +550,7 @@ VA_HL_INDUSTRY_OPTIONS = SELECT TOP 5 option_name,
                                               ON O.allocation_option_id = ACOL.allocation_option_id
                                 WHERE  C.processing_report_export_key = 'INDUSTRY'
                                        AND HCP.hl6_id = in_hl_id
+                               -- Padding with empty rows so the row count is always 5
                                 UNION ALL
                                 SELECT '' AS OPTION_NAME,
                                        0  AS OPTION_PERCENTAGE
@@ -511,6 +575,7 @@ VA_HL_INDUSTRY_OPTIONS = SELECT TOP 5 option_name,
 
 
 
+-- Get exactly 5 allocation_category_option, ordered by amount.
 VA_HL_SOLUTION_OPTIONS = SELECT TOP 5 option_name,
                                       option_percentage,
                                       Row_number() OVER(ORDER BY option_percentage DESC) + 15 AS ROWNUM
@@ -528,6 +593,7 @@ VA_HL_SOLUTION_OPTIONS = SELECT TOP 5 option_name,
                                                ON O.allocation_option_id = ACOL.allocation_option_id
                                  WHERE  C.processing_report_export_key = 'SOLUTION'
                                         AND HCP.hl6_id = in_hl_id
+                                -- Padding with empty rows so the row count is always 5
                                  UNION ALL
                                  SELECT '' AS OPTION_NAME,
                                         0  AS OPTION_PERCENTAGE
@@ -552,6 +618,7 @@ VA_HL_SOLUTION_OPTIONS = SELECT TOP 5 option_name,
 ---------------------------------------------------------------------------------
 END IF;
 
+  -- Joining all category option (creating the T matrix)
  VA_HL_ALL_OPTIONS =    SELECT OPTION_NAME, OPTION_PERCENTAGE, ROWNUM
                             FROM :VA_HL_IMP_OPTIONS
                             UNION
@@ -564,6 +631,7 @@ END IF;
                             SELECT OPTION_NAME, OPTION_PERCENTAGE, ROWNUM
                             FROM :VA_HL_SOLUTION_OPTIONS;
 
+-- Creating the diagonal matrix
    VA_IDENTITY_MATRIX = SELECT
     CASE WHEN (V.ROWNUM = 1 )THEN OPTION_NAME ELSE '0' END AS IMP1,
     CASE WHEN (V.ROWNUM = 1 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZIMP_PERCENTAGE1,
@@ -608,6 +676,7 @@ END IF;
 
     FROM :VA_HL_ALL_OPTIONS V;
 
+-- Collapsing the matrix into a single row
     OUT_RESULT = SELECT
     MAX(IMP1) AS IMP1,
     MAX(ZZIMP_PERCENTAGE1) AS ZZIMP_PERCENTAGE1,

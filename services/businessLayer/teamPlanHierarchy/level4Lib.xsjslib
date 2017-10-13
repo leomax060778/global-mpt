@@ -835,41 +835,31 @@ function checkBudgetStatus(objHl3, hl4_id, new_hl4_budget) {
 
 /* Function to set HL4 status */
 function setHl4Status(hl4_id, status_id, userId) {
-    try {
-        var updateOK = null;
-
-        if (hl4_id && status_id && userId) {
-            var changeHL4tatus = dataHl4.changeStatusHl4(hl4_id, status_id, userId).out_result_hl4;
-            var insertHL4LogStatus = dataHl4.insertHl4LogStatus(hl4_id, status_id, userId);
-            if (!!changeHL4tatus && !!insertHL4LogStatus) {
-                updateOK = changeHL4tatus;
-                if (HL4_STATUS.IN_CRM == status_id) {
-                    if (level4DER.deleteL4ChangedFieldsByHl4Id(hl4_id) !== null) {
-                        resetHl4CategoryOptionUpdated(hl4_id, userId);
-                        db.commit();
-                    } else {
-                        updateOK = false;
-                        db.rollback();
-                    }
-
-                } else {
+    var updateOK = null;
+    if (hl4_id && status_id && userId) {
+        var changeHL4tatus = dataHl4.changeStatusHl4(hl4_id, status_id, userId).out_result_hl4;
+        var insertHL4LogStatus = dataHl4.insertHl4LogStatus(hl4_id, status_id, userId);
+        if (!!changeHL4tatus && !!insertHL4LogStatus) {
+            updateOK = changeHL4tatus;
+            if (HL4_STATUS.IN_CRM == status_id) {
+                if (level4DER.deleteL4ChangedFieldsByHl4Id(hl4_id) !== null) {
+                    resetHl4CategoryOptionUpdated(hl4_id, userId);
                     db.commit();
+                } else {
+                    updateOK = false;
+                    db.rollback();
                 }
             } else {
-                updateOK = false;
-                db.rollback();
+                db.commit();
             }
+        } else {
+            updateOK = false;
+            db.rollback();
         }
-
-        return updateOK;
-    } catch (e) {
-        db.rollback();
-        throw e;
-    } finally {
-        db.closeConnection();
     }
+    dataL4Report.updateLevel4ReportForDownload(hl4_id);
+    return updateOK;
 }
-
 function resetHl4CategoryOptionUpdated(hl4Id, userId) {
     dataCategoryOptionLevel.resetHl4CategoryOptionUpdated(hl4Id, 'hl4', userId);
 

@@ -1592,6 +1592,7 @@ function setHl5Status(hl5_id, status_id, userId) {
             resetHl5CategoryOptionUpdated(hl5_id, userId)
         }
     }
+    dataL5Report.updateLevel5ReportForDownload(hl5_id);
     return updateOK;
 }
 

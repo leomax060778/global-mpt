@@ -1,0 +1,13 @@
+{
+    "description": "Send nightly notifications by email",
+    "action": "mktgplanningtool.services.job:nightlyNotification.xsjs::sendNightlyNotification",
+    "schedules": [
+       {
+          "description": "Send nightly notifications by email",
+          "xscron": "* * * * 22 0 0",
+          "parameter": {
+                "app": "MPT"
+             }
+       }
+    ]
+}

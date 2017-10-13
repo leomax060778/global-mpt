@@ -33,8 +33,8 @@ drop PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_HL4_SAL
 DROP TABLE "MKTG_PLANNING_TOOL"."HL4_SALE_REGION";
 
 --/*Delete Procedures HL4_SALE_ROUTE*/
-drop PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::DEL_HL4_SALE_GLOBAL_TEAM"
-drop PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_HL4_SALE_ROUTE"
+drop PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::DEL_HL4_SALE_GLOBAL_TEAM";
+drop PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_HL4_SALE_ROUTE";
 DROP TABLE "MKTG_PLANNING_TOOL"."HL4_SALE_ROUTE";
 
 
