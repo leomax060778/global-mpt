@@ -45,6 +45,7 @@ function getCostCenterById(costCenterId){
 	var rdo = {};
 
 	rdo.CODE = costCenter.CODE;
+	rdo.PERSON_RESPONSIBLE = costCenter.PERSON_RESPONSIBLE;
 	rdo.COST_CENTER_ID = costCenter.COST_CENTER_ID;
 	rdo.DESCRIPTION = costCenter.DESCRIPTION;
 	rdo.NAME = costCenter.NAME;
@@ -109,7 +110,8 @@ function getAssignedEmployeeResponsible(costCenterId){
 
 function insCostCenter(data, userId){
 	data = uiToServerParser(data);
-	return dataCostCenter.insCostCenter(data.NAME, data.DESCRIPTION || null, userId, data.CODE, data.SALE_ORGANIZATION_ID);
+
+	return dataCostCenter.insCostCenter(data.NAME, data.DESCRIPTION || null, userId, data.CODE, data.SALE_ORGANIZATION_ID, data.in_person_responsible);
 }
 
 function insEmployeeResponsible(data, costCenterId , userId, isUpload){
@@ -194,6 +196,7 @@ function delCostCenterEmployeeResponsibleByCostCenterId(costCenterId, userId, ty
 function updCostCenter(data, userId, isUpload){
 
 	data = uiToServerParser(data);
+
 	var costCenterId = data.COST_CENTER_ID;
 
 	var costCenter = getCostCenterById(data.COST_CENTER_ID);
@@ -205,7 +208,7 @@ function updCostCenter(data, userId, isUpload){
                 "Cannot change Cost Center Marketing Organization. Cost Center is in use.");
 		}
 	} else {
-        dataCostCenter.updCostCenter(data.COST_CENTER_ID, data.NAME, data.DESCRIPTION, userId, data.CODE, data.SALE_ORGANIZATION_ID);
+        dataCostCenter.updCostCenter(data.COST_CENTER_ID, data.NAME, data.DESCRIPTION, userId, data.CODE, data.SALE_ORGANIZATION_ID, data.in_person_responsible);
 	}
 
 	if(!isUpload) {

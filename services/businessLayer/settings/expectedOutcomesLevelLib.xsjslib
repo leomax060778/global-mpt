@@ -35,21 +35,36 @@ function updateExpectedOutcomesLevel(parameters, modifiedUserId) {
     dataExpectedOutcomesLevel.delExpectedOutcomeLevel(expectedOutcomeId, hlId, modifiedUserId);
     for (var i = 0; i < optionList.length; i++) {
         var optionId = optionList[i];
-        try
-        {
+        try {
             var count = dataExpectedOutcomesLevel.getOutcomesLevelCountByOutcomesOptionAndLevelId(expectedOutcomeId, hlId, optionId);
-            if(count <= 0)
+            if (count <= 0)
                 resultTransaction = dataExpectedOutcomesLevel.insExpectedOutcomeLevel(expectedOutcomeId, optionId, hlId, modifiedUserId);
         }
-        catch(e){
+        catch (e) {
             throw e;
         }
     }
     return resultTransaction;
 }
 
-function getExpectedOutcomeLevelIdByOptionNameAndLevelId(optionName, levelId){
+function getExpectedOutcomeLevelIdByOptionNameAndLevelId(optionName, levelId) {
     return dataExpectedOutcomesLevel.getExpectedOutcomeLevelIdByOptionNameAndLevelId(optionName, levelId);
+}
+
+function getKpiTypeOptionMapByHlId(hlId) {
+    var spResult = dataExpectedOutcomesLevel.getKpiTypeOptionMapByHlId(hlId);
+    var mapKpiTypeOption = {};
+
+    for (var i = 0; i < spResult.length; i++) {
+        var obj = spResult[i];
+
+        if (!mapKpiTypeOption[obj.EXPECTED_OUTCOME_ID])
+            mapKpiTypeOption[obj.EXPECTED_OUTCOME_ID] = {};
+
+        mapKpiTypeOption[obj.EXPECTED_OUTCOME_ID][obj.EXPECTED_OUTCOME_OPTION_ID] = obj.EXPECTED_OUTCOME_LEVEL_ID
+
+    }
+    return mapKpiTypeOption;
 }
 
 function uiToServerParser(object) {

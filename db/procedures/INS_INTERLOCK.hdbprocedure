@@ -7,6 +7,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_INTERLOCK" (
 	IN in_created_user_id bigint,
 	IN in_entity_id_from bigint,
 	IN in_organization_type_id_from bigint,
+	IN in_comments NVARCHAR(255),
 	OUT out_result BIGINT
 	) 
 	LANGUAGE SQLSCRIPT
@@ -23,7 +24,8 @@ BEGIN
 															interlock_status_id,
 															created_user_id,
 															entity_id_from,
-															organization_type_id_from
+															organization_type_id_from,
+															comments
 															) 
 	VALUES (	in_entity_id,
 				in_organization_type_id,
@@ -32,7 +34,8 @@ BEGIN
 				in_interlock_status_id,
 				in_created_user_id,
 				in_entity_id_from,
-				in_organization_type_id_from
+				in_organization_type_id_from,
+				in_comments
 			);
 
     SELECT TOP 1 CURRENT_IDENTITY_VALUE() INTO out_result FROM "MKTG_PLANNING_TOOL"."INTERLOCK_REQUEST";

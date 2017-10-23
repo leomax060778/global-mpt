@@ -760,7 +760,7 @@ function sendEmail(resBudgetStatus, userId) {
 
 function checkBudgetStatus(hl1Id, userId, hl2Id, newHl2Budget) {
     if (hl1Id && newHl2Budget) {
-        var hl1 = blLevel1.getLevel1ById(hl1Id);
+        var hl1 = dataHl1.getLevel1ById(hl1Id);
         var hl1AllocatedBudget = dataHl1.getHl1AllocatedBudget(hl1Id, hl2Id);
         return (Number(hl1.BUDGET) - Number(hl1AllocatedBudget) - Number(newHl2Budget)) >= 0 ? 1 : 0;
     } else {
@@ -770,7 +770,7 @@ function checkBudgetStatus(hl1Id, userId, hl2Id, newHl2Budget) {
         result.emailListOutBudget = [];
         var resultHl2 = dataHl2.getHl2ByHl1Id(hl1Id, userId);
         if (resultHl2.out_result.length) {
-            var hl1 = blLevel1.getLevel1ById(hl1Id);
+            var hl1 = dataHl1.getLevel1ById(hl1Id);
             var hl1Budget = Number(hl1.BUDGET);
             var total = 0;
             for (var i = 0; i < resultHl2.out_result.length; i++) {

@@ -319,7 +319,9 @@ function insertLevel3Version(currentHL3, userId) {
             currentHL3.CRM_ID,
             currentHL3.HL3_HIERARCHY_ID,
             currentHL3.HL3_STATUS_DETAIL_ID,
-            currentHL3.IN_BUDGET
+            currentHL3.IN_BUDGET,
+            currentHL3.SHOPPING_CART_APPROVER || null,
+            currentHL3.COST_CENTER || null
         );
     }
 }

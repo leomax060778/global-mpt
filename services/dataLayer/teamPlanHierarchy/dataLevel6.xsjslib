@@ -73,7 +73,7 @@ function insertHl6(hl6CrmDescription,hl6Acronym,budget,hl5Id, routeToMarket
     , region
     , event_owner
     , number_of_participants
-    , priority_id,co_funded,allow_budget_zero, is_power_user,autoCommit, imported,import_id){
+    , priority_id,co_funded,allow_budget_zero, is_power_user, emploreeResponsible, personResponsible, autoCommit, imported,import_id){
     var params = {
         'in_hl6_crm_description' : hl6CrmDescription,
         'in_acronym': hl6Acronym,
@@ -125,6 +125,8 @@ function insertHl6(hl6CrmDescription,hl6Acronym,budget,hl5Id, routeToMarket
         , 'in_co_funded': co_funded ? co_funded : 0
         , 'in_allow_budget_zero': allow_budget_zero ? allow_budget_zero : 0
         , 'in_is_power_user': is_power_user || Number(is_power_user) ? is_power_user : 1
+        , 'in_employee_responsible_user': emploreeResponsible
+        , 'in_person_responsible' : person_responsible
     };
 
     var rdo;
@@ -389,7 +391,7 @@ function updateHl6(hl6Id,hl6CrmDescription,budget, routeToMarket
     , region
     , event_owner
     , number_of_participants
-    , priority_id, co_funded, allow_budget_zero,is_power_user,autoCommit){
+    , priority_id, co_funded, allow_budget_zero,is_power_user,employee_responsible_user,person_responsible,autoCommit){
     var params = {
         'in_hl6_id': hl6Id,
         'in_hl6_crm_description' : hl6CrmDescription,
@@ -437,6 +439,8 @@ function updateHl6(hl6Id,hl6CrmDescription,budget, routeToMarket
         , 'in_co_funded': co_funded
         , 'in_allow_budget_zero':allow_budget_zero
         , 'in_is_power_user': is_power_user || Number(is_power_user) ? is_power_user : 1
+        , 'in_employee_responsible_user' : employee_responsible_user
+        , 'in_person_responsible' : person_responsible
     };
 
     var rdo = db.executeScalarManual(spUpdHl6,params,'out_result');

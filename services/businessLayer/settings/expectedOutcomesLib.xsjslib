@@ -133,7 +133,7 @@ function getExpectedOutcomesByParentIdLevel(parentId, level) {
     return result[0];
 }
 
-function getExpectedOutcomesByHL1Id(hl1_id, FROMgRID) {
+function getExpectedOutcomesByHL1Id(hl1_id, fromGrid) {
     var expectedOutcomes = dataExpectedOutcome.getExpectedOutcomeByHL1Id(hl1_id);
     var result = [];
     if (expectedOutcomes && expectedOutcomes.length) {
@@ -141,7 +141,7 @@ function getExpectedOutcomesByHL1Id(hl1_id, FROMgRID) {
             var aux = util.extractObject(eo);
             aux.detail = dataExpectedOutcome.getHL1ExpectedOutcomeDetailById(aux.HL1_EXPECTED_OUTCOMES_ID);
             if (aux.detail.length) {
-                aux.detail = FROMgRID ? addParentKpiDataToDetail(hl1_id, 'HL2', aux.detail, FROMgRID) : aux.detail;
+                aux.detail = fromGrid ? addParentKpiDataToDetail(hl1_id, 'HL2', aux.detail, fromGrid) : aux.detail;
             } else {
                 aux.detail = [];
             }
@@ -155,7 +155,7 @@ function getExpectedOutcomesByHL1Id(hl1_id, FROMgRID) {
     return result[0];
 }
 
-function getExpectedOutcomesByHl2Id(hl2_id, hl1_id, FROMgRID) {
+function getExpectedOutcomesByHl2Id(hl2_id, hl1_id, fromGrid) {
     var result = [];
     var expectedOutcomes = dataExpectedOutcome.getExpectedOutcomeByHl2Id(hl2_id);
     if (expectedOutcomes && expectedOutcomes.length) {
@@ -164,7 +164,7 @@ function getExpectedOutcomesByHl2Id(hl2_id, hl1_id, FROMgRID) {
             var detail = dataExpectedOutcome.getHl2ExpectedOutcomeDetailById(aux.HL2_EXPECTED_OUTCOMES_ID);
 
             if (detail.length) {
-                aux.detail = FROMgRID ? addParentKpiDataToDetail(hl2_id, 'HL3', detail, FROMgRID) : addParentKpiDataToDetail(hl1_id, 'HL2', detail);
+                aux.detail = fromGrid ? addParentKpiDataToDetail(hl2_id, 'HL3', detail, fromGrid) : addParentKpiDataToDetail(hl1_id, 'HL2', detail);
             } else {
                 aux.detail = [];
                 aux.parentValues = getExpectedOutcomeTotalAvailableByHlIdLevelId(hl1_id, 'HL2');
@@ -178,7 +178,7 @@ function getExpectedOutcomesByHl2Id(hl2_id, hl1_id, FROMgRID) {
     return result[0];
 }
 
-function getExpectedOutcomesByHl3Id(hl3_id, hl2_id, FROMgRID) {
+function getExpectedOutcomesByHl3Id(hl3_id, hl2_id, fromGrid) {
     var expectedOutcomes = dataExpectedOutcome.getExpectedOutcomeByHl3Id(hl3_id);
     var result = [];
     if (expectedOutcomes && expectedOutcomes.length) {
@@ -187,7 +187,7 @@ function getExpectedOutcomesByHl3Id(hl3_id, hl2_id, FROMgRID) {
             var detail = dataExpectedOutcome.getHl3ExpectedOutcomeDetailById(aux.HL3_EXPECTED_OUTCOMES_ID);
 
             if (detail.length) {
-                aux.detail = FROMgRID ? addParentKpiDataToDetail(hl3_id, 'HL4', detail, FROMgRID) : addParentKpiDataToDetail(hl2_id, 'HL3', detail);
+                aux.detail = fromGrid ? addParentKpiDataToDetail(hl3_id, 'HL4', detail, fromGrid) : addParentKpiDataToDetail(hl2_id, 'HL3', detail);
             } else {
                 aux.detail = [];
                 aux.parentValues = getExpectedOutcomeTotalAvailableByHlIdLevelId(hl2_id, 'HL3');
@@ -292,12 +292,12 @@ function getExpectedOutcomeTotalAvailableByHlIdLevelId(parentId, level, childId)
     return result;
 }
 
-function addParentKpiDataToDetail(parentId, level, detail, FROMgRID) {
+function addParentKpiDataToDetail(parentId, level, detail, fromGrid) {
     var totalAvailable = getExpectedOutcomeTotalAvailableByHlIdLevelId(parentId, level);
-    return addTotalAvailable(detail, totalAvailable, FROMgRID);
+    return addTotalAvailable(detail, totalAvailable, fromGrid);
 }
 
-function addTotalAvailable(detail, totalAvailable, FROMgRID) {
+function addTotalAvailable(detail, totalAvailable, fromGrid) {
     detail = JSON.parse(JSON.stringify(detail));
     detail.forEach(function (elem) {
         elem.PARENT_TOTAL_VALUE = null;
@@ -314,7 +314,7 @@ function addTotalAvailable(detail, totalAvailable, FROMgRID) {
                 elem.VOLUME_AVAILABLE_TO_ALLOCATE = totalAvailable[elem.OUTCOMES_TYPE_ID][elem.OUTCOMES_ID].VOLUME_AVAILABLE_TO_ALLOCATE > 0
                     ? totalAvailable[elem.OUTCOMES_TYPE_ID][elem.OUTCOMES_ID].VOLUME_AVAILABLE_TO_ALLOCATE : 0;
 
-                if (FROMgRID) {
+                if (fromGrid) {
                     elem.ALLOCATED_VALUE = totalAvailable[elem.OUTCOMES_TYPE_ID][elem.OUTCOMES_ID].ALLOCATED_VALUE || null;
                     elem.ALLOCATED_VOLUME = totalAvailable[elem.OUTCOMES_TYPE_ID][elem.OUTCOMES_ID].ALLOCATED_VOLUME || null;
                 }

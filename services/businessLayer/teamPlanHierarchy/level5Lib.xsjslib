@@ -411,6 +411,8 @@ function insertHl5(data, userId) {
                 , data.hl5.CO_FUNDED
                 , data.hl5.ALLOW_BUDGET_ZERO
                 , Number(data.hl5.IS_POWER_USER) === 0 ? 0 : 1
+                , data.hl5.EMPLOYEE_RESPONSIBLE_USER
+                , data.hl5.PERSON_RESPONSIBLE
             );
         if (hl5_id > 0) {
             budgetSpendRequest.insertOwnMoneyBudgetSpendRequest(data.hl5.BUDGET, hl5_id, 'HL5', userId, blLevel2.getHl2AllowAutomaticBudgetApprovalByHl4Id(data.hl5.HL4_ID) && data.hl5.IN_BUDGET);
@@ -852,6 +854,8 @@ function updateHl5(data1, userId) {
             , data.hl5.CO_FUNDED
             , data.hl5.ALLOW_BUDGET_ZERO
             , Number(data.hl5.IS_POWER_USER) === 0 ? 0 : 1
+            , data.hl5.EMPLOYEE_RESPONSIBLE_USER
+            , data.hl5.PERSON_RESPONSIBLE
         );
 
         var objHL5 = dataHl5.getHl5ById(data.hl5.HL5_ID);

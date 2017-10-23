@@ -50,6 +50,11 @@ function getLevel3(){
     return $.mktgplanningtool.services.businessLayer.teamPlanHierarchy.level3Lib;
 }
 
+function refactorL1_getLevel3(){
+    $.import("mktgplanningtool.services.businessLayer.teamPlanHierarchy","refactorL1_level3Lib");
+    return $.mktgplanningtool.services.businessLayer.teamPlanHierarchy.refactorL1_level3Lib;
+}
+
 function getLevel4(){
     $.import("mktgplanningtool.services.businessLayer.teamPlanHierarchy","level4Lib");
     return $.mktgplanningtool.services.businessLayer.teamPlanHierarchy.level4Lib;
@@ -118,6 +123,11 @@ function getCostCenter(){
     return $.mktgplanningtool.services.businessLayer.settings.costCenterLib;
 }
 
+function refactorL1_getCostCenter(){
+    $.import("mktgplanningtool.services.businessLayer.settings","refactorL1_costCenterLib");
+    return $.mktgplanningtool.services.businessLayer.settings.refactorL1_costCenterLib;
+}
+
 function getSegmentation(){
     $.import("mktgplanningtool.services.businessLayer.settings","segmentationLib");
     return $.mktgplanningtool.services.businessLayer.settings.segmentationLib;
@@ -156,6 +166,11 @@ function refactorL1_getLevel1(){
 function getLevel2(){
     $.import("mktgplanningtool.services.businessLayer.teamPlanHierarchy","level2Lib");
     return $.mktgplanningtool.services.businessLayer.teamPlanHierarchy.level2Lib;
+}
+
+function refactorL1_getLevel2(){
+    $.import("mktgplanningtool.services.businessLayer.teamPlanHierarchy","refactorL1_level2Lib");
+    return $.mktgplanningtool.services.businessLayer.teamPlanHierarchy.refactorL1_level2Lib;
 }
 
 function getRole(){
@@ -490,6 +505,11 @@ function getDataLevel3(){
     return $.mktgplanningtool.services.dataLayer.teamPlanHierarchy.dataLevel3;
 }
 
+function refactorL1_getDataLevel3(){
+    $.import("mktgplanningtool.services.dataLayer.teamPlanHierarchy","refactorL1_dataLevel3");
+    return $.mktgplanningtool.services.dataLayer.teamPlanHierarchy.refactorL1_dataLevel3;
+}
+
 function getDataLevel4(){
     $.import("mktgplanningtool.services.dataLayer.teamPlanHierarchy","dataLevel4");
     return $.mktgplanningtool.services.dataLayer.teamPlanHierarchy.dataLevel4;
@@ -553,6 +573,11 @@ function getDataLevel1User(){
 function getDataLevel2(){
     $.import("mktgplanningtool.services.dataLayer.teamPlanHierarchy","dataLevel2");
     return $.mktgplanningtool.services.dataLayer.teamPlanHierarchy.dataLevel2;
+}
+
+function refactorL1_getDataLevel2(){
+    $.import("mktgplanningtool.services.dataLayer.teamPlanHierarchy","refactorL1_dataLevel2");
+    return $.mktgplanningtool.services.dataLayer.teamPlanHierarchy.refactorL1_dataLevel2;
 }
 
 function getDataLevel2User(){

@@ -33,6 +33,10 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL1_BY_FILTE
 	READS SQL DATA AS
 BEGIN
 	DECLARE va_total_budget DECIMAL(19, 2);
+	 DECLARE EXIT HANDLER FOR SQL_ERROR_CODE 1299
+            BEGIN
+                    out_total_budget = 0;
+            END;
 	va_total_budget := 0;
 
 	va_subresult =
@@ -113,6 +117,7 @@ BEGIN
      end if;
 
 	-- Calculate the total budget
+	-- This might throw an error that will be caught by the error handler declared on top of the sp
 	SELECT TOP 1 T.TOTAL_L1_BUDGET
 	INTO out_total_budget
 	FROM  :out_result T;

@@ -22,8 +22,17 @@ function handleGet(){
 	return httpUtil.handleResponse(result,httpUtil.OK,httpUtil.AppJson);
 }
 
-function handlePost(reqBody,userId){
-	var result = AllocationCategory.insertAllocationCategory(reqBody, userId);
+function handlePost(reqBody, userId){
+	var method = $.request.parameters.get("METHOD");
+	var result;
+	switch (method){
+		case "UPLOAD":
+			result = reqBody.check ? AllocationCategory.checkAllocationCategory(reqBody, userId) : AllocationCategory.uploadAllocationCategory(reqBody, userId);
+			break;
+		default:
+			result = AllocationCategory.insertAllocationCategory(reqBody, userId);
+			break;
+	}
 	return httpUtil.handleResponse(result,httpUtil.OK,httpUtil.AppJson);
 }
 

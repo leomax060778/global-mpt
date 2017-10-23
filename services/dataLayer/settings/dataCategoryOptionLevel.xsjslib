@@ -147,6 +147,15 @@ function getAllocationOptionByCategoryAndLevelId(level, hlId){
 	return null;
 }
 
+function getHlCategoryOptionByLevelHlId(level, hlId){
+    if(hlId && level){
+        var storedProcedure = "GET_"+ level.toUpperCase() +"_CATEGORY_OPTION";
+        var rdo = db.executeProcedureManual(storedProcedure,{'in_hl_id': hlId });
+        return db.extractArray(rdo.out_result);
+    }
+    return null;
+}
+
 function getAllocationOptionByCategoryAndLevel(allocation_category_id, level){
 	if(allocation_category_id && level){
 		var storedProcedure = "GET_HL6_ALLOCATION_OPTION_BY_CATEGORY_LEVEL";

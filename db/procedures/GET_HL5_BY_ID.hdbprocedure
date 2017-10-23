@@ -51,6 +51,8 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL5_BY_ID" (
         , is_power_user tinyint
         , budget_spend_request_status_id nvarchar(255)
         , budget_spend_request_status nvarchar(255)
+        , EMPLOYEE_RESPONSIBLE_USER nvarchar(7)
+        , PERSON_RESPONSIBLE NVARCHAR(7)
 		)
 		
 ) 
@@ -110,6 +112,8 @@ out_result = select
                 , HL5.is_power_user
                 , BSRS.budget_spend_request_status_id
                 , BSRS.display_name as budget_spend_request_status
+                , HL5.EMPLOYEE_RESPONSIBLE_USER
+                , HL5.PERSON_RESPONSIBLE
                  FROM HL5
                  LEFT JOIN BUDGET_SPEND_REQUEST BSR ON BSR.HL_ID = HL5.HL5_ID
                     AND BSR.HIERARCHY_LEVEL_ID = 2 AND BSR.BUDGET_SPEND_REQUEST_TYPE_ID = 1

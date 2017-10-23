@@ -263,11 +263,13 @@ function insertDictionaryHL(data, userId) {
     var arrAcronymHl3 = dataUpload.getDictionaryPathByUser(userId, 'HL3');
     var rtdo3 = level3Processor(userId, arrAcronymHl3, importId);
 
-    Array.prototype.push.apply(rtdo1, rtdo2);
-    Array.prototype.push.apply(rtdo1, rtdo3);
+    rtdo1.success = (rtdo1.success || 0) + (rtdo2.success || 0) + (rtdo3.success || 0);
+    rtdo1.fail = (rtdo1.fail || 0) + (rtdo2.fail || 0) + (rtdo3.fail || 0);
 
+    Array.prototype.push.apply(rtdo1.messages, rtdo2.messages);
+    Array.prototype.push.apply(rtdo1.messages, rtdo3.messages);
 
-
+    rtdo1.length = rtdo1.messages.length;
     return rtdo1;
 }
 
@@ -960,7 +962,7 @@ function logImportSuccess(row, IMPORT_ID, userId) {
     }
 
 
-    dataUpload.insertLog(keys, values, 0,
+    return dataUpload.insertLog(keys, values, 0,
         "PATH: " + path + separator + "HL_ID: " + level + separator + "DETAIL: Insert succefully.", IMPORT_ID,
         userId);
 }
@@ -1068,15 +1070,15 @@ function level3Processor(userId, arrayPaths, IMPORT_ID) {
             var row = dataUpload.getDataFromUploadDictionaryByPath(obj.PATH, userId);
 
             if (validateHl3(row)) {
-
                 hl.ACRONYM = getLevel(obj.PATH).Acronym;
                 hl.PARENT_ID = dataUpload.getParentIdByPath(obj.PATH.substring(0, 12)).HL_ID;
                 hl.PATH = obj.PATH;
 
                 row.forEach(function (cell) {
                     var fieldMapper = getValue(cell.UPLOAD_KEY);
-
-                    if (cell.UPLOAD_KEY == 'HL3_DESCRIPTION') {
+                    if (cell.UPLOAD_KEY == 'HL3_DESCRIPTION'
+                        || cell.UPLOAD_KEY == 'SHOPPING_CART_APPROVER'
+                        || cell.UPLOAD_KEY == 'COST_CENTER') {
                         hl[cell.UPLOAD_KEY] = cell.UPLOAD_VALUE;
                     }
 
@@ -1084,7 +1086,6 @@ function level3Processor(userId, arrayPaths, IMPORT_ID) {
                         budget = Number(parseNumberBudget(cell.UPLOAD_VALUE));
                         hl[cell.UPLOAD_KEY] = budget || 0;
                     }
-
 
                     if (cell.UPLOAD_KEY == 'ASSOCIATED_USER') {
                         var users = cell.UPLOAD_VALUE.replace(/\"|\r/, "").split(',');
@@ -1112,7 +1113,6 @@ function level3Processor(userId, arrayPaths, IMPORT_ID) {
 
                 //set user
                 hl.CREATED_USER_ID = userId;
-
 
                 if (mapInsertHierarchyLevelInsert[hl.HIERARCHY_LEVEL_ID](hl, userId)) {
                     logImportSuccess(row, IMPORT_ID, userId);

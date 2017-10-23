@@ -13,6 +13,10 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::UPD_HL4" (
 	IN in_user_id bigint,
 	--******added-- 
 	IN in_HL4_FNC_BUDGET_TOTAL_MKT DECIMAL (19, 2),
+	IN in_shopping_cart_approver nvarchar(10),
+    IN in_cost_center nvarchar(10),
+    IN in_mkt_org_id bigint,
+    IN in_dis_channel_id bigint,
 	--*************--	
 	OUT out_result int
 )
@@ -34,8 +38,12 @@ BEGIN
 		is_annual_plan = in_is_annual_plan,
 		modified_date_tz = CURRENT_TIMESTAMP,
 		--******added-- 
+		shopping_cart_approver = in_shopping_cart_approver,
+        cost_center = in_cost_center,
+        mkt_org_id = in_mkt_org_id,
+		dis_channel_id = in_dis_channel_id,
 		HL4_FNC_BUDGET_TOTAL_MKT=in_HL4_FNC_BUDGET_TOTAL_MKT
-		--*************--	
+		--*************--
 		where hl4_id = in_hl4_id;
         
         SELECT ::ROWCOUNT INTO out_result FROM DUMMY;

@@ -9,6 +9,7 @@ var DEL_EXPECTED_OUTCOME_LEVEL = "DEL_EXPECTED_OUTCOME_LEVEL";
 var GET_EXPECTED_OUTCOME_LEVEL_COUNT_BY_OUTCOME_ID_LEVEL_AND_OPTION = "GET_EXPECTED_OUTCOME_LEVEL_COUNT_BY_OUTCOME_ID_LEVEL_AND_OPTION";
 var GET_OUTCOMES_LEVEL_BY_OPTION_NAME_OUTCOME_ID_AND_LEVEL_ID = "GET_OUTCOMES_LEVEL_BY_OPTION_NAME_OUTCOME_ID_AND_LEVEL_ID";
 var GET_EXPECTED_OUTCOME_LEVEL_ID_BY_OPTION_NAME_AND_LEVEL_ID = "GET_EXPECTED_OUTCOME_LEVEL_ID_BY_OPTION_NAME_AND_LEVEL_ID";
+var GET_KPI_TYPE_OPTION_BY_HL_ID = "GET_KPI_TYPE_OPTION_BY_HL_ID";
 
 function insExpectedOutcomeLevel(expected_outcome_id,expected_outcome_option_id,hierarchylevel,userId,autoCommit){
     var params = {
@@ -94,4 +95,9 @@ function getExpectedOutcomeTotalAvailableByHlIdLevelId(parentId, level, childId)
     var spName = 'GET_' + level.toUpperCase() + '_EXPECTED_OUTCOME_TOTAL_AVAILABLE_BY_HL_ID_LEVEL_ID';
     var list = db.executeProcedureManual(spName, parameters);
     return db.extractArray(list.out_result);
+}
+
+function getKpiTypeOptionMapByHlId(hlId) {
+    var list = db.executeProcedureManual(GET_KPI_TYPE_OPTION_BY_HL_ID, {in_hierarchy_level_id: hlId});
+    return db.extractArray(list.out_result)
 }

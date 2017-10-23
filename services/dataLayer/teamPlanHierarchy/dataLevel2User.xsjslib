@@ -23,7 +23,7 @@ function insertLevel2User(data){
 
 function delAllLevel2User(objLevel2, userId){
 	var parameters = {};
-	parameters.in_hl2_id = objLevel2.IN_HL2_ID;
+	parameters.in_hl2_id = objLevel2.IN_HL2_ID || objLevel2.HL2_ID;
 	return db.executeScalarManual(DEL_ALL_HL2_BY_ID,parameters,"out_result");
 }
 

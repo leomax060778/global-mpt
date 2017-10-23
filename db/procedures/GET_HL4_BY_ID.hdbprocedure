@@ -17,6 +17,10 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL4_BY_ID" (
 	,hl4_fnc_budget_spend_q3 DECIMAL(19, 2)
 	,hl4_fnc_budget_spend_q4 DECIMAL(19, 2)
 	,hl4_fnc_budget_total_mkt DECIMAL(19, 2)
+	,SHOPPING_CART_APPROVER NVARCHAR(10)
+    ,COST_CENTER NVARCHAR(10)
+    ,MKT_ORG_ID integer
+    ,DIS_CHANNEL_ID integer
 	) 
 ) 
 	LANGUAGE SQLSCRIPT
@@ -42,6 +46,10 @@ out_hl4 =
 		,HL4.hl4_fnc_budget_spend_q3
 		,HL4.hl4_fnc_budget_spend_q4
 		,HL4.hl4_fnc_budget_total_mkt
+		,HL4.SHOPPING_CART_APPROVER
+        ,HL4.COST_CENTER
+        ,HL4.MKT_ORG_ID
+    	,HL4.DIS_CHANNEL_ID
    		      		      		      		      		      		      		      		   
 	FROM HL4
 	WHERE HL4.hl4_id = in_hl4_id

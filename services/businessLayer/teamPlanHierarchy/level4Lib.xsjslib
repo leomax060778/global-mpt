@@ -222,7 +222,11 @@ function insertHl4(data, userId) {
                 in_read_only: data.hl4.in_read_only,
                 in_user_id_send_mail: data.hl4.in_user_id_send_mail = 1,
                 in_in_budget: data.hl4.in_in_budget,
-                in_hl4_status_detail_id: data.hl4.in_hl4_status_detail_id
+                in_hl4_status_detail_id: data.hl4.in_hl4_status_detail_id,
+                in_shopping_cart_approver: data.hl4.SHOPPING_CART_APPROVER || null,
+                in_cost_center: data.hl4.COST_CENTER || null,
+                in_mkt_org_id: data.hl4.in_mkt_org_id,
+                in_dis_channel_id: data.hl4.in_dis_channel_id
             };
 
             hl4_id = dataHl4.insertHl4(hl4);
@@ -360,6 +364,10 @@ function updateHl4(data, userId) {
             hl4.in_hl4_parent_id = data.hl4.in_hl4_parent_id;
             hl4.in_read_only = data.hl4.in_read_only;
             hl4.in_is_annual_plan = data.hl4.in_is_annual_plan;
+            hl4.in_shopping_cart_approver = data.hl4.SHOPPING_CART_APPROVER || null;
+            hl4.in_cost_center = data.hl4.COST_CENTER || null;
+            hl4.in_mkt_org_id = data.hl4.in_mkt_org_id;
+            hl4.in_dis_channel_id = data.hl4.in_dis_channel_id;
             hl4.in_user_id = userId;
 
             /********************REFACTOR*************************/
@@ -518,6 +526,18 @@ function validateHl4(data, userId) {
     if (data.hl4.in_hl4_fnc_budget_total_mkt < 0)
         throw ErrorLib.getErrors().CustomError("", "hl4Services/handlePost/insertHl4", L3_MSG_INITIATIVE_BUDGET_VALUE);
 
+    if (data.SHOPPING_CART_APPROVER && !/[id]\d{6}/gi.test(data.SHOPPING_CART_APPROVER)) {
+        throw ErrorLib.getErrors().CustomError("Shopping cart approver is invalid", "", "");
+    }
+    if (data.COST_CENTER && !/\d+/gi.test(data.COST_CENTER)) {
+        throw ErrorLib.getErrors().CustomError("Cost Center approver is invalid", "", "");
+    }
+    if (data.MKT_ORG_ID && data.MKT_ORG_ID <= 0) {
+        throw ErrorLib.getErrors().CustomError("Sale Organization is invalid", "", "");
+    }
+    if (data.DIS_CHANNEL_ID && data.DIS_CHANNEL_ID <= 0) {
+        throw ErrorLib.getErrors().CustomError("Distribution Channel is invalid", "", "");
+    }
     if (data.hl4_expected_outcomes) {
         var totalAvailable = expectedOutcomesLib.getExpectedOutcomeTotalAvailableByHlIdLevelId(data.hl4.in_hl3_id, 'HL4', data.hl4.in_hl4_id);
 
@@ -692,8 +712,8 @@ function isMyBudgetComplete(hl4_budget) {
         }
     });
 
-    
-   
+
+
     if (myBudgetTotalPercentage > 100)
         throw ErrorLib.getErrors().CustomError("", "hl4Services/handlePost/insertHl4", L3_MSG_INITIATIVE_BUDGET_PERCENT);
     if (myBudgetTotalPercentage < 100)
@@ -886,7 +906,7 @@ function setHl4StatusInCRM(hl4_id, userId) {
 
 function changeHl4StatusOnDemand(hl4_id, userId) {
     var hl4_category = getHl4CategoryOption(hl4_id);
-    
+
     var isComplete = isCategoryOptionComplete({
             hl4_category: hl4_category,
             hl4: {in_hl4_id: hl4_id}

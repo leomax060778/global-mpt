@@ -1,0 +1,22 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_KPI_TYPE_OPTION_BY_HL_ID"
+(
+        in in_hierarchy_level_id bigint,
+        out out_result table(
+              expected_outcome_level_id bigint
+              , expected_outcome_id bigint
+              , expected_outcome_option_id bigint
+        )
+)
+LANGUAGE SQLSCRIPT
+SQL SECURITY INVOKER
+DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+AS
+BEGIN
+out_result =
+select expected_outcome_level_id
+       , expected_outcome_id
+       , expected_outcome_option_id
+from expected_outcome_level eol
+where eol.enabled = 1 and eol.deleted = 0
+and eol.hierarchy_level_id = in_hierarchy_level_id;
+END;

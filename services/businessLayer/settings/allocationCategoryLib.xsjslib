@@ -5,10 +5,15 @@ var ErrorLib = mapper.getErrors();
 var dbCategory = mapper.getDataCategory();
 var dbCategoryOption = mapper.getDataOption();
 var dataCategoryOptionLevel = mapper.getDataCategoryOptionLevel();
+var dbMeasure = mapper.getDataMeasure();
 /*************************************************/
 
 function getAllocationCategoryByName(name){
 	return dbCategory.getAllocationCategoryByName(name);
+}
+
+function insertAllocationCategoryForUpload(name, description, measure_id, single_option_only, userId){
+	return insertAllocationCategory({NAME: name, DESCRIPTION: description, MEASURE_ID: measure_id, SINGLE_OPTION_ONLY: single_option_only}, userId);
 }
 
 function insertAllocationCategory(data, userId) {
@@ -21,6 +26,7 @@ function insertAllocationCategory(data, userId) {
 	var result = dbCategory.insertAllocationCategory(data.DESCRIPTION,
 		data.NAME,
 		data.MEASURE_ID,
+		data.SINGLE_OPTION_ONLY ? 1 : 0,
 		userId);
 	return result;
 }
@@ -58,7 +64,7 @@ function getCategoryByHierarchyLevelId(hierarchy_level_id){
 
 function updateAllocationCategory(data, userId) {
 	return dbCategory.updateAllocationCategory(data.CATEGORY_ID,
-		data.DESCRIPTION, data.NAME, data.MEASURE_ID,
+		data.DESCRIPTION, data.NAME, data.MEASURE_ID, data.SINGLE_OPTION_ONLY ? 1 : 0,
 		userId);
 
 }
@@ -87,4 +93,45 @@ function deleteAllocationCategory(categoryId, userId, confirm){
 
 function getOptionByLevelByCategory(hierarchy_level_id, allocation_category_id){
 	return dbCategoryOption.getOptionByLevelByCategory(hierarchy_level_id, allocation_category_id);
+}
+
+function uploadAllocationCategory(data, userId) {
+	var allocationCategoryList = data.batch;
+	var allocationCategoryUpdated = 0;
+	var allocationCategoryCreated = 0;
+	var categoryId;
+	allocationCategoryList.forEach(function(allocationCategory){
+		var ac = getAllocationCategoryByName(allocationCategory.in_categoryName);
+
+		var measure = dbMeasure.getMeasureBySymbol(allocationCategory.in_measure);
+		//if (!measure)
+		//	throw ErrorLib.getErrors().CustomError("", "allocationCategoryService/handlePost/UPLOAD", "Measure is not found");
+
+		if(!ac || !ac.CATEGORY_ID){
+			categoryId = insertAllocationCategoryForUpload(allocationCategory.in_categoryName, allocationCategory.in_categoryDescription, measure.MEASURE_ID,
+				allocationCategory.in_oneSelectionOnly, userId);
+			allocationCategoryCreated++;
+		} else {
+			dbCategory.updateAllocationCategory(ac.CATEGORY_ID,
+				allocationCategory.in_categoryDescription, allocationCategory.in_categoryName, measure.MEASURE_ID,
+				allocationCategory.in_oneSelectionOnly ? 1 : 0, userId);
+			allocationCategoryUpdated++;
+		}
+	});
+	return {allocationCategoryCreated: allocationCategoryCreated, allocationCategoryUpdated: allocationCategoryUpdated};
+}
+
+function checkAllocationCategory(data){
+	var allocationCategoryList = data.check;
+	var allocationCategoryToUpdate = 0;
+	var allocationCategoryToInsert = 0;
+	allocationCategoryList.forEach(function(category){
+		if(getAllocationCategoryByName(category.in_categoryName)){
+			allocationCategoryToUpdate++;
+		} else {
+			allocationCategoryToInsert++;
+		}
+	});
+
+	return {allocationCategoryToCreate: allocationCategoryToInsert, allocationCategoryToUpdate: allocationCategoryToUpdate};
 }

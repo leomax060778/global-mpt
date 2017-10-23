@@ -55,6 +55,8 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL6_BY_ID"(
             , IS_POWER_USER TINYINT
             , budget_spend_request_status_id nvarchar(255)
             , budget_spend_request_status nvarchar(255)
+            , EMPLOYEE_RESPONSIBLE_USER nvarchar(7)
+            , PERSON_RESPONSIBLE NVARCHAR(7)
 		)
 	)
 	LANGUAGE SQLSCRIPT
@@ -118,6 +120,8 @@ BEGIN
                 , HL6.IS_POWER_USER
                 , BSRS.budget_spend_request_status_id
                 , BSRS.display_name as budget_spend_request_status
+                , HL6.EMPLOYEE_RESPONSIBLE_USER
+                , HL6.PERSON_RESPONSIBLE
 			FROM HL6
 			LEFT JOIN BUDGET_SPEND_REQUEST BSR ON BSR.HL_ID = HL6.HL6_ID
                                 AND BSR.HIERARCHY_LEVEL_ID = 3 AND BSR.BUDGET_SPEND_REQUEST_TYPE_ID = 1

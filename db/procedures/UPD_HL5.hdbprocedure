@@ -44,6 +44,8 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::UPD_HL5" (
     ,IN in_co_funded tinyint
     ,IN in_allow_budget_zero tinyint
     ,IN in_is_power_user tinyint
+    , IN in_employee_responsible_user nvarchar(7)
+    , IN in_person_responsible nvarchar(7)
 	,OUT out_result int
 )
    LANGUAGE SQLSCRIPT
@@ -94,6 +96,8 @@ BEGIN
     co_funded = in_co_funded,
     allow_budget_zero = in_allow_budget_zero,
     is_power_user = in_is_power_user
+    , EMPLOYEE_RESPONSIBLE_USER = in_employee_responsible_user
+    , PERSON_RESPONSIBLE = in_person_responsible
 
     where hl5_id = in_hl5_id;
 

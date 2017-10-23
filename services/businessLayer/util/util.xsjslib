@@ -212,3 +212,9 @@ function getCategoryById(level){
 function getHash() {
     return dataUtil.getHash();
 }
+
+function parseAssignedUsers(assignedUsers) {
+    return assignedUsers.map(function (user) {
+        return user.USER_ID;
+    });
+}

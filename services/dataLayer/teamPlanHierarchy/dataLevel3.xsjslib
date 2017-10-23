@@ -44,14 +44,17 @@ function insertHl3(objHl3, userId) {
 }
 
 function insertHl3FromUpload(objHl3, userId){
-	var obj = {}
-		obj.IN_ACRONYM = objHl3.ACRONYM;
-		obj.IN_HL2_ID = objHl3.PARENT_ID;
-		obj.IN_HL3_DESCRIPTION = objHl3.HL3_DESCRIPTION;
-		obj.IN_BUSINESS_OWNER_ID = 0;
-		obj.IN_HL3_FNC_BUDGET_TOTAL = objHl3.HL3_FNC_BUDGET_TOTAL;
-		obj.IN_IN_BUDGET = null;
-		obj.in_import_id = objHl3.IMPORT_ID ? objHl3.IMPORT_ID : null;
+	var obj = {};
+	obj.IN_ACRONYM = objHl3.ACRONYM;
+	obj.IN_HL2_ID = objHl3.PARENT_ID;
+	obj.IN_HL3_DESCRIPTION = objHl3.HL3_DESCRIPTION;
+	obj.IN_BUSINESS_OWNER_ID = 0;
+	obj.IN_HL3_FNC_BUDGET_TOTAL = objHl3.HL3_FNC_BUDGET_TOTAL;
+	obj.IN_IN_BUDGET = null;
+	obj.in_import_id = objHl3.IMPORT_ID ? objHl3.IMPORT_ID : null;
+	obj.IN_SHOPPING_CART_APPROVER = objHl3.SHOPPING_CART_APPROVER;
+	obj.IN_COST_CENTER = objHl3.COST_CENTER;
+
 	return insertHl3(obj,userId);
 }
 
@@ -208,22 +211,25 @@ function getAllHl3VersionByHl3Id(hl3_id){
 	return db.extractArray(result.out_result);
 }
 
-function insertLevel3Version(hl3Id, version, acronym, description, budget, userId, business_owner_id, origin_plan_id, hl2_id, crm_id, hl3_hierarchy_id, hl3_status_detail_id, in_budget){
-	var parameters = {};
-	parameters.in_hl3_id = hl3Id;
-	parameters.in_version = version;
-	parameters.in_acronym = acronym;
-	parameters.in_description = description;
-	parameters.in_budget = budget;
-	parameters.in_created_user_id = userId;
-	parameters.in_business_owner_id = business_owner_id;
-	parameters.in_origin_plan_id = origin_plan_id;
-	parameters.in_hl2_id = hl2_id;
-	parameters.in_crm_id = crm_id;
-	parameters.in_hl3_hierarchy_id = hl3_hierarchy_id;
-	parameters.in_hl3_status_detail_id = hl3_status_detail_id;
-	parameters.in_in_budget = in_budget;
-	return db.executeScalarManual(INS_HL3_VERSION,parameters,"out_result");
+function insertLevel3Version(hl3Id, version, acronym, description, budget, userId, business_owner_id, origin_plan_id, hl2_id, crm_id, hl3_hierarchy_id, hl3_status_detail_id, in_budget, shopping_cart_approver, cost_center){
+    var parameters = {};
+    parameters.in_hl3_id = hl3Id;
+    parameters.in_version = version;
+    parameters.in_acronym = acronym;
+    parameters.in_description = description;
+    parameters.in_budget = budget;
+    parameters.in_created_user_id = userId;
+    parameters.in_business_owner_id = business_owner_id;
+    parameters.in_origin_plan_id = origin_plan_id;
+    parameters.in_hl2_id = hl2_id;
+    parameters.in_crm_id = crm_id;
+    parameters.in_hl3_hierarchy_id = hl3_hierarchy_id;
+    parameters.in_hl3_status_detail_id = hl3_status_detail_id;
+    parameters.in_in_budget = in_budget;
+    parameters.in_shopping_cart_approver = shopping_cart_approver;
+    parameters.in_cost_center = cost_center;
+
+    return db.executeScalarManual(INS_HL3_VERSION,parameters,"out_result");
 }
 
 function getLevel3VersionForFilter(hl2Id, userSessionID, isSA){

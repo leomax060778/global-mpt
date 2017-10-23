@@ -4,6 +4,7 @@ var mapper = $.mktgplanningtool.services.commonLib.mapper;
 var ErrorLib = mapper.getErrors();
 var dataCategoryOptionLevel = mapper.getDataCategoryOptionLevel();
 var blSegmentation = mapper.getSegmentation();
+var util = mapper.getUtil();
 /*************************************************/
 var HIERARCHY_LEVEL = {
     HL1: 6,
@@ -70,15 +71,45 @@ function updateCategoryOptionLevel(data, userId) {
                 throw ErrorLib.getErrors().CustomError("",
                     "categoryOptionLevelServices/handlePut/updateCategoryOptionLevel",
                     "Could not complete the process.");
-
-            if(optionIds.length)
+      
+            if(optionIds.length){
                 var error = ErrorLib.getErrors().AcronymError("", "", 'Allocation Option assignment error.');
                 error.data = optionIds;
                 error.message = 'Allocation Option assignment error.';
                 error.name = 'Allocation Option assignment error.';
                 throw error;
+            }
         }
 	});
 	
     return (data.IN_LEVEL.length * data.IN_OPTION_LIST.length);
+}
+
+function getHlCategoryOptionByLevelHlId(level, hlId) {
+    var categoryOptionList = dataCategoryOptionLevel.getHlCategoryOptionByLevelHlId(level, hlId);
+    var result = {};
+    categoryOptionList.forEach(function (categoryOption) {
+        if(!result[categoryOption.CATEGORY_NAME]) {
+            result[categoryOption.CATEGORY_NAME] = {
+                CATEGORY_ID: categoryOption.CATEGORY_ID,
+                CATEGORY_NAME: categoryOption.CATEGORY_NAME,
+                OPTIONS: [{
+                    OPTION_ID: categoryOption.OPTION_ID,
+                    OPTION_NAME: categoryOption.OPTION_NAME,
+                    CATEGORY_OPTION_LEVEL_ID: categoryOption.CATEGORY_OPTION_LEVEL_ID,
+                    AMOUNT: categoryOption.AMOUNT,
+                    CATEGORY_OPTION_ID: categoryOption.CATEGORY_OPTION_ID
+                }]
+            }
+        } else {
+            result[categoryOption.CATEGORY_NAME].OPTIONS.push({
+                OPTION_ID: categoryOption.OPTION_ID,
+                OPTION_NAME: categoryOption.OPTION_NAME,
+                CATEGORY_OPTION_LEVEL_ID: categoryOption.CATEGORY_OPTION_LEVEL_ID,
+                AMOUNT: categoryOption.AMOUNT,
+                CATEGORY_OPTION_ID: categoryOption.CATEGORY_OPTION_ID
+            });
+        }
+    });
+    return util.objectToArray(result);
 }

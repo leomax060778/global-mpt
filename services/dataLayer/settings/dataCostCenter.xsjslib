@@ -162,14 +162,16 @@ function costCenterInUse(costCenterId) {
 	return db.extractArray(list.out_result);
 }
 
-function insCostCenter(name, description, userId, code, salesOrganizationId){
+function insCostCenter(name, description, userId, code, salesOrganizationId, personResponsible){
 	var parameters = {
 		in_name: name,
 		in_user_id: userId,
 		in_code: code,
 		in_description: description,
-		in_sales_organization_id: salesOrganizationId
+		in_sales_organization_id: salesOrganizationId,
+		in_person_responsible: personResponsible
 	};
+
 	return db.executeScalarManual(INS_COST_CENTER, parameters, 'out_cost_center_id');
 }
 
@@ -186,14 +188,15 @@ function insCostCenterEmployeeResponsible(costCenterId, employeeResponsibleId, u
 	return db.executeScalarManual(INS_COST_CENTER_EMPLOYEES_RESPONSIBLE, parameters, 'out_result');
 }
 
-function updCostCenter(costCenterId, name, description, userId, code, salesOrganizationId){
+function updCostCenter(costCenterId, name, description, userId, code, salesOrganizationId, personResponsible){
 	var parameters = {
 		in_cost_center_id: costCenterId,
 		in_name: name,
 		in_description: description,
 		in_user_id: userId,
 		in_code: code,
-        in_sales_organization_id: salesOrganizationId
+        in_sales_organization_id: salesOrganizationId,
+		in_person_responsible: personResponsible
 	};
 	return db.executeScalarManual(UPD_COST_CENTER, parameters, 'out_result');
 }

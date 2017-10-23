@@ -389,7 +389,7 @@ function insertHl5(hl5CrmDescription,acronym,distributionChannelId,budget,hl4Id
 	, region
 	, event_owner
 	, number_of_participants
-	, priority_id,co_funded,allow_budget_zero, is_power_user, autoCommit, imported, import_id
+	, priority_id,co_funded,allow_budget_zero, is_power_user,emploreeResponsible, person_responsible, autoCommit, imported, import_id
 	){
 	var params = {
 		'in_hl5_crm_description' : hl5CrmDescription,
@@ -439,6 +439,8 @@ function insertHl5(hl5CrmDescription,acronym,distributionChannelId,budget,hl4Id
 		, 'in_co_funded': co_funded ? co_funded : 0
 		, 'in_allow_budget_zero': allow_budget_zero ? allow_budget_zero : 0
 		, 'in_is_power_user': is_power_user && Number(is_power_user) ? is_power_user : 1
+		, 'in_employee_responsible_user': emploreeResponsible
+		, 'in_person_responsible' : person_responsible
 	};
 
 	
@@ -512,7 +514,8 @@ function updateHl5(hl5Id,hl5CrmDescription,inAcronym,distributionChannelId,budge
 	, region
 	, event_owner
 	, number_of_participants
-	, priority_id,co_funded, allow_budget_zero, is_power_user, autoCommit){
+	, priority_id,co_funded, allow_budget_zero, is_power_user,employee_responsible_user,person_responsible,
+				   autoCommit){
 	var params = {
 		'in_hl5_id' : hl5Id,
 		'in_hl5_crm_description' : hl5CrmDescription,
@@ -558,6 +561,9 @@ function updateHl5(hl5Id,hl5CrmDescription,inAcronym,distributionChannelId,budge
 		, 'in_co_funded': co_funded ? co_funded : 0
 		, 'in_allow_budget_zero': allow_budget_zero ? allow_budget_zero : 0
 		, 'in_is_power_user': is_power_user && Number(is_power_user) ? is_power_user : 1
+		 , 'in_employee_responsible_user' : employee_responsible_user
+		, 'in_person_responsible' : person_responsible
+
 	};
 
 	var rdo;

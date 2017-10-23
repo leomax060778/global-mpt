@@ -44,7 +44,7 @@ from INTERLOCK_REQUEST ir_from
 INNER JOIN INTERLOCK_REQUEST_MESSAGE irm_from ON ir_from.INTERLOCK_REQUEST_ID = irm_from.INTERLOCK_REQUEST_ID;
 
 out_result_from =
-select
+select distinct
   ir_from.INTERLOCK_REQUEST_ID
 , coalesce(io_from.NAME, r_from.REGION_NAME,sr_from.SUBREGION_NAME) as ORGANIZATION_NAME
 , coalesce(iro_from.interlock_organization_id_from, irr_from.REGION_ID_FROM, irsr_from.SUBREGION_ID_FROM) as ORGANIZATION_ID
@@ -69,7 +69,7 @@ AND irm_from.interlock_request_origin_id  = in_origin_id
 order by ir_from.INTERLOCK_REQUEST_ID asc;
 
 out_result_to =
-select
+select distinct
   ir_to.INTERLOCK_REQUEST_ID
 , coalesce(io_to.NAME, r.REGION_NAME, sr.SUBREGION_NAME) as ORGANIZATION_NAME
 , ie_to.INTERLOCK_ENTITY_ID as ENTITY_ID

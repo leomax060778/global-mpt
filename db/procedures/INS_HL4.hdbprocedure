@@ -14,6 +14,10 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_HL4" (
 	--******added-- 
 	IN in_IN_BUDGET tinyint,
 	IN in_HL4_FNC_BUDGET_TOTAL_MKT DECIMAL (19, 2),
+	IN in_shopping_cart_approver nvarchar(10),
+    IN in_cost_center nvarchar(10),
+    IN in_mkt_org_id bigint,
+    IN in_dis_channel_id bigint,
 	--*************--	
 	OUT out_hl4_id bigint
 	) 
@@ -35,7 +39,11 @@ BEGIN
 											user_id_send_mail,
 											created_user_id,
 											IN_BUDGET,
-											HL4_FNC_BUDGET_TOTAL_MKT
+											HL4_FNC_BUDGET_TOTAL_MKT,
+											shopping_cart_approver,
+											cost_center,
+											mkt_org_id,
+											dis_channel_id
 											)
 	VALUES (	in_hl3_id,in_acronym,
 				in_hl4_crm_description,
@@ -49,7 +57,11 @@ BEGIN
 				in_user_id_send_mail,
 				in_created_user_id,
 				in_IN_BUDGET,
-				in_HL4_FNC_BUDGET_TOTAL_MKT
+				in_HL4_FNC_BUDGET_TOTAL_MKT,
+				in_shopping_cart_approver,
+				in_cost_center,
+				in_mkt_org_id,
+				in_dis_channel_id
 	);
 	SELECT TOP 1 CURRENT_IDENTITY_VALUE() INTO out_hl4_id FROM "MKTG_PLANNING_TOOL"."HL4";
 END;

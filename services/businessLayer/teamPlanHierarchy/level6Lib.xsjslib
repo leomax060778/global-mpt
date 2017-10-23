@@ -422,6 +422,8 @@ function insertHl6(data, userId) {
                 , data.hl6.CO_FUNDED
                 , data.hl6.ALLOW_BUDGET_ZERO
                 , Number(data.hl6.IS_POWER_USER) === 0 ? 0 : 1
+                , data.hl6.EMPLOYEE_RESPONSIBLE_USER
+                , data.hl6.PERSON_RESPONSIBLE
             );
         }catch(e){
             if(e.name == "CRM Constraint Error"){
@@ -895,6 +897,9 @@ function updateHl6(data, userId) {
             , data.hl6.CO_FUNDED
             , data.hl6.ALLOW_BUDGET_ZERO
             , Number(data.hl6.IS_POWER_USER) === 0 ? 0 : 1
+            , data.hl6.EMPLOYEE_RESPONSIBLE_USER
+            , data.hl6.PERSON_RESPONSIBLE
+            
         );
 
         if (objHL6.BUDGET != data.hl6.BUDGET) {

@@ -12,6 +12,8 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_HL3_VERSION"
     in in_hl3_hierarchy_id bigint,
     in in_hl3_status_detail_id bigint,
     in in_in_budget tinyint,
+    in in_shopping_cart_approver tinyint,
+    in in_cost_center tinyint,
 	out out_result bigint
 	)
 	LANGUAGE SQLSCRIPT
@@ -31,7 +33,9 @@ BEGIN
     hl3_status_detail_id,
     acronym,
     hl3_fnc_budget_total,
-    in_budget
+    in_budget,
+    shopping_cart_approver,
+    cost_center
 	)
 	values (
 	in_hl3_id,
@@ -46,7 +50,9 @@ BEGIN
     in_hl3_status_detail_id,
     in_acronym,
     in_budget,
-    in_in_budget
+    in_in_budget,
+    in_shopping_cart_approver,
+    in_cost_center
 	);
 
 	--SELECT TOP 1 CURRENT_IDENTITY_VALUE() INTO out_result FROM HL3_VERSION;

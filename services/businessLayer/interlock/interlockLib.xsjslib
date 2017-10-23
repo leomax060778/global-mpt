@@ -67,13 +67,13 @@ function getInterlockReport(userId){
 	}
 
 	var interlockReport = dataInterlock.getInterlockReport(userId, isSA);
-	return interlockReport;	
+	return interlockReport;
 }
 
 function getInterlockByHash(hash,userId){
-	if(!hash) 
+	if(!hash)
 		throw ErrorLib.getErrors().BadRequest("The hash is not found","interlockServices/handleGet/getInterlockByHash", "The hash is not found");
-	
+
 	var rdo = dataInterlock.getInterlockByHash(hash);
 
 	if(rdo == null)
@@ -88,28 +88,28 @@ function getInterlockById(interlockId, userId){
 	if(!interlockId){
 		throw ErrorLib.getErrors().CustomError("","interlockService/handleGet/getInterlockById", "The interlock Id can not be found.");
 	}
-	
+
 	var result = JSON.parse(JSON.stringify(dataInterlock.getInterlockById(interlockId)));
-	
+
 	var contactMap = [];
 	if(result.CONTACTS && result.CONTACTS.length > 0){
 		result.CONTACTS.forEach(function(contact){
 			contactMap.push(contact.EMAIL);
 		});
-	
+
 		result.INTERLOCK.CONTACT_DATA = "";
 		if(contactMap.length > 0){
 			result.INTERLOCK.CONTACT_DATA = contactMap.join("; ");
 		}
 	}
-	
+
 	return result.INTERLOCK;
 }
 
 function parseInterlock(result){
 	//Map all the contacts based on the Interlock Request that they belong
 	var contactMap = {};
-	
+
 	if(result.CONTACTS && result.CONTACTS.length > 0){
 		result.CONTACTS.forEach(function(contact){
 			if(!contactMap[contact.INTERLOCK_REQUEST_ID]){
@@ -117,18 +117,18 @@ function parseInterlock(result){
 			}
 			contactMap[contact.INTERLOCK_REQUEST_ID].push(contact.EMAIL);
 		});
-		
+
 
 	}
-	
+
 	//Basic JSON to return
 	var interlockMap = {
 		INTERLOCK: {
 
 		}
 	};
-	
-	//Map all the Interlocks based on the "FROM" Organization Name 
+
+	//Map all the Interlocks based on the "FROM" Organization Name
 	var interlockFromMap = {};
 
 	result.INTERLOCKS_FROM.forEach(function(interlockFrom){
@@ -148,15 +148,15 @@ function parseInterlock(result){
 			if(interlockFrom.INTERLOCK_REQUEST_ID === interlockTo.INTERLOCK_REQUEST_ID){
 				interlockFromMap[interlockFrom.ORGANIZATION_NAME].ORGANIZATION_LIST.push(interlockTo);
 			}
-			
+
 		});
 	});
-	
+
 	//Add The final structure to the Basic JSON
 	result.INTERLOCKS_FROM.forEach(function(element){
 		//delete interlock_id to avoid its utilization in any logic
 		element.INTERLOCK_REQUEST_ID = null;
-		
+
 		if(!interlockMap.INTERLOCK.ORGANIZATION_LIST)
 			interlockMap.INTERLOCK.ORGANIZATION_LIST = [];
 		if(element.ORGANIZATION_LIST){
@@ -173,7 +173,7 @@ function getRequestInterlockByUserId(userId){
 	}
 
 	var result = JSON.parse(JSON.stringify(dataInterlock.getInterlockByUserIdOriginId(userId, config.getOriginMessageInterlock().requester)));
-	
+
 	return parseInterlock(result);
 }
 
@@ -181,9 +181,9 @@ function getSendInterlockByUserId(userId){
 	if(!userId){
 		throw ErrorLib.getErrors().CustomError("","interlockService/handleGet/getSendInterlockByUserId", "The user can not be found.");
 	}
-	
+
 	var result = JSON.parse(JSON.stringify(dataInterlock.getInterlockByUserIdOriginId(userId, config.getOriginMessageInterlock().moneyLender)));
-	
+
 	return parseInterlock(result);
 }
 
@@ -210,7 +210,7 @@ function setInterlockStatus(interlockData,userId){
 					throw ErrorLib.getErrors().CustomError("","","The Interlock Contact Data was not found");
 
 					dataInterlock.setInterlockStatus(interlockData.interlock_id, interlockData.status_id,interlockComplete.REQUESTER_EMAIL);
-					
+
 					notifyInterlockResponse(contactData.EMAIL,hash);
 				});
 				dataInterlock.insertInterlockMessage(interlockData.interlock_id, interlockData.message, userId, userId,config.getOriginMessageInterlock().requester);
@@ -289,51 +289,51 @@ function getAllOrganizationType(){
 
 function getOrganizationListByOrganizationRelatedId(organizationRelatedId){
 	var result;
-	
+
 	switch(organizationRelatedId){
 		case ORGANIZATION_RELATED_MAP.GLOBAL:
 			var globalMap = {};
-			
+
 			var orgTypes = JSON.parse(JSON.stringify(orgTypeInterlockOrgLib.getOrganizationTypeForInterlockOrganization()));
-			
+
 			orgTypes.forEach(function(organizationType){
 				globalMap[organizationType.ORGANIZATION_TYPE_ID] = orgTypeInterlockOrgLib.getInterlockOrganizationByOrganizationTypeId(organizationType.ORGANIZATION_TYPE_ID);
 			});
-			
+
 			result = globalMap;
-			
+
 			break;
 		case ORGANIZATION_RELATED_MAP.REGION:
 			result = blRegion.getAllRegions();
-			
+
 			break;
 		case ORGANIZATION_RELATED_MAP.SUBREGION:
 			result = blSubRegion.getAllSubRegions();
-			
+
 			break;
 		default:
 			result = [];
-			
+
 			break;
 	}
-	
+
 	return result;
 }
 
 function getOrganizationForAllOrganizationType(){
 	var map = {};
-	
+
 	map[ORGANIZATION_RELATED_MAP.GLOBAL] = getOrganizationListByOrganizationRelatedId(ORGANIZATION_RELATED_MAP.GLOBAL);
 	map[ORGANIZATION_RELATED_MAP.REGION] = getOrganizationListByOrganizationRelatedId(ORGANIZATION_RELATED_MAP.REGION);
 	map[ORGANIZATION_RELATED_MAP.SUBREGION] = getOrganizationListByOrganizationRelatedId(ORGANIZATION_RELATED_MAP.SUBREGION);
-	
+
 	return map;
 }
 
 function getOrganizations(_, userId){
-	
+
 	var result = getOrganizationForAllOrganizationType();
-		
+
 	return result;
 }
 
@@ -365,10 +365,10 @@ function getContactDataMap(){
 function insertInterlockRequest(reqBody, userId){
 	//Set Origin to requester
 	reqBody.ORIGIN = config.getOriginMessageInterlock().requester;
-	
+
 	//******** Insert Interlock Data********//
-	var resultId = insertInterlock(reqBody, userId);	
-	
+	var resultId = insertInterlock(reqBody, userId);
+
 	return resultId;
 }
 
@@ -377,24 +377,24 @@ function insertInterlockSend(reqBody, userId){
 	reqBody.STATUS_ID = INTERLOCK_STATUS.APPROVED;
 	//Set Origin to Sender
 	reqBody.ORIGIN = config.getOriginMessageInterlock().moneyLender;
-	
+
 	//******** Insert Interlock Data********//
-	var resultId = insertInterlock(reqBody, userId);	
-	
+	var resultId = insertInterlock(reqBody, userId);
+
 	return resultId;
 }
 
 function insertInterlock(reqBody, userId){
-	//Obtain Organization type id 
+	//Obtain Organization type id
 	reqBody.ORGANIZATION_TYPE_ID = ORGANIZATION_TYPE_ID[reqBody.ORGANIZATION_TYPE];
 	reqBody.ORGANIZATION_TYPE_ID_FROM = ORGANIZATION_TYPE_ID[reqBody.ORGANIZATION_TYPE_FROM];
-	
+
 	//Validate required data
 	validateInterlock(reqBody, userId);
-	
+
 	//******** Insert Interlock ********//
 	var resultId = dataInterlock.insertInterlock(reqBody, userId);
-	
+
 	if(resultId){
 		reqBody.INTERLOCK_REQUEST_ID = resultId;
 
@@ -454,7 +454,7 @@ function insertInterlock(reqBody, userId){
 
 		//******** Insert Interlock Log Status ********//
 		dataInterlock.insertInterlockLogStatus(resultId, reqBody.STATUS_ID, userId, "");
-		
+
 		//Obtain Contact data list
 		var contactEmails = reqBody.CONTACT_DATA.split(";");
         var contactData = [];
@@ -462,23 +462,110 @@ function insertInterlock(reqBody, userId){
         contactEmails.forEach(function (email) {
             contactData.push({'email': email, 'hash': getSYSUUID()});
         });
-        
+
         //******** Insert Interlock Contact Data ********//
         dataInterlock.insertInterlockContactData(resultId, contactData, userId);
-        
+
         //******** Insert Interlock Message *******//
         dataInterlock.insertInterlockMessage(reqBody.INTERLOCK_REQUEST_ID, reqBody.REQUESTED_RESOURCE, userId, userId, reqBody.ORIGIN);
-        
+
         //Send notification Email to all Contact Data
         contactData.forEach(function (contact) {
             notifyInterlockEmail(contact.email, contact.hash);
             dataInterlock.setSentMailByHash(contact.hash, userId);
         });
-		
+
 	}
-	
+
 	return resultId;
 }
+
+function updateInterlock(reqBody, userId){
+    //Obtain Organization type id
+    reqBody.ORGANIZATION_TYPE_ID = ORGANIZATION_TYPE_ID[reqBody.ORGANIZATION_TYPE];
+    reqBody.ORGANIZATION_TYPE_ID_FROM = ORGANIZATION_TYPE_ID[reqBody.ORGANIZATION_TYPE_FROM];
+
+
+    //Validate required data
+    validateInterlock(reqBody, userId);
+    dataInterlock.updateInterlock(reqBody, userId);
+    //Delete associated Interlock messages
+    dataInterlock.deleteInterlockMessagesByInterlockId(reqBody.INTERLOCK_REQUEST_ID, userId);
+    //Delete associated Interlock Contact Data
+    dataInterlock.deleteInterlockContactDataByInterlockId(reqBody.INTERLOCK_REQUEST_ID, userId);
+    //Delete associated Interlock Route
+    dataInterlock.deleteInterlockRouteByInterlockId(reqBody.INTERLOCK_REQUEST_ID, userId);
+    //Delete associated Interlock Region
+    dataInterlock.deleteInterlockRegionByInterlockId(reqBody.INTERLOCK_REQUEST_ID, userId);
+    //Delete associated Interlock Subregion
+    dataInterlock.deleteInterlockSubregionByInterlockId(reqBody.INTERLOCK_REQUEST_ID, userId);
+
+    //******** Insert Interlock Organization based on the Organization type ********//
+    if (reqBody.ORGANIZATION_TYPE_FROM === reqBody.ORGANIZATION_TYPE) {
+        switch (reqBody.ORGANIZATION_TYPE) {
+            case ORGANIZATION_TYPE.GLOBAL_TEAM:
+                dataInterlock.insertInterlockRequestInterlockOrganization(reqBody, userId);
+                break;
+            case ORGANIZATION_TYPE.REGION:
+                dataInterlock.insertInterlockRegion(reqBody, userId);
+                break;
+            case ORGANIZATION_TYPE.SUB_REGION:
+                dataInterlock.insertInterlockSubregion(reqBody, userId);
+                break;
+        }
+    } else {
+        var orgTypeAux = JSON.parse(JSON.stringify(reqBody));
+        orgTypeAux.ORGANIZATION_FROM = null;
+        orgTypeAux.ORGANIZATION_ID_FROM = null;
+        //throw JSON.stringify(orgTypeAux);
+        switch (orgTypeAux.ORGANIZATION_TYPE) {
+            case ORGANIZATION_TYPE.GLOBAL_TEAM:
+                dataInterlock.insertInterlockRequestInterlockOrganization(orgTypeAux, userId);
+                break;
+            case ORGANIZATION_TYPE.REGION:
+                dataInterlock.insertInterlockRegion(orgTypeAux, userId);
+                break;
+            case ORGANIZATION_TYPE.SUB_REGION:
+                dataInterlock.insertInterlockSubregion(orgTypeAux, userId);
+                break;
+        }
+        var orgTypeFromAux = JSON.parse(JSON.stringify(reqBody));
+        orgTypeFromAux.ORGANIZATION = null;
+        orgTypeFromAux.ORGANIZATION_ID = null;
+        //throw JSON.stringify(orgTypeFromAux);
+        switch (orgTypeFromAux.ORGANIZATION_TYPE_FROM) {
+            case ORGANIZATION_TYPE.GLOBAL_TEAM:
+                dataInterlock.insertInterlockRequestInterlockOrganization(orgTypeFromAux, userId);
+                break;
+            case ORGANIZATION_TYPE.REGION:
+                dataInterlock.insertInterlockRegion(orgTypeFromAux, userId);
+                break;
+            case ORGANIZATION_TYPE.SUB_REGION:
+                dataInterlock.insertInterlockSubregion(orgTypeFromAux, userId);
+                break;
+        }
+    }
+    //******** Insert Interlock Log Status ********//
+    dataInterlock.insertInterlockLogStatus(reqBody.INTERLOCK_REQUEST_ID, reqBody.STATUS_ID, userId, "");
+    //Obtain Contact data list
+    var contactEmails = reqBody.CONTACT_DATA.split(";");
+    var contactData = [];
+    //Format array with the Contact data
+    contactEmails.forEach(function (email) {
+        contactData.push({'email': email, 'hash': getSYSUUID()});
+    });
+    //******** Insert Interlock Contact Data ********//
+    dataInterlock.insertInterlockContactData(reqBody.INTERLOCK_REQUEST_ID, contactData, userId);
+    //******** Insert Interlock Message *******//
+    dataInterlock.insertInterlockMessage(reqBody.INTERLOCK_REQUEST_ID, reqBody.REQUESTED_RESOURCE, userId, userId, config.getOriginMessageInterlock().requester);
+    //Send notification Email to all Contact Data
+    contactData.forEach(function (contact) {
+        notifyInterlockEmail(contact.email, contact.hash);
+        dataInterlock.setSentMailByHash(contact.hash, userId);
+    });
+    return reqBody.INTERLOCK_REQUEST_ID;
+}
+
 
 function getSYSUUID() {
     var conn = $.hdb.getConnection();
@@ -509,16 +596,16 @@ function notifyInterlockRejected(TO, interlockId, reason, description){
 	interlockObj.INTERLOCK_REQUEST_ID = interlockId;
 	interlockObj.DESCRIPTION = description;
 	interlockObj.REASON = reason;
-	
+
 	var basicData = {};
     basicData.APP_URL = config.getAppUrl();
     basicData.ENVIRONMENT = config.getMailEnvironment();
-    
+
 	var mailObj = mailInterlock.parseNotifyRejectedInterlock(interlockObj, basicData, "Colleague");
-	 
+
 	var mailObject = mail.getJson([{"address": TO}], mailObj.subject, mailObj.body);
 	//var mailObject = mail.getJson([{"address": "iberon@folderit.net"}], mailObj.subject, mailObj.body);  //For testing only
-	
+
 	mail.sendMail(mailObject,true)
 }
 
@@ -526,24 +613,24 @@ function notifyRequester(requesterEmail,interlockId, description){
 	var interlockObj = {};
 	interlockObj.INTERLOCK_REQUEST_ID = interlockId;
 	interlockObj.DESCRIPTION = description;
-	
+
 	var basicData = {};
     basicData.APP_URL = config.getAppUrl();
     basicData.ENVIRONMENT = config.getMailEnvironment();
-    
+
 	var mailObj = mailInterlock.parseNotifyRequester(interlockObj, basicData, "Colleague");
-	 
+
 	var mailObject = mail.getJson([{"address": requesterEmail}], mailObj.subject, mailObj.body);
 	//var mailObject = mail.getJson([{"address": "iberon@folderit.net"}], mailObj.subject, mailObj.body);  //For testing only
-	
+
 	mail.sendMail(mailObject,true);;
 
 }
 
 function resendRequestEmail(interlockId, userId) {
-		
+
 		var requestData = dataInterlock.getContactDataByInterlockId(interlockId);
-		
+
 		var mailsSent = 0;
 		requestData.forEach(function(contactData){
 			notifyInterlockEmail(contactData.EMAIL,contactData.HASH);
@@ -556,32 +643,32 @@ function resendRequestEmail(interlockId, userId) {
 function notifyInterlockEmail(TO,token){
 	var interlockObj = {};
 	interlockObj.TOKEN = token;
-	
+
 	var basicData = {};
     basicData.APP_URL = config.getAppUrl();
     basicData.ENVIRONMENT = config.getMailEnvironment();
-    
+
 	var mailObj = mailInterlock.parseNotifyInterlock(interlockObj, basicData, "Colleague");
-	 
+
 	var mailObject = mail.getJson([{"address": TO}], mailObj.subject, mailObj.body);
 	//var mailObject = mail.getJson([{"address": "iberon@folderit.net"}], mailObj.subject, mailObj.body);  //For testing only
-	
+
 	mail.sendMail(mailObject,true);
 }
 
 function notifyInterlockResponse(TO,token){
 	var interlockObj = {};
 	interlockObj.TOKEN = token;
-	
+
 	var basicData = {};
     basicData.APP_URL = config.getAppUrl();
     basicData.ENVIRONMENT = config.getMailEnvironment();
-    
+
     var mailObj = mailInterlock.parseNotifyInterlockResponse(interlockObj, basicData, "Colleague");
-	 
+
 	var mailObject = mail.getJson([{"address": TO}], mailObj.subject, mailObj.body);
 	//var mailObject = mail.getJson([{"address": "iberon@folderit.net"}], mailObj.subject, mailObj.body);  //For testing only
-	
+
 	mail.sendMail(mailObject,true);
 }
 
@@ -597,13 +684,13 @@ function deleteInterlock(reqBody, userId){
 	if(!reqBody.INTERLOCK_REQUEST_ID){
 		throw ErrorLib.getErrors().CustomError("","interlockService/handleDelete/deleteInterlock", "The Interlock ID can not be found.");
 	}
-	
+
 	if(!userId){
 		throw ErrorLib.getErrors().CustomError("","interlockService/handleDelete/deleteInterlock", "The user can not be found.");
 	}
-	
+
 	var result = dataInterlock.deleteInterlock(reqBody.INTERLOCK_REQUEST_ID, userId);
-	
+
 	if(result){
 		//Delete all messages
 		dataInterlock.deleteInterlockMessagesByInterlockId(reqBody.INTERLOCK_REQUEST_ID, userId);
@@ -616,7 +703,7 @@ function deleteInterlock(reqBody, userId){
 		//Delete associated Interlock Subregion
 		dataInterlock.deleteInterlockSubregionByInterlockId(reqBody.INTERLOCK_REQUEST_ID, userId);
 	}
-	
+
 	return result;
 }
 
@@ -624,20 +711,20 @@ function validateInterlock(reqBody, userId){
 	if(!userId){
 		throw ErrorLib.getErrors().CustomError("","interlockService/handlePost/insertInterlockRequest", "The user can not be found.");
 	}
-	
+
 	var isValid = false;
 	var errors = {};
 	var BreakException = {};
 	var keys = [ 'ORGANIZATION_TYPE',
 	             'ORGANIZATION_TYPE_ID',
-	             'ENTITY', 
-	             'ENTITY_ID', 
-	             'ORGANIZATION', 
-	             'ORGANIZATION_ID', 
-	             'STATUS_ID', 
-	             'CONTACT_DATA', 
-	             'REQUESTED_RESOURCE', 
-	             'REQUESTED_BUDGET' 
+	             'ENTITY',
+	             'ENTITY_ID',
+	             'ORGANIZATION',
+	             'ORGANIZATION_ID',
+	             'STATUS_ID',
+	             'CONTACT_DATA',
+	             'REQUESTED_RESOURCE',
+	             'REQUESTED_BUDGET'
 	             ];
 
 	if (!reqBody)
@@ -674,7 +761,7 @@ function validateInterlock(reqBody, userId){
 
 function validateType(key, value) {
 	var valid = true;
-	
+
 	switch (key) {
 	case 'INTERLOCK_ID':
 	case 'ENTITY_ID':
@@ -703,6 +790,19 @@ function validateType(key, value) {
 		valid = !isNaN(value) && value > 0;
 		break;
 	}
-	
+
 	return valid;
+}
+
+function getInterlockDefaults(){
+    var defaultInterlockConfiguration = dataInterlock.getDefaultInterlockConfiguration();
+
+    var result = {};
+    defaultInterlockConfiguration.forEach(function(item){
+    	result[item.ORIGIN_TYPE] = item;
+	});
+    return result;
+}
+function getUnformattedInterlockDefaults(){
+    return dataInterlock.getDefaultInterlockConfiguration();
 }

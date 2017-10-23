@@ -73,8 +73,8 @@ BEGIN
         DECLARE EXIT HANDLER FOR SQL_ERROR_CODE 1299
         BEGIN
             --SEARCH AND DELETE RECORD
-                DELETE FROM PROCESSING_REPORT_EXPORT_DATA WHERE HL_ID = IN_HL_ID AND OBJECT_TYPE = VA_OBJECT_TYPE;
-                SELECT ::ROWCOUNT into VA_DELETE_RESULT FROM DUMMY;
+                --DELETE FROM PROCESSING_REPORT_EXPORT_DATA WHERE HL_ID = IN_HL_ID AND OBJECT_TYPE = VA_OBJECT_TYPE;
+                --SELECT ::ROWCOUNT into VA_DELETE_RESULT FROM DUMMY;
             --*************************************************--
         END;
     --*********************************
@@ -91,8 +91,6 @@ BEGIN
 	VA_PARENT_ID := 0;
 	VA_BUYING_CLASSIFICATION := '';
 --END INITIALIZE VARIABLES*****
-
-
 
 	--CHECK IF THE STATUS IS CORRECT AND SET VA_OBJECT_TYPE
 	        IF IN_HIERARCHY_LEVEL = 'HL4'
@@ -124,17 +122,19 @@ BEGIN
                                 WHERE DETAIL IN ('Load Data Entry',  'Update In CRM')) AND HL6.ENABLED = 1 AND HL6.DELETED = 0
                                 AND HL6.HL6_ID = IN_HL_ID;
             END IF;
+
+            DELETE FROM PROCESSING_REPORT_EXPORT_DATA WHERE HL_ID = IN_HL_ID AND OBJECT_TYPE = VA_OBJECT_TYPE;
 	--**************************************************-
 
 	--SEARCH AND DELETE RECORD
-    DELETE FROM PROCESSING_REPORT_EXPORT_DATA WHERE HL_ID = IN_HL_ID AND OBJECT_TYPE = VA_OBJECT_TYPE;
-    SELECT ::ROWCOUNT into VA_DELETE_RESULT FROM DUMMY;
+    --DELETE FROM PROCESSING_REPORT_EXPORT_DATA WHERE HL_ID = IN_HL_ID AND OBJECT_TYPE = VA_OBJECT_TYPE;
+    --SELECT ::ROWCOUNT into VA_DELETE_RESULT FROM DUMMY;
     --*************************************************--
 
-    IF (:VA_STATUS <> 0)
-    THEN
+    --IF (:VA_STATUS <> 0)
+    --THEN
         --COLLECT DATA
-        IF VA_DELETE_RESULT = 0 THEN
+        --IF VA_DELETE_RESULT = 0 THEN
             IF VA_OBJECT_TYPE = 'MPL' --HL4
                 THEN --GET FROM HL4
                  CALL "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_PATH_BY_LEVEL_PARENT"(4,VA_PARENT_ID,VA_PATH_TABLE); --GET ACRONYMS
@@ -149,7 +149,7 @@ BEGIN
                              :VA_OBJECT_TYPE AS OBJECT_TYPE,
                              CONCAT(:VA_PATH,CONCAT('-',ACRONYM)) AS EXTERNAL_ID,
                              HL4_CRM_DESCRIPTION AS TEXT1,
-                             'TBD' AS BNAME,
+                             SHOPPING_CART_APPROVER AS BNAME,
                              '' AS OBJECTIVE, -- HL4 doesn't have this field
                              '' AS CAMP_TYPE, -- HL4 doesn't have this field
                              '' AS SUB_TYPE, -- HL4 doesn't have this field
@@ -162,10 +162,10 @@ BEGIN
                              '' AS ACTUALSTART , -- HL4 doesn't have this field
                              '' AS ACTUALFINISH, -- HL4 doesn't have this field
                              '' AS SHOW_CALENDAR, -- HL4 doesn't have this field
-                             '' AS MKT_ORG, -- HL4 doesn't have this field
-                             '' AS DIS_CHANNEL, -- HL4 doesn't have this field
+                             SO.CRM_KEY AS MKT_ORG,
+                             DC.CRM_KEY AS DIS_CHANNEL,
                              '' AS ROUTE_TO_MARKET, -- HL4 doesn't have this field
-                             '' AS COST_CENTER, -- HL4 doesn't have this field
+                             COST_CENTER,
                               CO.IMP1,
                               CO.ZZIMP_PERCENTAGE1,
                               CO.IMP2,
@@ -220,6 +220,8 @@ BEGIN
                              JOIN :VA_CATEGORY_OPTION CO ON 1=1
                              JOIN BUSINESS_OWNER BO ON UPPER(BO.DESCRIPTION) = 'MARKETING'
                              LEFT JOIN PRIORITY PR ON UPPER(PR.NAME) = 'MEDIUM'
+                             LEFT JOIN "DISTRIBUTION_CHANNEL" DC ON DIS_CHANNEL_ID = DC.DISTRIBUTION_CHANNEL_ID
+                             LEFT JOIN "SALE_ORGANIZATION" SO ON MKT_ORG_ID = SO.SALES_ORGANIZATION_ID
                              WHERE HL4_ID = IN_HL_ID;
 
                 ELSEIF VA_OBJECT_TYPE = 'CPG' --HL5
@@ -429,12 +431,12 @@ BEGIN
             END IF;
 
             --SELECT TOP 1 CASE WHEN (HL_ID = NULL) THEN 0 ELSE 1 END into VA_HL_EXIST FROM :VA_GET_HL;
-        END IF;
+        --END IF;
         --**********************************************--
 
         --INSERT DATA
-        IF(VA_DELETE_RESULT = 0 )-- AND VA_HL_EXIST = 1)
-        THEN
+        --IF(VA_DELETE_RESULT = 0 )-- AND VA_HL_EXIST = 1)
+        --THEN
         INSERT INTO PROCESSING_REPORT_EXPORT_DATA
         (HL_ID,
          EXTERNAL_ID_PARENT,
@@ -510,9 +512,9 @@ BEGIN
          PARTNER_NO,
          CREATED_USER_ID)
         SELECT *, 1 AS CREATED_USER_ID  FROM :VA_GET_HL;
-        END IF;
+        --END IF;
         --************************************************--
-	END IF; --END IF STATUS
+	--END IF; --END IF STATUS
 	
 	SELECT ::ROWCOUNT into out_result FROM DUMMY;
 END;

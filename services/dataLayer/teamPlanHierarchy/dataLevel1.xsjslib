@@ -164,12 +164,12 @@ function getLevel1ByFilters(budgetYearId, regionId, subRegionId, userId, isSuper
 
 function getHl1KpiSummary(budgetYearId, regionId, subRegionId, userId, isSuperAdmin) {
     var parameters = {
-            in_budget_year_id: budgetYearId,
-            in_region_id: regionId,
-            in_subregion_id: subRegionId,
-            in_user_id: userId,
-            in_is_super_Admin: isSuperAdmin ? 1 : 0
-        };
+        in_budget_year_id: budgetYearId,
+        in_region_id: regionId,
+        in_subregion_id: subRegionId,
+        in_user_id: userId,
+        in_is_super_Admin: isSuperAdmin ? 1 : 0
+    };
 
     var list = db.executeProcedureManual(GET_HL1_KPI_SUMMARY, parameters);
     return db.extractArray(list.out_result);

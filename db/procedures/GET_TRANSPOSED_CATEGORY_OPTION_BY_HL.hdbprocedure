@@ -99,7 +99,7 @@ IF(IN_LEVEL = 'HL4') THEN
     VA_HL_IMP_OPTIONS = SELECT TOP 5 option_name,
                                      option_percentage,
                                      Row_number() OVER(ORDER BY option_percentage DESC) AS ROWNUM
-                        FROM   (SELECT O.NAME     AS OPTION_NAME,
+                        FROM   (SELECT TOP 5 O.NAME     AS OPTION_NAME,
                                        HCP.amount AS OPTION_PERCENTAGE
                                 FROM   hl4_category_option HCP
                                        RIGHT JOIN allocation_category_option_level ACOL
@@ -142,7 +142,7 @@ IF(IN_LEVEL = 'HL4') THEN
     VA_HL_MKTSEG_OPTIONS = SELECT TOP 5 option_name,
                                         option_percentage,
                                         Row_number() OVER(ORDER BY option_percentage DESC) + 5 AS ROWNUM
-                           FROM   (SELECT O.NAME     AS OPTION_NAME,
+                           FROM   (SELECT TOP 5 O.NAME     AS OPTION_NAME,
                                           HCP.amount AS OPTION_PERCENTAGE
                                    FROM   hl4_category_option HCP
                                           RIGHT JOIN allocation_category_option_level ACOL
@@ -185,7 +185,7 @@ IF(IN_LEVEL = 'HL4') THEN
     VA_HL_INDUSTRY_OPTIONS = SELECT TOP 5 option_name,
                                          option_percentage,
                                          Row_number() OVER(ORDER BY option_percentage DESC) + 10 AS ROWNUM
-                            FROM   (SELECT O.NAME     AS OPTION_NAME,
+                            FROM   (SELECT TOP 5 O.NAME     AS OPTION_NAME,
                                            HCP.amount AS OPTION_PERCENTAGE
                                     FROM   hl4_category_option HCP
                                            RIGHT JOIN allocation_category_option_level ACOL
@@ -228,7 +228,7 @@ IF(IN_LEVEL = 'HL4') THEN
     VA_HL_SOLUTION_OPTIONS = SELECT TOP 5 option_name,
                                           option_percentage,
                                           Row_number() OVER(ORDER BY option_percentage DESC) + 15 AS ROWNUM
-                             FROM   (SELECT O.NAME     AS OPTION_NAME,
+                             FROM   (SELECT TOP 5 O.NAME     AS OPTION_NAME,
                                             HCP.amount AS OPTION_PERCENTAGE
                                      FROM   hl4_category_option HCP
                                             RIGHT JOIN allocation_category_option_level ACOL
@@ -275,7 +275,7 @@ ELSEIF(IN_LEVEL = 'HL5') THEN
 VA_HL_IMP_OPTIONS = SELECT TOP 5 option_name,
                                      option_percentage,
                                      Row_number() OVER(ORDER BY option_percentage DESC) AS ROWNUM
-                        FROM   (SELECT O.NAME     AS OPTION_NAME,
+                        FROM   (SELECT TOP 5 O.NAME     AS OPTION_NAME,
                                        HCP.amount AS OPTION_PERCENTAGE
                                 FROM   hl5_category_option HCP
                                        RIGHT JOIN allocation_category_option_level ACOL
@@ -318,7 +318,7 @@ VA_HL_IMP_OPTIONS = SELECT TOP 5 option_name,
     VA_HL_MKTSEG_OPTIONS = SELECT TOP 5 option_name,
                                         option_percentage,
                                         Row_number() OVER(ORDER BY option_percentage DESC) + 5 AS ROWNUM
-                           FROM   (SELECT O.NAME     AS OPTION_NAME,
+                           FROM   (SELECT TOP 5 O.NAME     AS OPTION_NAME,
                                           HCP.amount AS OPTION_PERCENTAGE
                                    FROM   hl5_category_option HCP
                                           RIGHT JOIN allocation_category_option_level ACOL
@@ -362,7 +362,7 @@ VA_HL_IMP_OPTIONS = SELECT TOP 5 option_name,
     VA_HL_INDUSTRY_OPTIONS = SELECT TOP 5 option_name,
                                          option_percentage,
                                          Row_number() OVER(ORDER BY option_percentage DESC) + 10 AS ROWNUM
-                            FROM   (SELECT O.NAME     AS OPTION_NAME,
+                            FROM   (SELECT TOP 5 O.NAME     AS OPTION_NAME,
                                            HCP.amount AS OPTION_PERCENTAGE
                                     FROM   hl5_category_option HCP
                                            RIGHT JOIN allocation_category_option_level ACOL
@@ -405,7 +405,7 @@ VA_HL_IMP_OPTIONS = SELECT TOP 5 option_name,
     VA_HL_SOLUTION_OPTIONS = SELECT TOP 5 option_name,
                                           option_percentage,
                                           Row_number() OVER(ORDER BY option_percentage DESC) + 15 AS ROWNUM
-                             FROM   (SELECT O.NAME     AS OPTION_NAME,
+                             FROM   (SELECT TOP 5 O.NAME     AS OPTION_NAME,
                                             HCP.amount AS OPTION_PERCENTAGE
                                      FROM   hl5_category_option HCP
                                             RIGHT JOIN allocation_category_option_level ACOL
@@ -450,7 +450,7 @@ ELSEIF(IN_LEVEL = 'HL6') THEN
 VA_HL_IMP_OPTIONS = SELECT TOP 5 option_name,
                                  option_percentage,
                                  Row_number() OVER(ORDER BY option_percentage DESC)  AS ROWNUM
-                    FROM   (SELECT O.NAME     AS OPTION_NAME,
+                    FROM   (SELECT TOP 5 O.NAME     AS OPTION_NAME,
                                    HCP.amount AS OPTION_PERCENTAGE
                             FROM   hl6_category_option HCP
                                    RIGHT JOIN allocation_category_option_level ACOL
@@ -493,7 +493,7 @@ VA_HL_IMP_OPTIONS = SELECT TOP 5 option_name,
 VA_HL_MKTSEG_OPTIONS = SELECT TOP 5 option_name,
                                     option_percentage,
                                     Row_number() OVER(ORDER BY option_percentage DESC) + 5 AS ROWNUM
-                       FROM   (SELECT O.NAME     AS OPTION_NAME,
+                       FROM   (SELECT TOP 5 O.NAME     AS OPTION_NAME,
                                       HCP.amount AS OPTION_PERCENTAGE
                                FROM   hl6_category_option HCP
                                       RIGHT JOIN allocation_category_option_level ACOL
@@ -536,7 +536,7 @@ VA_HL_MKTSEG_OPTIONS = SELECT TOP 5 option_name,
 VA_HL_INDUSTRY_OPTIONS = SELECT TOP 5 option_name,
                                      option_percentage,
                                      Row_number() OVER(ORDER BY option_percentage DESC) + 10 AS ROWNUM
-                        FROM   (SELECT O.NAME     AS OPTION_NAME,
+                        FROM   (SELECT TOP 5 O.NAME     AS OPTION_NAME,
                                        HCP.amount AS OPTION_PERCENTAGE
                                 FROM   hl6_category_option HCP
                                        RIGHT JOIN allocation_category_option_level ACOL
@@ -579,7 +579,7 @@ VA_HL_INDUSTRY_OPTIONS = SELECT TOP 5 option_name,
 VA_HL_SOLUTION_OPTIONS = SELECT TOP 5 option_name,
                                       option_percentage,
                                       Row_number() OVER(ORDER BY option_percentage DESC) + 15 AS ROWNUM
-                         FROM   (SELECT O.NAME     AS OPTION_NAME,
+                         FROM   (SELECT TOP 5 O.NAME     AS OPTION_NAME,
                                         HCP.amount AS OPTION_PERCENTAGE
                                  FROM   hl6_category_option HCP
                                         RIGHT JOIN allocation_category_option_level ACOL
@@ -621,13 +621,13 @@ END IF;
   -- Joining all category option (creating the T matrix)
  VA_HL_ALL_OPTIONS =    SELECT OPTION_NAME, OPTION_PERCENTAGE, ROWNUM
                             FROM :VA_HL_IMP_OPTIONS
-                            UNION
+                            UNION ALL
                             SELECT OPTION_NAME, OPTION_PERCENTAGE, ROWNUM
                             FROM :VA_HL_MKTSEG_OPTIONS
-                            UNION
+                            UNION ALL
                             SELECT OPTION_NAME, OPTION_PERCENTAGE, ROWNUM
                             FROM :VA_HL_INDUSTRY_OPTIONS
-                            UNION
+                            UNION ALL
                             SELECT OPTION_NAME, OPTION_PERCENTAGE, ROWNUM
                             FROM :VA_HL_SOLUTION_OPTIONS;
 
