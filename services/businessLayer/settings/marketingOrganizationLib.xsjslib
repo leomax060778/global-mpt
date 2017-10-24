@@ -48,3 +48,39 @@ function getMarketingOrganizationById(id){
 		return dbMO.getMarketingOrganizationById(id);
 	return ErrorLib.getErrors().BadRequest("","","Marketing Organization Id is empty");
 }
+
+function checkMarketingOrganization(data){
+	var marketingOrganizationList = data.check;
+	var marketingOrganizationToUpdate = 0;
+	var marketingOrganizationToInsert = 0;
+	marketingOrganizationList.forEach(function(marketingOrganization){
+		if(dbMO.getMarketingOrganizationByName(marketingOrganization.in_name)){
+			marketingOrganizationToUpdate++;
+		} else {
+			marketingOrganizationToInsert++;
+		}
+	});
+
+	return {marketingOrganizationToCreate: marketingOrganizationToInsert, marketingOrganizationToUpdate: marketingOrganizationToUpdate};
+}
+
+function uploadMarketingOrganization(data, userId) {
+	var marketingOrganizationList = data.batch;
+	var marketingOrganizationUpdated = 0;
+	var marketingOrganizationCreated = 0;
+	var markOrgId;
+	marketingOrganizationList.forEach(function(marketingOrganization){
+		var mo = dbMO.getMarketingOrganizationByName(marketingOrganization.in_name);
+		if(!mo || !mo.SALES_ORGANIZATION_ID){
+			markOrgId = dbMO.InsertMarketingOrganization(
+				marketingOrganization.in_name, marketingOrganization.in_crm_key, userId);
+			marketingOrganizationCreated++;
+		} else {
+			dbMO.UpdateMarketingOrganization(
+				mo.SALES_ORGANIZATION_ID, marketingOrganization.in_name, marketingOrganization.in_crm_key, userId);
+			marketingOrganizationUpdated++;
+		}
+	});
+	return {marketingOrganizationCreated: marketingOrganizationCreated,
+		marketingOrganizationUpdated: marketingOrganizationUpdated};
+}

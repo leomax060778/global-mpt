@@ -36,9 +36,9 @@ function insertHl3(acronym, hl2Id, shoppingCartApprover, costCenter, description
     parameters.in_business_owner_id = businessOwnerId;
     parameters.in_hl3_fnc_budget_total = budget;
     parameters.in_in_budget = inBudget;
-    parameters.in_user_id = importId;
-    parameters.in_import_id = imported;
-    parameters.in_imported = userId;
+    parameters.in_user_id = userId;
+    parameters.in_import_id = importId;
+    parameters.in_imported = imported;
     return db.executeScalarManual(INS_HL3, parameters, 'out_hl3_id');
 }
 
@@ -58,19 +58,19 @@ function insertHl3FromUpload(objHl3, userId){
 }
 
 /* Execute query to update an HL3 */
-function updateLevel3(objHl3, userId) {
+function updateLevel3(hl3_id, acronym, description, business_owner_id, budget, in_budget, shopping_cart_approver, cost_center, version, userId) {
 	var parameters = {};
 	var result = {};
-	parameters.in_hl3_id = objHl3.IN_HL3_ID;
-	parameters.in_acronym = objHl3.IN_ACRONYM;
-	parameters.in_hl3_description = objHl3.IN_HL3_DESCRIPTION;
-	parameters.in_business_owner_id = objHl3.IN_BUSINESS_OWNER_ID;
-	parameters.in_hl3_fnc_budget_total = objHl3.IN_HL3_FNC_BUDGET_TOTAL;
-	parameters.in_in_budget = objHl3.IN_IN_BUDGET;
+	parameters.in_hl3_id = hl3_id;
+	parameters.in_acronym = acronym;
+	parameters.in_hl3_description = description;
+	parameters.in_business_owner_id = business_owner_id;
+	parameters.in_hl3_fnc_budget_total = budget;
+	parameters.in_in_budget = in_budget;
 	parameters.in_user_id = userId;
-	parameters.in_version = objHl3.VERSION;
-    parameters.in_shopping_cart_approver = objHl3.IN_SHOPPING_CART_APPROVER;
-    parameters.in_cost_center = objHl3.IN_COST_CENTER;
+	parameters.in_version = version;
+    parameters.in_shopping_cart_approver = shopping_cart_approver;
+    parameters.in_cost_center = cost_center;
 	var list = db.executeProcedureManual(UPD_HL3, parameters);
 	result.out_result_hl3 = list.out_result_hl3;
 	result.out_result_hl3_fnc = list.out_result_hl3_fnc;
@@ -123,9 +123,9 @@ function getHl3PathByUserId(userId, isSA, budgetYearId, regionId, subRegionId) {
 }
 
 //Execute an SP to retrieve an HL3 by id
-function getLevel3ById(objHl3, userId) {
+function getLevel3ById(hl3Id, userId) {
 	var parameters = {};
-	parameters.in_hl3_id = objHl3.IN_HL3_ID;
+	parameters.in_hl3_id = hl3Id;
 	var result = db.executeProcedure(GET_HL3, parameters);
 	var list = db.extractArray(result.out_result);
 	if(list.length)

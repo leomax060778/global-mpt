@@ -42,7 +42,18 @@ function handleDelete(reqBody, userId) {
 
 // Implementation of POST call
 function handlePost(reqBody, userId) {
-	return httpUtil.handleResponse(MObl.InsertMarketingOrganization(reqBody, userId), httpUtil.OK, httpUtil.AppJson);
+	var method = $.request.parameters.get("METHOD");
+	var result;
+	switch (method) {
+		case "UPLOAD": result = reqBody.check ? MObl.checkMarketingOrganization(reqBody, userId) :
+			MObl.uploadMarketingOrganization(reqBody, userId);
+			break;
+		default:
+			result = httpUtil.handleResponse(MObl.InsertMarketingOrganization(reqBody, userId),
+				httpUtil.OK, httpUtil.AppJson);
+			break;
+	}
+	return httpUtil.handleResponse(result,httpUtil.OK,httpUtil.AppJson);
 }
 
 processRequest();

@@ -524,9 +524,19 @@ function setBudgetSpendRequestStatusNoLongerRequested(hlId, level, userId) {
     return setBudgetSpendRequestStatus(hlId, level, userId, BUDGET_SPEND_REQUEST_STATUS.NO_LONGER_REQUESTED);
 }
 
-function setBudgetSpendRequestStatus(hlId, level, userId, status) {
-    var budgetSpendRequests = dataBudgetSpendRequest
-        .getAllBudgetSpendRequestByHlIdAndLevel(hlId, level);
+function disableCoFundedBudgetSpendRequests(hlId, level, userId){
+    return setBudgetSpendRequestStatus(hlId, level, userId, BUDGET_SPEND_REQUEST_STATUS.NO_LONGER_REQUESTED, true);
+}
+
+function setBudgetSpendRequestStatus(hlId, level, userId, status, preserveOwnMoney) {
+    var budgetSpendRequests;
+    if (preserveOwnMoney) {
+        budgetSpendRequests = dataBudgetSpendRequest
+            .getCoFundedBudgetSpendRequestByHlIdAndLevel(hlId, level);
+    } else {
+        budgetSpendRequests = dataBudgetSpendRequest
+            .getAllBudgetSpendRequestByHlIdAndLevel(hlId, level);
+    }
 
     var arrBudgSpendStatus = [];
     var arrBudgSpendStatusLog = [];

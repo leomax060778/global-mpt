@@ -16,6 +16,7 @@ var UPD_BUDGET_SPEND_REQUEST = "UPD_BUDGET_SPEND_REQUEST";
 var DEL_BUDGET_SPEND_REQUEST = "DEL_BUDGET_SPEND_REQUEST";
 var DEL_ALL_BUDGET_SPEND_REQUEST_BY_HL_ID = "DEL_ALL_BUDGET_SPEND_REQUEST_BY_HL_ID";
 var GET_ALL_BUDGET_SPEND_REQUEST_BY_HLID_AND_LEVEL = "GET_ALL_BUDGET_SPEND_REQUEST_BY_HLID_AND_LEVEL";
+var GET_CO_FUNDED_BUDGET_SPEND_REQUEST_BY_HLID_AND_LEVEL = "GET_CO_FUNDED_BUDGET_SPEND_REQUEST_BY_HLID_AND_LEVEL";
 var UPD_BUDGET_SPEND_REQUEST_BY_HL_ID_LEVEL_TYPE = "UPD_BUDGET_SPEND_REQUEST_BY_HL_ID_LEVEL_TYPE";
 //BUDGET SPEND REQUEST MESSAGE
 var INS_BUDGET_SPEND_REQUEST_MESSAGE = "INS_BUDGET_SPEND_REQUEST_MESSAGE";
@@ -123,6 +124,13 @@ function getAllBudgetSpendRequestByHlIdAndLevel(hlId, level){
     parameters.in_hl_id = hlId;
     parameters.in_hierarchy_level_id = HIERARCHY_LEVEL[level];
     var rdo = db.executeProcedureManual(GET_ALL_BUDGET_SPEND_REQUEST_BY_HLID_AND_LEVEL, parameters);
+    return db.extractArray(rdo.out_result);
+}
+function getCoFundedBudgetSpendRequestByHlIdAndLevel(hlId, level){
+    var parameters = {};
+    parameters.in_hl_id = hlId;
+    parameters.in_hierarchy_level_id = HIERARCHY_LEVEL[level];
+    var rdo = db.executeProcedureManual(GET_CO_FUNDED_BUDGET_SPEND_REQUEST_BY_HLID_AND_LEVEL, parameters);
     return db.extractArray(rdo.out_result);
 }
 

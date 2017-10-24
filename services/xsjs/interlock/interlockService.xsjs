@@ -96,6 +96,8 @@ function handlePut(reqBody, userId) {
     var method = parameters.get('method');
     if (method === "UPDATE_INTERLOCK_REQUEST") {
         rdo = interlockLib.updateInterlock(reqBody, userId);
+    } else if (method === "UPDATE_DEFAULT_CONFIGURATION") {
+        rdo = interlockLib.updateInterlockDefaults(reqBody, userId);
     } else {
         rdo = interlockLib.setInterlockStatus(reqBody, userId);
     }

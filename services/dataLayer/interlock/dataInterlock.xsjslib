@@ -44,6 +44,7 @@ var spUpdContactData = "UPD_HASH_CONTACT_DATA";
 var INS_INTERLOCK_REQUEST_INTERLOCK_ORGANIZATION = "INS_INTERLOCK_REQUEST_INTERLOCK_ORGANIZATION";
 var DEL_INTERLOCK_REQUEST_INTERLOCK_ORGANIZATION_BY_IL_ID = "DEL_INTERLOCK_REQUEST_INTERLOCK_ORGANIZATION_BY_IL_ID";
 var GET_DEFAULT_INTERLOCK_CONFIGURATION = "GET_DEFAULT_INTERLOCK_CONFIGURATION";
+var UPD_DEFAULT_INTERLOCK_CONFIGURATION = "UPD_DEFAULT_INTERLOCK_CONFIGURATION";
 
 /******************************************************/
 
@@ -442,4 +443,18 @@ function updateContactData(interlockContactDataId, hash, modifiedUserId, autoCom
 function getDefaultInterlockConfiguration() {
     var result = db.executeProcedureManual(GET_DEFAULT_INTERLOCK_CONFIGURATION, {});
     return db.extractArray(result.out_result);
+}
+
+function updInterlockDefaults(reqBody, userId) {
+    var params = {
+            in_interlock_default_configuration_id: reqBody.INTERLOCK_DEFAULT_CONFIGURATION_ID,
+            in_entity_id_from: reqBody.ENTITY_ID_FROM,
+            in_entity_id_to: reqBody.ENTITY_ID_TO,
+            in_organization_type_from: reqBody.ORGANIZATION_TYPE_FROM,
+            in_organization_type_to: reqBody.ORGANIZATION_TYPE_TO,
+            in_enabled: reqBody.ENABLED ? 1 : 0,
+            in_user_id: userId
+        }
+    ;
+    return db.executeScalarManual(UPD_DEFAULT_INTERLOCK_CONFIGURATION, params, 'out_result');
 }

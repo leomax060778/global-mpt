@@ -197,26 +197,31 @@ function getExpectedOutcomesByHl2Id(hl2_id, hl1_id, fromGrid) {
 }
 
 function getExpectedOutcomesByHl3Id(hl3_id, hl2_id, fromGrid) {
-    var expectedOutcomes = dataExpectedOutcome.getExpectedOutcomeByHl3Id(hl3_id);
-    var result = [];
+    var result = {COMMENTS: '', KPIS: []};
+    var expectedOutcomes = dataExpectedOutcome.getHl3ExpectedOutcomeDetailById(hl3_id);
     if (expectedOutcomes && expectedOutcomes.length) {
-        expectedOutcomes.forEach(function (eo) {
-            var aux = util.extractObject(eo);
-            var detail = dataExpectedOutcome.getHl3ExpectedOutcomeDetailById(aux.HL3_EXPECTED_OUTCOMES_ID);
-
-            if (detail.length) {
-                aux.detail = fromGrid ? addParentKpiDataToDetail(hl3_id, 'HL4', detail, fromGrid) : addParentKpiDataToDetail(hl2_id, 'HL3', detail);
-            } else {
-                aux.detail = [];
-                aux.parentValues = getExpectedOutcomeTotalAvailableByHlIdLevelId(hl2_id, 'HL3');
+        expectedOutcomes.forEach(function (elem) {
+            result.COMMENTS = elem.COMMENTS;
+            if(elem.OUTCOMES_TYPE_ID){
+                result.KPIS.push({
+                    OUTCOMES_TYPE_NAME: elem.OUTCOMES_TYPE_NAME,
+                    OUTCOMES_TYPE_ID: elem.OUTCOMES_TYPE_ID,
+                    OUTCOMES_NAME: elem.OUTCOMES_NAME,
+                    OUTCOMES_ID: elem.OUTCOMES_ID,
+                    EURO_VALUE: elem.EURO_VALUE,
+                    VOLUME_VALUE: elem.VOLUME_VALUE
+                })
             }
-
-            result.push(aux);
         });
-    } else {
-        result.push({COMMENT: '', detail: []});
+
+        if (result.KPIS.length) {
+            result.KPIS = fromGrid ? addParentKpiDataToDetail(hl3_id, 'HL4', result.KPIS, fromGrid) : addParentKpiDataToDetail(hl2_id, 'HL3', result.KPIS);
+        } else {
+            result.parentValues = getExpectedOutcomeTotalAvailableByHlIdLevelId(hl2_id, 'HL3');
+        }
     }
-    return result[0];
+
+    return result;
 }
 
 function getExpectedOutcomesByHl4Id(hl4_id, hl3_id) {

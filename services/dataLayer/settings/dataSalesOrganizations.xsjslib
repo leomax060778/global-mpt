@@ -12,3 +12,4 @@ function getAllSaleOrganization(){
     var data = db.executeProcedureManual(GET_ALL_SALES_ORGANIZATIONS, parameters);
     return db.extractArray(data.out_result);
 }
+

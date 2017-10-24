@@ -49,17 +49,18 @@ BEGIN
 	  AND SUMMARY.HL3_ID IN (SELECT HL3_ID FROM HL3_USER WHERE USER_ID = in_user_id OR in_is_super_Admin = 1)
     ORDER BY SUMMARY.L3_ACRONYM;
 	
-	SELECT HL2.HL2_BUDGET_TOTAL
-    INTO out_total_budget
-    FROM  HL2
-	WHERE HL2.HL2_ID = in_hl2_id;
-	
+
 	SELECT COALESCE(SUM(HL3.HL3_BUDGET_TOTAL),0)
 	INTO va_total_allocated
 	FROM (
 		SELECT DISTINCT HL3_ID, HL3_BUDGET_TOTAL FROM :out_result
 	) HL3;
 
-	out_remaining_budget := out_total_budget - va_total_allocated;
-	
+	out_total_budget := va_total_allocated;
+
+    SELECT HL2.HL2_BUDGET_TOTAL - va_total_allocated
+      INTO out_remaining_budget
+      FROM  HL2
+    WHERE HL2.HL2_ID = in_hl2_id;
+
 END;

@@ -14,8 +14,17 @@ function handleGet(parameters, userSessionID) {
     httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
 }
 function handlePost(reqBody, userId) {
-    var rdo = blMarketingProgram.insertMarketingProgram(reqBody, userId);
-    httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
+    var method = $.request.parameters.get("METHOD");
+    var result;
+    switch (method){
+        case "UPLOAD":
+            result = reqBody.check ? blMarketingProgram.checkMarketingProgram(reqBody, userId) : blMarketingProgram.uploadMarketingProgram(reqBody, userId);
+            break;
+        default:
+            result = blMarketingProgram.insertMarketingProgram(reqBody, userId);
+            break;
+    }
+    return httpUtil.handleResponse(result,httpUtil.OK,httpUtil.AppJson);
 }
 function handlePut(reqBody, userId) {
     var rdo = blMarketingProgram.updateMarketingProgram(reqBody, userId);

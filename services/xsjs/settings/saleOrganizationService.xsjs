@@ -15,7 +15,8 @@ function handleGet(parameters, userSessionID) {
 };
 
 function handlePost(reqBody, userId) {
-    return httpUtil.notImplementedMethod();
+    var rdo = reqBody.check ? blSaleOrganization.checkMarketingOrganization(reqBody, userId) : blSaleOrganization.uploadMarketingOrganization(reqBody, userId);
+    httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
 };
 function handlePut(reqBody, userId) {
     return httpUtil.notImplementedMethod();

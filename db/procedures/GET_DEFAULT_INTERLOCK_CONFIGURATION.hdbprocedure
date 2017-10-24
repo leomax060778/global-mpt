@@ -1,6 +1,7 @@
 PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_DEFAULT_INTERLOCK_CONFIGURATION" (
 	OUT out_result TABLE (
 	                      ORIGIN_TYPE NVARCHAR(255),
+	                      INTERLOCK_DEFAULT_CONFIGURATION_ID INTEGER,
                           INTERLOCK_REQUEST_ORIGIN_ID BIGINT,
 						  ENTITY_ID_FROM BIGINT,
 						  ENTITY_ID_TO BIGINT,
@@ -18,6 +19,7 @@ BEGIN
 			out_result =
 
 			SELECT iro.NAME as ORIGIN_TYPE,
+			       idc.INTERLOCK_DEFAULT_CONFIGURATION_ID,
 			       idc.INTERLOCK_REQUEST_ORIGIN_ID,
 				   idc.ENTITY_ID_FROM,
 				   idc.ENTITY_ID_TO,

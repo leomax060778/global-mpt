@@ -27,6 +27,11 @@ function insertAllocationOption(reqBody, userId) {
 
 	return dbOption.insertAllocationOption(reqBody.IN_NAME,reqBody.CRM_KEY, userId);
 }
+
+function insertAllocationOptionForUpload(name, crm_key, userId){
+	return insertAllocationOption({IN_NAME: name, CRM_KEY: crm_key}, userId);
+}
+
 function getAllocationOption(){
 	return dbOption.getAllocationOption();
 }
@@ -81,4 +86,38 @@ function uiToServerParser(object) {
 	data = JSON.parse(data);
 
 	return data;
+}
+
+function checkAllocationOption(data){
+	var allocationOptionList = data.check;
+	var allocationOptionToUpdate = 0;
+	var allocationOptionToInsert = 0;
+	allocationOptionList.forEach(function(option){
+		if(dbOption.getAllocationOptionByName(option.in_name)){
+			allocationOptionToUpdate++;
+		} else {
+			allocationOptionToInsert++;
+		}
+	});
+
+	return {allocationCategoryToCreate: allocationOptionToInsert, allocationOptionToUpdate: allocationOptionToUpdate};
+}
+
+function uploadAllocationOption(data, userId) {
+	var allocationOptionList = data.batch;
+	var allocationOptionUpdated = 0;
+	var allocationOptionCreated = 0;
+	var optionId;
+	allocationOptionList.forEach(function(allocationOption){
+		var ao = dbOption.getAllocationOptionByName(allocationOption.in_name);
+
+		if(!ao || !ao.ALLOCATION_OPTION_ID){
+			optionId = insertAllocationOptionForUpload(allocationOption.in_name, allocationOption.in_crm_key, userId);
+			allocationOptionCreated++;
+		} else {
+			dbOption.updateAllocationOption(ao.ALLOCATION_OPTION_ID, allocationOption.in_name ,allocationOption.in_crm_key, userId);
+			allocationOptionUpdated++;
+		}
+	});
+	return {allocationOptionCreated: allocationOptionCreated, allocationOptionUpdated: allocationOptionUpdated};
 }

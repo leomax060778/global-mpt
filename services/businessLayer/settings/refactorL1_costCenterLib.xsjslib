@@ -339,7 +339,7 @@ function checkValidTeams(teams){
 	var validTeams = true;
 
 	for(var i = 0; i < teams.length; i++){
-		if(!dataHl3.getLevel3ById({IN_HL3_ID: teams[i]}).HL3_ID){
+		if(!dataHl3.getLevel3ById(teams[i]).HL3_ID){
 			validTeams = false;
 			break
 		}

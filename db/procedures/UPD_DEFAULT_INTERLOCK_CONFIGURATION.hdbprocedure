@@ -1,0 +1,28 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::UPD_DEFAULT_INTERLOCK_CONFIGURATION" (
+		IN in_interlock_default_configuration_id BIGINT,
+		IN in_entity_id_from BIGINT,
+		IN in_entity_id_to BIGINT,
+		IN in_organization_type_from BIGINT,
+		IN in_organization_type_to BIGINT,
+		IN in_enabled TINYINT,
+		IN in_user_id BIGINT,
+		OUT out_result BIGINT
+	) 
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER 
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	AS
+BEGIN
+
+	UPDATE INTERLOCK_DEFAULT_CONFIGURATION SET
+		ENTITY_ID_FROM = in_entity_id_from,
+		ENTITY_ID_TO = in_entity_id_to,
+		ORGANIZATION_TYPE_FROM = in_organization_type_from,
+		ORGANIZATION_TYPE_TO = in_organization_type_to,
+		ENABLED = in_enabled,
+		MODIFIED_USER_ID= in_user_id,
+		modified_date_tz = CURRENT_TIMESTAMP
+		where INTERLOCK_DEFAULT_CONFIGURATION_ID = in_interlock_default_configuration_id;
+	
+	SELECT ::ROWCOUNT INTO out_result FROM DUMMY;
+END;

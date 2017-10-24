@@ -155,8 +155,14 @@ function insertHl2(objLevel2, userId) {
     // var hl2Id = dataHl2.insertLevel2(objLevel2, userId);
 
     if (hl2Id) {
-        if (hl1.TEAM_TYPE_ID == TEAM_TYPE_CENTRAL && objLevel2.CONTACT_DATA && objLevel2.CONTACT_DATA.length)
-            contactDataLib.insertContactData(objLevel2.CONTACT_DATA, userId, hl2Id);
+        if (hl1.TEAM_TYPE_ID == TEAM_TYPE_CENTRAL && objLevel2.CONTACT_DATA && objLevel2.CONTACT_DATA.length){
+            var contactData = objLevel2.CONTACT_DATA.map(function (contact) {
+                contact.CONTACTTYPE = 'CENTRAL';
+                return contact;
+            });
+
+            contactDataLib.insertContactData(contactData, userId, hl2Id);
+        }
 
         //INSERT USERS RELATED TO HL2
         objLevel2.HL2_ID = hl2Id;
@@ -286,7 +292,7 @@ function updateHl2(objLevel2, userId) {
     }
 
     if (currentHL2.HL2_BUDGET_TOTAL != objLevel2.BUDGET) {
-        hl3.checkBudgetStatus(objLevel2.IN_HL2_ID, userId);
+        hl3.checkBudgetStatus(objLevel2.HL2_ID, userId);
     }
 
     dataHl2.updateLevel2(
@@ -303,8 +309,13 @@ function updateHl2(objLevel2, userId) {
     );
 
     contactDataLib.deleteContactDataByContactTypeId("hard", "CENTRAL", objLevel2.HL2_ID);
-    if (objLevel2.TEAM_TYPE_ID == TEAM_TYPE_CENTRAL && objLevel2.CONTACT_DATA && objLevel2.CONTACT_DATA.length)
-        contactDataLib.insertContactData(objLevel2.CONTACT_DATA, userId, objLevel2.HL2_ID);
+    if (objLevel2.TEAM_TYPE_ID == TEAM_TYPE_CENTRAL && objLevel2.CONTACT_DATA && objLevel2.CONTACT_DATA.length){
+        var contactData = objLevel2.CONTACT_DATA.map(function (contact) {
+            contact.CONTACTTYPE = 'CENTRAL';
+            return contact;
+        });
+        contactDataLib.insertContactData(contactData, userId, objLevel2.HL2_ID);
+    }
 
     var hl3List = dataHl3.getAllLevel3(objLevel2.HL2_ID, userId).out_result;
     var hl2Users = dataHl2User.getAllHl2User(objLevel2.HL2_ID);
@@ -416,22 +427,18 @@ function getLevel2ById(hl2Id, carryOver) {
     if (hl2Result.HL2_ID) {
         var hl1BudgetAllocated = dataHl1.getHl1AllocatedBudget(hl2Result.HL1_ID, 0);
         var hl2Users = userbl.getUserByHl2Id(hl2Id);
+        var hl2BudgetAllocated = dataHl2.getHl2AllocatedBudget(hl2Result.HL2_ID, 0);
+        var hl2TargetKpi = expectedOutcomesLib.getExpectedOutcomesByHl2Id(hl2Id, hl2Result.HL1_ID);
         hl2Result.ACRONYM = hl2Result.ORGANIZATION_ACRONYM;
         hl2Result.BUDGET = hl2Result.HL2_BUDGET_TOTAL;
-        hl2Result.TARGET_KPIS = expectedOutcomesLib.getExpectedOutcomesByHl2Id(hl2Id, hl2Result.HL1_ID);
         hl2Result.BUDGET_APPROVERS = budgetApprovers.getL2BudgetApproverByL2Id(hl2Id).assigned;
         hl2Result.ASSIGNED_USERS = hl2Users.users_in;
         hl2Result.AVAILABLE_USERS = hl2Users.users_out;
         hl2Result.HL1_BUDGET_REMAINING = Number(hl2Result.HL1_BUDGET) - Number(hl1BudgetAllocated || 0);
         hl2Result.CONTACT_DATA = contactDataLib.getContactData(hl2Id, 'CENTRAL');
-
-        if (carryOver) {
-            hl2Result.CATEGORIES = hl3.getCarryOverHl2CategoryOption(hl2Id);
-            var hl2BudgetAllocated = dataHl2.getHl2AllocatedBudget(hl2Result.HL2_ID, 0);
-            hl2Result.HL2_BUDGET_REMAINING = Number(hl2Result.HL2_BUDGET_TOTAL) - Number(hl2BudgetAllocated || 0);
-        } else {
-            hl2Result.CATEGORIES = getCategoryOption(hl2Id);
-        }
+        hl2Result.HL2_BUDGET_REMAINING = Number(hl2Result.HL2_BUDGET_TOTAL) - Number(hl2BudgetAllocated || 0);
+        hl2Result.TARGET_KPIS = carryOver ? expectedOutcomesLib.filterKpiByLevel(hl2TargetKpi, 'HL3') : hl2TargetKpi;
+        hl2Result.CATEGORIES = carryOver ? hl3.getCarryOverHl2CategoryOption(hl2Id) : getCategoryOption(hl2Id);
     }
 
     return hl2Result;

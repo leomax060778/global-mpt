@@ -36,7 +36,7 @@ var spDeleteHl2ExpOutcomeDetail = "DEL_HL2_EXPECTED_OUTCOMES_DETAIL_BY_HL2_ID";
 
 /**L3***********************************************/
 var spGetExpOutByHl3Id = "GET_EXPECTED_OUTCOMES_BY_HL3_ID";
-var spGetHl3ExpOutDetail = "GET_EXPECTED_OUTCOMES_DETAILS_EO_HL3_ID";
+var GET_HL3_KPI_BY_HL3_ID = "GET_HL3_KPI_BY_HL3_ID";
 var spInsertHl3ExpOutcome = "INS_HL3_EXPECTED_OUTCOMES";
 var spInsertHl3ExpOutcomeDetail = "INS_HL3_EXPECTED_OUTCOMES_DETAIL";
 var spDeleteHl3ExpOutcome = "DEL_HL3_EXPECTED_OUTCOMES_BY_HL3_ID";
@@ -342,8 +342,8 @@ function getExpectedOutcomeByHl3Id(id){
 
 function getHl3ExpectedOutcomeDetailById(id){
     if(id){
-        var rdo = db.executeProcedure(spGetHl3ExpOutDetail, {'in_hl3_expected_outcomes_id':id});
-        return db.extractArray(rdo.out_expected_outcomes_details);
+        var rdo = db.executeProcedure(GET_HL3_KPI_BY_HL3_ID, {'in_hl3_id':id});
+        return db.extractArray(rdo.out_result);
     }
     return null;
 }

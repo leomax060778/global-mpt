@@ -54,8 +54,17 @@ function handleGet(params,userId){
 }
 
 function handlePost(reqBody,userId){
+	var method = $.request.parameters.get("METHOD");
 
-	var result = AllocationOptionLib.insertAllocationOption(reqBody, userId);
+	var result;
+	switch (method){
+		case "UPLOAD":
+			result = reqBody.check ? AllocationOptionLib.checkAllocationOption(reqBody, userId) : AllocationOptionLib.uploadAllocationOption(reqBody, userId);
+			break;
+		default:
+			result = AllocationOptionLib.insertAllocationOption(reqBody, userId);
+			break;
+	}
 	return httpUtil.handleResponse(result,httpUtil.OK,httpUtil.AppJson);
 }
 

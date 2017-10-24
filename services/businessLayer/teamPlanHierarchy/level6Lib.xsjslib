@@ -3,6 +3,8 @@ $.import("mktgplanningtool.services.commonLib", "mapper");
 var mapper = $.mktgplanningtool.services.commonLib.mapper;
 var dataHl6 = mapper.getDataLevel6();
 var dataHl5 = mapper.getDataLevel5();
+var dataHl4 = mapper.getDataLevel4();
+var userBL = mapper.getUser();
 var dataExOut = mapper.getDataExpectedOutcome();
 var dataPartner = mapper.getDataPartner();
 var partnerLib = mapper.getPartner();
@@ -432,6 +434,8 @@ function insertHl6(data, userId) {
                 var error = ErrorLib.getErrors().AcronymError("", "", L6_MSG_INITIATIVE_CRM_ACRONYM + (newAcronymFormated) );
                 error.data = newAcronym;
                 throw error;
+            } else {
+                throw e
             }
         }
 
@@ -910,7 +914,7 @@ function updateHl6(data, userId) {
             if (ownMoneyBudgetSpendRequestStatus && ownMoneyBudgetSpendRequestStatus != budgetSpendRequestStatus.PENDING)
                 throw ErrorLib.getErrors().CustomError("", "hl6Services/handlePut/updateHl6", "Cannot update Marketing Subtactic Budget because Own money budget spend request is no longer in Pending Status.");
 
-            budgetSpendRequest.updateOwnMoneyBudgetSpendRequestByHlIdLevel(data.hl6.HL6_ID, 'HL6', data.hl6.BUDGET, blLevel2.getHl2AllowAutomaticBudgetApprovalByHl5Id(l4Id) && data.hl6.IN_BUDGET, userId);
+            budgetSpendRequest.updateOwnMoneyBudgetSpendRequestByHlIdLevel(data.hl6.HL6_ID, 'HL6', data.hl6.BUDGET, blLevel2.getHl2AllowAutomaticBudgetApprovalByHl5Id(data.hl6.HL5_ID) && data.hl6.IN_BUDGET, userId);
         }
 
         insertInCrmBinding(validationResult.crmBindingChangedFields, validationResult.crmBindingChangedFieldsUpdate, data.hl6.HL6_ID);
@@ -919,8 +923,12 @@ function updateHl6(data, userId) {
 
         updateBudget(data/*, conversionValue*/);
 
-        if (!data.hl6.CO_FUNDED || data.hl6.ALLOW_BUDGET_ZERO)
+        if (data.hl6.ALLOW_BUDGET_ZERO) {
             budgetSpendRequest.setBudgetSpendRequestStatusNoLongerRequested(data.hl6.HL6_ID, 'HL6', userId);
+        }
+        else if (!data.hl6.CO_FUNDED) {
+            budgetSpendRequest.disableCoFundedBudgetSpendRequests(data.hl6.HL6_ID, 'HL6', userId);
+        }
 
         updateSales(data, conversionValue);
 

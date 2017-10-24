@@ -22,6 +22,13 @@ function getAllMarketingOrganization(){
 	return db.extractArray(data.out_result);
 }
 
+
+function getMarketingOrganizationByName(name){
+	var parameters = {'in_name' : name};
+	var data = db.executeProcedureManual(GET_SALES_ORGANIZATIONS_BY_NAME, parameters);
+	return db.extractArray(data.out_result);
+}
+
 function getMarketingOrganizationUses(marketingOrganizationId) {
 	var params = {
 		'in_marketing_organization_id': marketingOrganizationId
