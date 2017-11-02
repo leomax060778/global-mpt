@@ -1,34 +1,38 @@
-PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL1_KPI_BY_HL1_ID" (
-		IN in_hl1_id bigint,
-		OUT out_result TABLE(
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL1_KPI_BY_HL1_ID"(
+		IN in_hl1_id BIGINT, 
+		OUT out_result TABLE (
 			euro_value DECIMAL(19, 6),
 			volume_value DECIMAL(19, 6),
 			outcomes_id BIGINT,
 			outcomes_name NVARCHAR(255),
 			outcomes_type_id BIGINT,
-			outcomes_type_name  NVARCHAR(255),
+			outcomes_type_name NVARCHAR(255),
 			comments NVARCHAR(3000)
 		)
-	) 
+	)
 	LANGUAGE SQLSCRIPT
-	SQL SECURITY INVOKER 
+	SQL SECURITY INVOKER
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
-	READS SQL DATA AS
+	READS SQL DATA
+AS
 BEGIN
-	out_result =
-
-     SELECT
-     	  heod.euro_value
-     	, heod.volume_value
-     	, outcomes.expected_outcome_option_id   AS outcomes_id
-     	, outcomes.name                         AS outcomes_name
-     	, outcomes_type.expected_outcome_id     AS outcomes_type_id
-     	, outcomes_type.name                    AS outcomes_type_name
-     	, heo.comments
-     	 from hl1_expected_outcomes heo
-     	 left join hl1_expected_outcomes_detail heod on heod.hl1_expected_outcomes_id = heo.hl1_expected_outcomes_id
-     	 left join expected_outcome_level eol on heod.expected_outcome_level_id = eol.expected_outcome_level_id
-     	 left join expected_outcome_option outcomes on outcomes.expected_outcome_option_id = eol.expected_outcome_option_id
-     	 left join expected_outcome outcomes_type on outcomes_type.expected_outcome_id = eol.expected_outcome_id
-     	where heo.deleted = 0 and heo.enabled = 1 and heo.hl1_id = in_hl1_id;
+	out_result = SELECT heod.euro_value, 
+				heod.volume_value, 
+				outcomes.expected_outcome_option_id AS outcomes_id, 
+				outcomes.name AS outcomes_name, 
+				outcomes_type.expected_outcome_id AS outcomes_type_id, 
+				outcomes_type.name AS outcomes_type_name, 
+				heo.comments
+			FROM hl1_expected_outcomes AS heo
+				LEFT OUTER JOIN hl1_expected_outcomes_detail AS heod
+				ON heod.hl1_expected_outcomes_id = heo.hl1_expected_outcomes_id
+				LEFT OUTER JOIN expected_outcome_level AS eol
+				ON heod.expected_outcome_level_id = eol.expected_outcome_level_id
+				LEFT OUTER JOIN expected_outcome_option AS outcomes
+				ON outcomes.expected_outcome_option_id = eol.expected_outcome_option_id
+				LEFT OUTER JOIN expected_outcome AS outcomes_type
+				ON outcomes_type.expected_outcome_id = eol.expected_outcome_id
+			WHERE heo.deleted = 0
+				AND heo.enabled = 1
+				AND heo.hl1_id = in_hl1_id;
 END;

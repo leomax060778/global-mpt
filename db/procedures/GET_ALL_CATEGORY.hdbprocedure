@@ -1,25 +1,29 @@
-PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_ALL_CATEGORY" (
-	OUT out_result TABLE (category_id BIGINT, hierarchy_level_id BIGINT, measure_id BIGINT, name NVARCHAR(60), description NVARCHAR(255), in_processing_report TINYINT)
- 	) 
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_ALL_CATEGORY"(
+		OUT out_result TABLE (
+			category_id BIGINT,
+			hierarchy_level_id BIGINT,
+			measure_id BIGINT,
+			name NVARCHAR(60),
+			description NVARCHAR(255),
+			in_processing_report TINYINT
+		)
+	)
 	LANGUAGE SQLSCRIPT
-	SQL SECURITY INVOKER 
+	SQL SECURITY INVOKER
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
-	READS SQL DATA AS
+	READS SQL DATA
+AS
 BEGIN
-/***************************** 
-	Write your procedure logic 
- *****************************/
-		out_result = SELECT distinct (category.category_id) as category_id,
-			   category.hierarchy_level_id,
-			   category.measure_id,
-			   category.name,
-			   category.description,
-			   hl4_category.in_processing_report
-		FROM category
-		inner join hl4_category
-		on hl4_category.category_id = category.category_id
-		WHERE category.enabled = 1 AND
-		category.deleted = 0
-		ORDER BY name;
-
+	out_result = SELECT DISTINCT category.category_id AS category_id, 
+				category.hierarchy_level_id, 
+				category.measure_id, 
+				category.name, 
+				category.description, 
+				hl4_category.in_processing_report
+			FROM category
+				INNER JOIN hl4_category
+				ON hl4_category.category_id = category.category_id
+			WHERE category.enabled = 1
+				AND category.deleted = 0
+			ORDER BY name ASC;
 END;

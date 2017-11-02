@@ -1,20 +1,20 @@
-PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_EXPECTED_OUTCOME_LEVEL_COUNT_BY_OUTCOME_ID_LEVEL_AND_OPTION"
-(
-        IN in_expected_outcome_id bigint,
-        IN in_hierarchy_level_id bigint,
-        IN in_option_id bigint,
-        OUT out_result bigint
-)
-LANGUAGE SQLSCRIPT
-SQL SECURITY INVOKER
-DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_EXPECTED_OUTCOME_LEVEL_COUNT_BY_OUTCOME_ID_LEVEL_AND_OPTION"(
+		IN in_expected_outcome_id BIGINT, 
+		IN in_hierarchy_level_id BIGINT, 
+		IN in_option_id BIGINT, 
+		OUT out_result BIGINT
+	)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
 AS
 BEGIN
-	select
-	count(distinct expected_outcome_level_id) into out_result
-	from expected_outcome_level eol
-	where eol.expected_outcome_id = in_expected_outcome_id
-	and eol.expected_outcome_option_id = in_option_id
-	and eol.hierarchy_level_id = in_hierarchy_level_id
-	and eol.deleted = 0 and eol.enabled = 1;
+	SELECT count(expected_outcome_level_id)
+		INTO out_result
+		FROM expected_outcome_level AS eol
+		WHERE eol.expected_outcome_id = in_expected_outcome_id
+			AND eol.expected_outcome_option_id = in_option_id
+			AND eol.hierarchy_level_id = in_hierarchy_level_id
+			AND eol.deleted = 0
+			AND eol.enabled = 1;
 END;

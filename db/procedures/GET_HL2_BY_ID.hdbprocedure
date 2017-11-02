@@ -35,7 +35,6 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL2_BY_ID" (
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
 	READS SQL DATA AS
 BEGIN
-
 	out_result =	
 	SELECT 
 		HL2.hl2_id 

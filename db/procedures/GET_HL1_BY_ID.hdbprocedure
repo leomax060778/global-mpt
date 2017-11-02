@@ -20,7 +20,6 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL1_BY_ID" (
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
 	READS SQL DATA AS
 BEGIN
-
 	out_result =
 	SELECT
 		  hl1.hl1_id

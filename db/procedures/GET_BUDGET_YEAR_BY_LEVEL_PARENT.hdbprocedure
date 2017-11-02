@@ -1,59 +1,23 @@
-PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_BUDGET_YEAR_BY_LEVEL_PARENT" (
-	  IN in_lh BIGINT  		--IS DE CURRENT LEVEL
-	, IN in_parent_id BIGINT 	--IS THE PARENT LEVEL ID OF HL
-	, OUT out_result TABLE (BUDGET_YEAR_ID INTEGER, BUDGET_YEAR INT)
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_BUDGET_YEAR_BY_LEVEL_PARENT"(
+		IN in_lh BIGINT, 
+		IN in_parent_id BIGINT, 
+		OUT out_result TABLE (
+			BUDGET_YEAR_ID INTEGER,
+			BUDGET_YEAR INT
+		)
 	)
 	LANGUAGE SQLSCRIPT
 	SQL SECURITY INVOKER
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
-	READS SQL DATA AS
+	READS SQL DATA
+AS
 BEGIN
-
-    IF in_lh = 2 THEN
-		out_result =
-		select buy.budget_year_id, buy.budget_year
-        from hl1
-        inner join budget_year buy on buy.budget_year_id = hl1.budget_year_id
-        where hl1.hl1_id = in_parent_id;
-    ELSEIF in_lh = 3 THEN
-            out_result =
-            select buy.budget_year_id, buy.budget_year
-            from hl2
-            inner join hl1 on hl1.hl1_id = hl2.hl1_id
-            inner join budget_year buy on buy.budget_year_id = hl1.budget_year_id
-            where hl2.hl2_id = in_parent_id;
-
-	ELSEIF in_lh = 4 THEN
-		out_result =
-                    select buy.budget_year_id, buy.budget_year
-                    from hl3
-                    inner join hl2 on hl2.hl2_id = hl3.hl2_id
-                    inner join hl1 on hl1.hl1_id = hl2.hl1_id
-                    inner join budget_year buy on buy.budget_year_id = hl1.budget_year_id
-                    where hl3.hl3_id = in_parent_id;
-
-	ELSEIF in_lh = 5 THEN
-	    out_result =
-	                select buy.budget_year_id, buy.budget_year
-                    from hl4
-                    inner join hl3 on hl4.hl3_id = hl3.hl3_id
-                    inner join hl2 on hl2.hl2_id = hl3.hl2_id
-                    inner join hl1 on hl1.hl1_id = hl2.hl1_id
-                    inner join budget_year buy on buy.budget_year_id = hl1.budget_year_id
-                    where hl4.hl4_id = in_parent_id;
-
-
-	ELSEIF in_lh = 6 THEN
-	    out_result =
-                select buy.budget_year_id, buy.budget_year
-                from hl5
-                inner join hl4 on hl5.hl4_id = hl4.hl4_id
-                inner join hl3 on hl4.hl3_id = hl3.hl3_id
-                inner join hl2 on hl2.hl2_id = hl3.hl2_id
-                inner join hl1 on hl1.hl1_id = hl2.hl1_id
-                inner join budget_year buy on buy.budget_year_id = hl1.budget_year_id
-                where hl5.hl5_id = in_parent_id;
-	END IF;
-
+	IF (in_lh = 2) THEN
+		out_result = SELECT buy.budget_year_id, 
+					buy.budget_year
+				FROM hl1
+					INNER JOIN budget_year AS buy
+					ON buy.budget_year_id = hl1.budget_year_id
+				WHERE hl1.hl1_id = in_parent_id;
+	ELSEIF (in_lh = 3) THEN	ELSEIF (in_lh = 4) THEN	ELSEIF (in_lh = 5) THEN	ELSEIF (in_lh = 6) THEN	END IF;
 END;
-

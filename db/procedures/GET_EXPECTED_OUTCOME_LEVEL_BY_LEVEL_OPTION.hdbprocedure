@@ -1,21 +1,17 @@
-PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_EXPECTED_OUTCOME_LEVEL_BY_LEVEL_OPTION"
-(
-        IN in_hierarchy_level_id bigint,
-        IN in_outcomes_id BIGINT,
-        OUT out_result TABLE(
-              expected_outcome_level_id INTEGER
-        )
-)
-LANGUAGE SQLSCRIPT
-SQL SECURITY INVOKER
-DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_EXPECTED_OUTCOME_LEVEL_BY_LEVEL_OPTION"(
+		IN in_hierarchy_level_id BIGINT, 
+		IN in_outcomes_id BIGINT, 
+		OUT out_result TABLE (
+			expected_outcome_level_id INTEGER
+		)
+	)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
 AS
 BEGIN
-
-out_result =
-	select
-	 expected_outcome_level_id
-	from expected_outcome_level eol
-	where eol.hierarchy_level_id = in_hierarchy_level_id
-	and eol.expected_outcome_option_id = in_outcomes_id;
+	out_result = SELECT expected_outcome_level_id
+			FROM expected_outcome_level AS eol
+			WHERE eol.hierarchy_level_id = in_hierarchy_level_id
+				AND eol.expected_outcome_option_id = in_outcomes_id;
 END;

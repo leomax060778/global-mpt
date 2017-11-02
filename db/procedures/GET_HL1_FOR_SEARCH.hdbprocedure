@@ -21,7 +21,6 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL1_FOR_SEAR
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
 	AS
 BEGIN
-
     if in_isSA = 1 then
     va_subresult = SELECT HL1.hl1_id as id
         		, BGY.BUDGET_YEAR

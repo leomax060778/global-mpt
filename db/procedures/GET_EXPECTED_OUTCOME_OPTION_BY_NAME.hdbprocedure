@@ -9,6 +9,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_EXPECTED_OUT
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
 	READS SQL DATA AS
 BEGIN
+
   out_result = select expected_outcome_option_id, name
  		from expected_outcome_option
  		where upper(name) = upper(in_name) and

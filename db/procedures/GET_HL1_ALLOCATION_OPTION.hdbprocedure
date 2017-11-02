@@ -16,6 +16,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL1_ALLOCATI
 	SQL SECURITY INVOKER 
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL" AS
 BEGIN
+
 	va_hl1_option =
 	SELECT option.allocation_option_id as option_id
 	, option.name as option_name

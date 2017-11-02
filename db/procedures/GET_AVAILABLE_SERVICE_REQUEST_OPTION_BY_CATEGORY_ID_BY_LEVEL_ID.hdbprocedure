@@ -11,7 +11,6 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_AVAILABLE_SE
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
 	READS SQL DATA AS
 BEGIN
-
 		out_result =
 		SELECT AO.service_request_option_id, AO.name
 		FROM SERVICE_REQUEST_OPTION AO

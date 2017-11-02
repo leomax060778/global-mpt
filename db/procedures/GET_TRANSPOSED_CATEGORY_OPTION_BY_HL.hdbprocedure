@@ -44,7 +44,6 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_TRANSPOSED_C
 	    ,ZZSOL_PERCENTAGE5  NVARCHAR(255)
         )
 	)
-
 	LANGUAGE SQLSCRIPT
 	SQL SECURITY INVOKER 
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
@@ -94,7 +93,6 @@ The size of the matrix is not dynamic, in order to add a new category to the T` 
 
 IF(IN_LEVEL = 'HL4') THEN
 -----------------------------HL4----------------------------------
-
 -- Get exactly 5 allocation_category_option, ordered by amount.
     VA_HL_IMP_OPTIONS = SELECT TOP 5 option_name,
                                      option_percentage,

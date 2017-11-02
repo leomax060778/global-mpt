@@ -15,7 +15,6 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_BUDGET_SPEND
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
 AS
 BEGIN
-
 	out_result = SELECT BUDGET_SPEND_REQUEST_ID
                         , HL_ID
                         , HIERARCHY_LEVEL_ID

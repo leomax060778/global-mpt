@@ -1,55 +1,58 @@
-PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL1_ALLOCATION_CATEGORY_BY_HL1_ID" (
-	IN in_id BIGINT,
-	OUT out_category TABLE (
-	 category_id integer
-	, hl1_id integer
-	, category_name nvarchar(60)
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL1_ALLOCATION_CATEGORY_BY_HL1_ID"(
+		IN in_id BIGINT, 
+		OUT out_category TABLE (
+			category_id INTEGER,
+			hl1_id INTEGER,
+			category_name NVARCHAR(60)
+		)
 	)
-) 
 	LANGUAGE SQLSCRIPT
-	SQL SECURITY INVOKER 
+	SQL SECURITY INVOKER
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
-	READS SQL DATA AS
+	READS SQL DATA
+AS
 BEGIN
-	va_hl1_category_option =
-	SELECT
-	 distinct allocation_category.allocation_category_id as category_id
-	, hl1CO.hl1_id
-	, allocation_category.name as category_name
-	, hl1CO.allocation_category_option_level_id
-	FROM hl1_category_option hl1CO
-	inner join allocation_category_option_level ACOL on hl1CO.allocation_category_option_level_id = ACOL.allocation_category_option_level_id
-	AND ACOL.enabled = 1 AND ACOL.deleted = 0
-	inner join allocation_category on ACOL.allocation_category_id = allocation_category.allocation_category_id
-	WHERE hl1_id = in_id
-	  AND hl1CO.enabled = 1
-	  AND hl1CO.deleted = 0;
+	va_hl1_category_option = SELECT DISTINCT allocation_category.allocation_category_id AS category_id, 
+				hl1CO.hl1_id, 
+				allocation_category.name AS category_name, 
+				hl1CO.allocation_category_option_level_id
+			FROM hl1_category_option AS hl1CO
+				INNER JOIN allocation_category_option_level AS ACOL
+				ON hl1CO.allocation_category_option_level_id = ACOL.allocation_category_option_level_id
+					AND ACOL.enabled = 1
+					AND ACOL.deleted = 0
+				INNER JOIN allocation_category
+				ON ACOL.allocation_category_id = allocation_category.allocation_category_id
+			WHERE hl1_id = in_id
+				AND hl1CO.enabled = 1
+				AND hl1CO.deleted = 0;
+	va_category = SELECT DISTINCT allocation_category.allocation_category_id AS category_id, 
+				in_id AS HL1_ID, 
+				allocation_category.name AS category_name, 
+				ACOL.allocation_category_option_level_id
+			FROM allocation_category_option_level AS ACOL
+				INNER JOIN allocation_category
+				ON ACOL.allocation_category_id = allocation_category.allocation_category_id
+			WHERE (ACOL.allocation_category_option_level_id NOT IN (SELECT ALLOCATION_CATEGORY_OPTION_LEVEL_ID
+						FROM :va_hl1_category_option))
+				AND ACOL.hierarchy_level_id = 6
+				AND ACOL.enabled = 1
+				AND ACOL.deleted = 0;
+	out_category = SELECT CATEGORY_ID, 
+				HL1_ID, 
+				CATEGORY_NAME
+			FROM (
+								SELECT CATEGORY_ID, 
+						HL1_ID, 
+						CATEGORY_NAME
+					FROM :va_hl1_category_option
 
-	va_category = select
-	                distinct allocation_category.allocation_category_id as category_id
-                    	, in_id AS HL1_ID
-                    	, allocation_category.name as category_name
-                    	, ACOL.allocation_category_option_level_id
-	            from allocation_category_option_level ACOL
-                inner join allocation_category on ACOL.allocation_category_id = allocation_category.allocation_category_id
-                WHERE ACOL.allocation_category_option_level_id NOT IN (SELECT ALLOCATION_CATEGORY_OPTION_LEVEL_ID FROM :va_hl1_category_option)
-                    AND ACOL.hierarchy_level_id = 6
-                  AND ACOL.enabled = 1
-                  AND ACOL.deleted = 0;
+					UNION
 
-
-	 out_category = SELECT CATEGORY_ID
-                          , HL1_ID
-                          , CATEGORY_NAME
-                    FROM
-                    ((select CATEGORY_ID
-                           , HL1_ID
-                           , CATEGORY_NAME
-                    from :va_hl1_category_option)
-                    UNION
-                    (select CATEGORY_ID
-                            , HL1_ID
-                            , CATEGORY_NAME
-                     from :va_category))
-                     ORDER BY CATEGORY_NAME;
+								SELECT CATEGORY_ID, 
+						HL1_ID, 
+						CATEGORY_NAME
+					FROM :va_category
+				)
+			ORDER BY CATEGORY_NAME ASC;
 END;

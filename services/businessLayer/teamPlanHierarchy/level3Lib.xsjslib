@@ -428,12 +428,15 @@ function validateFormHl3(objHl3) {
         throw ErrorLib.getErrors().CustomError("",
             "hl3Services/handlePost/insertHl3",
             "The object HL3 is not found");
-    if (objHl3.IN_SHOPPING_CART_APPROVER && !/[id]\d{6}/gi.test(objHl3.IN_SHOPPING_CART_APPROVER)) {
+            
+    if (objHl3.SHOPPING_CART_APPROVER && objHl3.SHOPPING_CART_APPROVER.trim() && !/[id]\d{6}/gi.test(objHl3.SHOPPING_CART_APPROVER)) {
         throw ErrorLib.getErrors().CustomError("Shopping cart approver is invalid", "", "");
     }
-    if (objHl3.IN_COST_CENTER && !/\d+/gi.test(objHl3.IN_COST_CENTER)) {
+
+    if (objHl3.COST_CENTER && objHl3.COST_CENTER.trim() && !/\d+/gi.test(objHl3.COST_CENTER)) {
         throw ErrorLib.getErrors().CustomError("Cost Center approver is invalid", "", "");
     }
+    
     try {
         keys.forEach(function (key) {
             if (objHl3[key] === null || objHl3[key] === undefined) {
@@ -471,6 +474,14 @@ function validateUpdateHl3(objHl3) {
         throw ErrorLib.getErrors().CustomError("",
             "",
             "The object HL3 is not found");
+            
+    if (objHl3.SHOPPING_CART_APPROVER && objHl3.SHOPPING_CART_APPROVER.trim() && !/[id]\d{6}/gi.test(objHl3.SHOPPING_CART_APPROVER)) {
+        throw ErrorLib.getErrors().CustomError("Shopping cart approver is invalid", "", "");
+    }
+
+    if (objHl3.COST_CENTER && objHl3.COST_CENTER.trim() && !/\d+/gi.test(objHl3.COST_CENTER)) {
+        throw ErrorLib.getErrors().CustomError("Cost Center approver is invalid", "", "");
+    }
 
     try {
         keys.forEach(function (key) {
