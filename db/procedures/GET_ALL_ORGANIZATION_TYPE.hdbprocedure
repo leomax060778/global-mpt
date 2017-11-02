@@ -1,21 +1,21 @@
-PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_ALL_ORGANIZATION_TYPE" ( 
-OUT out_result TABLE(
-	organization_type_id bigint,
-	name nvarchar(255),
-	organization_related_id bigint
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_ALL_ORGANIZATION_TYPE"(
+		OUT out_result TABLE (
+			organization_type_id BIGINT,
+			name NVARCHAR(255),
+			organization_related_id BIGINT
+		)
 	)
-)
 	LANGUAGE SQLSCRIPT
-	SQL SECURITY INVOKER 
+	SQL SECURITY INVOKER
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
-	READS SQL DATA AS
+	READS SQL DATA
+AS
 BEGIN
-	out_result = SELECT	ORGANIZATION_TYPE_ID,
-						NAME,
-						ORGANIZATION_RELATED_ID
-				 FROM ORGANIZATION_TYPE
-				 	WHERE   ENABLED = 1 
-				 		AND DELETED = 0
-				 ORDER BY NAME ASC;
-	
+	out_result = SELECT ORGANIZATION_TYPE_ID, 
+				NAME, 
+				ORGANIZATION_RELATED_ID
+			FROM ORGANIZATION_TYPE
+			WHERE ENABLED = 1
+				AND DELETED = 0
+			ORDER BY NAME ASC;
 END;

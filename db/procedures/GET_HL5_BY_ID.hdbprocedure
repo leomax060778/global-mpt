@@ -1,124 +1,128 @@
-PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL5_BY_ID" ( 
-	in in_hl5_id BIGINT
-	,OUT out_result TABLE (
-		hl5_id integer
-		, hl5_crm_description nvarchar(100)
-		, acronym nvarchar(25)
-		, distribution_channel_id integer
-		, budget decimal(19, 6)
-		, hl4_id integer
-		, campaign_objective_id integer
-		, campaign_type_id integer
-		, show_additional_fields tinyint
-		, campaign_subtype_id integer
-		, marketing_program_id integer
-		, marketing_activity_id integer
-		, actual_start_date timestamp
-		, actual_end_date timestamp
-		, show_on_dg_calendar tinyint
-		, business_owner_id integer
-		, employee_responsible_id integer
-		, cost_center_id integer
-		, in_budget tinyint
-		, budget_spend_q1 decimal(19, 2)
-		, budget_spend_q2 decimal(19, 2)
-		, budget_spend_q3 decimal(19, 2)
-		, budget_spend_q4 decimal(19, 2)
-		, euro_conversion_id integer
-		, hl5_status_detail_id integer
-		, created_date_tz timestamp
-		, modified_date_tz timestamp
-		, created_user_id integer
-		, modified_user_id integer
-		, enabled tinyint
-		, deleted tinyint
-		, route_to_market_id integer
-        , venue nvarchar(255)
-        , city nvarchar(255)
-        , country nvarchar(255)
-        , url nvarchar(255)
-        , sales_organization_id integer
-        , planned_start_date timestamp
-        , planned_end_date timestamp
-        , street nvarchar(255)
-        , postal_code nvarchar(20)
-        , region nvarchar(255)
-        , event_owner nvarchar(255)
-        , number_of_participants nvarchar(255)
-        , priority_id integer
-        , co_funded tinyint
-        , allow_budget_zero tinyint
-        , is_power_user tinyint
-        , budget_spend_request_status_id nvarchar(255)
-        , budget_spend_request_status nvarchar(255)
-        , EMPLOYEE_RESPONSIBLE_USER nvarchar(7)
-        , PERSON_RESPONSIBLE NVARCHAR(7)
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL5_BY_ID"(
+		IN in_hl5_id BIGINT, 
+		OUT out_result TABLE (
+			hl5_id INTEGER,
+			hl5_crm_description NVARCHAR(100),
+			acronym NVARCHAR(25),
+			distribution_channel_id INTEGER,
+			budget DECIMAL(19, 6),
+			hl4_id INTEGER,
+			campaign_objective_id INTEGER,
+			campaign_type_id INTEGER,
+			show_additional_fields TINYINT,
+			campaign_subtype_id INTEGER,
+			marketing_program_id INTEGER,
+			marketing_activity_id INTEGER,
+			actual_start_date TIMESTAMP,
+			actual_end_date TIMESTAMP,
+			show_on_dg_calendar TINYINT,
+			business_owner_id INTEGER,
+			employee_responsible_id INTEGER,
+			cost_center_id INTEGER,
+			in_budget TINYINT,
+			budget_spend_q1 DECIMAL(19, 2),
+			budget_spend_q2 DECIMAL(19, 2),
+			budget_spend_q3 DECIMAL(19, 2),
+			budget_spend_q4 DECIMAL(19, 2),
+			euro_conversion_id INTEGER,
+			hl5_status_detail_id INTEGER,
+			created_date_tz TIMESTAMP,
+			modified_date_tz TIMESTAMP,
+			created_user_id INTEGER,
+			modified_user_id INTEGER,
+			enabled TINYINT,
+			deleted TINYINT,
+			route_to_market_id INTEGER,
+			venue NVARCHAR(255),
+			city NVARCHAR(255),
+			country NVARCHAR(255),
+			url NVARCHAR(255),
+			sales_organization_id INTEGER,
+			planned_start_date TIMESTAMP,
+			planned_end_date TIMESTAMP,
+			street NVARCHAR(255),
+			postal_code NVARCHAR(20),
+			region NVARCHAR(255),
+			event_owner NVARCHAR(255),
+			number_of_participants NVARCHAR(255),
+			priority_id INTEGER,
+			co_funded TINYINT,
+			allow_budget_zero TINYINT,
+			is_power_user TINYINT,
+			budget_spend_request_status_id NVARCHAR(255),
+			budget_spend_request_status NVARCHAR(255),
+			EMPLOYEE_RESPONSIBLE_USER NVARCHAR(7),
+			PERSON_RESPONSIBLE NVARCHAR(7)
 		)
-		
-) 
+	)
 	LANGUAGE SQLSCRIPT
-	SQL SECURITY INVOKER 
+	SQL SECURITY INVOKER
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
-	READS SQL DATA AS
+	READS SQL DATA
+AS
 BEGIN
-out_result = select 
-                HL5.hl5_id
-                , HL5.hl5_crm_description
-                , HL5.acronym
-                , HL5.distribution_channel_id
-                , HL5.budget
-                , HL5.hl4_id
-                , HL5.campaign_objective_id
-                , HL5.campaign_type_id
-                , C_TYPE.show_additional_fields
-                , HL5.campaign_subtype_id
-                , HL5.marketing_program_id
-                , HL5.marketing_activity_id
-                , HL5.actual_start_date
-                , HL5.actual_end_date
-                , HL5.show_on_dg_calendar
-                , HL5.business_owner_id
-                , HL5.employee_responsible_id
-                , HL5.cost_center_id
-                , HL5.in_budget
-                , HL5.budget_spend_q1
-                , HL5.budget_spend_q2
-                , HL5.budget_spend_q3
-                , HL5.budget_spend_q4
-                , HL5.euro_conversion_id
-                , HL5.hl5_status_detail_id
-                , HL5.created_date_tz
-                , HL5.modified_date_tz
-                , HL5.created_user_id
-                , HL5.modified_user_id
-                , HL5.enabled
-                , HL5.deleted
-                , HL5.route_to_market_id
-                , HL5.venue
-                , HL5.city
-                , HL5.country
-                , HL5.url
-                , HL5.sales_organization_id
-                , HL5.planned_start_date
-                , HL5.planned_end_date
-                , HL5.street
-                , HL5.postal_code
-                , HL5.region
-                , HL5.event_owner
-                , HL5.number_of_participants
-                , HL5.priority_id
-                , HL5.co_funded
-                , HL5.allow_budget_zero
-                , HL5.is_power_user
-                , BSRS.budget_spend_request_status_id
-                , BSRS.display_name as budget_spend_request_status
-                , HL5.EMPLOYEE_RESPONSIBLE_USER
-                , HL5.PERSON_RESPONSIBLE
-                 FROM HL5
-                 LEFT JOIN BUDGET_SPEND_REQUEST BSR ON BSR.HL_ID = HL5.HL5_ID
-                    AND BSR.HIERARCHY_LEVEL_ID = 2 AND BSR.BUDGET_SPEND_REQUEST_TYPE_ID = 1
-                 LEFT JOIN BUDGET_SPEND_REQUEST_STATUS BSRS ON BSRS.BUDGET_SPEND_REQUEST_STATUS_ID = BSR.BUDGET_SPEND_REQUEST_STATUS_ID
-                 LEFT JOIN CAMPAIGN_TYPE C_TYPE ON C_TYPE.CAMPAIGN_TYPE_ID = HL5.CAMPAIGN_TYPE_ID
-                 WHERE HL5_ID = in_hl5_id
-                 AND HL5.ENABLED = 1 AND HL5.DELETED = 0;
+	out_result = SELECT HL5.hl5_id, 
+				HL5.hl5_crm_description, 
+				HL5.acronym, 
+				HL5.distribution_channel_id, 
+				HL5.budget, 
+				HL5.hl4_id, 
+				HL5.campaign_objective_id, 
+				HL5.campaign_type_id, 
+				C_TYPE.show_additional_fields, 
+				HL5.campaign_subtype_id, 
+				HL5.marketing_program_id, 
+				HL5.marketing_activity_id, 
+				HL5.actual_start_date, 
+				HL5.actual_end_date, 
+				HL5.show_on_dg_calendar, 
+				HL5.business_owner_id, 
+				HL5.employee_responsible_id, 
+				HL5.cost_center_id, 
+				HL5.in_budget, 
+				HL5.budget_spend_q1, 
+				HL5.budget_spend_q2, 
+				HL5.budget_spend_q3, 
+				HL5.budget_spend_q4, 
+				HL5.euro_conversion_id, 
+				HL5.hl5_status_detail_id, 
+				HL5.created_date_tz, 
+				HL5.modified_date_tz, 
+				HL5.created_user_id, 
+				HL5.modified_user_id, 
+				HL5.enabled, 
+				HL5.deleted, 
+				HL5.route_to_market_id, 
+				HL5.venue, 
+				HL5.city, 
+				HL5.country, 
+				HL5.url, 
+				HL5.sales_organization_id, 
+				HL5.planned_start_date, 
+				HL5.planned_end_date, 
+				HL5.street, 
+				HL5.postal_code, 
+				HL5.region, 
+				HL5.event_owner, 
+				HL5.number_of_participants, 
+				HL5.priority_id, 
+				HL5.co_funded, 
+				HL5.allow_budget_zero, 
+				HL5.is_power_user, 
+				BSRS.budget_spend_request_status_id, 
+				BSRS.display_name AS budget_spend_request_status, 
+				HL5.EMPLOYEE_RESPONSIBLE_USER, 
+				HL5.PERSON_RESPONSIBLE
+			FROM HL5
+				LEFT OUTER JOIN BUDGET_SPEND_REQUEST AS BSR
+				ON BSR.HL_ID = HL5.HL5_ID
+					AND BSR.HIERARCHY_LEVEL_ID = 2
+					AND BSR.BUDGET_SPEND_REQUEST_TYPE_ID = 1
+				LEFT OUTER JOIN BUDGET_SPEND_REQUEST_STATUS AS BSRS
+				ON BSRS.BUDGET_SPEND_REQUEST_STATUS_ID = BSR.BUDGET_SPEND_REQUEST_STATUS_ID
+				LEFT OUTER JOIN CAMPAIGN_TYPE AS C_TYPE
+				ON C_TYPE.CAMPAIGN_TYPE_ID = HL5.CAMPAIGN_TYPE_ID
+			WHERE HL5_ID = in_hl5_id
+				AND HL5.ENABLED = 1
+				AND HL5.DELETED = 0;
 END;

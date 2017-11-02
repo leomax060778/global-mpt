@@ -1,22 +1,24 @@
-PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::DEL_HL6_CATEGORY_OPTION" (
-	IN in_hl6_id BIGINT,
-	IN in_user_id BIGINT,
-	OUT out_result BIGINT) 
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::DEL_HL6_CATEGORY_OPTION"(
+		IN in_hl6_id BIGINT, 
+		IN in_user_id BIGINT, 
+		OUT out_result BIGINT
+	)
 	LANGUAGE SQLSCRIPT
-	SQL SECURITY INVOKER 
+	SQL SECURITY INVOKER
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
-	AS
+AS
 BEGIN
 	UPDATE HL6_CATEGORY_OPTION
-	SET deleted = 1,
-	enabled = 0,
-		modified_user_id = in_user_id,
+SET deleted = 1, 
+		enabled = 0, 
+		modified_user_id = in_user_id, 
 		modified_date_tz = CURRENT_TIMESTAMP
-	WHERE hl6_category_id in (
-		select DISTINCT HL6_CATEGORY_ID FROM HL6_CATEGORY
-		WHERE hl6_id = in_hl6_id and enabled = 1 and deleted = 0
-	);
-	
-	SELECT ::ROWCOUNT INTO out_result FROM DUMMY;
-
+WHERE (hl6_category_id IN (SELECT DISTINCT HL6_CATEGORY_ID
+			FROM HL6_CATEGORY
+			WHERE hl6_id = in_hl6_id
+				AND enabled = 1
+				AND deleted = 0));
+	SELECT ::ROWCOUNT
+		INTO out_result
+		FROM DUMMY;
 END;

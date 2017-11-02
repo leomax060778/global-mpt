@@ -1,43 +1,45 @@
-PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::UPD_HL6_PARTNER"
-(
-	in partnerData TABLE (
-    		 in_partner_id bigint,
-    		 in_partner_name nvarchar(512),
-    		 in_partner_type_id bigint,
-    		 in_region_id bigint,
-    		 in_value decimal,
-    		 in_currency_id bigint,
-    		 in_created_user_id bigint,
-    		 in_intel_project_id NVARCHAR(255),
-             in_claim_id NVARCHAR(255),
-             in_comments nvarchar(3000),
-             in_company_name NVARCHAR(255),
-             in_company_address NVARCHAR(255),
-             in_invoice_number NVARCHAR(255))
-    		, OUT out_result bigint
-) 
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::UPD_HL6_PARTNER"(
+		IN partnerData TABLE (
+			in_partner_id BIGINT,
+			in_partner_name NVARCHAR(512),
+			in_partner_type_id BIGINT,
+			in_region_id BIGINT,
+			in_value DECIMAL,
+			in_currency_id BIGINT,
+			in_created_user_id BIGINT,
+			in_intel_project_id NVARCHAR(255),
+			in_claim_id NVARCHAR(255),
+			in_comments NVARCHAR(3000),
+			in_company_name NVARCHAR(255),
+			in_company_address NVARCHAR(255),
+			in_invoice_number NVARCHAR(255)
+		), 
+		OUT out_result BIGINT
+	)
 	LANGUAGE SQLSCRIPT
-	SQL SECURITY INVOKER 
-	DEFAULT SCHEMA "MKTG_PLANNING_TOOL" AS
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+AS
 BEGIN
 
 	UPDATE T1
-        SET
-        T1.PARTNER_NAME = T2.in_partner_name,
-        T1.PARTNER_TYPE_ID = T2.in_partner_type_id,
-        T1.REGION_ID = T2.in_region_id,
-        T1.VALUE = T2.in_value,
-        T1.MODIFIED_USER_ID = T2.in_created_user_id,
-        T1.MODIFIED_DATE_TZ = CURRENT_TIMESTAMP,
-        T1.INTEL_PROJECT_ID = T2.in_intel_project_id,
-        T1.CLAIM_ID = T2.in_claim_id,
-        T1.COMMENTS = T2.in_comments,
-        T1.COMPANY_NAME = T2.in_company_name,
-        T1.COMPANY_ADDRESS = T2.in_company_address,
-        T1.INVOICE_NUMBER = T2.in_invoice_number,
-        T1.CURRENCY_ID = T2.IN_CURRENCY_ID
-        FROM HL6_PARTNER T1
-        INNER JOIN :partnerData T2 ON T1.HL6_PARTNER_ID = T2.in_partner_id;
-	
-	SELECT ::ROWCOUNT INTO out_result FROM DUMMY;
+SET T1.PARTNER_NAME = T2.in_partner_name, 
+		T1.PARTNER_TYPE_ID = T2.in_partner_type_id, 
+		T1.REGION_ID = T2.in_region_id, 
+		T1.VALUE = T2.in_value, 
+		T1.MODIFIED_USER_ID = T2.in_created_user_id, 
+		T1.MODIFIED_DATE_TZ = CURRENT_TIMESTAMP, 
+		T1.INTEL_PROJECT_ID = T2.in_intel_project_id, 
+		T1.CLAIM_ID = T2.in_claim_id, 
+		T1.COMMENTS = T2.in_comments, 
+		T1.COMPANY_NAME = T2.in_company_name, 
+		T1.COMPANY_ADDRESS = T2.in_company_address, 
+		T1.INVOICE_NUMBER = T2.in_invoice_number, 
+		T1.CURRENCY_ID = T2.IN_CURRENCY_ID
+FROM HL6_PARTNER AS T1
+		INNER JOIN :partnerData AS T2
+		ON T1.HL6_PARTNER_ID = T2.in_partner_id;
+	SELECT ::ROWCOUNT
+		INTO out_result
+		FROM DUMMY;
 END;

@@ -1,67 +1,89 @@
-PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL3_VERSION_BY_FILTER" (
-          in in_hl2_id bigint
-		, in in_user_id bigint
-		, in in_issa tinyint
-		, out out_result table (
-			  hl3_id bigint
-			, organization_acronym nvarchar(25)
-			, hl3_description nvarchar(255)
-			, hl3_fnc_budget_total decimal(19, 2)
-            , version integer
-            , created_date_tz timestamp
-            , created_user_id integer
-			, hl2_id bigint
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL3_VERSION_BY_FILTER"(
+		IN in_hl2_id BIGINT, 
+		IN in_user_id BIGINT, 
+		IN in_issa TINYINT, 
+		OUT out_result TABLE (
+			hl3_id BIGINT,
+			organization_acronym NVARCHAR(25),
+			hl3_description NVARCHAR(255),
+			hl3_fnc_budget_total DECIMAL(19, 2),
+			version INTEGER,
+			created_date_tz TIMESTAMP,
+			created_user_id INTEGER,
+			hl2_id BIGINT
 		)
 	)
 	LANGUAGE SQLSCRIPT
 	SQL SECURITY INVOKER
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
-	AS
+AS
 BEGIN
-
-aux_hl3 =
-select
-  coalesce(hl3_version.hl3_id,hl3.hl3_id) as hl3_id
-, coalesce(upper(hl3_version.acronym), upper(hl3.acronym)) as organization_acronym
-, coalesce(hl3_version.hl3_description, hl3.hl3_description) as hl3_description
-, coalesce(hl3_version.hl3_fnc_budget_total, hl3.hl3_fnc_budget_total) as hl3_fnc_budget_total
-, coalesce(hl3_version.version, hl3.version) as version
-, coalesce(hl3_version.created_date_tz, hl3.created_date_tz) as created_date_tz
-, coalesce(hl3_version.created_user_id, hl3.created_user_id) as created_user_id
-, coalesce(hl3_version.hl2_id,hl3.hl2_id) as hl2_id
-from hl3
-left join hl3_version on hl3.hl3_id = hl3_version.hl3_id and hl3.deleted = 0 and hl3.enabled = 1
-where (hl3.version = 1 or hl3_version.version = 1) and hl3.hl2_id = in_hl2_id and hl3.deleted = 0 and hl3.enabled = 1;
-
-
-IF in_issa = 1 THEN
-out_result =
-        SELECT
-          T.hl3_id
-        , T.organization_acronym
-        , T.hl3_description
-        , T.hl3_fnc_budget_total
-        , T.version
-        , T.created_date_tz
-        , T.created_user_id
-        , T.hl2_id
-        FROM :aux_hl3 T
-        ORDER BY T.organization_acronym;
-
-ELSE
-    out_result =
-        SELECT
-          T.hl3_id
-        , T.organization_acronym
-        , T.hl3_description
-        , T.hl3_fnc_budget_total
-        , T.version
-        , T.created_date_tz
-        , T.created_user_id
-        , T.hl2_id
-        FROM :aux_hl3 T
-        INNER JOIN HL3_USER ON T.HL3_ID = HL3_USER.HL3_ID AND HL3_USER.USER_ID = in_user_id
-        ORDER BY T.organization_acronym;
-END IF;
-
+	aux_hl3 = SELECT coalesce(
+					hl3_version.hl3_id, 
+					hl3.hl3_id
+				) AS hl3_id, 
+				coalesce(
+					upper(hl3_version.acronym), 
+					upper(hl3.acronym)
+				) AS organization_acronym, 
+				coalesce(
+					hl3_version.hl3_description, 
+					hl3.hl3_description
+				) AS hl3_description, 
+				coalesce(
+					hl3_version.hl3_fnc_budget_total, 
+					hl3.hl3_fnc_budget_total
+				) AS hl3_fnc_budget_total, 
+				coalesce(
+					hl3_version.version, 
+					hl3.version
+				) AS version, 
+				coalesce(
+					hl3_version.created_date_tz, 
+					hl3.created_date_tz
+				) AS created_date_tz, 
+				coalesce(
+					hl3_version.created_user_id, 
+					hl3.created_user_id
+				) AS created_user_id, 
+				coalesce(
+					hl3_version.hl2_id, 
+					hl3.hl2_id
+				) AS hl2_id
+			FROM hl3
+				LEFT OUTER JOIN hl3_version
+				ON hl3.hl3_id = hl3_version.hl3_id
+					AND hl3.deleted = 0
+					AND hl3.enabled = 1
+			WHERE (hl3.version = 1
+					OR hl3_version.version = 1)
+				AND hl3.hl2_id = in_hl2_id
+				AND hl3.deleted = 0
+				AND hl3.enabled = 1;
+	IF (in_issa = 1) THEN
+		out_result = SELECT T.hl3_id, 
+					T.organization_acronym, 
+					T.hl3_description, 
+					T.hl3_fnc_budget_total, 
+					T.version, 
+					T.created_date_tz, 
+					T.created_user_id, 
+					T.hl2_id
+				FROM :aux_hl3 AS T
+				ORDER BY T.organization_acronym ASC;
+	ELSE
+		out_result = SELECT T.hl3_id, 
+					T.organization_acronym, 
+					T.hl3_description, 
+					T.hl3_fnc_budget_total, 
+					T.version, 
+					T.created_date_tz, 
+					T.created_user_id, 
+					T.hl2_id
+				FROM :aux_hl3 AS T
+					INNER JOIN HL3_USER
+					ON T.HL3_ID = HL3_USER.HL3_ID
+						AND HL3_USER.USER_ID = in_user_id
+				ORDER BY T.organization_acronym ASC;
+	END IF;
 END;

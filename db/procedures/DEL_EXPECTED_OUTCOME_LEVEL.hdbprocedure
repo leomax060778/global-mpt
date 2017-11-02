@@ -1,96 +1,31 @@
-PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::DEL_EXPECTED_OUTCOME_LEVEL" (
-	in in_expected_outcome_id bigint,
-	in in_hl_id integer,
-	in in_user_id bigint,
-	out out_result bigint)
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::DEL_EXPECTED_OUTCOME_LEVEL"(
+		IN in_expected_outcome_id BIGINT, 
+		IN in_hl_id INTEGER, 
+		IN in_user_id BIGINT, 
+		OUT out_result BIGINT
+	)
 	LANGUAGE SQLSCRIPT
 	SQL SECURITY INVOKER
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
-	AS
+AS
 BEGIN
+	DECLARE levelName NVARCHAR(255);
 
-    DECLARE levelName nvarchar(255);
-    levelName := '';
-
-    select description into levelName from hierarchy_level where hierarchy_level_id = in_hl_id;
-
-    IF levelName = 'HL2' THEN
-
-            UPDATE EXPECTED_OUTCOME_LEVEL
-            SET DELETED = 1
-            , ENABLED = 0
-            , modified_user_id = in_user_id
-            , modified_date_tz = CURRENT_TIMESTAMP
-            WHERE
-            --EXPECTED_OUTCOME_LEVEL_ID not in (SELECT EXPECTED_OUTCOME_LEVEL_ID from HL2_EXPECTED_OUTCOMES_DETAIL WHERE DELETED = 0 AND ENABLED = 1)
-            --AND
-            EXPECTED_OUTCOME_ID = in_expected_outcome_id
-            AND HIERARCHY_LEVEL_ID = in_hl_id;
-
-    ELSEIF levelName = 'HL3' THEN
-
-            UPDATE EXPECTED_OUTCOME_LEVEL
-            SET DELETED = 1
-            , ENABLED = 0
-            , modified_user_id = in_user_id
-            , modified_date_tz = CURRENT_TIMESTAMP
-            WHERE
-            --EXPECTED_OUTCOME_LEVEL_ID not in (SELECT EXPECTED_OUTCOME_LEVEL_ID from HL3_EXPECTED_OUTCOMES_DETAIL WHERE DELETED = 0 AND ENABLED = 1)
-            --AND
-            EXPECTED_OUTCOME_ID = in_expected_outcome_id
-            AND HIERARCHY_LEVEL_ID = in_hl_id;
-
-    ELSEIF levelName = 'HL1' THEN
-
-                UPDATE EXPECTED_OUTCOME_LEVEL
-                SET DELETED = 1
-                , ENABLED = 0
-                , modified_user_id = in_user_id
-                , modified_date_tz = CURRENT_TIMESTAMP
-                WHERE
-                --EXPECTED_OUTCOME_LEVEL_ID not in (SELECT EXPECTED_OUTCOME_LEVEL_ID from HL3_EXPECTED_OUTCOMES_DETAIL WHERE DELETED = 0 AND ENABLED = 1)
-                --AND
-                EXPECTED_OUTCOME_ID = in_expected_outcome_id
-                AND HIERARCHY_LEVEL_ID = in_hl_id;
-
-    ELSEIF levelName = 'HL4' THEN
-
-        UPDATE EXPECTED_OUTCOME_LEVEL
-        SET DELETED = 1
-        , ENABLED = 0
-        , modified_user_id = in_user_id
-        , modified_date_tz = CURRENT_TIMESTAMP
-        WHERE
-        --EXPECTED_OUTCOME_LEVEL_ID not in (SELECT OUTCOMES_ID from HL4_EXPECTED_OUTCOMES_DETAIL WHERE DELETED = 0 AND ENABLED = 1)
-        --AND
-        EXPECTED_OUTCOME_ID = in_expected_outcome_id
-        AND HIERARCHY_LEVEL_ID = in_hl_id;
-
-    ELSEIF levelName = 'HL5' THEN
-        UPDATE EXPECTED_OUTCOME_LEVEL
-            SET DELETED = 1
-            , ENABLED = 0
-            , modified_user_id = in_user_id
-            , modified_date_tz = CURRENT_TIMESTAMP
-            WHERE
-            --EXPECTED_OUTCOME_LEVEL_ID not in (SELECT OUTCOMES_ID from HL5_EXPECTED_OUTCOMES_DETAIL WHERE DELETED = 0 AND ENABLED = 1)
-            --AND
-            EXPECTED_OUTCOME_ID = in_expected_outcome_id
-            AND HIERARCHY_LEVEL_ID = in_hl_id;
-
-    ELSEIF levelName = 'HL6' THEN
-        UPDATE EXPECTED_OUTCOME_LEVEL
-            SET DELETED = 1
-            , ENABLED = 0
-            , modified_user_id = in_user_id
-            , modified_date_tz = CURRENT_TIMESTAMP
-            WHERE
-            --EXPECTED_OUTCOME_LEVEL_ID not in (SELECT OUTCOMES_ID from HL6_EXPECTED_OUTCOMES_DETAIL WHERE DELETED = 0 AND ENABLED = 1)
-            --AND
-            EXPECTED_OUTCOME_ID = in_expected_outcome_id
-            AND HIERARCHY_LEVEL_ID = in_hl_id;
-
-    END IF;
-		SELECT ::ROWCOUNT INTO out_result FROM DUMMY;
-
+	levelName := '';
+	SELECT description
+		INTO levelName
+		FROM hierarchy_level
+		WHERE hierarchy_level_id = in_hl_id;
+	IF (levelName = 'HL2') THEN
+		UPDATE EXPECTED_OUTCOME_LEVEL
+SET DELETED = 1, 
+			ENABLED = 0, 
+			modified_user_id = in_user_id, 
+			modified_date_tz = CURRENT_TIMESTAMP
+WHERE EXPECTED_OUTCOME_ID = in_expected_outcome_id
+			AND HIERARCHY_LEVEL_ID = in_hl_id;
+	ELSEIF (levelName = 'HL3') THEN	ELSEIF (levelName = 'HL1') THEN	ELSEIF (levelName = 'HL4') THEN	ELSEIF (levelName = 'HL5') THEN	ELSEIF (levelName = 'HL6') THEN	END IF;
+	SELECT ::ROWCOUNT
+		INTO out_result
+		FROM DUMMY;
 END;

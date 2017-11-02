@@ -1,12 +1,16 @@
-PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_CATEGORY_COUNT_BY_HL_ID" (
-	IN in_hl_id bigint,
-	OUT out_hl_category int
-	) 
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_CATEGORY_COUNT_BY_HL_ID"(
+		IN in_hl_id BIGINT, 
+		OUT out_hl_category INT
+	)
 	LANGUAGE SQLSCRIPT
-	SQL SECURITY INVOKER 
-	DEFAULT SCHEMA "MKTG_PLANNING_TOOL" AS
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+AS
 BEGIN
-	SELECT COUNT(DISTINCT category_id) into out_hl_category FROM category 
-	where hierarchy_level_id = in_hl_id
-	AND deleted = 0 and enabled = 1;
+	SELECT COUNT(category_id)
+		INTO out_hl_category
+		FROM category
+		WHERE hierarchy_level_id = in_hl_id
+			AND deleted = 0
+			AND enabled = 1;
 END;

@@ -8,7 +8,6 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::DEL_ROUTE_TO_MAR
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
 	AS
 BEGIN
-
 	UPDATE ROUTE_TO_MARKET SET
 		enabled = 0,
 		deleted = 1,

@@ -24,7 +24,6 @@ BEGIN
 	va_total_budget := 0;
 	va_remaining_budget := 0;
 	
-	
 	va_intermidate = SELECT COUNT(hl4.hl4_id) as numL4, hl3.hl3_id
 	FROM HL4 hl4
     INNER JOIN HL3 hl3 ON hl3.hl3_id=hl4.hl3_id AND hl3.enabled=1 AND hl3.deleted=0

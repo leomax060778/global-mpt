@@ -1,30 +1,30 @@
-PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::UPD_HL6_CHANGED_FIELDS" (
-IN CRM_BINDING_TABLE TABLE ( in_hl6_crm_binding_id BIGINT,
-         in_hl6_id BIGINT,
-         in_column_name NVARCHAR(255),
-         in_changed TINYINT,
-         in_user_id BIGINT,
-         in_display_name NVARCHAR(255)),
-OUT out_result BIGINT
-) 
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::UPD_HL6_CHANGED_FIELDS"(
+		IN CRM_BINDING_TABLE TABLE (
+			in_hl6_crm_binding_id BIGINT,
+			in_hl6_id BIGINT,
+			in_column_name NVARCHAR(255),
+			in_changed TINYINT,
+			in_user_id BIGINT,
+			in_display_name NVARCHAR(255)
+		), 
+		OUT out_result BIGINT
+	)
 	LANGUAGE SQLSCRIPT
-	SQL SECURITY INVOKER 
-	DEFAULT SCHEMA "MKTG_PLANNING_TOOL" AS
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+AS
 BEGIN
-	UPDATE HL6_CRM_BINDING SET
-		
-		HL6_CRM_BINDING.hl6_id = T.in_hl6_id,
-		HL6_CRM_BINDING.column_name = T.in_column_name,
-		HL6_CRM_BINDING.column_changed = T.in_changed,
-		HL6_CRM_BINDING.display_name = T.in_display_name,
-		
-		HL6_CRM_BINDING.modified_user_id = T.in_user_id,
+	UPDATE HL6_CRM_BINDING
+SET HL6_CRM_BINDING.hl6_id = T.in_hl6_id, 
+		HL6_CRM_BINDING.column_name = T.in_column_name, 
+		HL6_CRM_BINDING.column_changed = T.in_changed, 
+		HL6_CRM_BINDING.display_name = T.in_display_name, 
+		HL6_CRM_BINDING.modified_user_id = T.in_user_id, 
 		HL6_CRM_BINDING.modified_date_tz = CURRENT_TIMESTAMP
-
-		FROM HL6_CRM_BINDING
-		INNER JOIN :CRM_BINDING_TABLE T ON HL6_CRM_BINDING.hl6_crm_binding_id = T.in_hl6_crm_binding_id;
-
-		
-        
-        SELECT ::ROWCOUNT INTO out_result FROM DUMMY;
+FROM HL6_CRM_BINDING
+		INNER JOIN :CRM_BINDING_TABLE AS T
+		ON HL6_CRM_BINDING.hl6_crm_binding_id = T.in_hl6_crm_binding_id;
+	SELECT ::ROWCOUNT
+		INTO out_result
+		FROM DUMMY;
 END;

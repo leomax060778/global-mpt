@@ -1,22 +1,20 @@
-PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::DEL_CATEGORY" (
-	IN in_category_id BIGINT,
-	IN in_user_id BIGINT,
-	OUT out_result BIGINT) 
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::DEL_CATEGORY"(
+		IN in_category_id BIGINT, 
+		IN in_user_id BIGINT, 
+		OUT out_result BIGINT
+	)
 	LANGUAGE SQLSCRIPT
-	SQL SECURITY INVOKER 
+	SQL SECURITY INVOKER
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
-	AS
+AS
 BEGIN
-/***************************** 
-	Write your procedure logic 
- *****************************/
 	UPDATE category
-		SET category.deleted = 1,
-			category.modified_user_id = in_user_id,
-			category.modified_date_tz = CURRENT_TIMESTAMP
-		FROM "MKTG_PLANNING_TOOL"."CATEGORY" category
-		WHERE category_id = in_category_id;
-		
-		SELECT ::ROWCOUNT INTO out_result FROM DUMMY;
-	
+SET category.deleted = 1, 
+		category.modified_user_id = in_user_id, 
+		category.modified_date_tz = CURRENT_TIMESTAMP
+FROM "MKTG_PLANNING_TOOL"."CATEGORY" AS category
+WHERE category_id = in_category_id;
+	SELECT ::ROWCOUNT
+		INTO out_result
+		FROM DUMMY;
 END;

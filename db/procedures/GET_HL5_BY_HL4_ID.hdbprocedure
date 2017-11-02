@@ -19,7 +19,7 @@ SQL SECURITY INVOKER
 DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
 AS
 BEGIN
-	
+
 va_intermidate = SELECT
         hl5.hl5_ID AS HL5_ID
 	    ,

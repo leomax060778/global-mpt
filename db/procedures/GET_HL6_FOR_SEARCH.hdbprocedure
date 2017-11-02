@@ -22,7 +22,6 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL6_FOR_SEAR
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
 	AS
 BEGIN
-
 IF in_isSA = 1 THEN
 	VAR_OUT_RESULT = SELECT DISTINCT HL6.hl6_id as id
 		, HL6.hl5_id as parent_id

@@ -1,20 +1,20 @@
-PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::DEL_INTERLOCK_SUBREGION_BY_IL_ID" (
-	IN in_il_id BIGINT,
-	IN in_user_id BIGINT,
-	OUT out_result BIGINT) 
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::DEL_INTERLOCK_SUBREGION_BY_IL_ID"(
+		IN in_il_id BIGINT, 
+		IN in_user_id BIGINT, 
+		OUT out_result BIGINT
+	)
 	LANGUAGE SQLSCRIPT
-	SQL SECURITY INVOKER 
+	SQL SECURITY INVOKER
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
-	AS
+AS
 BEGIN
-
-		UPDATE INTERLOCK_REQUEST_SUBREGION
-		SET deleted = 1,
-		enabled = 0,
-			modified_user_id = in_user_id,
-			modified_date_tz = CURRENT_TIMESTAMP
-		WHERE interlock_request_id = in_il_id;
-		
-		SELECT ::ROWCOUNT INTO out_result FROM DUMMY;
-
+	UPDATE INTERLOCK_REQUEST_SUBREGION
+SET deleted = 1, 
+		enabled = 0, 
+		modified_user_id = in_user_id, 
+		modified_date_tz = CURRENT_TIMESTAMP
+WHERE interlock_request_id = in_il_id;
+	SELECT ::ROWCOUNT
+		INTO out_result
+		FROM DUMMY;
 END;

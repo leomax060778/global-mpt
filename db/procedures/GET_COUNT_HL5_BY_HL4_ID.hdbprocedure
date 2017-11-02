@@ -1,11 +1,16 @@
-PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_COUNT_HL5_BY_HL4_ID" (
-		IN in_hl4_id bigint,
-		OUT out_total_hl5 int
-	) 
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_COUNT_HL5_BY_HL4_ID"(
+		IN in_hl4_id BIGINT, 
+		OUT out_total_hl5 INT
+	)
 	LANGUAGE SQLSCRIPT
-	SQL SECURITY INVOKER 
-	DEFAULT SCHEMA "MKTG_PLANNING_TOOL" AS
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+AS
 BEGIN
-	SELECT COUNT(DISTINCT HL5.HL5_ID) INTO out_total_hl5 FROM HL5
-	WHERE HL5.HL4_ID = in_hl4_id AND hl5.enabled=1 AND hl5.deleted=0;
+	SELECT COUNT(HL5.HL5_ID)
+		INTO out_total_hl5
+		FROM HL5
+		WHERE HL5.HL4_ID = in_hl4_id
+			AND hl5.enabled = 1
+			AND hl5.deleted = 0;
 END;

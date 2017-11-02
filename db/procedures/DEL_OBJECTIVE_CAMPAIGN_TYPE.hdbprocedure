@@ -1,15 +1,17 @@
-PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::DEL_OBJECTIVE_CAMPAIGN_TYPE" (
-	IN in_objective_id bigint,
-	IN in_campaign_type_id bigint,
-	OUT out_result bigint
-) 
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::DEL_OBJECTIVE_CAMPAIGN_TYPE"(
+		IN in_objective_id BIGINT, 
+		IN in_campaign_type_id BIGINT, 
+		OUT out_result BIGINT
+	)
 	LANGUAGE SQLSCRIPT
-	SQL SECURITY INVOKER 
-	DEFAULT SCHEMA "MKTG_PLANNING_TOOL" AS
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+AS
 BEGIN
- 	DELETE FROM "MKTG_PLANNING_TOOL"."OBJECTIVE_CAMPAIGN_TYPE_SUBTYPE"
- 	WHERE objective_id = in_objective_id AND campaign_type_id = in_campaign_type_id;
-
-	SELECT ::ROWCOUNT INTO out_result FROM DUMMY;
-
+	DELETE FROM "MKTG_PLANNING_TOOL"."OBJECTIVE_CAMPAIGN_TYPE_SUBTYPE"
+	WHERE objective_id = in_objective_id
+		AND campaign_type_id = in_campaign_type_id;
+	SELECT ::ROWCOUNT
+		INTO out_result
+		FROM DUMMY;
 END;

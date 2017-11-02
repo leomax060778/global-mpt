@@ -1,17 +1,19 @@
-PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_ALL_PERMISSION" ( 
-	OUT out_result TABLE(PERMISSION_ID bigint, NAME nvarchar(255))
-) 
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_ALL_PERMISSION"(
+		OUT out_result TABLE (
+			PERMISSION_ID BIGINT,
+			NAME NVARCHAR(255)
+		)
+	)
 	LANGUAGE SQLSCRIPT
-	SQL SECURITY INVOKER 
+	SQL SECURITY INVOKER
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
-	READS SQL DATA AS
+	READS SQL DATA
+AS
 BEGIN
-/***************************** 
-	Write your procedure logic 
- *****************************/
-  out_result = SELECT PERMISSION_ID, NAME
- 		FROM "PERMISSION" 
- 		WHERE ENABLED = 1 AND
- 		DELETED = 0
- 		ORDER BY NAME;
+	out_result = SELECT PERMISSION_ID, 
+				NAME
+			FROM "PERMISSION"
+			WHERE ENABLED = 1
+				AND DELETED = 0
+			ORDER BY NAME ASC;
 END;

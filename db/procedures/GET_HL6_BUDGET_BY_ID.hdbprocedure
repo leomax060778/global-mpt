@@ -1,23 +1,23 @@
-PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL6_BUDGET_BY_ID" ( 
-in in_hl6_id  bigint
-,OUT out_result TABLE (
-hl6_budget_id bigint,
-organization_id bigint,
-percentage decimal(19, 6),
-organization_type tinyint
-)
-)
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL6_BUDGET_BY_ID"(
+		IN in_hl6_id BIGINT, 
+		OUT out_result TABLE (
+			hl6_budget_id BIGINT,
+			organization_id BIGINT,
+			percentage DECIMAL(19, 6),
+			organization_type TINYINT
+		)
+	)
 	LANGUAGE SQLSCRIPT
 	SQL SECURITY INVOKER
-	DEFAULT SCHEMA "MKTG_PLANNING_TOOL" AS
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+AS
 BEGIN
-out_result =
-	select
-		hl6_budget_id,
-	    organization_id,
-	    percentage,
-	    organization_type
-	from hl6_budget
-	where hl6_id = in_hl6_id
-	and enabled = 1 and deleted = 0;
+	out_result = SELECT hl6_budget_id, 
+				organization_id, 
+				percentage, 
+				organization_type
+			FROM hl6_budget
+			WHERE hl6_id = in_hl6_id
+				AND enabled = 1
+				AND deleted = 0;
 END;

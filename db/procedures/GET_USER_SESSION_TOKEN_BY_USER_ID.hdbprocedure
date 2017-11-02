@@ -7,6 +7,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_USER_SESSION
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
 	READS SQL DATA AS
 BEGIN
+
 /***************************** 
 	Write your procedure logic 
  *****************************/

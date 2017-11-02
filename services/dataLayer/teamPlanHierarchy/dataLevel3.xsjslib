@@ -29,8 +29,8 @@ function insertHl3(objHl3, userId) {
 	var parameters = {};
 	parameters.in_acronym = objHl3.IN_ACRONYM;
 	parameters.in_hl2_id = objHl3.IN_HL2_ID;
-	parameters.in_shopping_cart_approver = objHl3.IN_SHOPPING_CART_APPROVER;
-	parameters.in_cost_center = objHl3.IN_COST_CENTER;
+	parameters.in_shopping_cart_approver = objHl3.IN_SHOPPING_CART_APPROVER || null;
+	parameters.in_cost_center = objHl3.IN_COST_CENTER || null;
 	parameters.in_hl3_description = objHl3.IN_HL3_DESCRIPTION;
 	parameters.in_crm_id = null;
 	parameters.in_business_owner_id = objHl3.IN_BUSINESS_OWNER_ID;

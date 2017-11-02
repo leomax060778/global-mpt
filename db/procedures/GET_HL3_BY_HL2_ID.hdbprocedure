@@ -1,66 +1,69 @@
-PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL3_BY_HL2_ID" ( 
-	IN in_hl2_id BIGINT,
-	IN in_user_id BIGINT,
-	IN in_is_super_Admin TINYINT,
-	OUT out_result TABLE(
-							 HL3_ID BIGINT,
-                             HL3_BUDGET_TOTAL DECIMAL(19, 2),
-                             L3_BUDGET_PERCENTAGE DECIMAL(19, 2),
-                             HL3_BUDGET_REMAINING DECIMAL(19, 2),
-                             HL4_TOTAL_COUNT INTEGER,
-                             ACRONYM NVARCHAR(255),
-                             IS_LOCKED TINYINT,
-                             CATEGORY_NAME NVARCHAR(255),
-                             OPTION_NAME NVARCHAR(255),
-                             BUDGET_DISTRIBUTION_PERCENTAGE DECIMAL(19, 2),
-                             BUDGET_DISTRIBUTION_AMOUNT DECIMAL(19, 2),
-                             HL3_BUDGET_ALLOCATED DECIMAL(19, 2),
-                             HL3_DESCRIPTION NVARCHAR(255),
-                             VERSION INTEGER
-							 ),
-	OUT out_total_budget	DECIMAL(19, 2),
-	OUT out_remaining_budget	DECIMAL(19, 2)
-) 
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL3_BY_HL2_ID"(
+		IN in_hl2_id BIGINT, 
+		IN in_user_id BIGINT, 
+		IN in_is_super_Admin TINYINT, 
+		OUT out_result TABLE (
+			HL3_ID BIGINT,
+			HL3_BUDGET_TOTAL DECIMAL(19, 2),
+			L3_BUDGET_PERCENTAGE DECIMAL(19, 2),
+			HL3_BUDGET_REMAINING DECIMAL(19, 2),
+			HL4_TOTAL_COUNT INTEGER,
+			ACRONYM NVARCHAR(255),
+			IS_LOCKED TINYINT,
+			CATEGORY_NAME NVARCHAR(255),
+			OPTION_NAME NVARCHAR(255),
+			BUDGET_DISTRIBUTION_PERCENTAGE DECIMAL(19, 2),
+			BUDGET_DISTRIBUTION_AMOUNT DECIMAL(19, 2),
+			HL3_BUDGET_ALLOCATED DECIMAL(19, 2),
+			HL3_DESCRIPTION NVARCHAR(255),
+			VERSION INTEGER
+		), 
+		OUT out_total_budget DECIMAL(19, 2), 
+		OUT out_remaining_budget DECIMAL(19, 2)
+	)
 	LANGUAGE SQLSCRIPT
-	SQL SECURITY INVOKER 
+	SQL SECURITY INVOKER
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
-	READS SQL DATA AS
+	READS SQL DATA
+AS
 BEGIN
 	DECLARE va_total_allocated DECIMAL(19, 2);
+
 	va_total_allocated := 0;
-
-	out_result = SELECT SUMMARY.HL3_ID,
-                        SUMMARY.L3_BUDGET AS hl3_budget_total,
-                        SUMMARY.L3_BUDGET_PERCENTAGE,
-                        SUMMARY.L3_BUDGET_REMAINING AS hl3_budget_remaining,
-                        SUMMARY.TOTAL_OF_PRIORITIES AS hl4_total_count,
-                        SUMMARY.L3_ACRONYM AS ACRONYM,
-                        SUMMARY.IS_LOCKED,
-                        SUMMARY.CATEGORY_NAME,
-                        SUMMARY.OPTION_NAME,
-                        SUMMARY.BUDGET_DISTRIBUTION_PERCENTAGE,
-                        SUMMARY.BUDGET_DISTRIBUTION_AMOUNT,
-                        SUMMARY.HL3_BUDGET_ALLOCATED AS hl3_budget_allocated,
-                        SUMMARY.HL3_DESCRIPTION,
-                        SUMMARY.VERSION
-
-                        FROM  "_SYS_BIC"."mktgplanningtool.db.data.views/CV_HL3_BUDGET_DISTRIBUTION_SUMMARY" SUMMARY
-	WHERE SUMMARY.hl2_id = in_hl2_id
-	  AND SUMMARY.HL3_ID IN (SELECT HL3_ID FROM HL3_USER WHERE USER_ID = in_user_id OR in_is_super_Admin = 1)
-    ORDER BY SUMMARY.L3_ACRONYM;
-	
-
-	SELECT COALESCE(SUM(HL3.HL3_BUDGET_TOTAL),0)
-	INTO va_total_allocated
-	FROM (
-		SELECT DISTINCT HL3_ID, HL3_BUDGET_TOTAL FROM :out_result
-	) HL3;
-
+	out_result = SELECT SUMMARY.HL3_ID, 
+				SUMMARY.L3_BUDGET AS hl3_budget_total, 
+				SUMMARY.L3_BUDGET_PERCENTAGE, 
+				SUMMARY.L3_BUDGET_REMAINING AS hl3_budget_remaining, 
+				SUMMARY.TOTAL_OF_PRIORITIES AS hl4_total_count, 
+				SUMMARY.L3_ACRONYM AS ACRONYM, 
+				SUMMARY.IS_LOCKED, 
+				SUMMARY.CATEGORY_NAME, 
+				SUMMARY.OPTION_NAME, 
+				SUMMARY.BUDGET_DISTRIBUTION_PERCENTAGE, 
+				SUMMARY.BUDGET_DISTRIBUTION_AMOUNT, 
+				SUMMARY.HL3_BUDGET_ALLOCATED AS hl3_budget_allocated, 
+				SUMMARY.HL3_DESCRIPTION, 
+				SUMMARY.VERSION
+			FROM "_SYS_BIC"."mktgplanningtool.db.data.views/CV_HL3_BUDGET_DISTRIBUTION_SUMMARY" AS SUMMARY
+			WHERE SUMMARY.hl2_id = in_hl2_id
+				AND (SUMMARY.HL3_ID IN (SELECT HL3_ID
+						FROM HL3_USER
+						WHERE USER_ID = in_user_id
+							OR in_is_super_Admin = 1))
+			ORDER BY SUMMARY.L3_ACRONYM ASC;
+	SELECT COALESCE(
+				SUM(HL3.HL3_BUDGET_TOTAL), 
+				0
+			)
+		INTO va_total_allocated
+		FROM (
+						SELECT DISTINCT HL3_ID, 
+					HL3_BUDGET_TOTAL
+				FROM :out_result
+			) AS HL3;
 	out_total_budget := va_total_allocated;
-
-    SELECT HL2.HL2_BUDGET_TOTAL - va_total_allocated
-      INTO out_remaining_budget
-      FROM  HL2
-    WHERE HL2.HL2_ID = in_hl2_id;
-
+	SELECT HL2.HL2_BUDGET_TOTAL - va_total_allocated
+		INTO out_remaining_budget
+		FROM HL2
+		WHERE HL2.HL2_ID = in_hl2_id;
 END;

@@ -8,7 +8,6 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::DEL_VIEW" (
 BEGIN
 	declare myrowid integer;
 	myrowid := 0;
-
 	select count(*) into myrowid from views where schema_name = schemaname and view_name = viewname;
 
 	IF (:myrowid > 0 ) then

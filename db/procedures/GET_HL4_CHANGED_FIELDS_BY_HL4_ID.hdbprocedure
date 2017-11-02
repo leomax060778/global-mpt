@@ -1,13 +1,23 @@
-PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL4_CHANGED_FIELDS_BY_HL4_ID" (
-		IN in_hl4_id bigint,
-		OUT out_hl4_changed_fields TABLE (id bigint, column_name nvarchar(255), display_name nvarchar(255))
-	) 
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL4_CHANGED_FIELDS_BY_HL4_ID"(
+		IN in_hl4_id BIGINT, 
+		OUT out_hl4_changed_fields TABLE (
+			id BIGINT,
+			column_name NVARCHAR(255),
+			display_name NVARCHAR(255)
+		)
+	)
 	LANGUAGE SQLSCRIPT
-	SQL SECURITY INVOKER 
+	SQL SECURITY INVOKER
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
-	READS SQL DATA AS
+	READS SQL DATA
+AS
 BEGIN
-	out_hl4_changed_fields = SELECT hl4_crm_binding_id as id, column_name, display_name from HL4_CRM_BINDING
-							WHERE hl4_id = in_hl4_id AND column_changed = 1
-							AND deleted = 0 and enabled = 1;
+	out_hl4_changed_fields = SELECT hl4_crm_binding_id AS id, 
+				column_name, 
+				display_name
+			FROM HL4_CRM_BINDING
+			WHERE hl4_id = in_hl4_id
+				AND column_changed = 1
+				AND deleted = 0
+				AND enabled = 1;
 END;

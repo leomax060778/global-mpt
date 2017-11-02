@@ -1,27 +1,32 @@
-PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL5_BUDGET_BY_ID" (
-in in_hl5_id  bigint
-,OUT out_result TABLE (
-hl5_budget_id INTEGER,
-organization_id INTEGER,
-percentage decimal(19, 6),
-organization_type tinyint,
-organization_name nvarchar(255)
-)
-)
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL5_BUDGET_BY_ID"(
+		IN in_hl5_id BIGINT, 
+		OUT out_result TABLE (
+			hl5_budget_id INTEGER,
+			organization_id INTEGER,
+			percentage DECIMAL(19, 6),
+			organization_type TINYINT,
+			organization_name NVARCHAR(255)
+		)
+	)
 	LANGUAGE SQLSCRIPT
 	SQL SECURITY INVOKER
-	DEFAULT SCHEMA "MKTG_PLANNING_TOOL" AS
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+AS
 BEGIN
-out_result =
-	select
-		hl5_budget.hl5_budget_id,
-	    hl5_budget.organization_id,
-	    hl5_budget.percentage,
-	    hl5_budget.organization_type,
-	    IFNULL(region.region_name, hl2.organization_acronym) as organization_name
-	from hl5_budget
-	left join region on region.region_id = hl5_budget.organization_id
-	left join hl2 on hl2.hl2_id = hl5_budget.organization_id
-	where hl5_id = in_hl5_id
-	and hl5_budget.enabled = 1 and hl5_budget.deleted = 0;
+	out_result = SELECT hl5_budget.hl5_budget_id, 
+				hl5_budget.organization_id, 
+				hl5_budget.percentage, 
+				hl5_budget.organization_type, 
+				IFNULL(
+					region.region_name, 
+					hl2.organization_acronym
+				) AS organization_name
+			FROM hl5_budget
+				LEFT OUTER JOIN region
+				ON region.region_id = hl5_budget.organization_id
+				LEFT OUTER JOIN hl2
+				ON hl2.hl2_id = hl5_budget.organization_id
+			WHERE hl5_id = in_hl5_id
+				AND hl5_budget.enabled = 1
+				AND hl5_budget.deleted = 0;
 END;

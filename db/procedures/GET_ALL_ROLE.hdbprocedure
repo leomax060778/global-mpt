@@ -1,15 +1,18 @@
-PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_ALL_ROLE" ( 
-OUT out_result TABLE(ROLE_ID bigint, NAME nvarchar(25)))
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_ALL_ROLE"(
+		OUT out_result TABLE (
+			ROLE_ID BIGINT,
+			NAME NVARCHAR(25)
+		)
+	)
 	LANGUAGE SQLSCRIPT
-	SQL SECURITY INVOKER 
+	SQL SECURITY INVOKER
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
-	READS SQL DATA AS
+	READS SQL DATA
+AS
 BEGIN
-/***************************** 
-	Write your procedure logic 
- *****************************/
- out_result = SELECT ROLE_ID, NAME
-	FROM "ROLE"
- 	WHERE ENABLED = 1 AND
- 	DELETED = 0;
+	out_result = SELECT ROLE_ID, 
+				NAME
+			FROM "ROLE"
+			WHERE ENABLED = 1
+				AND DELETED = 0;
 END;

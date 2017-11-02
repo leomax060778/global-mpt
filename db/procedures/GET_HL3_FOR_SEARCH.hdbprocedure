@@ -23,7 +23,6 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL3_FOR_SEAR
 	AS
 BEGIN
 
-
 IF in_isSA = 1 THEN
 temp_out_result = SELECT DISTINCT HL3.hl3_id as id
 		, HL3.hl2_id as parent_id

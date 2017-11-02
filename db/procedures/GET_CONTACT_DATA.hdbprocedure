@@ -1,28 +1,31 @@
-PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_CONTACT_DATA" ( 
-		IN in_contact_type integer,
-		IN in_contact_type_id bigint,
-		OUT out_result TABLE (id BIGINT,
-								bmoLeads NVARCHAR(255),
-								employeeNumber NVARCHAR(255),
-								email NVARCHAR(255),
-								contactType INTEGER,
-								contactTypeId BIGINT
-								)
-	) 
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_CONTACT_DATA"(
+		IN in_contact_type INTEGER, 
+		IN in_contact_type_id BIGINT, 
+		OUT out_result TABLE (
+			id BIGINT,
+			bmoLeads NVARCHAR(255),
+			employeeNumber NVARCHAR(255),
+			email NVARCHAR(255),
+			contactType INTEGER,
+			contactTypeId BIGINT
+		)
+	)
 	LANGUAGE SQLSCRIPT
-	SQL SECURITY INVOKER 
+	SQL SECURITY INVOKER
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
-	READS SQL DATA AS
+	READS SQL DATA
+AS
 BEGIN
-	out_result = SELECT interlock_central_region_contact_data_id as id
-					,bmo_leads as bmoLeads
-					,employee_number as employeeNumber
-					,email
-					,contact_type as contactType
-					,contact_type_id as contactTypeId
-				FROM INTERLOCK_CENTRAL_REGION_CONTACT_DATA
-				WHERE enabled = 1 and deleted = 0
-				and contact_type = in_contact_type
+	out_result = SELECT interlock_central_region_contact_data_id AS id, 
+				bmo_leads AS bmoLeads, 
+				employee_number AS employeeNumber, 
+				email, 
+				contact_type AS contactType, 
+				contact_type_id AS contactTypeId
+			FROM INTERLOCK_CENTRAL_REGION_CONTACT_DATA
+			WHERE enabled = 1
+				AND deleted = 0
+				AND contact_type = in_contact_type
 				AND contact_type_id = in_contact_type_id
-				order by upper(bmo_leads);
+			ORDER BY upper(bmo_leads) ASC;
 END;

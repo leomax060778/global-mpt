@@ -1,20 +1,22 @@
-PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_ALL_HL6_REMAINING_BUDGET" (
-        IN in_hl5_id BIGINT,
-        IN in_total_budget DECIMAL(19, 6),
-        OUT out_result DECIMAL(19, 6)
-)
-LANGUAGE SQLSCRIPT
-SQL SECURITY INVOKER
-DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_ALL_HL6_REMAINING_BUDGET"(
+		IN in_hl5_id BIGINT, 
+		IN in_total_budget DECIMAL(19, 6), 
+		OUT out_result DECIMAL(19, 6)
+	)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
 AS
 BEGIN
 	DECLARE va_remaining_budget DECIMAL(19, 6);
-	va_remaining_budget := 0;
 
-	SELECT (hl5.budget - in_total_budget)
-	into va_remaining_budget 
-	FROM hl5
-	where hl5.hl5_id = in_hl5_id;
-	
-	out_result := ifnull(va_remaining_budget,0);
+	va_remaining_budget := 0;
+	SELECT hl5.budget - in_total_budget
+		INTO va_remaining_budget
+		FROM hl5
+		WHERE hl5.hl5_id = in_hl5_id;
+	out_result := ifnull(
+			va_remaining_budget, 
+			0
+		);
 END;

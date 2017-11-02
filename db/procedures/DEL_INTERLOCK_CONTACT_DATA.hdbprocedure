@@ -1,23 +1,20 @@
-PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::DEL_INTERLOCK_CONTACT_DATA" ( 
-IN in_interlock_request_id bigint
-,IN in_user_id bigint 
-,OUT out_result bigint
-) 
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::DEL_INTERLOCK_CONTACT_DATA"(
+		IN in_interlock_request_id BIGINT, 
+		IN in_user_id BIGINT, 
+		OUT out_result BIGINT
+	)
 	LANGUAGE SQLSCRIPT
-	SQL SECURITY INVOKER 
+	SQL SECURITY INVOKER
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
-	AS
+AS
 BEGIN
-
 	UPDATE INTERLOCK_CONTACT_DATA
-	SET deleted = 1
-		,enabled = 0
-		,modified_user_id = in_user_id
-		,modified_date_tz = CURRENT_TIMESTAMP
-    WHERE interlock_request_id = in_interlock_request_id;
-
-		
-   SELECT ::ROWCOUNT INTO out_result FROM DUMMY;
-
-
+SET deleted = 1, 
+		enabled = 0, 
+		modified_user_id = in_user_id, 
+		modified_date_tz = CURRENT_TIMESTAMP
+WHERE interlock_request_id = in_interlock_request_id;
+	SELECT ::ROWCOUNT
+		INTO out_result
+		FROM DUMMY;
 END;

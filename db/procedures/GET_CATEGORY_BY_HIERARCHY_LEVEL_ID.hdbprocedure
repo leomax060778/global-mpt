@@ -1,30 +1,37 @@
-PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_CATEGORY_BY_HIERARCHY_LEVEL_ID" ( 
-	IN in_hierarchy_level_id BIGINT,
-	OUT out_result TABLE (category_id integer, hierarchy_level_id integer,
-							measure_id integer, name nvarchar(60),
-							description nvarchar(255), single_option_only tinyint, in_processing_report tinyint)
-	) 
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_CATEGORY_BY_HIERARCHY_LEVEL_ID"(
+		IN in_hierarchy_level_id BIGINT, 
+		OUT out_result TABLE (
+			category_id INTEGER,
+			hierarchy_level_id INTEGER,
+			measure_id INTEGER,
+			name NVARCHAR(60),
+			description NVARCHAR(255),
+			single_option_only TINYINT,
+			in_processing_report TINYINT
+		)
+	)
 	LANGUAGE SQLSCRIPT
-	SQL SECURITY INVOKER 
+	SQL SECURITY INVOKER
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
-	READS SQL DATA AS
+	READS SQL DATA
+AS
 BEGIN
-	out_result =
-    select distinct(ac.allocation_category_id) as category_id
-    ,acol.hierarchy_level_id
-    ,ac.measure_id
-    ,ac.name
-    ,ac.description
-    ,ac.single_option_only
-    ,acol.in_processing_report
-    from allocation_category ac
-    inner join allocation_category_option_level acol on acol.allocation_category_id = ac.allocation_category_id
-    inner join hierarchy_level hl on hl.hierarchy_level_id = acol.hierarchy_level_id
-    where acol.hierarchy_level_id = in_hierarchy_level_id
-    and ac.enabled = 1
-    and ac.deleted = 0
-    and acol.enabled = 1
-    and acol.deleted = 0
-    order by upper(ac.name) asc;
-
+	out_result = SELECT DISTINCT ac.allocation_category_id AS category_id, 
+				acol.hierarchy_level_id, 
+				ac.measure_id, 
+				ac.name, 
+				ac.description, 
+				ac.single_option_only, 
+				acol.in_processing_report
+			FROM allocation_category AS ac
+				INNER JOIN allocation_category_option_level AS acol
+				ON acol.allocation_category_id = ac.allocation_category_id
+				INNER JOIN hierarchy_level AS hl
+				ON hl.hierarchy_level_id = acol.hierarchy_level_id
+			WHERE acol.hierarchy_level_id = in_hierarchy_level_id
+				AND ac.enabled = 1
+				AND ac.deleted = 0
+				AND acol.enabled = 1
+				AND acol.deleted = 0
+			ORDER BY upper(ac.name) ASC;
 END;

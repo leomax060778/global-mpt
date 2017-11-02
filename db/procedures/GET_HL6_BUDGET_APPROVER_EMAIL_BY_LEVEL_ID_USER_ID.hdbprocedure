@@ -1,71 +1,70 @@
-PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL6_BUDGET_APPROVER_EMAIL_BY_LEVEL_ID_USER_ID" (
-	IN in_user_id bigint,
-	IN in_level_id bigint,
-	IN in_excluded_status_id bigint,
-	OUT out_result TABLE(
-						BUDGET_SPEND_REQUEST_ID BIGINT,
-						EMAIL NVARCHAR(255)
-						)
- ) 
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL6_BUDGET_APPROVER_EMAIL_BY_LEVEL_ID_USER_ID"(
+		IN in_user_id BIGINT, 
+		IN in_level_id BIGINT, 
+		IN in_excluded_status_id BIGINT, 
+		OUT out_result TABLE (
+			BUDGET_SPEND_REQUEST_ID BIGINT,
+			EMAIL NVARCHAR(255)
+		)
+	)
 	LANGUAGE SQLSCRIPT
 	SQL SECURITY INVOKER
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
 AS
 BEGIN
+	related_hl2_users = SELECT DISTINCT HL3.HL2_ID, 
+				U.EMAIL
+			FROM HL6 AS HL6
+				INNER JOIN HL5 AS HL5
+				ON HL6.hl5_id = HL5.hl5_id
+				INNER JOIN HL4 AS HL4
+				ON HL4.hl4_id = HL5.hl4_id
+				INNER JOIN HL3 AS HL3
+				ON HL4.hl3_id = HL3.hl3_id
+				INNER JOIN HL3_USER AS HL3_USER
+				ON HL3.HL3_ID = HL3_USER.HL3_ID
+				INNER JOIN USER AS U
+				ON U.USER_ID = in_user_id
+				INNER JOIN HL2_BUDGET_SPEND_APPROVER AS hl2BudgetSpendApprover
+				ON hl2BudgetSpendApprover.USER_ID = U.USER_ID
+				INNER JOIN USER_ROLE AS userRole
+				ON userRole.USER_ID = U.USER_ID
+			WHERE hl2BudgetSpendApprover.HL2_ID = HL3.HL2_ID
+				AND U.ENABLED = 1
+				AND U.DELETED = 0;
+	var_budget_approver_email = SELECT DISTINCT BSR.BUDGET_SPEND_REQUEST_ID, 
+				HL2_USERS.EMAIL
+			FROM BUDGET_SPEND_REQUEST AS BSR
+				INNER JOIN HL6 AS HL6
+				ON HL6.HL6_ID = BSR.HL_ID
+				INNER JOIN HL5 AS HL5
+				ON HL5.HL5_ID = HL6.HL5_ID
+				INNER JOIN HL4 AS hl4
+				ON hl4.hl4_id = HL5.hl4_id
+				INNER JOIN HL3
+				ON HL4.hl3_id = HL3.hl3_id
+				INNER JOIN HL3_USER
+				ON HL3.HL3_ID = HL3_USER.HL3_ID
+				INNER JOIN HL2
+				ON HL3.hl2_id = HL2.hl2_id
+				INNER JOIN HL1
+				ON HL2.hl1_id = HL1.hl1_id
+				INNER JOIN :related_hl2_users AS HL2_USERS
+				ON HL2_USERS.HL2_ID = HL2.HL2_ID
+			WHERE HL6.ENABLED = 1
+				AND HL6.DELETED = 0
+				AND BSR.BUDGET_SPEND_REQUEST_STATUS_ID != in_excluded_status_id
+				AND BSR.HIERARCHY_LEVEL_ID = in_level_id;
+	out_result = SELECT *
+			FROM :var_budget_approver_email
 
-	
-	related_hl2_users =	SELECT DISTINCT HL3.HL2_ID,
-	                                    U.EMAIL
-								FROM HL6 HL6
-								INNER JOIN  HL5 HL5
-								    ON HL6.hl5_id = HL5.hl5_id
-									INNER JOIN HL4 HL4
-										ON HL4.hl4_id = HL5.hl4_id 
-				            		INNER JOIN HL3 HL3
-				            			ON HL4.hl3_id = HL3.hl3_id 
-				            		INNER JOIN HL3_USER HL3_USER
-				            			ON HL3.HL3_ID = HL3_USER.HL3_ID
-				            		INNER JOIN USER U
-				            			ON U.USER_ID = in_user_id
-									INNER JOIN HL2_BUDGET_SPEND_APPROVER hl2BudgetSpendApprover
-										ON hl2BudgetSpendApprover.USER_ID = U.USER_ID
-									INNER JOIN USER_ROLE userRole 
-										ON userRole.USER_ID = U.USER_ID
-								WHERE hl2BudgetSpendApprover.HL2_ID = HL3.HL2_ID
-									AND U.ENABLED = 1 AND U.DELETED = 0;
+			UNION
 
-	var_budget_approver_email = SELECT DISTINCT	BSR.BUDGET_SPEND_REQUEST_ID,
-                                			            		    HL2_USERS.EMAIL
-                                				FROM BUDGET_SPEND_REQUEST BSR
-                                				    INNER JOIN HL6 HL6
-                                                        ON HL6.HL6_ID = BSR.HL_ID
-                                					INNER JOIN HL5 HL5
-                                						ON HL5.HL5_ID = HL6.HL5_ID
-                                					INNER JOIN HL4 hl4
-                                						ON hl4.hl4_id = HL5.hl4_id
-                                            		INNER JOIN HL3
-                                            			ON HL4.hl3_id = HL3.hl3_id
-                                            		INNER JOIN HL3_USER
-                                            			ON HL3.HL3_ID = HL3_USER.HL3_ID
-                                                	INNER JOIN HL2
-                                                		ON HL3.hl2_id = HL2.hl2_id
-                                                	INNER JOIN HL1
-                                                		ON HL2.hl1_id = HL1.hl1_id
-                                                	INNER JOIN :related_hl2_users HL2_USERS
-                                                		ON HL2_USERS.HL2_ID = HL2.HL2_ID
-                                				WHERE HL6.ENABLED = 1
-                                					AND HL6.DELETED = 0
-                                					AND BSR.BUDGET_SPEND_REQUEST_STATUS_ID != in_excluded_status_id
-                                					AND BSR.HIERARCHY_LEVEL_ID = in_level_id;
-								
-								
-	out_result = 	(select * from :var_budget_approver_email)
-					UNION
-					(SELECT DISTINCT BSR.BUDGET_SPEND_REQUEST_ID,
-                                        OBA.EMAIL
-                     				FROM :var_budget_approver_email BSR
-                     					INNER JOIN BUDGET_SPEND_REQUEST_OTHER_BUDGET_APPROVER BSR_OBA
-                     						ON BSR.BUDGET_SPEND_REQUEST_ID = BSR_OBA.BUDGET_SPEND_REQUEST_ID
-                                        INNER JOIN OTHER_BUDGET_APPROVER OBA
-                                            ON OBA.OTHER_BUDGET_APPROVER_ID = BSR_OBA.OTHER_BUDGET_APPROVER_ID);
+				SELECT DISTINCT BSR.BUDGET_SPEND_REQUEST_ID, 
+				OBA.EMAIL
+			FROM :var_budget_approver_email AS BSR
+				INNER JOIN BUDGET_SPEND_REQUEST_OTHER_BUDGET_APPROVER AS BSR_OBA
+				ON BSR.BUDGET_SPEND_REQUEST_ID = BSR_OBA.BUDGET_SPEND_REQUEST_ID
+				INNER JOIN OTHER_BUDGET_APPROVER AS OBA
+				ON OBA.OTHER_BUDGET_APPROVER_ID = BSR_OBA.OTHER_BUDGET_APPROVER_ID;
 END;

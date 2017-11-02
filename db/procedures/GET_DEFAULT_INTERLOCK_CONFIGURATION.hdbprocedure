@@ -1,35 +1,31 @@
-PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_DEFAULT_INTERLOCK_CONFIGURATION" (
-	OUT out_result TABLE (
-	                      ORIGIN_TYPE NVARCHAR(255),
-	                      INTERLOCK_DEFAULT_CONFIGURATION_ID INTEGER,
-                          INTERLOCK_REQUEST_ORIGIN_ID BIGINT,
-						  ENTITY_ID_FROM BIGINT,
-						  ENTITY_ID_TO BIGINT,
-						  ORGANIZATION_TYPE_FROM BIGINT,
-						  ORGANIZATION_TYPE_TO BIGINT,
-						  ENABLED TINYINT
-						)
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_DEFAULT_INTERLOCK_CONFIGURATION"(
+		OUT out_result TABLE (
+			ORIGIN_TYPE NVARCHAR(255),
+			INTERLOCK_DEFAULT_CONFIGURATION_ID INTEGER,
+			INTERLOCK_REQUEST_ORIGIN_ID BIGINT,
+			ENTITY_ID_FROM BIGINT,
+			ENTITY_ID_TO BIGINT,
+			ORGANIZATION_TYPE_FROM BIGINT,
+			ORGANIZATION_TYPE_TO BIGINT,
+			ENABLED TINYINT
+		)
 	)
 	LANGUAGE SQLSCRIPT
 	SQL SECURITY INVOKER
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
-	READS SQL DATA AS
+	READS SQL DATA
+AS
 BEGIN
-
-			out_result =
-
-			SELECT iro.NAME as ORIGIN_TYPE,
-			       idc.INTERLOCK_DEFAULT_CONFIGURATION_ID,
-			       idc.INTERLOCK_REQUEST_ORIGIN_ID,
-				   idc.ENTITY_ID_FROM,
-				   idc.ENTITY_ID_TO,
-				   idc.ORGANIZATION_TYPE_FROM,
-				   idc.ORGANIZATION_TYPE_TO,
-				   idc.ENABLED
-			FROM INTERLOCK_DEFAULT_CONFIGURATION idc
-			JOIN interlock_request_origin iro on iro.interlock_request_origin_id = idc.interlock_request_origin_id
-
-			where idc.deleted = 0;
-
-
+	out_result = SELECT iro.NAME AS ORIGIN_TYPE, 
+				idc.INTERLOCK_DEFAULT_CONFIGURATION_ID, 
+				idc.INTERLOCK_REQUEST_ORIGIN_ID, 
+				idc.ENTITY_ID_FROM, 
+				idc.ENTITY_ID_TO, 
+				idc.ORGANIZATION_TYPE_FROM, 
+				idc.ORGANIZATION_TYPE_TO, 
+				idc.ENABLED
+			FROM INTERLOCK_DEFAULT_CONFIGURATION AS idc
+				INNER JOIN interlock_request_origin AS iro
+				ON iro.interlock_request_origin_id = idc.interlock_request_origin_id
+			WHERE idc.deleted = 0;
 END;

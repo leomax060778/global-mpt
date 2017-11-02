@@ -1,22 +1,26 @@
-PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_ASSIGNED_OPTION_BY_EXPECTED_OUTCOME_AND_LEVEL_ID" (
-      IN in_expected_outcome_id bigint
-    , IN in_hierarchy_level_id bigint
-	, OUT out_result TABLE
-	(expected_outcome_option_id bigint
-	, name nvarchar(255))
- 	)
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_ASSIGNED_OPTION_BY_EXPECTED_OUTCOME_AND_LEVEL_ID"(
+		IN in_expected_outcome_id BIGINT, 
+		IN in_hierarchy_level_id BIGINT, 
+		OUT out_result TABLE (
+			expected_outcome_option_id BIGINT,
+			name NVARCHAR(255)
+		)
+	)
 	LANGUAGE SQLSCRIPT
 	SQL SECURITY INVOKER
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
-	READS SQL DATA AS
+	READS SQL DATA
+AS
 BEGIN
-
-		out_result =
-        select eoo.expected_outcome_option_id, eoo.name
-        from expected_outcome_option eoo
-        inner join expected_outcome_level eol on eol.expected_outcome_option_id = eoo.expected_outcome_option_id
-        where eol.hierarchy_level_id = in_hierarchy_level_id
-        and eoo.enabled = 1 and eoo.deleted = 0
-        and eol.enabled = 1 and eol.deleted = 0
-        and eol.expected_outcome_id = in_expected_outcome_id;
+	out_result = SELECT eoo.expected_outcome_option_id, 
+				eoo.name
+			FROM expected_outcome_option AS eoo
+				INNER JOIN expected_outcome_level AS eol
+				ON eol.expected_outcome_option_id = eoo.expected_outcome_option_id
+			WHERE eol.hierarchy_level_id = in_hierarchy_level_id
+				AND eoo.enabled = 1
+				AND eoo.deleted = 0
+				AND eol.enabled = 1
+				AND eol.deleted = 0
+				AND eol.expected_outcome_id = in_expected_outcome_id;
 END;

@@ -1,19 +1,20 @@
-PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::UPD_IMPORT_HL" (
-	in in_import_id bigint,
-	in in_user_id bigint,
-	out out_result integer
-)
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::UPD_IMPORT_HL"(
+		IN in_import_id BIGINT, 
+		IN in_user_id BIGINT, 
+		OUT out_result INTEGER
+	)
 	LANGUAGE SQLSCRIPT
 	SQL SECURITY INVOKER
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
-	AS
+AS
 BEGIN
-
-    update import_hl
-    set deleted = 1
-    , enabled = 0
-    , modified_user_id = in_user_id
-    , modified_date_tz = current_timestamp
-    where import_id = in_import_id;
-	select ::rowcount into out_result from dummy;
+	UPDATE import_hl
+SET deleted = 1, 
+		enabled = 0, 
+		modified_user_id = in_user_id, 
+		modified_date_tz = current_timestamp
+WHERE import_id = in_import_id;
+	SELECT ::rowcount
+		INTO out_result
+		FROM dummy;
 END;

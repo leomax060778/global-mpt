@@ -1,41 +1,46 @@
-PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_ALL_MARKETING_ORGANIZATION_BY_HLID_LEVEL" (
-      in in_level bigint
-    , in in_hl_id bigint
-	, OUT out_result TABLE (SALES_ORGANIZATION_ID BIGINT,
-						  NAME NVARCHAR(255)
-						)
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_ALL_MARKETING_ORGANIZATION_BY_HLID_LEVEL"(
+		IN in_level BIGINT, 
+		IN in_hl_id BIGINT, 
+		OUT out_result TABLE (
+			SALES_ORGANIZATION_ID BIGINT,
+			NAME NVARCHAR(255)
+		)
 	)
 	LANGUAGE SQLSCRIPT
 	SQL SECURITY INVOKER
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
-	READS SQL DATA AS
+	READS SQL DATA
+AS
 BEGIN
-
-if (in_level = 2) then
-out_result =
-select
-	distinct so.SALES_ORGANIZATION_ID
-	,so.NAME
-	from SALE_ORGANIZATION so
-	inner join COST_CENTER cc on so.SALES_ORGANIZATION_ID = cc.SALE_ORGANIZATION_ID
-	inner join COST_CENTER_TEAMS cct on cct.COST_CENTER_ID = cc.COST_CENTER_ID
-	inner join hl4 on hl4.hl3_id = cct.hl3_id
-	where so.ENABLED = 1 AND so.DELETED = 0
-	and hl4.hl4_id = in_hl_id
-	ORDER BY upper(so.NAME) ASC;
-else
-    out_result =
-    select
-        distinct so.SALES_ORGANIZATION_ID
-        ,so.NAME
-        from SALE_ORGANIZATION so
-        inner join COST_CENTER cc on so.SALES_ORGANIZATION_ID = cc.SALE_ORGANIZATION_ID
-        inner join COST_CENTER_TEAMS cct on cct.COST_CENTER_ID = cc.COST_CENTER_ID
-        inner join hl4 on hl4.hl3_id = cct.hl3_id
-        inner join hl5 on hl5.hl4_id = hl4.hl4_id
-        where so.ENABLED = 1 AND so.DELETED = 0
-        and hl5.hl5_id = in_hl_id
-        ORDER BY upper(so.NAME) ASC;
-    end if;
-
+	IF (in_level = 2) THEN
+		out_result = SELECT DISTINCT so.SALES_ORGANIZATION_ID, 
+					so.NAME
+				FROM SALE_ORGANIZATION AS so
+					INNER JOIN COST_CENTER AS cc
+					ON so.SALES_ORGANIZATION_ID = cc.SALE_ORGANIZATION_ID
+					INNER JOIN COST_CENTER_TEAMS AS cct
+					ON cct.COST_CENTER_ID = cc.COST_CENTER_ID
+					INNER JOIN hl4
+					ON hl4.hl3_id = cct.hl3_id
+				WHERE so.ENABLED = 1
+					AND so.DELETED = 0
+					AND hl4.hl4_id = in_hl_id
+				ORDER BY upper(so.NAME) ASC;
+	ELSE
+		out_result = SELECT DISTINCT so.SALES_ORGANIZATION_ID, 
+					so.NAME
+				FROM SALE_ORGANIZATION AS so
+					INNER JOIN COST_CENTER AS cc
+					ON so.SALES_ORGANIZATION_ID = cc.SALE_ORGANIZATION_ID
+					INNER JOIN COST_CENTER_TEAMS AS cct
+					ON cct.COST_CENTER_ID = cc.COST_CENTER_ID
+					INNER JOIN hl4
+					ON hl4.hl3_id = cct.hl3_id
+					INNER JOIN hl5
+					ON hl5.hl4_id = hl4.hl4_id
+				WHERE so.ENABLED = 1
+					AND so.DELETED = 0
+					AND hl5.hl5_id = in_hl_id
+				ORDER BY upper(so.NAME) ASC;
+	END IF;
 END;

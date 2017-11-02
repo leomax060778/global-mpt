@@ -1,31 +1,30 @@
-PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL5_SALES_BY_HL5_ID_ORGANIZATION_ID_ORGANIZATION_TYPE"
-(
-in tSales TABLE(
-      in_hl_id INTEGER
-    , in_organization_id INTEGER
-    , in_organization_type tinyint
-    )
-    ,OUT out_result TABLE (
-        hl_sales_id INTEGER
-        ,organization_id INTEGER
-        ,organization_type_id tinyint
-        ,hl_id INTEGER
-    )
-)
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL5_SALES_BY_HL5_ID_ORGANIZATION_ID_ORGANIZATION_TYPE"(
+		IN tSales TABLE (
+			in_hl_id INTEGER,
+			in_organization_id INTEGER,
+			in_organization_type TINYINT
+		), 
+		OUT out_result TABLE (
+			hl_sales_id INTEGER,
+			organization_id INTEGER,
+			organization_type_id TINYINT,
+			hl_id INTEGER
+		)
+	)
 	LANGUAGE SQLSCRIPT
 	SQL SECURITY INVOKER
-	DEFAULT SCHEMA "MKTG_PLANNING_TOOL" AS
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+AS
 BEGIN
-out_result =
-	select
-		hl5_sales.hl5_sales_id as hl_sales_id,
-	    hl5_sales.organization_id,
-	    hl5_sales.organization_type as organization_type_id,
-	    hl5_sales.hl5_id as hl_id
-	from hl5_sales
-	inner join :tSales t on hl5_sales.organization_id =     t.in_organization_id
-	                    and hl5_sales.organization_type =   t.in_organization_type
-	                    and hl5_sales.hl5_id =              t.in_hl_id
-
-	where hl5_sales.enabled = 1 and hl5_sales.deleted = 0;
+	out_result = SELECT hl5_sales.hl5_sales_id AS hl_sales_id, 
+				hl5_sales.organization_id, 
+				hl5_sales.organization_type AS organization_type_id, 
+				hl5_sales.hl5_id AS hl_id
+			FROM hl5_sales
+				INNER JOIN :tSales AS t
+				ON hl5_sales.organization_id = t.in_organization_id
+					AND hl5_sales.organization_type = t.in_organization_type
+					AND hl5_sales.hl5_id = t.in_hl_id
+			WHERE hl5_sales.enabled = 1
+				AND hl5_sales.deleted = 0;
 END;

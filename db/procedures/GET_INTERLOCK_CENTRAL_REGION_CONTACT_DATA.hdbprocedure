@@ -1,33 +1,20 @@
-PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_INTERLOCK_CENTRAL_REGION_CONTACT_DATA" ( 
---IN in_contact_type bigint
---, IN in_contact_type_id bigint,
- OUT out_result TABLE
-	(
---	INTERLOCK_CENTRAL_REGION_CONTACT_DATA_ID bigint
---	, BMO_LEADS nvarchar(255)
---	, EMPLOYEE_NUMBER nvarchar(255)
---	,
-	EMAIL nvarchar(255)
-	, CONTACT_TYPE bigint
-	, CONTACT_TYPE_ID bigint
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_INTERLOCK_CENTRAL_REGION_CONTACT_DATA"(
+		OUT out_result TABLE (
+			EMAIL NVARCHAR(255),
+			CONTACT_TYPE BIGINT,
+			CONTACT_TYPE_ID BIGINT
+		)
 	)
-) 
 	LANGUAGE SQLSCRIPT
-	SQL SECURITY INVOKER 
+	SQL SECURITY INVOKER
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
-	READS SQL DATA AS
+	READS SQL DATA
+AS
 BEGIN
-    out_result = select 
---	INTERLOCK_CENTRAL_REGION_CONTACT_DATA_ID,
---	BMO_LEADS,
---	EMPLOYEE_NUMBER,
-	EMAIL,
-	CONTACT_TYPE,
-	CONTACT_TYPE_ID
- 	from "MKTG_PLANNING_TOOL"."INTERLOCK_CENTRAL_REGION_CONTACT_DATA"
- 	WHERE 
--- 	   contact_type = in_contact_type
---       and contact_type_id = in_contact_type_id
---       and
-       enabled = 1 and deleted = 0;
+	out_result = SELECT EMAIL, 
+				CONTACT_TYPE, 
+				CONTACT_TYPE_ID
+			FROM "MKTG_PLANNING_TOOL"."INTERLOCK_CENTRAL_REGION_CONTACT_DATA"
+			WHERE enabled = 1
+				AND deleted = 0;
 END;

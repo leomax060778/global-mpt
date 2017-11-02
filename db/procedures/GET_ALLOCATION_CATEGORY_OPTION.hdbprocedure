@@ -1,21 +1,20 @@
-PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_ALLOCATION_CATEGORY_OPTION" (
-    IN in_hierarchy_level_id bigint,
-    IN in_option_id bigint,
-	OUT out_result TABLE (
-        CATEGORY_ID BIGINT
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_ALLOCATION_CATEGORY_OPTION"(
+		IN in_hierarchy_level_id BIGINT, 
+		IN in_option_id BIGINT, 
+		OUT out_result TABLE (
+			CATEGORY_ID BIGINT
+		)
 	)
- 	)
 	LANGUAGE SQLSCRIPT
 	SQL SECURITY INVOKER
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
-	READS SQL DATA AS
+	READS SQL DATA
+AS
 BEGIN
-
-		out_result =
-		 SELECT ACOL.ALLOCATION_CATEGORY_ID AS CATEGORY_ID
-		 FROM ALLOCATION_CATEGORY_OPTION_LEVEL ACOL
-		WHERE ACOL.hierarchy_level_id = in_hierarchy_level_id
-		    AND ACOL.ALLOCATION_OPTION_ID = in_option_id
-		    AND ACOL.ENABLED = 1 AND ACOL.DELETED = 0;
-
+	out_result = SELECT ACOL.ALLOCATION_CATEGORY_ID AS CATEGORY_ID
+			FROM ALLOCATION_CATEGORY_OPTION_LEVEL AS ACOL
+			WHERE ACOL.hierarchy_level_id = in_hierarchy_level_id
+				AND ACOL.ALLOCATION_OPTION_ID = in_option_id
+				AND ACOL.ENABLED = 1
+				AND ACOL.DELETED = 0;
 END;

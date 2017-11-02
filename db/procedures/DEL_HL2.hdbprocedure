@@ -7,7 +7,6 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::DEL_HL2" (
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
 	AS
 BEGIN
-
 		UPDATE HL2
 		SET deleted = 1,
 			enabled = 0,

@@ -1,15 +1,15 @@
-PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::DEL_HL5_HARD_BY_ID"
-(
-	in in_hl5_id bigint
-	, OUT out_result bigint
-)
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::DEL_HL5_HARD_BY_ID"(
+		IN in_hl5_id BIGINT, 
+		OUT out_result BIGINT
+	)
 	LANGUAGE SQLSCRIPT
 	SQL SECURITY INVOKER
-	DEFAULT SCHEMA "MKTG_PLANNING_TOOL" AS
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+AS
 BEGIN
-	delete from hl5
-	where hl5_id = in_hl5_id;
-
-	SELECT ::ROWCOUNT INTO out_result FROM DUMMY;
-
+	DELETE FROM hl5
+	WHERE hl5_id = in_hl5_id;
+	SELECT ::ROWCOUNT
+		INTO out_result
+		FROM DUMMY;
 END;

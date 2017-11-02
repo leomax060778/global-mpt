@@ -1,28 +1,19 @@
-PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_ATTACHMENT" (
- IN in_original_name nvarchar (255),
- IN in_saved_name nvarchar (255),
- IN in_attachment_size bigint,
- IN in_attachment_type nvarchar (255),
- IN in_created_user_id bigint,
- OUT out_result bigint
- ) 
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_ATTACHMENT"(
+		IN in_original_name NVARCHAR(255), 
+		IN in_saved_name NVARCHAR(255), 
+		IN in_attachment_size BIGINT, 
+		IN in_attachment_type NVARCHAR(255), 
+		IN in_created_user_id BIGINT, 
+		OUT out_result BIGINT
+	)
 	LANGUAGE SQLSCRIPT
-	SQL SECURITY INVOKER 
+	SQL SECURITY INVOKER
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
-	AS
+AS
 BEGIN
-   INSERT INTO "MKTG_PLANNING_TOOL"."ATTACHMENT" (	original_name, 
-   												saved_name, 
-   												created_user_id, 
-   												attachment_size, 
-   												attachment_type
-   											)
-    VALUES(	in_original_name, 
-    		in_saved_name, 
-    		in_created_user_id, 
-    		in_attachment_size, 
-    		in_attachment_type
-    		);
-   
-   SELECT TOP 1 CURRENT_IDENTITY_VALUE() INTO out_result FROM "MKTG_PLANNING_TOOL"."ATTACHMENT";
+	INSERT INTO "MKTG_PLANNING_TOOL"."ATTACHMENT"(original_name, saved_name, created_user_id, attachment_size, attachment_type) VALUES(in_original_name, in_saved_name, in_created_user_id, in_attachment_size, in_attachment_type);
+	SELECT TOP 1
+			 CURRENT_IDENTITY_VALUE()
+		INTO out_result
+		FROM "MKTG_PLANNING_TOOL"."ATTACHMENT";
 END;

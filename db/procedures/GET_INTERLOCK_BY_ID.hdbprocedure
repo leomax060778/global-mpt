@@ -32,6 +32,7 @@ IN in_interlock_request_id bigint
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
 	READS SQL DATA AS
 BEGIN
+
 	out_result = 
 					SELECT 
 					 IR.INTERLOCK_REQUEST_ID

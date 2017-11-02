@@ -1,19 +1,21 @@
-PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_ALL_RESOURCE" (
-	OUT out_result TABLE(RESOURCE_ID bigint, 
-						 NAME nvarchar(255),
-						 OBJECT_NAME nvarchar(255))
-) 
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_ALL_RESOURCE"(
+		OUT out_result TABLE (
+			RESOURCE_ID BIGINT,
+			NAME NVARCHAR(255),
+			OBJECT_NAME NVARCHAR(255)
+		)
+	)
 	LANGUAGE SQLSCRIPT
-	SQL SECURITY INVOKER 
+	SQL SECURITY INVOKER
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
-	READS SQL DATA AS
+	READS SQL DATA
+AS
 BEGIN
-/***************************** 
-	Write your procedure logic 
- *****************************/
-   out_result = SELECT RESOURCE_ID, NAME, OBJECT_NAME
- 		FROM "RESOURCE" 
- 		WHERE ENABLED = 1 AND
- 		DELETED = 0
- 		ORDER BY NAME;
+	out_result = SELECT RESOURCE_ID, 
+				NAME, 
+				OBJECT_NAME
+			FROM "RESOURCE"
+			WHERE ENABLED = 1
+				AND DELETED = 0
+			ORDER BY NAME ASC;
 END;

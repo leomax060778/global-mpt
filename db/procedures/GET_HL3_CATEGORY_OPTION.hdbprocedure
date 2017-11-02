@@ -1,84 +1,91 @@
-PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL3_CATEGORY_OPTION" (
-	IN in_hl_id BIGINT,
-	OUT out_result TABLE (
-	 category_id integer
-	, hl3_id integer
-	, category_name nvarchar(60)
-	, option_id integer
-    , option_name nvarchar(60)
-    , category_option_id integer
-    , category_option_level_id integer
-    , amount decimal(19,2)
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL3_CATEGORY_OPTION"(
+		IN in_hl_id BIGINT, 
+		OUT out_result TABLE (
+			category_id INTEGER,
+			hl3_id INTEGER,
+			category_name NVARCHAR(60),
+			option_id INTEGER,
+			option_name NVARCHAR(60),
+			category_option_id INTEGER,
+			category_option_level_id INTEGER,
+			amount DECIMAL(19, 2)
+		)
 	)
-) 
 	LANGUAGE SQLSCRIPT
-	SQL SECURITY INVOKER 
+	SQL SECURITY INVOKER
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
-	READS SQL DATA AS
+	READS SQL DATA
+AS
 BEGIN
-	va_hl3_category_option =
-	SELECT
-	 ac.allocation_category_id as category_id
-	, hl3CO.hl3_id
-	, ac.name as category_name
-	,ao.allocation_option_id as option_id
-    	, ao.name as option_name
-    	,hl3CO.hl3_category_option_id as category_option_id
-	, hl3CO.allocation_category_option_level_id as category_option_level_id
-	, hl3CO.amount
-	FROM hl3_category_option hl3CO
-	inner join allocation_category_option_level ACOL on hl3CO.allocation_category_option_level_id = ACOL.allocation_category_option_level_id
-	AND ACOL.enabled = 1 AND ACOL.deleted = 0
-	inner join allocation_option ao on acol.allocation_option_id = ao.allocation_option_id
-	inner join allocation_category ac on ACOL.allocation_category_id = ac.allocation_category_id
-	WHERE hl3_id = in_hl_id
-	  AND hl3CO.enabled = 1
-	  AND hl3CO.deleted = 0;
+	va_hl3_category_option = SELECT ac.allocation_category_id AS category_id, 
+				hl3CO.hl3_id, 
+				ac.name AS category_name, 
+				ao.allocation_option_id AS option_id, 
+				ao.name AS option_name, 
+				hl3CO.hl3_category_option_id AS category_option_id, 
+				hl3CO.allocation_category_option_level_id AS category_option_level_id, 
+				hl3CO.amount
+			FROM hl3_category_option AS hl3CO
+				INNER JOIN allocation_category_option_level AS ACOL
+				ON hl3CO.allocation_category_option_level_id = ACOL.allocation_category_option_level_id
+					AND ACOL.enabled = 1
+					AND ACOL.deleted = 0
+				INNER JOIN allocation_option AS ao
+				ON acol.allocation_option_id = ao.allocation_option_id
+				INNER JOIN allocation_category AS ac
+				ON ACOL.allocation_category_id = ac.allocation_category_id
+			WHERE hl3_id = in_hl_id
+				AND hl3CO.enabled = 1
+				AND hl3CO.deleted = 0;
+	va_category = SELECT ac.allocation_category_id AS category_id, 
+				in_hl_id AS HL3_ID, 
+				ac.name AS category_name, 
+				ao.allocation_option_id AS option_id, 
+				ao.name AS option_name, 
+				null AS category_option_id, 
+				ACOL.allocation_category_option_level_id AS category_option_level_id, 
+				0 AS amount
+			FROM allocation_category_option_level AS ACOL
+				INNER JOIN allocation_category AS ac
+				ON ACOL.allocation_category_id = ac.allocation_category_id
+				INNER JOIN allocation_option AS ao
+				ON acol.allocation_option_id = ao.allocation_option_id
+			WHERE (ACOL.allocation_category_option_level_id NOT IN (SELECT CATEGORY_OPTION_LEVEL_ID
+						FROM :va_hl3_category_option))
+				AND ACOL.hierarchy_level_id = 4
+				AND ACOL.enabled = 1
+				AND ACOL.deleted = 0;
+	out_result = SELECT CATEGORY_ID, 
+				HL3_ID, 
+				CATEGORY_NAME, 
+				OPTION_ID, 
+				OPTION_NAME, 
+				CATEGORY_OPTION_ID, 
+				CATEGORY_OPTION_LEVEL_ID, 
+				AMOUNT
+			FROM (
+								SELECT CATEGORY_ID, 
+						HL3_ID, 
+						CATEGORY_NAME, 
+						OPTION_ID, 
+						OPTION_NAME, 
+						CATEGORY_OPTION_ID, 
+						CATEGORY_OPTION_LEVEL_ID, 
+						AMOUNT
+					FROM :va_hl3_category_option
 
-	va_category = select ac.allocation_category_id as category_id
-                        , in_hl_id AS HL3_ID
-                        , ac.name as category_name
-                        , ao.allocation_option_id as option_id
-                        , ao.name as option_name
-                        , null as category_option_id
-                        , ACOL.allocation_category_option_level_id as category_option_level_id
-                        , 0 as amount
-	            from allocation_category_option_level ACOL
-                inner join allocation_category ac on ACOL.allocation_category_id = ac.allocation_category_id
-                inner join allocation_option ao on acol.allocation_option_id = ao.allocation_option_id
-                WHERE ACOL.allocation_category_option_level_id NOT IN (SELECT CATEGORY_OPTION_LEVEL_ID FROM :va_hl3_category_option)
-                    AND ACOL.hierarchy_level_id = 4
-                  AND ACOL.enabled = 1
-                  AND ACOL.deleted = 0;
+					UNION
 
-
-	 out_result = SELECT CATEGORY_ID
-                           , HL3_ID
-                           , CATEGORY_NAME
-                           , OPTION_ID
-                           , OPTION_NAME
-                           , CATEGORY_OPTION_ID
-                           , CATEGORY_OPTION_LEVEL_ID
-                           , AMOUNT
-                    FROM
-                    ((select CATEGORY_ID
-                            , HL3_ID
-                            , CATEGORY_NAME
-                            , OPTION_ID
-                            , OPTION_NAME
-                            , CATEGORY_OPTION_ID
-                            , CATEGORY_OPTION_LEVEL_ID
-                            , AMOUNT
-                    from :va_hl3_category_option)
-                    UNION
-                    (select CATEGORY_ID
-                           , HL3_ID
-                           , CATEGORY_NAME
-                           , OPTION_ID
-                           , OPTION_NAME
-                           , CATEGORY_OPTION_ID
-                           , CATEGORY_OPTION_LEVEL_ID
-                           , AMOUNT
-                     from :va_category))
-                     ORDER BY CATEGORY_NAME, OPTION_NAME;
+								SELECT CATEGORY_ID, 
+						HL3_ID, 
+						CATEGORY_NAME, 
+						OPTION_ID, 
+						OPTION_NAME, 
+						CATEGORY_OPTION_ID, 
+						CATEGORY_OPTION_LEVEL_ID, 
+						AMOUNT
+					FROM :va_category
+				)
+			ORDER BY CATEGORY_NAME ASC, 
+				OPTION_NAME ASC;
 END;

@@ -1,19 +1,20 @@
-PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_COST_CENTER" (
-  IN in_name NVARCHAR(255),
-  IN in_description NVARCHAR(255),
-  IN in_user_id BIGINT,
-  IN in_code NVARCHAR(255),
-  IN in_sales_organization_id BIGINT,
-  IN in_person_responsible NVARCHAR(10),
-  OUT out_cost_center_id BIGINT
- )
- LANGUAGE SQLSCRIPT
- SQL SECURITY INVOKER
- DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
- AS
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_COST_CENTER"(
+		IN in_name NVARCHAR(255), 
+		IN in_description NVARCHAR(255), 
+		IN in_user_id BIGINT, 
+		IN in_code NVARCHAR(255), 
+		IN in_sales_organization_id BIGINT, 
+		IN in_person_responsible NVARCHAR(10), 
+		OUT out_cost_center_id BIGINT
+	)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+AS
 BEGIN
- INSERT INTO COST_CENTER (NAME, DESCRIPTION, COST_CENTER_CODE, SALE_ORGANIZATION_ID, PERSON_RESPONSIBLE,created_user_id)
- VALUES (in_name, in_description, in_code, in_sales_organization_id,in_person_responsible, in_user_id);
- 
- SELECT TOP 1 CURRENT_IDENTITY_VALUE() INTO out_cost_center_id FROM "MKTG_PLANNING_TOOL"."COST_CENTER";
+	INSERT INTO COST_CENTER(NAME, DESCRIPTION, COST_CENTER_CODE, SALE_ORGANIZATION_ID, PERSON_RESPONSIBLE, created_user_id) VALUES(in_name, in_description, in_code, in_sales_organization_id, in_person_responsible, in_user_id);
+	SELECT TOP 1
+			 CURRENT_IDENTITY_VALUE()
+		INTO out_cost_center_id
+		FROM "MKTG_PLANNING_TOOL"."COST_CENTER";
 END;
