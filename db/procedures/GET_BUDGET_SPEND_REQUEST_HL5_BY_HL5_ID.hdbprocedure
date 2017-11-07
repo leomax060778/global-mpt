@@ -44,17 +44,15 @@ BEGIN
 									BSR_TYPE.DISPLAY_NAME AS BUDGET_SPEND_REQUEST_TYPE_DISPLAY_NAME,
 									HL5.HL5_ID,
 									BSR.AMOUNT AS BUDGET,
-									CONCAT(
 			                        CONCAT(
 			                            CONCAT(
 			                                CONCAT(
 			                                    CONCAT(
 			                                        CONCAT(
-			                                        HL1.ACRONYM, SUBSTRING(TO_NVARCHAR(BGY.BUDGET_YEAR), 3, 2)),
-			                                    '-'),
-			                                HL3.ACRONYM),
+			                                        HL2.ORGANIZATION_ACRONYM, SUBSTRING(TO_NVARCHAR(BGY.BUDGET_YEAR), 3, 2)),
 			                            '-'),
 			                        HL4.ACRONYM),
+			                        '-'), 
 			                     HL5.ACRONYM)
 			            		 AS HL5_PATH,
 			            		 BSRS.DISPLAY_NAME AS BUDGET_SPEND_REQUEST_STATUS_DISPLAY_NAME

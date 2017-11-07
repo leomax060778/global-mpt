@@ -77,6 +77,7 @@ var L3_CATEGORY_OPTION_NOT_VALID = "Option or User is not valid.";
 var L3_MSG_INITIATIVE_COULDNT_CHAGE_STATUS = "Couldn´t change INITIATIVE/CAMPAIGN status due to incomplete data. Please review Budget and Options information";
 var L3_CAMPAIGN_FORECASTING_KPIS_COMMENT = "Please enter a comment to explain expected outcomes as you didn't select any Campaign type.";
 var L3_NOT_IMPLEMENT_EXECUTION_LEVEL = "This PROGRAMS/CAMPAIGNS does not implement execution level.";
+var L4_ID_NOT_FOUND = "The HL4 ID could not be found.";
 
 var HL4_STATUS = {
     IN_PROGRESS: 1,
@@ -116,11 +117,20 @@ function getHl4(id) {
     var responseObj = {
         "results": result,
         "total_budget": spResult.out_total_budget,
-        "remaining_budget": spResult.out_remaining_budget
+        "remaining_budget": spResult.out_remaining_budget,
+        "out_total_allocated": spResult.out_total_allocated
     };
 
     responseObj.budget_year = budgetYear.getBudgetYearByLevelParent(4, id, true);
     return responseObj;
+}
+
+function getHL4CarryOverById(hl4Id, userId){
+    if (!hl4Id){
+        throw ErrorLib.getErrors().BadRequest("The HL4 ID could not be found.", "hl4Services/handleGet/getHl5", L4_ID_NOT_FOUND);
+    }
+
+    return dataHl4.getHL4CarryOverById(hl4Id);
 }
 
 function getParentRemainingBudgetByParentId(hl3Id) {
@@ -793,7 +803,7 @@ function getLevel4ByAcronym(acronym, hl2_id) {
 }
 
 function existsHl4inPlan(objHL4) {
-    var hl3 = dataHl3.getLevel3ById({IN_HL3_ID: objHL4.in_hl3_id});
+    var hl3 = dataHl3.getLevel3ById(objHL4.in_hl3_id);
     var hl4 = getLevel4ByAcronym(objHL4.in_acronym, hl3.HL2_ID);
     return !!(hl4.HL4_ID && Number(hl4.HL4_ID) !== Number(objHL4.in_hl4_id));
 }
@@ -813,7 +823,7 @@ function checkBudgetStatus(objHl3, hl4_id, new_hl4_budget) {
         objHl.IN_HL3_ID = Number(objHl3) ? objHl3 : objHl3.IN_HL3_ID;
         objHl.IN_HL4_ID = hl4_id;
 
-        var hl3 = dataHl3.getLevel3ById(objHl);
+        var hl3 = dataHl3.getLevel3ById(objHl.IN_HL3_ID);
 
         var hl3AllocatedBudget = dataHl3.getHl3AllocatedBudget(objHl.IN_HL3_ID, hl4_id);
         return (Number(hl3.HL3_FNC_BUDGET_TOTAL) - Number(hl3AllocatedBudget) - Number(new_hl4_budget)) >= 0 ? 1 : 0;

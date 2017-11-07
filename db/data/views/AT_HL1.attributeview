@@ -27,31 +27,27 @@
       <descriptions defaultDescription="REGION_ID"/>
       <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL1" columnName="REGION_ID"/>
     </attribute>
-    <attribute id="SUBREGION_ID" order="7" attributeHierarchyActive="false" displayAttribute="false">
-      <descriptions defaultDescription="SUBREGION_ID"/>
-      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL1" columnName="SUBREGION_ID"/>
-    </attribute>
-    <attribute id="CRT_RELATED" order="8" attributeHierarchyActive="false" displayAttribute="false">
+    <attribute id="CRT_RELATED" order="7" attributeHierarchyActive="false" displayAttribute="false">
       <descriptions defaultDescription="CRT_RELATED"/>
       <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL1" columnName="CRT_RELATED"/>
     </attribute>
-    <attribute id="IMPLEMENT_EXECUTION_LEVEL" order="9" attributeHierarchyActive="false" displayAttribute="false">
+    <attribute id="IMPLEMENT_EXECUTION_LEVEL" order="8" attributeHierarchyActive="false" displayAttribute="false">
       <descriptions defaultDescription="IMPLEMENT_EXECUTION_LEVEL"/>
       <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL1" columnName="IMPLEMENT_EXECUTION_LEVEL"/>
     </attribute>
-    <attribute id="TEAM_TYPE_ID" order="10" attributeHierarchyActive="false" displayAttribute="false">
+    <attribute id="TEAM_TYPE_ID" order="9" attributeHierarchyActive="false" displayAttribute="false">
       <descriptions defaultDescription="TEAM_TYPE_ID"/>
       <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL1" columnName="TEAM_TYPE_ID"/>
     </attribute>
-    <attribute id="ENABLED" order="11" attributeHierarchyActive="false" displayAttribute="false">
+    <attribute id="ENABLED" order="10" attributeHierarchyActive="false" displayAttribute="false">
       <descriptions defaultDescription="ENABLED"/>
       <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL1" columnName="ENABLED"/>
     </attribute>
-    <attribute id="DELETED" order="12" attributeHierarchyActive="false" displayAttribute="false">
+    <attribute id="DELETED" order="11" attributeHierarchyActive="false" displayAttribute="false">
       <descriptions defaultDescription="DELETED"/>
       <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL1" columnName="DELETED"/>
     </attribute>
-    <attribute id="VERSION" order="13" attributeHierarchyActive="false" displayAttribute="false">
+    <attribute id="VERSION" order="12" attributeHierarchyActive="false" displayAttribute="false">
       <descriptions defaultDescription="VERSION"/>
       <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL1" columnName="VERSION"/>
     </attribute>

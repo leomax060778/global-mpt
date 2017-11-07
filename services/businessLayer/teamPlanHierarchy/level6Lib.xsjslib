@@ -133,8 +133,9 @@ var HIERARCHY_LEVEL = {
 
 function getHl6ByHl5Id(hl5Id) {
     var hl6List = dataHl6.getHl6ByHl5Id(hl5Id, true);
-    var total_budget = 0;
-    var remaining_budget = 0;
+    var totalBudget = 0;
+    var totalAllocated = 0;
+    var remainingBudget = 0;
     var allHl6 = [];
     if (hl6List.length) {
         hl6List.forEach(function (hl6) {
@@ -156,14 +157,16 @@ function getHl6ByHl5Id(hl5Id) {
             allHl6.push(aux);
         });
 
-        total_budget = dataHl6.getHl6TotalBudgetByHl5Id(hl5Id);
-        remaining_budget = dataHl6.getHl6RemainingBudgetByHl5Id(hl5Id, total_budget);
+        totalBudget = dataHl5.getHl5ById(hl5Id).BUDGET;
+        totalAllocated = dataHl6.getHl6TotalBudgetByHl5Id(hl5Id);
+        remainingBudget = totalBudget - totalAllocated;
     }
 
     var response = {
         "results": allHl6,
-        "total_budget": total_budget,
-        "remaining_budget": remaining_budget
+        "total_budget": totalBudget,
+        "remaining_budget": remainingBudget,
+        "total_allocated": totalAllocated
     };
     response.budget_year = budgetYear.getBudgetYearByLevelParent(6, hl5Id, true);
     return response;
@@ -598,6 +601,8 @@ function insertHl6FromUpload(data, userId) {
             , 0
             , 0
             , 1
+            , null
+            , null
             , false
             , 1
             , data.IMPORT_ID
@@ -617,7 +622,7 @@ function insertHl6FromUpload(data, userId) {
                     hl6CategoryOption.UPDATED = Number(hl6CategoryOption.VALUE) ? 1 : 0;
                     hl6Category.categoryOptionLevelId = mapCOL[hl6Category.CATEGORY][hl6CategoryOption.OPTION_ID];
                     categoryOptionBulk.push({
-                        //in_hl5_id: hl6_id,
+                        in_hl6_id: hl6_id,
                         in_category_option_level_id: hl6Category.categoryOptionLevelId
                         , in_amount: hl6CategoryOption.AMOUNT
                         , in_user_id: userId
@@ -637,7 +642,7 @@ function insertHl6FromUpload(data, userId) {
                 expectedOutcomeDetail.VOLUME_VALUE = Number(expectedOutcomeDetail.VOLUME_VALUE);
                 expectedOutcomeDetail.EURO_VALUE = Number(expectedOutcomeDetail.EURO_VALUE);
                 var expectedoutcomelevelid = expectedOutcomeDetail.EXPECTED_OUTCOME_OPTION_ID;//dataExOut.getExpectedOutcomeLevelByLevelAndOptionId(HIERARCHY_LEVEL.HL6, expectedOutcomeDetail.EXPECTED_OUTCOME_OPTION_ID).EXPECTED_OUTCOME_LEVEL_ID;
-                dataExOut.insertHl6ExpectedOutcomesDetail(expectedOutcomeDetail.HL6_EXPECTED_OUTCOMES_ID, expectedoutcomelevelid, expectedOutcomeDetail.EURO_VALUE, expectedOutcomeDetail.VOLUME_VALUE, userId);
+                dataExOut.insertHl6ExpectedOutcomesDetail([{in_hl6_expected_outcomes_id: expectedOutcomeDetail.HL6_EXPECTED_OUTCOMES_ID, in_outcomes_id: expectedoutcomelevelid, in_euro_value: expectedOutcomeDetail.EURO_VALUE, in_volume_value: expectedOutcomeDetail.VOLUME_VALUE, in_created_user_id: userId}]);
             });
 
             //inserts budget regions
@@ -903,7 +908,7 @@ function updateHl6(data, userId) {
             , Number(data.hl6.IS_POWER_USER) === 0 ? 0 : 1
             , data.hl6.EMPLOYEE_RESPONSIBLE_USER
             , data.hl6.PERSON_RESPONSIBLE
-            
+
         );
 
         if (objHL6.BUDGET != data.hl6.BUDGET) {
@@ -934,7 +939,7 @@ function updateHl6(data, userId) {
 
         updateExpectedOutcomes(data/*, conversionValue*/);
 
-        updatePartners(data, conversionValue);
+        updatePartners(data, userId);
 
         updateCategoryOptions(data, userId);
 
@@ -1681,8 +1686,9 @@ function setHl6Status(hl6_id, status_id, userId) {
             level6DER.deleteL6ChangedFieldsByHl6Id(hl6_id);
             resetHl6CategoryOptionUpdated(hl6_id, userId)
         }
+        dataL6Report.updateLevel6ReportForDownload(hl6_id);
     }
-    dataL6Report.updateLevel6ReportForDownload(hl6_id);
+
     return updateOK;
 }
 
@@ -1707,7 +1713,7 @@ function changeHl6StatusOnDemand(hl6_id, userId) {
 
         var hasBudgetRequestPending = budgetSpendRequest.countPendingBudgetRequestByHl6Id(hl6_id) > 0;
 
-        if (!isComplete || !hl6.EMPLOYEE_RESPONSIBLE_ID || !hl6.COST_CENTER_ID)
+        if (!isComplete || !hl6.EMPLOYEE_RESPONSIBLE_USER || !hl6.COST_CENTER_ID)
             throw ErrorLib.getErrors().CustomError("", "hl6Services/handlePut/changeHl6Status", L6_MSG_COULDNT_CHAGE_STATUS);
 
         if (hasBudgetRequestPending)
@@ -1726,7 +1732,7 @@ function resetHl6CategoryOptionUpdated(hl6Id, userId) {
 function setHl6StatusInCRM(hl6_id, userId) {
     var hl6Ids = [];
     var result;
-    
+
     if (!(hl6_id.constructor === Array)) {
         hl6Ids.push(hl6_id);
     } else {

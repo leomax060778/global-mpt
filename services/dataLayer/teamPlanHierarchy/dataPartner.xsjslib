@@ -7,7 +7,6 @@ var ErrorLib = mapper.getErrors();
 var spGetPartnerByHl4Id = "GET_HL4_PARTNER_BY_HL4_ID";
 var spGetAllPartnerType = "GET_ALL_PARTNER_TYPE";
 var spInsertHl4Partner = "INS_HL4_PARTNER";
-var spDeletetHl4Partner = "DEL_HL4_PARTNER_BY_HL4_ID";
 
 var spGetPartnerByHl5Id = "GET_HL5_PARTNER_BY_HL5_ID";
 var spInsertHl5Partner = "INS_HL5_PARTNER";
@@ -16,7 +15,6 @@ var spDeletetHl5Partner = "DEL_HL5_PARTNER_BY_HL5_ID";
 var spGetPartnerByHl6Id = "GET_HL6_PARTNER_BY_HL6_ID";
 var spInsertHl6Partner = "INS_HL6_PARTNER";
 var spDeletetHl6Partner = "DEL_HL6_PARTNER_BY_HL6_ID";
-var spDelHl5PartnerByPartnerId = "DEL_HL5_PARTNER_BY_PARTNER_ID";
 /******************************************************/
 
 function getPartnerByHl4Id(id){	
@@ -43,11 +41,6 @@ function getAllPartnerType(){
 function insertHl4Partner(parameters){
 		var rdo = db.executeScalarManual(spInsertHl4Partner, parameters, 'out_hl4_partner_id');
 		return rdo;
-}
-
-function deleteHl4Partner(parameters){
-    var rdo = db.executeScalarManual(spDeletetHl4Partner, parameters, 'out_result');
-    return rdo;
 }
 
 /*L5*/

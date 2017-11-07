@@ -4,9 +4,6 @@ var mapper = $.mktgplanningtool.services.commonLib.mapper;
 var db = mapper.getdbHelper();
 var ErrorLib = mapper.getErrors();
 /*************************************************/
-var spGetOptionCountByCategoryId = "GET_OPTION_COUNT_BY_CATEGORY_ID";
-var spGetOptionByCategoryId =  "GET_OPTION_BY_CATEGORY_ID";
-var spInsOption = "INS_OPTION";
 
 var INS_ALLOCATION_OPTION = "INS_ALLOCATION_OPTION";
 var GET_ALLOCATION_OPTION = "GET_ALLOCATION_OPTION";
@@ -34,30 +31,6 @@ function getOptionByLevelByCategory(level, categoryId){
 
 	return db.extractArray(rdo.out_result);
 
-}
-
-function getOptionCountByCategoryId(categoryId){	
-	if(categoryId){
-		return db.executeScalarManual(spGetOptionCountByCategoryId, {'in_category_id':categoryId}, "out_option");
-	}	
-	return null;
-}
-
-function getOptionByCategoryId(category_id){
-	var params = {"in_category_id":category_id};
-	var rdo = db.executeProcedure(spGetOptionByCategoryId,params);
-	return db.extractArray(rdo.out_result);
-}
-
-function insertOption(option,userId){
-	params = {
-			"in_category_id":option.CATEGORY_ID,
-			"in_name" : option.NAME,
-			"in_order_option":option.ORDER_OPTION,
-			"in_user_id":userId
-			};
-	var rdo = db.executeScalar(spInsOption,params,"out_option_id");
-	return db.extractArray(rdo);
 }
 
 /*********************************************************************************************************/

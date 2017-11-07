@@ -33,3 +33,10 @@ function InsertOrUpdateCurrency(currencies, budgetYearId){
 function getCurrencyByDefaultBudgetYearIdAbbr(abbr){
 	return dbCurrency.getCurrencyByDefaultBudgetYearIdAbbr(abbr);
 }
+
+function setDefaultCurrency(reqBody, userId){
+	var budgetYear = Number(reqBody.BudgetYear);
+	if(budgetYear)
+	return dbCurrency.UpdateDefaultCurrency(reqBody.CurrencyId, budgetYear , userId);
+	return null;
+}

@@ -3,7 +3,6 @@
   <descriptions defaultDescription="AT_HL2"/>
   <informationModelLayout relativeWidthScenario="27"/>
   <attributes>
-  
     <attribute id="HL2_ID" order="1" attributeHierarchyActive="false" displayAttribute="false">
       <descriptions defaultDescription="HL2_ID"/>
       <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL2" columnName="HL2_ID"/>
@@ -43,6 +42,10 @@
     <attribute id="IMPLEMENT_EXECUTION_LEVEL" order="10" attributeHierarchyActive="false" displayAttribute="false">
       <descriptions defaultDescription="IMPLEMENT_EXECUTION_LEVEL"/>
       <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL2" columnName="IMPLEMENT_EXECUTION_LEVEL"/>
+    </attribute>
+    <attribute id="SUBREGION_ID" order="11" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="SUBREGION_ID"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL2" columnName="SUBREGION_ID"/>
     </attribute>
   </attributes>
   <calculatedAttributes/>

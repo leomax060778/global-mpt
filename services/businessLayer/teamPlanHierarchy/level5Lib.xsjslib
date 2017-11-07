@@ -45,10 +45,9 @@ var L5_MSG_USER_NOT_FOUND = "The User can not be found.";
 var L5_MSG_NO_PRIVILEGE = "Not enough privilege to do this action.";
 var L5_MSG_CANNOT_DEL_STATUS = "Cannot delete this selected Marketing Tactic, because the status doesn´t allow it.";
 var L5_MSG_INITIATIVE_CANT_DEL_CHILD = "The selected Marketing Tactic can not be deleted because has childs.";
-var L5_MSG_INITIATIVE_ACRONYM = "The Marketing Tactic acronym can not be null or empty.";
 var L5_MSG_INITIATIVE_IN_CRM = "Cannot modified CRM ID if already exists in CRM.";
 var L5_MSG_INITIATIVE_EXISTS = "Another Marketing Tactic with the same acronym already exists.";
-var L5_MSG_INITIATIVE_ACRONYM_LENGTH = "The acronym length of marketing tactic must be greater than or equal to 4, and less than or equal to 10 characters.";
+var L5_MSG_INITIATIVE_ACRONYM = "The CRM ID length must be equal to 7 characters and only upper case is valid.";
 var L5_MSG_INITIATIVE_CRM_DESCRIPTION = "The Marketing Tactic CRM description can not be null or empty.";
 var L5_MSG_INITIATIVE_DISTRIBUTION_CHANNEL = "The Marketing Tactic Distribution channel can not be null or empty.";
 var L5_MSG_INITIATIVE_BUDGET_VALUE = "The Marketing Tactic Budget value must be greater than zero.";
@@ -125,6 +124,7 @@ function getHl5ByHl4Id(id) {
     level4Lib.getImplementExecutionLevel(id);
     var hl5List = dataHl5.getHl5ByHl4Id(id);
     var hl5TotalBudget = 0;
+    var totalAllocated = 0;
     var hl5BudgetRemaining = 0;
     var allHl5 = [];
     if (hl5List.length) {
@@ -137,11 +137,17 @@ function getHl5ByHl4Id(id) {
             allHl5.push(aux);
         });
 
-        hl5TotalBudget = dataHl5.getHl5TotalBudgetByHl4Id(id);
-        hl5BudgetRemaining = dataHl5.getHl5RemainingBudgetByHl4Id(id, hl5TotalBudget);
+        hl5TotalBudget = dataHl4.getHl4ById(id).HL4_FNC_BUDGET_TOTAL_MKT;
+        totalAllocated = dataHl5.getHl5TotalBudgetByHl4Id(id);
+        hl5BudgetRemaining = hl5TotalBudget - totalAllocated;
     }
 
-    var response = {"results": allHl5, "total_budget": hl5TotalBudget, "remaining_budget": hl5BudgetRemaining};
+    var response = {
+        "results": allHl5,
+        "total_budget": hl5TotalBudget,
+        "remaining_budget": hl5BudgetRemaining,
+        "total_allocated": totalAllocated
+    };
     response.budget_year = budgetYear.getBudgetYearByLevelParent(5, id, true);
     return response;
 }
@@ -678,6 +684,8 @@ function insertHl5FromUpload(data, userId) {
             , 0
             , 0
             , 1
+            , null
+            , null
             , false
             , 1
             , data.IMPORT_ID
@@ -717,7 +725,7 @@ function insertHl5FromUpload(data, userId) {
                 expectedOutcomeDetail.VOLUME_VALUE = Number(expectedOutcomeDetail.VOLUME_VALUE);
                 expectedOutcomeDetail.EURO_VALUE = Number(expectedOutcomeDetail.EURO_VALUE);
                 var expectedoutcomelevelid = expectedOutcomeDetail.EXPECTED_OUTCOME_OPTION_ID;//dataExOut.getExpectedOutcomeLevelByLevelAndOptionId(HIERARCHY_LEVEL..HL5,expectedOutcomeDetail.EXPECTED_OUTCOME_OPTION_ID).EXPECTED_OUTCOME_LEVEL_ID;
-                dataExOut.insertHl5ExpectedOutcomesDetail(expectedOutcomeDetail.HL5_EXPECTED_OUTCOMES_ID, expectedoutcomelevelid, expectedOutcomeDetail.EURO_VALUE, expectedOutcomeDetail.VOLUME_VALUE, expectedOutcomeDetail.CREATED_USER_ID);
+                dataExOut.insertHl5ExpectedOutcomesDetail([{in_hl5_expected_outcomes_id: expectedOutcomeDetail.HL5_EXPECTED_OUTCOMES_ID, in_outcomes_id: expectedoutcomelevelid, in_euro_value: expectedOutcomeDetail.EURO_VALUE, in_volume_value: expectedOutcomeDetail.VOLUME_VALUE, in_created_user_id: expectedOutcomeDetail.CREATED_USER_ID}]);
             });
 
 
@@ -1239,11 +1247,11 @@ function validateHl5(data, userId) {
                 throw ErrorLib.getErrors().CustomError("", "hl5Services/handlePost/insertHl5", L5_MSG_INITIATIVE_PROPERTIES_CANNOT_UPDATE);
         }
 
-        if (!data.hl5.ACRONYM)
-            throw ErrorLib.getErrors().CustomError("", "hl5Services/handlePost/insertHl5", L5_MSG_INITIATIVE_ACRONYM);
+        /*if (!data.hl5.ACRONYM)
+            throw ErrorLib.getErrors().CustomError("", "hl5Services/handlePost/insertHl5", L5_MSG_INITIATIVE_ACRONYM);*/
 
-        if (data.hl5.ACRONYM.length < 4 || data.hl5.ACRONYM.length > 10)
-            throw ErrorLib.getErrors().CustomError("", "hl5Services/handlePost/insertHl5", L5_MSG_INITIATIVE_ACRONYM_LENGTH);
+        if (/^[A-Z]{7}$/.test(data.hl5.ACRONYM))
+            throw ErrorLib.getErrors().CustomError("", "hl5Services/handlePost/insertHl5", L5_MSG_INITIATIVE_ACRONYM);
 
         if (existsHl5(data.hl5))
             throw ErrorLib.getErrors().CustomError("", "hl5Services/handlePost/insertHl5", L5_MSG_INITIATIVE_EXISTS);
@@ -1595,8 +1603,10 @@ function setHl5Status(hl5_id, status_id, userId) {
             level5DER.deleteL5ChangedFieldsByHl5Id(hl5_id);
             resetHl5CategoryOptionUpdated(hl5_id, userId)
         }
+        dataL5Report.updateLevel5ReportForDownload(hl5_id);
     }
-    dataL5Report.updateLevel5ReportForDownload(hl5_id);
+
+
     return updateOK;
 }
 
@@ -1652,7 +1662,7 @@ function changeHl5StatusOnDemand(hl5_id, userId) {
 
         var hasBudgetRequestPending = budgetSpendRequest.countPendingBudgetRequestByHl5Id(hl5_id) > 0;
 
-        if (!isComplete || !hl5.EMPLOYEE_RESPONSIBLE_ID || !hl5.COST_CENTER_ID)
+        if (!isComplete || !hl5.EMPLOYEE_RESPONSIBLE_USER || !hl5.COST_CENTER_ID)
             throw ErrorLib.getErrors().CustomError("", "hl5Services/handlePut/changeHl5Status", L5_MSG_COULDNT_CHANGE_STATUS);
 
         if (hasBudgetRequestPending)
@@ -2069,9 +2079,9 @@ function getAllBusinessOwner() {
 
 function getCostCenterByHl4IdMarketingOrganizationId(hl4Id, saleOrganizationId) {
     var costCenters = JSON.parse(JSON.stringify(dataHl5.getCostCenterByHl4IdMarketingOrganizationId(hl4Id, saleOrganizationId)));
-    costCenters.forEach(function (costCenter) {
-        costCenter.employeeResponsible = dataCostCenter.getCostCenterEmployeeResponsibleByCostCenterId(costCenter.COST_CENTER_ID);
-    });
+    // costCenters.forEach(function (costCenter) {
+    //     costCenter.employeeResponsible = dataCostCenter.getCostCenterEmployeeResponsibleByCostCenterId(costCenter.COST_CENTER_ID);
+    // });
     return costCenters;
 }
 
@@ -2131,7 +2141,7 @@ function getNewSerialAcronym(Hl4_id) {
     var listOfHl5 = dataHl5.getHl5ByHl4Id(Hl4_id);
 
     var listSerials = listOfHl5.map(function (hl5) {
-        var serial = hl5.ACRONYM.slice(-3);
+        var serial = hl5.ACRONYM.slice(-2);
         if (hl5.ACRONYM.indexOf(DRAFT_PEFIX) === 0 && !isNaN(serial)) {
             return serial//Number(serial)
         } else {
@@ -2144,7 +2154,7 @@ function getNewSerialAcronym(Hl4_id) {
     
     newSerial = aux ? +aux + 1 : 1;
 
-    if (newSerial > 999) {
+    if (newSerial > 99) {
     	for(var i=1; i<serialList.length;i++){
     		if(serialList[i] - serialList[i-1] > 1){
     			newSerial = serialList[i-1] ? +serialList[i-1] + 1 : 1;
@@ -2152,12 +2162,12 @@ function getNewSerialAcronym(Hl4_id) {
     		}
     	}
     	
-    	if (newSerial > 999) {
+    	if (newSerial > 99) {
     		throw ErrorLib.getErrors().CustomError("", "", "It is not possible to create more Marketing Tactics for this Marketing Campaign.");
     	}
     }
     
-    return DRAFT_PEFIX + ('00' + newSerial).slice(-3);
+    return DRAFT_PEFIX + ('0' + newSerial).slice(-2);
 }
 
 function getExpectedOutcomesByHl5Id(hl5Id, hl4Id) {

@@ -18,7 +18,7 @@ function parseBudgetSpendReport(reqBody, budgetSpendRequestData, budgetSpendRequ
 
     body += '<p>Budget Spend Information:</p>';
     body += '<table><tr><th>Field</th><th>Current Value</th></tr>';
-    body += '<tr><td>CRM</td><td>CRM-' + (budgetSpendRequestData.HL5_PATH || budgetSpendRequestData.HL6_PATH) + '</td></tr>';
+    body += '<tr><td>CRM</td><td>' + (budgetSpendRequestData.HL5_PATH || budgetSpendRequestData.HL6_PATH) + '</td></tr>';
 
     if(fromApprover){
     	body += '<tr><td>CRM Description</td><td>' + budgetSpendRequestData.HL5_CRM_DESCRIPTION || budgetSpendRequestData.HL6_CRM_DESCRIPTION + '</td></tr>';
@@ -41,7 +41,7 @@ function parseBudgetSpendReport(reqBody, budgetSpendRequestData, budgetSpendRequ
         budgetSpendRequestList.forEach(function (budgetSpendRequest){
             budgetSpendRequest.CHILDREN.forEach(function(elem){
                 body += '<table><tr><th>Field</th><th>Current Value</th></tr>';
-                body += '<tr><td>CRM</td><td>CRM-' + (elem.HL5_PATH || elem.HL6_PATH) + '</td></tr>';
+                body += '<tr><td>CRM</td><td>' + (elem.HL5_PATH || elem.HL6_PATH) + '</td></tr>';
                 body += '<tr><td>CRM Description</td><td>' + elem.CRM_DESCRIPTION + '</td></tr>';
                 body += '<tr><td>Request Type</td><td>' + elem.BUDGET_SPEND_REQUEST_TYPE_DISPLAY_NAME + '</td></tr>';
                 body += '<tr><td>Requester</td><td>' + elem.BUDGET_SPEND_REQUEST_REQUESTER + '</td></tr>';

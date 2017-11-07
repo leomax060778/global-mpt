@@ -65,11 +65,8 @@ va_intermidate = SELECT
 	                , CONCAT(
              	         CONCAT(
              	        	CONCAT(
-             	        		CONCAT(
-             	        			CONCAT(
-             	        				CONCAT(HL1.ACRONYM,SUBSTRING(TO_NVARCHAR(BGY.BUDGET_YEAR), 3, 2))
-             	    					,'-')
-             						, hl3.acronym)
+             	        				CONCAT(hl2.ORGANIZATION_ACRONYM,SUBSTRING(TO_NVARCHAR(BGY.BUDGET_YEAR), 3, 2))
+
              					,'-')
              				,hl4.acronym)
                           ,hl5.acronym)

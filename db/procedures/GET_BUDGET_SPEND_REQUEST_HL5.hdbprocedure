@@ -46,6 +46,7 @@ BEGIN
 									AND U.ENABLED = 1 AND U.DELETED = 0;
 								
 								
+								
 	out_result = 	SELECT DISTINCT	BSR.BUDGET_SPEND_REQUEST_ID,
 									BSR.BUDGET_SPEND_REQUEST_TYPE_ID,
 									BSR_TYPE.NAME AS BUDGET_SPEND_REQUEST_TYPE_NAME,
@@ -58,17 +59,15 @@ BEGIN
 									PARTNER_TYPE.TYPE_NAME AS HL5_PARTNER_TYPE_NAME,
 									BSR.AMOUNT AS BUDGET,
 									COALESCE(BSR.MODIFIED_DATE_TZ, BSR.CREATED_DATE_TZ) AS BSR_MODIFIED_DATE,
-									CONCAT(
 			                        CONCAT(
 			                            CONCAT(
 			                                CONCAT(
 			                                    CONCAT(
 			                                        CONCAT(
-			                                        HL1.ACRONYM, SUBSTRING(TO_NVARCHAR(BGY.BUDGET_YEAR), 3, 2)),
-			                                    '-'),
-			                                HL3.ACRONYM),
+			                                        HL2.ORGANIZATION_ACRONYM, SUBSTRING(TO_NVARCHAR(BGY.BUDGET_YEAR), 3, 2)),
 			                            '-'),
 			                        HL4.ACRONYM),
+			                        '-'),
 			                     HL5.ACRONYM)
 			            		 AS HL5_PATH,
 			            		 RTM.NAME AS ROUTE_TO_MARKET,

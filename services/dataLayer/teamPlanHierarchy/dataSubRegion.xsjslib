@@ -10,7 +10,8 @@ var spUpdateSubregion = "UPD_SUBREGION";
 var spDeleteSubregion = "DEL_SUBREGION";
 var spDeleteSubregionsByRegion = "DEL_SUBREGIONS_BY_REGION_ID";
 var spGetAllSubRegion = "GET_ALL_SUBREGION";
-var spGetCountHL1BySubregionId =  "GET_COUNT_HL1_BY_SUBREGIONID";
+var spGetCountHL2BySubregionId =  "GET_COUNT_HL2_BY_SUBREGIONID";
+var GET_SUBREGION_BY_NAME_AND_REGION =  "GET_SUBREGION_BY_NAME_AND_REGION";
 
 /*****************END STORED PROCEDURES*******************/
 
@@ -18,10 +19,10 @@ function getSubRegionsByRegionId(regionId){
 	var spResult = [];
 	if(regionId > 0)
 	{
-		var parameters = {'IN_REGION_ID': regionId};	
-		var result = db.executeProcedureManual(spGetSubregionByRegionId, parameters);	
+		var parameters = {'IN_REGION_ID': regionId};
+		var result = db.executeProcedureManual(spGetSubregionByRegionId, parameters);
 		var list = result['out_result'];
-		
+
 		Object.keys(list).forEach(function(key) {
 			spResult.push(list[key]);
 		});
@@ -29,9 +30,14 @@ function getSubRegionsByRegionId(regionId){
 	return spResult;
 }
 
-function getAllSubRegions(){	
-	var result = db.executeProcedureManual(spGetAllSubRegion, {});	
+function getAllSubRegions(){
+	var result = db.executeProcedureManual(spGetAllSubRegion, {});
 	return db.extractArray(result.out_result);
+}
+function getSubRegionByName(name, regionId){
+	var result = db.executeProcedureManual(GET_SUBREGION_BY_NAME_AND_REGION, {in_name: name, in_region_id: regionId});
+	var subregion = db.extractArray(result.out_result);
+    return subregion && subregion.length > 0;
 }
 
 function insertSubregion(subregion, createUser) {
@@ -47,7 +53,7 @@ function insertSubregion(subregion, createUser) {
 
 function updateSubregion(subregion, modUser) {
 	var param = {};
-	param.in_subregion_id = subregion.SUBREGION_ID;	
+	param.in_subregion_id = subregion.SUBREGION_ID;
 	param.in_subregion_name = subregion.NAME;
 	param.in_subregion_iso = subregion.ISO;
 	param.in_modified_user_id = modUser; // User that insert
@@ -70,9 +76,9 @@ function delSubregionsByRegion(region, modUser) {
 	return db.executeScalarManual(spDeleteSubregionsByRegion, param, "out_result");
 }
 
-function getCountHL1BySubRegionId(subRegionId) {
+function getCountHL2BySubRegionId(subRegionId) {
 	var param = {};
 	param.in_subregion_id = subRegionId;
-	return db.executeScalarManual(spGetCountHL1BySubregionId, param, "out_result");
+	return db.executeScalarManual(spGetCountHL2BySubregionId, param, "out_result");
 }
 

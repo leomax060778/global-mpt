@@ -20,13 +20,9 @@
  	 			hl4.HL4_ID AS HL_ID,
  	 			
  	 			CONCAT('CRM-',
-        	         CONCAT(
-        	        	CONCAT(
         	        		CONCAT(
         	        		CONCAT(
-        	        				CONCAT(HL1.ACRONYM,SUBSTRING(TO_NVARCHAR(BGY.BUDGET_YEAR), 3, 2))        	    					
-        	    					,'-')
-        						, hl3.acronym)
+        	        				CONCAT(HL2.ORGANIZATION_ACRONYM,SUBSTRING(TO_NVARCHAR(BGY.BUDGET_YEAR), 3, 2))        	    					
         					,'-')
         				,hl4.acronym))
 				 AS PATH
@@ -43,17 +39,14 @@
     	(SELECT
  	 			hl5.HL5_ID AS HL_ID,
  	 			CONCAT( 'CRM-',
-        	         CONCAT(
-        	        		CONCAT(
-        	        		
+        	         CONCAT(       	        		
         	        		CONCAT(
     	        			CONCAT(
         	        			CONCAT(
-        	        				CONCAT(HL1.ACRONYM,SUBSTRING(TO_NVARCHAR(BGY.BUDGET_YEAR), 3, 2))
-        	    					,'-')
-        						, hl3.acronym)
+        	        				CONCAT(HL2.ORGANIZATION_ACRONYM,SUBSTRING(TO_NVARCHAR(BGY.BUDGET_YEAR), 3, 2))
         					,'-')
         				,hl4.acronym)
+       				    ,'-')
         				,hl5.acronym))
 				 AS PATH
 		FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL5&quot; hl5
@@ -71,12 +64,8 @@
  	 			hl3.HL3_ID AS HL_ID,
  	 			CONCAT( 'CRM-',
         	         CONCAT(
-        	         		CONCAT(
-    	        				CONCAT(
         	        				CONCAT(
-        	        			   		CONCAT(HL1.ACRONYM,SUBSTRING(TO_NVARCHAR(BGY.BUDGET_YEAR), 3, 2))
-        	    						,'-')
-        								, hl2.organization_acronym)
+        	        			   		CONCAT(hl2.organization_acronym,SUBSTRING(TO_NVARCHAR(BGY.BUDGET_YEAR), 3, 2))
         								,'-')
 										, hl3.acronym)
         				)
@@ -93,11 +82,7 @@
     	(SELECT
  	 			hl2.HL2_ID AS HL_ID,
  	 			CONCAT( 'CRM-',
-        	         CONCAT(
-        	        				CONCAT(
-        	        			   		CONCAT(HL1.ACRONYM,SUBSTRING(TO_NVARCHAR(BGY.BUDGET_YEAR), 3, 2))
-        	    						,'-')
-        								, hl2.organization_acronym)
+        	        			   		CONCAT(hl2.organization_acronym,SUBSTRING(TO_NVARCHAR(BGY.BUDGET_YEAR), 3, 2))
         				)
 				 AS PATH
 		FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL2&quot; hl2 

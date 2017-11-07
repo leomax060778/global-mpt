@@ -61,16 +61,14 @@ BEGIN
 									CONCAT(
 										CONCAT(
 											CONCAT(
-												CONCAT(
 													CONCAT(
 														CONCAT(
 															CONCAT(
-																HL1.ACRONYM, 
+																HL2.ORGANIZATION_ACRONYM,
 															SUBSTRING(TO_NVARCHAR(BGY.BUDGET_YEAR), 3, 2)), 
-														'-'),
-													HL3.ACRONYM),
-												'-'), 
-											HL4.ACRONYM), 
+												'-'),
+											HL4.ACRONYM),
+											'-'),
 										HL5.ACRONYM), 
 									HL6.ACRONYM) AS HL6_PATH,
 			            		 RTM.NAME AS ROUTE_TO_MARKET,

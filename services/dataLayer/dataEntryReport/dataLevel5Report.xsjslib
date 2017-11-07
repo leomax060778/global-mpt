@@ -9,7 +9,6 @@ var GET_ALL_HL5_DE_REPORT = "GET_HL5_DE_REPORT";
 var GET_HL5_FOR_PROCESSING_REPORT = "GET_HL5_FOR_PROCESSING_REPORT";
 var GET_PROCESSING_REPORT_FOR_DOWNLOAD = "GET_PROCESSING_REPORT_FOR_DOWNLOAD";
 var spGetL5ChangedFieldsByHl5Id = "GET_HL5_CHANGED_FIELDS_BY_HL5_ID";
-var spGetL5ChangedFieldsByHl5IdByField = "GET_HL5_CHANGED_FIELDS_BY_HL5_ID_BY_FIELD";
 var spDelL5ChangedFieldsByHl5Id = "DEL_HL5_CRM_BINDING";
 var UPD_PROCESSING_REPORT_EXPORT_DATA = "UPD_PROCESSING_REPORT_EXPORT_DATA";
 
@@ -52,14 +51,6 @@ function getL5ForProcessingReportByHl5Id(id){
         return result;
     }
     return null;
-}
-
-function getL5ChangedFieldsByHl5IdByField(id, fieldName){
-	if(id && fieldName){
-		var rdo = db.executeProcedureManual(spGetL5ChangedFieldsByHl5IdByField,{'in_hl5_id':id, 'in_column_name': fieldName}, 'out_result');
-		return db.extractArray(rdo.out_hl5_crm_binding_id);
-	}	
-	return null;
 }
 
 function deleteL5ChangedFieldsByHl5Id(id){

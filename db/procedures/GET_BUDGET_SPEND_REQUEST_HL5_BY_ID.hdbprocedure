@@ -166,14 +166,10 @@ BEGIN
 									HL5.HL5_CRM_DESCRIPTION,
 									HL5.BUDGET,
 									HL5.MODIFIED_DATE_TZ AS HL5_MODIFIED_DATE,
-									CONCAT(
-			                            CONCAT(
 			                                CONCAT(
 			                                    CONCAT(
 			                                        CONCAT(
-			                                        HL1.ACRONYM, SUBSTRING(TO_NVARCHAR(BGY.BUDGET_YEAR), 3, 2)),
-			                                    '-'),
-			                                HL3.ACRONYM),
+			                                        HL2.ORGANIZATION_ACRONYM, SUBSTRING(TO_NVARCHAR(BGY.BUDGET_YEAR), 3, 2)),
 			                            '-'),
 			                        HL4.ACRONYM)
 			            		 AS PARENT_PATH,

@@ -79,7 +79,7 @@ function getL6ChangedFieldsByHl6Id(hl6Id, userId) {
             object.display_name = l6ReportFields[field];
             var CRM_ACRONYM = "CRM";
             //var path = dataPath.getPathByLevelParent(6, hl6['HL5_ID']);
-            var parentPath = CRM_ACRONYM + "-" + hl6.L1_ACRONYM + hl6.BUDGET_YEAR + "-" + hl6.L3_ACRONYM + "-" + hl6.L4_ACRONYM + hl6.L5_ACRONYM;
+            var parentPath = CRM_ACRONYM + "-" + hl6.L2_ACRONYM + hl6.BUDGET_YEAR + "-" + hl6.L4_ACRONYM + "-" + hl6.L5_ACRONYM;
             switch (field) {
                 case "ACRONYM":
                     object.value = parentPath + hl6.ACRONYM;

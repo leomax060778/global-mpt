@@ -13,7 +13,6 @@ var DEL_L2_BUDGET_SPEND_APPROVER = "DEL_L2_BUDGET_SPEND_APPROVER";
 //BUDGET SPEND REQUEST
 var INS_BUDGET_SPEND_REQUEST = "INS_BUDGET_SPEND_REQUEST";
 var UPD_BUDGET_SPEND_REQUEST = "UPD_BUDGET_SPEND_REQUEST";
-var DEL_BUDGET_SPEND_REQUEST = "DEL_BUDGET_SPEND_REQUEST";
 var DEL_ALL_BUDGET_SPEND_REQUEST_BY_HL_ID = "DEL_ALL_BUDGET_SPEND_REQUEST_BY_HL_ID";
 var GET_ALL_BUDGET_SPEND_REQUEST_BY_HLID_AND_LEVEL = "GET_ALL_BUDGET_SPEND_REQUEST_BY_HLID_AND_LEVEL";
 var GET_CO_FUNDED_BUDGET_SPEND_REQUEST_BY_HLID_AND_LEVEL = "GET_CO_FUNDED_BUDGET_SPEND_REQUEST_BY_HLID_AND_LEVEL";
@@ -24,7 +23,6 @@ var UPD_BUDGET_SPEND_REQUEST_MESSAGE = "UPD_BUDGET_SPEND_REQUEST_MESSAGE";
 var DEL_BUDGET_SPEND_REQUEST_MESSAGE_BY_HL_ID = "DEL_BUDGET_SPEND_REQUEST_MESSAGE_BY_HL_ID";
 //BUDGET SPEND REQUEST LOG STATUS
 var DEL_ALL_BUDGET_SPEND_REQUEST_LOG_STATUS_BY_HL_ID = "DEL_ALL_BUDGET_SPEND_REQUEST_LOG_STATUS_BY_HL_ID";
-var DEL_HARD_BUDGET_SPEND_REQUEST_OTHER_BUDGET_APPROVER_BY_BUDGET_SPEND_REQUEST_ID = "DEL_HARD_BUDGET_SPEND_REQUEST_OTHER_BUDGET_APPROVER_BY_BUDGET_SPEND_REQUEST_ID";
 //HL5
 var GET_COUNT_BUDGET_SPEND_REQUEST_BY_HL5_ID_BUDGET_REQUEST_STATUS_ID = "GET_COUNT_BUDGET_SPEND_REQUEST_BY_HL5_ID_BUDGET_REQUEST_STATUS_ID";
 //HL6
@@ -100,10 +98,6 @@ function insertSaleBudgetSpendRequest(arrSale, level){
 
 function updateBudgetSpendRequest(arrBudgetSpendRequest){
     return db.executeScalarManual(UPD_BUDGET_SPEND_REQUEST, arrBudgetSpendRequest, 'out_result');
-}
-
-function deleteBudgetSpendRequestByPartner(arrBudgetSpendRequestToDelete){
-    return db.executeScalarManual(DEL_BUDGET_SPEND_REQUEST, arrBudgetSpendRequestToDelete, 'out_result');
 }
 
 function insertBudgetSpendRequestMessage(arrBudgetSpendRequestMessage){
@@ -241,10 +235,6 @@ function insertOtherBudgetApprover(fullName, email, userId){
 
 function insertBudgetSpendRequestOtherBudgetApprover(data) {
     return db.executeScalarManual(INS_BUDGET_SPEND_REQUEST_OTHER_BUDGET_APPROVER, data, 'out_result');
-}
-
-function deleteHardBudgetSpendRequestOtherBudgetApproverByBudgetSpendRequestId(budgetSpendRequestId){
-    return db.executeScalarManual(DEL_HARD_BUDGET_SPEND_REQUEST_OTHER_BUDGET_APPROVER_BY_BUDGET_SPEND_REQUEST_ID, {in_budget_spend_request_id: budgetSpendRequestId}, 'out_result');
 }
 
 function getHl5BudgetApproverEmailByLevelIdUserId(statusId, userId, levelId) {

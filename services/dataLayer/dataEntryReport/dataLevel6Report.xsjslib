@@ -8,7 +8,6 @@ var ErrorLib = mapper.getErrors();
 var GET_ALL_HL6_DE_REPORT = "GET_HL6_DE_REPORT";
 var spGetL6ChangedFieldsByHl6Id = "GET_HL6_CHANGED_FIELDS_BY_HL6_ID";
 var GET_PROCESSING_REPORT_FOR_DOWNLOAD = "GET_PROCESSING_REPORT_FOR_DOWNLOAD";
-var spGetL6ChangedFieldsByHl6IdByField = "GET_HL6_CHANGED_FIELDS_BY_HL6_ID_BY_FIELD";
 var spDelL6ChangedFieldsByHl6Id = "DEL_HL6_CRM_BINDING";
 var GET_HL6_FOR_PROCESSING_REPORT = "GET_HL6_FOR_PROCESSING_REPORT";
 var UPD_PROCESSING_REPORT_EXPORT_DATA = "UPD_PROCESSING_REPORT_EXPORT_DATA";
@@ -50,14 +49,6 @@ function getL6ChangedFieldsByHl6Id(id){
 	if(id){
 		var rdo = db.executeProcedureManual(spGetL6ChangedFieldsByHl6Id,{'in_hl6_id':id});
 		return db.extractArray(rdo.out_hl6_changed_fields);
-	}	
-	return null;
-}
-
-function getL6ChangedFieldsByHl6IdByField(id, fieldName){
-	if(id && fieldName){
-		var rdo = db.executeProcedureManual(spGetL6ChangedFieldsByHl6IdByField,{'in_hl6_id':id, 'in_column_name': fieldName});
-		return db.extractArray(rdo.out_result);
 	}	
 	return null;
 }

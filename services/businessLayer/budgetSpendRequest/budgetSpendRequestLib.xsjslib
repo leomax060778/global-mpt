@@ -55,7 +55,7 @@ function getL2BudgetApproverByL2Id(l2Id) {
                 "budgetSpendRequestServices/handleGet/getL2BudgetApproverByL2Id",
                 L2_ID_MISSING);
 
-    var hl2 = dataHl2.getLevel2ById({IN_HL2_ID: l2Id});
+    var hl2 = dataHl2.getLevel2ById(l2Id);
     return dataBudgetSpendRequest.getL2BudgetApproverByL2Id(l2Id, hl2.HL1_ID);
 }
 

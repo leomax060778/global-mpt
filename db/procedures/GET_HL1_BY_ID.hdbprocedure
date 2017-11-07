@@ -6,7 +6,6 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL1_BY_ID" (
 		, description nvarchar(255)
 		, budget_year_id bigint
 		, region_id integer
-		, subregion_id integer
 		, budget decimal(19, 6)
         , team_type_id bigint
         , implement_execution_level tinyint
@@ -28,7 +27,6 @@ BEGIN
 		, hl1.description
 		, hl1.budget_year_id
 		, hl1.region_id
-		, hl1.subregion_id
 		, hl1.budget
         , hl1.team_type_id
         , hl1.implement_execution_level

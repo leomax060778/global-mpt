@@ -1,0 +1,17 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_COUNT_HL2_BY_SUBREGIONID" (
+	IN in_subregion_id integer,
+	OUT out_result integer
+)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	READS SQL DATA AS
+BEGIN
+
+SELECT COUNT(HL2_ID) INTO out_result
+FROM HL2
+WHERE HL2.SUBREGION_ID = in_subregion_id
+AND HL2.deleted = 0
+AND HL2.enabled = 1;
+
+END;

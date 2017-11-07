@@ -6,6 +6,8 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL2_BY_HL1_I
 							hl2_id BIGINT
                             , hl1_id BIGINT
                             , organization_acronym NVARCHAR(25)
+                            , organization_name NVARCHAR(255)
+                            , SUBREGION_NAME NVARCHAR(255)
                             , HL2_BUDGET_REMAINING DECIMAL(19,2)
                             , HL2_BUDGET_ALLOCATED DECIMAL(19,2)
                             , hl2_budget_total DECIMAL(19, 2)
@@ -19,21 +21,21 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL2_BY_HL1_I
                             , BUDGET_DISTRIBUTION_AMOUNT DECIMAL(19, 2)
                             , SUB_AMOUNT DECIMAL(19,2)
 							 ),
-	OUT out_total_budget	DECIMAL(19, 2),
-	OUT out_remaining_budget	DECIMAL(19, 2)
+	OUT out_total_budget DECIMAL(19, 2),
+	OUT out_remaining_budget DECIMAL(19, 2),
+	OUT out_total_allocated DECIMAL(19, 2)
 )
 	LANGUAGE SQLSCRIPT
 	SQL SECURITY INVOKER
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
 	READS SQL DATA AS
 BEGIN
-	DECLARE va_total_allocated DECIMAL(19, 2);
-	va_total_allocated := 0;
-
 
 	out_result = SELECT SUMMARY.HL2_ID AS hl2_id,
                         SUMMARY.HL1_ID AS hl1_id,
                         SUMMARY.L2_ACRONYM AS organization_acronym,
+                        SUMMARY.L2_ORGANIZATION_NAME AS organization_name,
+                        SUMMARY.SUBREGION_NAME,
                         SUMMARY.L2_BUDGET_REMAINING AS HL2_BUDGET_REMAINING,
                         SUMMARY.L2_BUDGET_ALLOCATED AS HL2_BUDGET_ALLOCATED,
                         SUMMARY.L2_BUDGET AS hl2_budget_total,
@@ -48,7 +50,7 @@ BEGIN
                         , SUMMARY.SUB_AMOUNT
                         FROM  "_SYS_BIC"."mktgplanningtool.db.data.views/CV_HL2_BUDGET_DISTRIBUTION_SUMMARY" SUMMARY
 	WHERE SUMMARY.HL1_ID = in_hl1_id
-	  AND SUMMARY.HL2_ID IN (SELECT HL2_ID FROM HL2_USER WHERE USER_ID = in_user_id OR in_is_super_Admin = 1)
+	  AND (in_is_super_Admin = 1 OR SUMMARY.HL2_ID IN (SELECT HL2_ID FROM HL2_USER WHERE USER_ID = in_user_id))
     ORDER BY SUMMARY.L2_ACRONYM;
 
 	SELECT HL1.BUDGET
@@ -57,11 +59,10 @@ BEGIN
 	WHERE HL1.HL1_ID = in_hl1_id;
 
 	SELECT COALESCE(SUM(HL2.HL2_BUDGET_TOTAL),0)
-    INTO va_total_allocated
+    INTO out_total_allocated
     FROM (
         SELECT DISTINCT HL2_ID, HL2_BUDGET_TOTAL FROM :out_result
     ) HL2;
 
-	out_remaining_budget := out_total_budget - va_total_allocated;
-
+	out_remaining_budget := out_total_budget - out_total_allocated;
 END;

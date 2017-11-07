@@ -4,7 +4,6 @@ var mapper = $.mktgplanningtool.services.commonLib.mapper;
 var db = mapper.getdbHelper();
 var ErrorLib = mapper.getErrors();
 /*************************************************/
-var spGetOptionCountByCategoryId = "GET_OPTION_COUNT_BY_CATEGORY_ID";
 var spGetRequestCategoryOptionByHl5Id = "GET_REQUEST_CATEGORY_OPTION_BY_HL5_ID";
 
 var INS_SERVICE_REQUEST_CATEGORY = "INS_SERVICE_REQUEST_CATEGORY";
@@ -17,7 +16,6 @@ var INS_SERVICE_REQUEST_OPTION = "INS_SERVICE_REQUEST_OPTION";
 var UPD_SERVICE_REQUEST_OPTION = "UPD_SERVICE_REQUEST_OPTION";
 var DEL_SERVICE_REQUEST_OPTION = "DEL_SERVICE_REQUEST_OPTION";
 var GET_SERVICE_REQUEST_OPTION = "GET_SERVICE_REQUEST_OPTION";
-var GET_SERVICE_REQUEST_OPTION_BY_ID = "GET_SERVICE_REQUEST_OPTION_BY_ID";
 var GET_SERVICE_REQUEST_OPTION_BY_NAME = "GET_SERVICE_REQUEST_OPTION_BY_NAME";
 
 var INS_SERVICE_REQUEST_CATEGORY_OPTION_LEVEL = "INS_SERVICE_REQUEST_CATEGORY_OPTION_LEVEL";
@@ -152,12 +150,6 @@ function getServiceRequestOptionByName(name){
 function getServiceRequestOption(){
 	var parameters = {};
 	var data = db.executeProcedureManual(GET_SERVICE_REQUEST_OPTION, parameters);
-	return db.extractArray(data.out_result);
-}
-
-function getServiceRequestOptionById(optionId){
-	var parameters = { in_option_id: optionId};
-	var data = db.executeProcedureManual(GET_SERVICE_REQUEST_OPTION_BY_ID, parameters);
 	return db.extractArray(data.out_result);
 }
 

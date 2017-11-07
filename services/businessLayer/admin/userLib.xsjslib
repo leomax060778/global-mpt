@@ -73,13 +73,12 @@ function getUserByHl2Id(hl2Id) {
 
 }
 
-function getUserByHl3Id(hl3Id) {
+function getUserByHl3Id(hl3Id, hl2Id) {
     if (!hl3Id)
         throw ErrorLib.getErrors().BadRequest("The Parameter ID is not found",
             "userServices/handleGet/getUserByHl3Id", hl3Id);
 
-    var hl3 = businessLavel3.getLevel3ById(hl3Id, null);
-    return dbUser.getUserByHl3Id(hl3Id, hl3.HL2_ID);
+    return dbUser.getUserByHl3Id(hl3Id, hl2Id);
 
 }
 
@@ -181,7 +180,7 @@ function validate(data) {
             switch (user.LEVEL) {
                 case 3:
                     objLevel.IN_HL3_ID = user.LEVEL_ID;
-                    var hl3 = dataHl3.getLevel3ById(objLevel);
+                    var hl3 = dataHl3.getLevel3ById(objLevel.IN_HL3_ID);
                     var level2 = data.filter(function (permission) {
                         return permission.LEVEL_ID == hl3.HL2_ID;
                     });
@@ -191,7 +190,7 @@ function validate(data) {
                     level2Id = hl3.HL2_ID;
                 case 2:
                     objLevel.IN_HL2_ID = level2Id || user.LEVEL_ID;
-                    var hl2 = dataHl2.getLevel2ById(objLevel);
+                    var hl2 = dataHl2.getLevel2ById(objLevel.IN_HL2_ID);
 
                     var level1 = data.filter(function (permission) {
                         return permission.LEVEL_ID == hl2.HL1_ID;

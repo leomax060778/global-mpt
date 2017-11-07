@@ -5,6 +5,7 @@ var ErrorLib = mapper.getErrors();
 var dbCategory = mapper.getDataCategory();
 var dbCategoryOption = mapper.getDataOption();
 var dataCategoryOptionLevel = mapper.getDataCategoryOptionLevel();
+var util = mapper.getUtil();
 var dbMeasure = mapper.getDataMeasure();
 /*************************************************/
 
@@ -50,23 +51,45 @@ function getCategoryInUseByCategoryId(categoryId){
 
 }
 
-function getCategoryByHierarchyLevelId(hierarchy_level_id){
-	var categories = JSON.parse(JSON.stringify(dbCategory.getCategoryByHierarchyLevelId(hierarchy_level_id)));
-
-	categories.results.forEach(function(cat){
-		cat.Options = getOptionByLevelByCategory(hierarchy_level_id, cat.CATEGORY_ID);
+function getCategoryOptionByHierarchyLevelId(hierarchy_level_id){
+	var spResult = dbCategory.getCategoryOptionByHierarchyLevelId(hierarchy_level_id);
+	var result = {};
+    spResult.forEach(function(categoryOption){
+        if(!result[categoryOption.CATEGORY_NAME]){
+            result[categoryOption.CATEGORY_NAME] = {
+                CATEGORY_NAME: categoryOption.CATEGORY_NAME,
+                CATEGORY_ID: categoryOption.CATEGORY_ID,
+                OPTIONS: [{
+                    OPTION_ID: categoryOption.OPTION_ID
+                    , OPTION_NAME: categoryOption.OPTION_NAME
+                    , CATEGORY_ID: categoryOption.CATEGORY_ID
+                }]
+            };
+		} else {
+            result[categoryOption.CATEGORY_NAME].OPTIONS.push({
+                OPTION_ID: categoryOption.OPTION_ID
+                , OPTION_NAME: categoryOption.OPTION_NAME
+                , CATEGORY_ID: categoryOption.CATEGORY_ID
+            });
+		}
 	});
+    return util.objectToArray(result);
+}
 
-	return categories;
+function getCategoryByHierarchyLevelId(hierarchy_level_id){
+    var categories = JSON.parse(JSON.stringify(dbCategory.getCategoryByHierarchyLevelId(hierarchy_level_id)));
 
+    categories.results.forEach(function(cat){
+        cat.Options = getOptionByLevelByCategory(hierarchy_level_id, cat.CATEGORY_ID);
+    });
 
+    return categories;
 }
 
 function updateAllocationCategory(data, userId) {
 	return dbCategory.updateAllocationCategory(data.CATEGORY_ID,
 		data.DESCRIPTION, data.NAME, data.MEASURE_ID, data.SINGLE_OPTION_ONLY ? 1 : 0,
 		userId);
-
 }
 
 

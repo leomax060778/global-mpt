@@ -218,7 +218,7 @@ BEGIN
                               '' AS PARTNER_NO
                              FROM HL4
                              JOIN :VA_CATEGORY_OPTION CO ON 1=1
-                             JOIN BUSINESS_OWNER BO ON UPPER(BO.DESCRIPTION) = 'MARKETING'
+                             LEFT JOIN BUSINESS_OWNER BO ON UPPER(BO.DESCRIPTION) = 'MARKETING'
                              LEFT JOIN PRIORITY PR ON UPPER(PR.NAME) = 'MEDIUM'
                              LEFT JOIN "DISTRIBUTION_CHANNEL" DC ON DIS_CHANNEL_ID = DC.DISTRIBUTION_CHANNEL_ID
                              LEFT JOIN "SALE_ORGANIZATION" SO ON MKT_ORG_ID = SO.SALES_ORGANIZATION_ID

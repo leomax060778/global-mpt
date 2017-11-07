@@ -12,8 +12,8 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_HL3_VERSION"
     in in_hl3_hierarchy_id bigint,
     in in_hl3_status_detail_id bigint,
     in in_in_budget tinyint,
-    in in_shopping_cart_approver tinyint,
-    in in_cost_center tinyint,
+    in in_shopping_cart_approver nvarchar(10),
+    in in_cost_center nvarchar(10),
 	out out_result bigint
 	)
 	LANGUAGE SQLSCRIPT

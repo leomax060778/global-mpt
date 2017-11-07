@@ -89,11 +89,7 @@ if(in_issa = 1) then
     ,
              CONCAT(
                 CONCAT(
-                    CONCAT(
-                        CONCAT(
-                            CONCAT(HL1.ACRONYM,SUBSTRING(TO_NVARCHAR(BGY.BUDGET_YEAR), 3, 2))
-                            ,'-')
-                        , hl3.acronym)
+                    CONCAT(hl2.ORGANIZATION_ACRONYM,SUBSTRING(TO_NVARCHAR(BGY.BUDGET_YEAR), 3, 2))
                     ,'-')
                 ,hl4.acronym)
             AS HL4_PATH
@@ -109,12 +105,8 @@ else
     ,
      CONCAT(
         CONCAT(
-            CONCAT(
-                CONCAT(
-                    CONCAT(HL1.ACRONYM,SUBSTRING(TO_NVARCHAR(BGY.BUDGET_YEAR), 3, 2))
-                    ,'-')
-                , hl3.acronym)
-            ,'-')
+            CONCAT(HL2.ORGANIZATION_ACRONYM,SUBSTRING(TO_NVARCHAR(BGY.BUDGET_YEAR), 3, 2))
+        ,'-')
         ,hl4.acronym)
     AS HL4_PATH
     from HL4 hl4

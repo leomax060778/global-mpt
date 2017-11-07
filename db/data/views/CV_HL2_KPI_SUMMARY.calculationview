@@ -16,6 +16,7 @@
         <viewAttribute datatype="DECIMAL" id="TOTAL_VALUE_ALLOCATED" length="10" scale="2"/>
         <viewAttribute datatype="DECIMAL" id="TOTAL_VOLUME_ALLOCATED" length="10" scale="2"/>
         <viewAttribute datatype="NVARCHAR" id="L2_ACRONYM" length="255"/>
+        <viewAttribute datatype="NVARCHAR" id="ORGANIZATION_NAME" length="255"/>
         <viewAttribute datatype="BIGINT" id="HL1_ID"/>
         <viewAttribute datatype="BIGINT" id="HL2_ID"/>
         <viewAttribute datatype="TINYINT" id="IS_LOCKED"/>
@@ -32,6 +33,7 @@ BEGIN
                  , hl2.HL1_ID 
                  , hl2.HL2_ID 
                  , hl2.ORGANIZATION_ACRONYM AS L2_ACRONYM
+              , hl2.ORGANIZATION_NAME AS ORGANIZATION_NAME
                  , (CASE WHEN budgetYear.VERSIONED_END_DATE >= CURRENT_TIMESTAMP THEN 0 ELSE 1 END) AS IS_LOCKED
                  FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL2&quot; hl2
                  INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL1&quot; hl1
@@ -75,6 +77,7 @@ BEGIN
                  , hl3.TOTAL_VALUE_ALLOCATED AS TOTAL_VALUE_ALLOCATED
                  , hl3.TOTAL_VOLUME_ALLOCATED AS TOTAL_VOLUME_ALLOCATED
                  , hl2.L2_ACRONYM
+                 , hl2.ORGANIZATION_NAME
                  , hl2.HL1_ID 
                  , hl2.HL2_ID 
                  , hl2.IS_LOCKED
@@ -111,7 +114,11 @@ END /********* End Procedure Script ************/</definition>
         <descriptions/>
         <keyMapping columnObjectName="Script_View" columnName="L2_ACRONYM"/>
       </attribute>
-      <attribute id="HL1_ID" order="8">
+      <attribute id="ORGANIZATION_NAME" order="8">
+        <descriptions defaultDescription="ORGANIZATION_NAME"/>
+        <keyMapping columnObjectName="Script_View" columnName="ORGANIZATION_NAME"/>
+      </attribute>
+      <attribute id="HL1_ID" order="9">
         <descriptions/>
         <keyMapping columnObjectName="Script_View" columnName="HL1_ID"/>
       </attribute>
@@ -133,11 +140,11 @@ END /********* End Procedure Script ************/</definition>
         <descriptions/>
         <measureMapping columnObjectName="Script_View" columnName="TOTAL_VOLUME_ALLOCATED"/>
       </measure>
-      <measure id="HL2_ID" order="9" aggregationType="sum" measureType="simple">
+      <measure id="HL2_ID" order="10" aggregationType="sum" measureType="simple">
         <descriptions/>
         <measureMapping columnObjectName="Script_View" columnName="HL2_ID"/>
       </measure>
-      <measure id="IS_LOCKED" order="10" aggregationType="sum" measureType="simple">
+      <measure id="IS_LOCKED" order="11" aggregationType="sum" measureType="simple">
         <descriptions/>
         <measureMapping columnObjectName="Script_View" columnName="IS_LOCKED"/>
       </measure>

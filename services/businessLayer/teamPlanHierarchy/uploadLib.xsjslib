@@ -49,7 +49,7 @@ function getMapHL1Excel() {
 //get object value from map from a key
 function getValue(element_key) {
     return map.filter(function (elem) {
-        return elem.COLUMN_NAME == element_key
+        return elem.COLUMN_NAME.trim() == element_key.trim()
     })[0];
 }
 
@@ -229,6 +229,21 @@ function mapKeyForLevel(level, key) {
     return null;
 }
 
+
+function getLevelString(level) {
+    switch (Number(level)) {
+        case 1:
+            return "HL1";
+            break;
+        case 2:
+            return "HL2";
+            break;
+        case 3:
+            return "HL3";
+            break;
+    }
+}
+
 function insertDictionaryHL(data, userId) {
     //clean dictionary for this user
     dataUpload.deleteDictionary(userId);
@@ -239,15 +254,15 @@ function insertDictionaryHL(data, userId) {
     //iterate data
     for (var i = 0; i < data.length; i++) {
 
-        var path = data[i]["CSV_ACRONYM"];// payload[i]["CSV_ACRONYM"];
-        var level = getLevel(data[i]["CSV_ACRONYM"]).Level;
+        var path = data[i]["CSV_ACRONYM"];
+        var level = getLevelString(data[i]["CSV_LEVEL"]);
+        var parent = data[i]["CSV_PARENT"];
 
-        // throw JSON.stringify(map);
         Object.keys(data[i]).forEach(function (key) {
             if (key != "CSV_ACRONYM" && key != "OBJECT_TYPE") {
                 var newKey = mapKeyForLevel(level, key);
                 if (newKey)
-                    dataUpload.insertDictionary(path, newKey, data[i][key], level, userId);
+                    dataUpload.insertDictionary(path, newKey, data[i][key], level, userId, parent);
             }
         });
     }
@@ -285,20 +300,23 @@ function insertDictionaryHlKPI(data, userId) {
     for (var i = 0; i < data.length; i++) {
 
         var path = data[i]["CSV_ACRONYM"]  + '&' + i;// payload[i]["CSV_ACRONYM"];
-        var level = getLevelKPI(path).Level;
+        var level = getLevelString(data[i]["CSV_LEVEL"]);//getLevelKPI(path).Level;
 
         // throw JSON.stringify(map);
         Object.keys(data[i]).forEach(function (key) {
-            if (key != "CSV_ACRONYM") {
+            if (key != "CSV_ACRONYM" && key !="CSV_LEVEL") {
                 var newKey = mapKeyForLevel(level, key);
-                dataUpload.insertDictionaryKPI(path, newKey, data[i][key], level, userId);
+                if(!newKey) throw JSON.stringify({key:key, data:data[i]});
+                dataUpload.insertDictionaryKPI(path, newKey, data[i][key], level, userId, null);
             }
         });
     }
 
-    var arrAcronym = dataUpload.getDictionaryPathByUser(userId, 'HL2');
+    var arrAcronym = dataUpload.getDictionaryPathByUser(userId, 'HL1');
+    var arrAcronymhl2 = dataUpload.getDictionaryPathByUser(userId, 'HL2');
     var arrAcronymhl3 = dataUpload.getDictionaryPathByUser(userId, 'HL3');
 
+    Array.prototype.push.apply(arrAcronym, arrAcronymhl2);
     Array.prototype.push.apply(arrAcronym, arrAcronymhl3);
 
     return kpiProcessor(userId, arrAcronym, 1);
@@ -309,6 +327,7 @@ function getMapForL1L2L3() {
     map = rdo;
     return rdo;
 }
+
 
 //return level string
 //example:  XM                  -> "hl1"
@@ -336,6 +355,7 @@ function getLevel(path) {
     }
     return rdo;
 }
+
 
 function getLevelKPI(path) {
 
@@ -404,11 +424,20 @@ function getHL6PathFromDictionary(userId) {
     return dataUpload.getHL6PathFromDictionary(userId);
 }
 
+function getAcronym(path) {
+    var acronym = path.split('-');
+
+    if(acronym.length > 2){
+        return acronym[2];
+    }
+    else{
+        return acronym[1].substr(0, 2);
+    }
+}
+
 //
 function level1Processor(userId, arrayPaths, IMPORT_ID) {
 
-    //initialize map
-    this.getMapHL1ExcelComplete();
     var arrHl = {success: 0, fails: 0, messages: []};
 
     arrayPaths.forEach(function (obj) {
@@ -423,7 +452,7 @@ function level1Processor(userId, arrayPaths, IMPORT_ID) {
 
             //get all row by each path
             var row = dataUpload.getDataFromUploadDictionaryByPath(obj.PATH, userId);
-            hl.ACRONYM = getLevel(obj.PATH).Acronym;//obj.PATH;
+            hl.ACRONYM = getAcronym(obj.PATH);
             var budget = 0;
 
             if (validateHl1(row)) {
@@ -531,13 +560,27 @@ function level2Processor(userId, arrayPaths, IMPORT_ID) {
             var row = dataUpload.getDataFromUploadDictionaryByPath(obj.PATH, userId);
             var budget = 0;
             if (validateHl2(row)) {
-                hl.ACRONYM = getLevel(obj.PATH).Acronym;
-                hl.PARENT_ID = dataUpload.getParentIdByPath(obj.PATH.substring(0, 8)).HL_ID;
+                hl.ACRONYM = getAcronym(obj.PATH);//getLevelString(obj.Level).Acronym;
+                hl.PARENT_ID = dataUpload.getParentIdByPath(obj.PARENT).HL_ID;
 
                 row.forEach(function (cell) {
                     var fieldMapper = getValue(cell.UPLOAD_KEY);
 
-                    if (cell.UPLOAD_KEY == 'BUDGET') {
+                    if (cell.UPLOAD_KEY == 'SUBREGION_ID') {
+
+                        if (cell.UPLOAD_VALUE == 0) {
+                            hl[cell.UPLOAD_KEY] = 0;
+                        } else {
+                            var value = getForeignId(
+                                fieldMapper.FOREIGN_TABLE_NAME,
+                                fieldMapper.FOREIGN_COLUMN_REFERENCE,
+                                fieldMapper.FOREIGN_COLUMN_FILTER,
+                                cell.UPLOAD_VALUE,
+                                fieldMapper.OTHER_CONDITION, '')[fieldMapper.FOREIGN_COLUMN_REFERENCE];
+
+                            hl[cell.UPLOAD_KEY] = value;
+                        }
+                    }else if (cell.UPLOAD_KEY == 'BUDGET') {
                         budget = Number(parseNumberBudget(cell.UPLOAD_VALUE));
                         hl[cell.UPLOAD_KEY] = budget || 0;
                     } else {
@@ -554,12 +597,12 @@ function level2Processor(userId, arrayPaths, IMPORT_ID) {
                                         fieldMapper.OTHER_CONDITION, '')[fieldMapper.FOREIGN_COLUMN_REFERENCE];
 
                                     if (value) {
-                                        arrUsers.push({IN_USER_ID: value});
+                                        arrUsers.push({USER_ID: value});
                                     }
                                 });
                             }
                             else
-                                arrUsers.push({IN_USER_ID: userId});
+                                arrUsers.push({USER_ID: userId});
 
                             hl.USERS = arrUsers;
                             //todo: KPI
@@ -717,7 +760,7 @@ function processor(userId, arrayPaths, IMPORT_ID) {
                 //set acronym to L5 or L6
                 if (hl.HIERARCHY_LEVEL_ID == 2) {
                     //get last piece of path separete with "_" or "-"
-                    if (obj.PATH.indexOf("_") === -1) {
+                    if (obj.PATH.indexOf("-") === -1) {
                         if (obj.PATH.indexOf(hl.PARENT) >= 0) {
                             hl.ACRONYM = obj.PATH.substring(hl.PARENT.length);
                         } else {
@@ -729,7 +772,7 @@ function processor(userId, arrayPaths, IMPORT_ID) {
                         }
                     }
                     else {
-                        var auxAcronym = obj.PATH.split("_");
+                        var auxAcronym = obj.PATH.split("-");
                         hl.ACRONYM = auxAcronym[auxAcronym.length - 1];
                     }
 
@@ -839,7 +882,7 @@ function validateHl1(row) {
 
     var fieldMapper;
     row.forEach(function (cell) {
-        if (cell.UPLOAD_KEY == "REGION_ID" || cell.UPLOAD_KEY == "SUBREGION_ID" || cell.UPLOAD_KEY == "BUDGET_YEAR_ID") {
+        if (cell.UPLOAD_KEY == "REGION_ID" || cell.UPLOAD_KEY == "BUDGET_YEAR_ID") {
             id = cell.UPLOAD_VALUE;
             fieldMapper = getValue(cell.UPLOAD_KEY);
         }
@@ -1055,8 +1098,7 @@ function updateImportToRollbackState(importId, userId) {
 
 function level3Processor(userId, arrayPaths, IMPORT_ID) {
 
-    //initialize map
-    //this.getMapHL1ExcelComplete();
+
     var arrHl = {success: 0, fails: 0, messages: []};
 
     arrayPaths.forEach(function (obj) {
@@ -1070,8 +1112,8 @@ function level3Processor(userId, arrayPaths, IMPORT_ID) {
             var row = dataUpload.getDataFromUploadDictionaryByPath(obj.PATH, userId);
 
             if (validateHl3(row)) {
-                hl.ACRONYM = getLevel(obj.PATH).Acronym;
-                hl.PARENT_ID = dataUpload.getParentIdByPath(obj.PATH.substring(0, 12)).HL_ID;
+                hl.ACRONYM = getAcronym(obj.PATH);
+                hl.PARENT_ID = dataUpload.getParentIdByPath(obj.PARENT).HL_ID;
                 hl.PATH = obj.PATH;
 
                 row.forEach(function (cell) {
@@ -1100,12 +1142,12 @@ function level3Processor(userId, arrayPaths, IMPORT_ID) {
                                     fieldMapper.OTHER_CONDITION, '')[fieldMapper.FOREIGN_COLUMN_REFERENCE];
 
                                 if (value) {
-                                    arrUsers.push({IN_USER_ID: value});
+                                    arrUsers.push({USER_ID: value});
                                 }
                             });
                         }
                         else
-                            arrUsers.push({IN_USER_ID: userId});
+                            arrUsers.push({USER_ID: userId});
 
                         hl.USERS = arrUsers;
                     }
@@ -1143,8 +1185,8 @@ function validateHl3(row) {
 
     row.forEach(function (cell) {
 
-        var acronym = getLevel(cell.PATH).Acronym;
-        var parent = cell.PATH.substring(0, 12);
+        var acronym = getAcronym(cell.PATH);
+        var parent = cell.PARENT;
 
         if (!dataUpload.getParentIdByPath(parent)) {
             error.details = "The parent doesn't exist";
@@ -1177,16 +1219,16 @@ function validateHl2(row) {
     error.row = row;
 
     row.forEach(function (cell) {
-        var acronym = getLevel(cell.PATH).Acronym;
-        var parent = cell.PATH.substring(0, 8); //path for parent hl1
+        var acronym = getAcronym(cell.PATH);
+        var parent = cell.PARENT;//path for parent hl1
 
         if (!dataUpload.getParentIdByPath(parent)) {
             error.details = "The parent doesn't exist";
             throw error;
         }
 
-        if (acronym.length != 3) {
-            error.details = "The Acronym must have 3 characters.";
+        if (acronym.length != 2) {
+            error.details = "The Acronym must have 2 characters.";
             throw error;
         }
 
@@ -1208,18 +1250,12 @@ function kpiProcessor(userId, arrayPaths, IMPORT_ID) {
         try {
 
             var hl = {};
-            hl.HIERARCHY_LEVEL_ID = getLevelKPI(obj.PATH).Level;
-            hl.PATH = obj.PATH;
 
-            hl.hl2_expected_outcomes = {};
-            hl.hl2_expected_outcomes.hl2_expected_outcomes_details = [];
-            hl.hl3_expected_outcomes = {};
-            hl.hl3_expected_outcomes.hl3_expected_outcomes_details = [];
+            hl.PATH = obj.PATH;
+            hl.TARGET_KPIS = {KPIS: []};
 
             //get all row by each path
             var rows = dataUpload.getDataFromUploadDictionaryByPath(obj.PATH, userId);
-
-
 
             if (validateKPI(rows)) {
 
@@ -1229,12 +1265,10 @@ function kpiProcessor(userId, arrayPaths, IMPORT_ID) {
                 eod.EURO_VALUE = null;
 
                 rows.forEach(function (cell) {
-
+                    hl.HIERARCHY_LEVEL_ID = getLevelString(cell.HIERARCHY_LEVEL_ID);
                     var fieldMapper = getValue(cell.UPLOAD_KEY);
 
-
-                    if (cell.UPLOAD_KEY == 'EXPECTED_OUTCOME_OPTION_NAME') {
-
+                    if (cell.UPLOAD_KEY == 'EXPECTED_OUTCOME_OPTION_NAME' || cell.UPLOAD_KEY == 'EXPECTED_OUTCOME_NAME') {
                         if (fieldMapper && cell.UPLOAD_VALUE != '') {
                             var value = getForeignId(
                                 fieldMapper.FOREIGN_TABLE_NAME,
@@ -1242,8 +1276,8 @@ function kpiProcessor(userId, arrayPaths, IMPORT_ID) {
                                 fieldMapper.FOREIGN_COLUMN_FILTER,
                                 cell.UPLOAD_VALUE,
                                 fieldMapper.OTHER_CONDITION, '')[fieldMapper.FOREIGN_COLUMN_REFERENCE];
-
-                            eod.OUTCOMES_ID = value;
+                            var name = cell.UPLOAD_KEY == 'EXPECTED_OUTCOME_OPTION_NAME' ? 'OUTCOMES_ID' : 'OUTCOMES_TYPE_ID';
+                            eod[name]= value;
                         }
                     }
                     else if (cell.UPLOAD_KEY == 'EXPECTED_OUTCOME_OPTION_VOLUME') {
@@ -1260,16 +1294,11 @@ function kpiProcessor(userId, arrayPaths, IMPORT_ID) {
                     }
                 });
 
+                hl.TARGET_KPIS.KPIS.push(eod);
+                hl[hl.HIERARCHY_LEVEL_ID + '_ID'] = dataUpload.getParentIdByPath(getLevelKPI(obj.PATH).PATH).HL_ID;
 
-                if (hl.HIERARCHY_LEVEL_ID == 'HL2') {
-                    hl.hl2_expected_outcomes.hl2_expected_outcomes_details.push(eod);
-                    hl.IN_HL2_ID = dataUpload.getParentIdByPath(getLevelKPI(obj.PATH).PATH).HL_ID;
-                } else {
-                    hl.hl3_expected_outcomes.hl3_expected_outcomes_details.push(eod);
-                    hl.IN_HL3_ID = dataUpload.getParentIdByPath(getLevelKPI(obj.PATH).PATH).HL_ID;
-                }
-                //throw JSON.stringify({'hl':hl, 'eod':eod});
                 HLs.push(hl);
+
 
             }
         } catch (e) {
@@ -1278,13 +1307,17 @@ function kpiProcessor(userId, arrayPaths, IMPORT_ID) {
                 logImportError(e, IMPORT_ID, userId);
                 arrHl.messages.push(e.details);
             } else {
-                logImportAnotherError(obj.PATH, obj.HIERARCHY_LEVEL_ID, e, IMPORT_ID, userId);
+               logImportAnotherError(obj.PATH, obj.HIERARCHY_LEVEL_ID, e, IMPORT_ID, userId);
+
             }
 
         }
     });
 
-    return insertKpi(HLs, userId, IMPORT_ID, arrHl);
+throw JSON.stringify(HLs);
+    var targetKpis = parseKpiForUpload(HLs);
+
+    return insertKpi(targetKpis, userId, IMPORT_ID, arrHl);
 }
 
 function validateKPI(row) {
@@ -1307,21 +1340,31 @@ function validateKPI(row) {
 //hlList-->
 
 function insertKpi(hlList, userId, IMPORT_ID, arrHl) {
-
-
+    var updateExpectedOutcomesMap = {
+        HL1: blLevel1,
+        HL2: blLevel2,
+        HL3: blLevel3,
+        1: blLevel1,
+        2: blLevel2,
+        3: blLevel3
+    };
     hlList.forEach(function (hl) {
-        var hl_length = hl.hl2_expected_outcomes.hl2_expected_outcomes_details.length + hl.hl3_expected_outcomes.hl3_expected_outcomes_details.length ;
+        var hl_length = hl.TARGET_KPIS.KPIS.length;
 
         try {
-            if (hl.HIERARCHY_LEVEL_ID == 'HL2') //level 2
-                blLevel2.updateExpectedOutcomes(hl, userId);
-            else
-                blLevel3.updateExpectedOutcomes(hl, userId);
+
+            var businessLayer = updateExpectedOutcomesMap[hl.HIERARCHY_LEVEL_ID];
+            if(businessLayer){
+                businessLayer.updateExpectedOutcomes(hl, userId, true);
+            } else {
+                throw ErrorLib.getErrors().ImportError("", "", 'INCORRECT LEVEL');
+            }
 
             arrHl.success = arrHl.success + hl_length;
             logImportKPISuccess(hl, IMPORT_ID, userId);
         }
         catch (e) {
+            throw e;
             arrHl.fails = arrHl.fails +  hl_length;
             if (e && e.code == 456) {
                 logImportError(e, IMPORT_ID, userId);
@@ -1358,6 +1401,19 @@ function logImportKPISuccess(row, IMPORT_ID, userId) {
     dataUpload.insertLog(keys, values, 0,
         "HL_ID: " + hl_id + separator + "Level: " + level + separator + "DETAIL: Insert succefully.", IMPORT_ID,
         userId);
+}
+
+function parseKpiForUpload(kpis){
+    var result = {};
+    kpis.forEach(function (kpi) {
+        if(!result[kpi.HIERARCHY_LEVEL_ID]){
+            result[kpi.HIERARCHY_LEVEL_ID] = JSON.parse(JSON.stringify(kpi));
+        } else {
+            result[kpi.HIERARCHY_LEVEL_ID].TARGET_KPIS.KPIS.push(kpi.TARGET_KPIS.KPIS[0])
+        }
+    });
+
+    return util.objectToArray(result);
 }
 /**/
 

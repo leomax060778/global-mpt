@@ -43,21 +43,12 @@ var spUpdateHl6CRMBinding = "UPD_HL6_CHANGED_FIELDS";
 var spGetHl6MyBudgetByHl6Id = "GET_HL6_BUDGET_BY_HL6_ID";
 var spGetHl6SalesByHl6Id = "GET_HL6_SALES_BY_ID";
 
-var spGetHl6Category = "GET_HL6_CATEGORY";
-var spGetHl6CategoryByHl6Id = "GET_HL6_CATEGORY_BY_HL6_ID";
-var spGetHl6CategoryByHl6CategoryId = "GET_HL6_CATEGORY_BY_HL6_CATEGORY_ID";
-var spGetHl6OptionByCategoryId = "GET_HL6_OPTION_BY_CATEGORY_ID";
-var spGetHl6CategoryByCategoryId = "GET_HL6_CATEGORY_BY_CATEGORY_ID";
-var spGetHl6CategoryOption = "GET_HL6_OPTION_BY_CATEGORY_ID";
-var spGetHl6CategoryOptionByHl6IdOptionId = "GET_HL6_CATEGORY_OPTION_BY_HL6_ID_OPTION_ID";
 var spInsHl6Category = "INS_HL6_CATEGORY";
 var spInsHl6CategoryOption = "INS_HL6_CATEGORY_OPTION";
 var spUpdateHl6CategoryOption = "UPD_HL6_CATEGORY_OPTION";
 var spDelHl6Category = "DEL_HL6_CATEGORY";
-var spDelHl6CategoryOption = "DEL_HL6_CATEGORY_OPTION";
 var spResetHl6CategoryOptionUpdated = "RESET_HL6_CATEGORY_OPTION_UPDATED";
 var spGetCategoryByHierarchyLevelId = "GET_CATEGORY_BY_HIERARCHY_LEVEL_ID";
-var spGetOptionByCategoryId = "GET_OPTION_BY_CATEGORY_ID";
 var spInsHl6BudgetSalesUpload = "INS_HL6_BUDGET_SALES_UPLOAD";
 var GET_HL6_BY_IMPORT_ID = "GET_HL6_BY_IMPORT_ID";
 var DEL_HL6_HARD_BY_ID = "DEL_HL6_HARD_BY_ID";
@@ -461,60 +452,6 @@ function getNewHl6Id(HL5_ID){
     return rdo;
 }
 
-function getHl6Category(hl6_id,category_id,hl6CategoryId){
-    if(hl6_id && category_id){
-        var rdo = db.executeProcedureManual(spGetHl6Category,{'in_hl6_id':hl6_id, 'in_category_id':category_id});
-        return db.extractArray(rdo.out_hl6_category);
-    } else if (hl6_id && !category_id){
-        var rdo = db.executeProcedureManual(spGetHl6CategoryByHl6Id,{'in_hl6_id':hl6_id});
-        return db.extractArray(rdo.out_hl6_category);
-    } else if (!hl6_id && !category_id && hl6CategoryId){
-        var rdo = db.executeProcedureManual(spGetHl6CategoryByHl6CategoryId,{'in_hl6_category_id':hl6CategoryId});
-        return db.extractArray(rdo.out_hl6_category);
-    }
-    return null;
-}
-
-function getHl6OptionByCategoryId(categoryId){
-    if(categoryId != ""){
-        var params = {
-            'in_hl6_category_id': categoryId
-        };
-        var rdo = db.executeProcedureManual(spGetHl6OptionByCategoryId,params);
-        return db.extractArray(rdo.out_hl6_category_option)[0];
-    }
-    return null;
-}
-
-function getHl6CategoryByCategoryId(categoryId){
-    if(categoryId != ""){
-        var params = {
-            'in_category_id': categoryId
-        };
-        var rdo = db.executeProcedureManual(spGetHl6CategoryByCategoryId,params);
-        return db.extractArray(rdo.out_hl6_category)[0];
-    }
-    return null;
-}
-
-function getHl6CategoryOption(hl6CategoryId, hl6Id, optionId, autoCommit){
-
-    var params = {
-        'in_hl6_id' : hl6Id,
-        'in_option_id'  : optionId
-    };
-
-    if(hl6CategoryId && !hl6Id && !optionId){
-        var rdo = db.executeProcedureManual(spGetHl6CategoryOption,{'in_hl6_category_id': hl6CategoryId});
-        return db.extractArray(rdo.out_hl6_category_option);
-    } else if (!hl6CategoryId && hl6Id && optionId){
-        var rdo = db.executeProcedureManual(spGetHl6CategoryOptionByHl6IdOptionId,{'in_hl6_id':hl6Id, 'in_option_id':optionId});
-        return db.extractArray(rdo.out_hl6_category_option);
-    }
-    return null;
-
-}
-
 function insertHl6Category(hl6Id,categoryId,createdUserId,inProcessingReport,autoCommit){
     var params = {
         'in_hl6_id' : hl6Id,
@@ -574,20 +511,6 @@ function deleteHl6Category(hl6Id, userId, autoCommit){
     return rdo;
 }
 
-function deleteHl6CategoryOption(hl6Id, userId, autoCommit){
-    var params = {
-        'in_hl6_id' : hl6Id,
-        'in_user_id'  : userId
-    };
-    var rdo;
-    if(autoCommit){
-        rdo = db.executeScalar(spDelHl6CategoryOption,params,'out_result');
-    }else{
-        rdo = db.executeScalarManual(spDelHl6CategoryOption,params,'out_result');
-    }
-    return rdo;
-}
-
 function resetHl6CategoryOptionUpdated(hl6CategoryId, userId){
     if(hl6CategoryId){
         var params = {
@@ -596,17 +519,6 @@ function resetHl6CategoryOptionUpdated(hl6CategoryId, userId){
         };
         var rdo = db.executeScalarManual(spResetHl6CategoryOptionUpdated,params,'out_result');
         return rdo;
-    }
-    return null;
-}
-
-function getHl6CategoryByHl6CategoryId(categoryId){
-    if(categoryId != ""){
-        var params = {
-            'in_hl6_category_id': categoryId
-        };
-        var rdo = db.executeProcedureManual(spGetHl6CategoryByHl6CategoryId,params);
-        return db.extractArray(rdo.out_hl6_category)[0];
     }
     return null;
 }

@@ -80,7 +80,7 @@ function completeCRMPath(array, key, setDisplayName, parse, userId) {
     array.forEach(function (data) {
         if (data.PARENT_PATH) {
             data.PARENT_PATH = path + data.PARENT_PATH;
-            data[key] = data.PARENT_PATH + data[acronymKey];
+            data[key] = key.indexOf('HL5_PATH') >= 0 ? data.PARENT_PATH + '-' + data[acronymKey] : data.PARENT_PATH + data[acronymKey];
         }
 
         if (data.BUDGET_SPEND_REQUEST_AMOUNT) {

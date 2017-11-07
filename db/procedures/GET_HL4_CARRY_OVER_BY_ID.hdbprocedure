@@ -1,0 +1,23 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL4_CARRY_OVER_BY_ID" (
+	IN in_hl4_id BIGINT,
+	OUT out_result TABLE(
+	hl4_id BIGINT,
+	employee_responsible_user nvarchar(10)
+	)
+)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	READS SQL DATA AS
+BEGIN
+
+out_result =
+	SELECT  HL4.hl4_id,
+		    HL4.shopping_cart_approver as employee_responsible_user
+
+	FROM HL4
+	WHERE HL4.hl4_id = in_hl4_id
+	  AND HL4.deleted = 0
+	  AND HL4.enabled = 1;
+
+END;

@@ -215,6 +215,6 @@ function getHash() {
 
 function parseAssignedUsers(assignedUsers) {
     return assignedUsers.map(function (user) {
-        return user.USER_ID;
+        return user.USER_ID || user.IN_USER_ID;
     });
 }

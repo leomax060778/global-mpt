@@ -5,9 +5,7 @@ var ErrorLib = mapper.getErrors();
 var httpUtil = mapper.getHttp();
 /***************END INCLUDE LIBRARIES*******************/
 
-var spGET_DICTIONARY_BY_PATH = "GET_DICTIONARY_BY_PATH";
 var spGET_DICTIONARY_PATH_BY_USER_ID = "GET_DICTIONARY_PATH_BY_USER_ID";
-var spDEL_DICTIONARY_L5_L6 = "DEL_DICTIONARY_L5_L6";
 var spINS_DICTIONARY = "INS_DICTIONARY_L5_L6";
 var spINS_DICTIONARY_KPI = "INS_DICTIONARY_KPI";
 var spGET_MAP_HL_EXCEL = "GET_MAP_HL_EXCEL";
@@ -81,13 +79,14 @@ function insertLog(csvColumnName, columnName, state, comments, importId, userId)
     return rdo;
 }
 
-function insertDictionary(path, key, value, hl, userId){
+function insertDictionary(path, key, value, hl, userId, parent){
     var params = {
         'IN_PATH' : path,
         'IN_KEY': key,
         'IN_VALUE': value,
         'HIERARCHY_LEVEL_ID' :  hl ? hierarchyLevel[hl.toLowerCase()] : 0,
-        'IN_USER_ID' : userId
+        'IN_USER_ID' : userId,
+        'IN_PARENT': parent
     };
     var rdo = db.executeScalarManual(spINS_DICTIONARY, params, "OUT_RESULT");
     return rdo;
@@ -108,16 +107,6 @@ function insertDictionaryKPI(path, key, value, hl, userId){
 function getDictionaryL5L6PathByUser(userId){
     var rdo = db.executeProcedure(spGET_DICTIONARY_PATH_BY_USER_ID, {'IN_USER_ID':userId});
     return db.extractArray(rdo.OUT_RESULT);
-}
-
-function getDictionaryL5L6ByPath(path, userId){
-    var rdo = db.executeProcedure(spGET_DICTIONARY_BY_PATH, {'IN_PATH':path,'IN_USER_ID':userId});
-    return db.extractArray(rdo.OUT_RESULT);
-}
-
-function deleteDictionaryL5L6(userId){
-    var rdo = db.executeScalarManual(spDEL_DICTIONARY_L5_L6, {'in_user_id':userId}, "OUT_RESULT");
-    return rdo;
 }
 
 function getParentIdByPath(path){

@@ -37,7 +37,7 @@ function insertServiceRequestOption(reqBody, userId) {
 
 function updateServiceRequestOption(reqbody, userId) {
     var objOption = dbOption.getServiceRequestOptionByName(reqbody.NAME);
-    if(objOption && objOption.length && objOption.SERVICE_REQUEST_OPTION_ID != reqbody.SERVICE_REQUEST_OPTION_ID)
+    if(objOption && objOption.length && objOption[0].SERVICE_REQUEST_OPTION_ID != reqbody.SERVICE_REQUEST_OPTION_ID)
         throw ErrorLib.getErrors().CustomError("","AllocationOptionService", "Already exists another Option with same name.");
 
 	return dbOption.updateServiceRequestOption(reqbody.SERVICE_REQUEST_OPTION_ID,reqbody.NAME, userId);

@@ -48,7 +48,7 @@ function getL4ChangedFieldsByHl4Id(hl4Id, userId) {
         var hl4 = dataHl4.getHl4ById(hl4Id);
         var path = dataPath.getPathByLevelParent(4, hl4['HL3_ID'])[0];
         var CRM_ACRONYM = "CRM";
-        var parentPath = CRM_ACRONYM + "-" + path.L1_ACRONYM + path.BUDGET_YEAR + "-" + path.L3_ACRONYM;
+        var parentPath = CRM_ACRONYM + "-" + path.L2_ACRONYM + path.BUDGET_YEAR + "-" + path.L3_ACRONYM;
         var hl4Categories = dataCategoryOptionLevel.getAllocationCategory(hl4Id, 'hl4');
         var hl4Options = util.getAllocationOptionByCategoryAndLevelId('hl4', hl4Id);
 
@@ -79,7 +79,7 @@ function getL4ChangedFieldsByHl4Id(hl4Id, userId) {
 
                 switch (field) {
                     case 'ACRONYM':
-                        object.value = parentPath + "-" + hl4['ACRONYM'];
+                        object.value = CRM_ACRONYM + "-" + path.L2_ACRONYM + path.BUDGET_YEAR + "-" + hl4['ACRONYM'];
                         break;
                     case 'PARENT_PATH':
                         object.value = parentPath;

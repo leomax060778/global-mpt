@@ -42,7 +42,7 @@ BEGIN
 		, HL2.acronym
 		, HL2.description 
 		, HL2.budget_year_id
-		, HL2.region_id
+		, HL1.region_id
 		, HL2.subregion_id
 		, HL2.created_date_tz
 		, HL2.modified_date_tz

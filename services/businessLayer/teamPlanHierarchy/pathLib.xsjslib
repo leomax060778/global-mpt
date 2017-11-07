@@ -71,6 +71,7 @@ function getPathByLevelParent(hierarchyLevel, parentId) {
         var path = dataPath.getPathByLevelParent(hierarchyLevel, parentId);
         if (path.length) {
             result.GRANDPARENT_ID = path[0].GRANDPARENT_ID;
+            /*
             result.HIERARCHY_TREE = [
                 {name: path[0].L1_ACRONYM + path[0].BUDGET_YEAR}
             ];
@@ -83,14 +84,37 @@ function getPathByLevelParent(hierarchyLevel, parentId) {
                 result.HIERARCHY_TREE.push({name: path[0].L4_ACRONYM});
             if (path[0].L5_ACRONYM)
                 result.HIERARCHY_TREE.push({name: path[0].L5_ACRONYM});
-
-
+*/
+/*
             result.PATH_TPH = levelPath + " for " + CRM_ACRONYM + "-"
                 + path[0].L1_ACRONYM + path[0].BUDGET_YEAR
                 + (parseInt(hierarchyLevel) == 3 && path[0].L2_ACRONYM ? '-' + path[0].L2_ACRONYM : '')
                 + (path[0].L3_ACRONYM ? '-' + path[0].L3_ACRONYM : '')
                 + (path[0].L4_ACRONYM ? '-' + path[0].L4_ACRONYM : '')
                 + (path[0].L5_ACRONYM ? path[0].L5_ACRONYM : '');
+*/
+            switch (parseInt(hierarchyLevel)){
+                case 2:
+                    result.PATH_TPH = levelPath + " for " + CRM_ACRONYM + "-" + path[0].L1_ACRONYM + path[0].BUDGET_YEAR;
+                    result.HIERARCHY_TREE.push({name: path[0].L1_ACRONYM + path[0].BUDGET_YEAR});
+                    break;
+                case 3:
+                    result.PATH_TPH = levelPath + " for " + CRM_ACRONYM + "-" + path[0].L2_ACRONYM + path[0].BUDGET_YEAR;
+                    result.HIERARCHY_TREE.push({name: path[0].L2_ACRONYM + path[0].BUDGET_YEAR});
+                    break;
+                case 4:
+                    result.PATH_TPH = levelPath + " for " + CRM_ACRONYM + "-" + path[0].L2_ACRONYM + path[0].BUDGET_YEAR + "-" + path[0].L3_ACRONYM;
+                    result.HIERARCHY_TREE.push({name: path[0].L2_ACRONYM + path[0].BUDGET_YEAR},{name: path[0].L3_ACRONYM});
+                    break;
+                case 5:
+                    result.PATH_TPH = levelPath + " for " + CRM_ACRONYM + "-" + path[0].L2_ACRONYM + path[0].BUDGET_YEAR + "-" + path[0].L4_ACRONYM;
+                    result.HIERARCHY_TREE.push({name: path[0].L2_ACRONYM + path[0].BUDGET_YEAR},{name: path[0].L4_ACRONYM});
+                    break;
+                case 6:
+                    result.PATH_TPH = levelPath + " for " + CRM_ACRONYM + "-" + path[0].L2_ACRONYM + path[0].BUDGET_YEAR + "-" + path[0].L4_ACRONYM + "-" + path[0].L5_ACRONYM;
+                    result.HIERARCHY_TREE.push({name: path[0].L2_ACRONYM + path[0].BUDGET_YEAR}, {name: path[0].L4_ACRONYM}, {name: path[0].L5_ACRONYM});
+                    break;
+            }
         }
     }
     ;

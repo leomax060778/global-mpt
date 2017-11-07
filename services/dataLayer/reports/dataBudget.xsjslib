@@ -6,8 +6,6 @@ var userbl = mapper.getUser();
 /** ***********END INCLUDE LIBRARIES*************** */
 
 var GET_REP_HL4_BASIC = "GET_REP_HL4_BASIC";
-var GET_HL4_BUDGET_REGION = "GET_HL4_BUDGET_REGION";
-var GET_HL4_BUDGET_SUBREGION = "GET_HL4_BUDGET_SUBREGION";
 var GET_HL4_BUDGET_GLOBAL = "GET_HL4_BUDGET_GLOBAL";
 var GET_PLAN_BY_USER = "GET_PLAN_BY_USER";
 
@@ -65,38 +63,6 @@ function getPlansUser(userId){
 		});
 	}
 	return arrPlanUser;
-}
-
-/**
- * @deprecated
- * @param parameters
- @returns {}
- */
-function getBudgetRegionByHl4(hl4Id) {
-	/*if (hl4Id) {
-		var filter = "HL4_ID = " + hl4Id;
-		var rdo = db.executeProcedure(GET_HL4_BUDGET_REGION, {
-			'in_filter' : filter
-		});
-		return db.extractArray(rdo.out_result);
-	}
-	return null;*/
-}
-
-/**
- * @deprecated
- * @param parameters
- @returns {}
- */
-function getBudgetSubRegionByHl4(hl4Id) {
-	/*if (hl4Id) {
-		var filter = "HL4_ID = " + hl4Id;
-		var rdo = db.executeProcedure(GET_HL4_BUDGET_SUBREGION, {
-			'in_filter' : filter
-		});
-		return db.extractArray(rdo.out_result);
-	}
-	return null;*/
 }
 
 function getBudgetGlobalTeamByHl4(hl4Id) {

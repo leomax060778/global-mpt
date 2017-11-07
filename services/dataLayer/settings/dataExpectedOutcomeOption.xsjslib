@@ -5,7 +5,6 @@ var db = mapper.getdbHelper();
 /*************************************************/
 var GET_ALL_EXPECTED_OUTCOME_OPTION = "GET_ALL_EXPECTED_OUTCOME_OPTION";
 var GET_ALL_EXPECTED_OUTCOME_OPTION_INCLUDE_DELETED = "GET_ALL_EXPECTED_OUTCOME_OPTION_INCLUDE_DELETED";
-var GET_OPTIONS_BY_EXPECTED_OUTCOME_LEVEL = "GET_OPTIONS_BY_EXPECTED_OUTCOME_LEVEL";
 var INS_EXPECTED_OUTCOME_OPTION = "INS_EXPECTED_OUTCOME_OPTION";
 var UPD_EXPECTED_OUTCOME_OPTION = "UPD_EXPECTED_OUTCOME_OPTION";
 var DEL_EXPECTED_OUTCOME_OPTION = "DEL_EXPECTED_OUTCOME_OPTION";
@@ -66,15 +65,6 @@ function getAllExpectedOutcomeOption(){
 function getAllExpectedOutcomeOptionIncludeDeleted(){
     var params = {};
     var list = db.executeProcedureManual(GET_ALL_EXPECTED_OUTCOME_OPTION_INCLUDE_DELETED, params);
-    return db.extractArray(list.out_result);
-}
-
-function getOptionsByExpectedOutcomeLevel(expected_outcome_id, hierarchylevel){
-    var params = {
-        'in_expected_outcome_id': expected_outcome_id,
-        'in_hierarchy_level_id': hierarchylevel
-    };
-    var list = db.executeProcedureManual(GET_OPTIONS_BY_EXPECTED_OUTCOME_LEVEL, params);
     return db.extractArray(list.out_result);
 }
 

@@ -52,7 +52,6 @@ BEGIN
 --        , hl1.crt_related
 	FROM HL1
 	LEFT JOIN REGION R ON R.region_id = HL1.region_id
-	LEFT JOIN SUBREGION SR ON SR.subregion_id = HL1.subregion_id
 	LEFT JOIN BUDGET_YEAR BUY ON BUY.budget_year_id = HL1.budget_year_id
 	WHERE
 		UPPER(HL1.acronym) = UPPER(in_acronym) AND BUY.budget_year_id = in_budget_year_id

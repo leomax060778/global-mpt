@@ -6,6 +6,6 @@ ALTER TABLE "MKTG_PLANNING_TOOL"."ALLOCATION_OPTION" DROP CONSTRAINT UK_ALLOCATI
 -- *************************************************************************************
 -- Update schema version
 INSERT INTO "MKTG_PLANNING_TOOL"."SCHEMA_VERSION"(VERSION, DESCRIPTION, SCRIPT)
-VALUES('V5.0.0-77', 'Drop CRM_KEY constraint in Alocation Option', 'V201710200930__Allocation_Option_Drop_constraint_CRM_KEY.sql');
+VALUES('V5.0.0-78', 'Drop CRM_KEY constraint in Alocation Option', 'V201710200930__Allocation_Option_Drop_constraint_CRM_KEY.sql');
 
 COMMIT;

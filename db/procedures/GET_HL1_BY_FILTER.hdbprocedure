@@ -14,7 +14,6 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL1_BY_FILTE
         , ACRONYM NVARCHAR(25)
         , BUDGET_YEAR NVARCHAR(255)
         , REGION_NAME NVARCHAR(255)
-        , SUBREGION_NAME NVARCHAR(255)
         , IS_LOCKED TINYINT
         , CATEGORY_NAME NVARCHAR(255)
         , OPTION_NAME NVARCHAR(255)
@@ -26,9 +25,9 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL1_BY_FILTE
         , SUB_AMOUNT DECIMAL(19,2)
 		)
 	, OUT out_total_budget DECIMAL(19, 2)
-) 
+)
 	LANGUAGE SQLSCRIPT
-	SQL SECURITY INVOKER 
+	SQL SECURITY INVOKER
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
 	READS SQL DATA AS
 BEGIN
@@ -40,7 +39,7 @@ BEGIN
 	va_total_budget := 0;
 
 	va_subresult =
-	SELECT 
+	SELECT
 		SUMMARY.HL1_ID
 		, SUMMARY.L1_BUDGET
 		, SUMMARY.L1_BUDGET_PERCENTAGE
@@ -50,7 +49,6 @@ BEGIN
 		, UPPER(SUMMARY.L1_ACRONYM) as acronym
 		, SUMMARY.BUDGET_YEAR
 		, SUMMARY.REGION_NAME
-		, SUMMARY.MARKET_UNIT_NAME AS SUBREGION_NAME
 		, SUMMARY.IS_LOCKED
         , SUMMARY.CATEGORY_NAME
         , SUMMARY.OPTION_NAME
@@ -64,8 +62,7 @@ BEGIN
 
 	FROM  "_SYS_BIC"."mktgplanningtool.db.data.views/CV_HL1_BUDGET_DISTRIBUTION_SUMMARY" SUMMARY
 	WHERE (SUMMARY.BUDGET_YEAR_ID = in_budget_year_id)
-	    AND (SUMMARY.SUBREGION_ID = in_subregion_id OR in_subregion_id = 0)
-	    AND SUMMARY.HL1_ID IN (SELECT HL1_ID FROM HL1_USER WHERE USER_ID = in_user_id OR in_is_super_Admin = 1);
+	    AND (in_is_super_Admin = 1 OR SUMMARY.HL1_ID IN (SELECT HL1_ID FROM HL1_USER WHERE USER_ID = in_user_id));
 
     -- this filter is necesary to filter GLOBALS, where region_id = 0
     if in_region_id = -1 then
@@ -78,7 +75,6 @@ BEGIN
                             		, T.ACRONYM
                             		, T.BUDGET_YEAR
                             		, T.REGION_NAME
-                            		, T.SUBREGION_NAME
                             		, T.IS_LOCKED
                                     , T.CATEGORY_NAME
                                     , T.OPTION_NAME
@@ -101,7 +97,6 @@ BEGIN
                             , T.ACRONYM
                             , T.BUDGET_YEAR
                             , T.REGION_NAME
-                            , T.SUBREGION_NAME
                             , T.IS_LOCKED
                             , T.CATEGORY_NAME
                             , T.OPTION_NAME

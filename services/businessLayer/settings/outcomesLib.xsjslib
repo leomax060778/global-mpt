@@ -9,16 +9,30 @@ var util = mapper.getUtil();
 /*************************************************/
 
 function getAllOutcomes(hl){
-	try{
-        var outcomesType = dataOutcomeType.getOutcomesTypeByHlId(hl);
-        var result = {};
-        outcomesType.forEach(function(outcome){     	
-        	result[outcome.OUTCOMES_TYPE_NAME] = getOutcomesByOtId(outcome.OUTCOMES_TYPE_ID, outcome.HIERARCHY_LEVEL_ID);
-        });
-        return result;
-	} catch(e) {
-        throw e;
-	}
+    var outcomesType = dataOutcomeType.getKpiListByHlId(hl);
+    var result = {};
+    outcomesType.forEach(function(outcome){
+        if(!result[outcome.OUTCOMES_TYPE_NAME]) {
+            result[outcome.OUTCOMES_TYPE_NAME] = {
+                OUTCOMES_TYPE_NAME: outcome.OUTCOMES_TYPE_NAME,
+                OUTCOMES_TYPE_ID: outcome.OUTCOMES_TYPE_ID,
+                OUTCOMES: [{
+                    OUTCOMES_ID: outcome.OUTCOMES_ID
+                    , OUTCOMES_NAME: outcome.OUTCOMES_NAME
+                    , SHOW_WIZARD: outcome.SHOW_WIZARD
+                }]
+            };
+        } else {
+            result[outcome.OUTCOMES_TYPE_NAME].OUTCOMES.push({
+                OUTCOMES_ID: outcome.OUTCOMES_ID
+                , OUTCOMES_NAME: outcome.OUTCOMES_NAME
+                , SHOW_WIZARD: outcome.SHOW_WIZARD
+            });
+        }
+
+        // result[outcome.OUTCOMES_TYPE_NAME] = getOutcomesByOtId(outcome.OUTCOMES_TYPE_ID, outcome.HIERARCHY_LEVEL_ID);
+    });
+    return util.objectToArray(result);
 };
 
 function getWizardQuestions(){

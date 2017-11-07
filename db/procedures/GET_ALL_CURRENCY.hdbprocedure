@@ -6,7 +6,8 @@ OUT out_result TABLE (euro_conversion_id BIGINT,
 						currency_name NVARCHAR(100),
 						currency_value DECIMAL(19, 6),
 						currency_display NVARCHAR(255),
-						budget_year INTEGER
+						budget_year INTEGER,
+						DEFAULT_CURRENCY TINYINT
 					)
  )
 	LANGUAGE SQLSCRIPT
@@ -23,7 +24,8 @@ BEGIN
 			   EC.currency_name,
 			   EC.currency_value,
 			   CONCAT(CONCAT(EC.currency_abbreviation, ' ('),CONCAT(EC.country, ')'))  AS currency_display,
-			   BUY.BUDGET_YEAR
+			   BUY.BUDGET_YEAR,
+			   EC.DEFAULT_CURRENCY
 		FROM CURRENCY EC
 		INNER JOIN BUDGET_YEAR BUY ON BUY.BUDGET_YEAR_ID = EC.BUDGET_YEAR_ID
 		WHERE

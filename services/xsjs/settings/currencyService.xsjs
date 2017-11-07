@@ -55,8 +55,9 @@ function handleGet(parameters) {
 }
 
 //get function, no implemented
-function handlePut() {
-	return httpUtil.notImplementedMethod();
+function handlePut(reqBody,userId) {
+    var rdo = CurrencyLib.setDefaultCurrency(reqBody, userId);
+    httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
 }
 //main function
 processRequest();

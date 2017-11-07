@@ -1,0 +1,29 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::UPD_DEFAULT_CURRENCY_BY_BUDGET_YEAR"
+(
+	in in_currency_id bigint
+	,in in_budget_year INTEGER
+	,in in_user_id bigint
+	,OUT out_result decimal(19, 6)
+	) 
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER 
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL" AS
+BEGIN
+
+    UPDATE C
+    	SET
+    	 C.DEFAULT_CURRENCY =  0,
+    	 C.MODIFIED_USER_ID = in_user_id
+    	 FROM CURRENCY C INNER JOIN BUDGET_YEAR B ON C.BUDGET_YEAR_ID = B.BUDGET_YEAR_ID
+    	where B.BUDGET_YEAR = in_budget_year;
+
+
+	UPDATE CURRENCY
+	SET
+	 DEFAULT_CURRENCY =  1,
+	 MODIFIED_USER_ID = in_user_id
+	where EURO_CONVERSION_ID = in_currency_id;
+	
+	SELECT ::ROWCOUNT INTO out_result FROM DUMMY;
+	
+END;

@@ -7,7 +7,6 @@ var ErrorLib = mapper.getErrors();
 //STORE PROCEDURE LIST NAME
 var spGET_ALL_MARKETING_PROGRAM = "GET_ALL_MARKETING_PROGRAM";
 var GET_MARKETING_PROGRAM_BY_NAME = "GET_MARKETING_PROGRAM_BY_NAME";
-var spGET_MARKETING_PROGRAM_BY_ID = "GET_MARKETING_PROGRAM_BY_ID";
 var INS_MARKETING_PROGRAM = "INS_MARKETING_PROGRAM";
 var UPD_MARKETING_PROGRAM = "UPD_MARKETING_PROGRAM";
 var DEL_MARKETING_PROGRAM = "DEL_MARKETING_PROGRAM";
@@ -21,13 +20,6 @@ function getAllMarketingProgram() {
     return db.extractArray(rdo.output_result);
 }
 
-function getMarketingProgramById(id) {
-    var params = {
-        'in_marketing_program_id': id
-    };
-    var rdo = db.executeProcedureManual(spGET_MARKETING_PROGRAM_BY_ID, params);
-    return db.extractArray(rdo.out_result)[0];
-}
 function getMarketingProgramByName(name) {
     var parameters = {'IN_NAME': name};
     var list = db.executeProcedureManual(GET_MARKETING_PROGRAM_BY_NAME, parameters);

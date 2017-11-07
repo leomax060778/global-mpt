@@ -59,16 +59,14 @@ BEGIN
 					
 	out_result = SELECT 
 						CONCAT(
-			                        CONCAT(
 			                            CONCAT(
 			                                CONCAT(
 			                                    CONCAT(
 			                                        CONCAT(
-			                                        HL1.ACRONYM, SUBSTRING(TO_NVARCHAR(BGY.BUDGET_YEAR), 3, 2)),
-			                                    '-'),
-			                                HL3.ACRONYM),
+			                                        HL2.organization_acronym, SUBSTRING(TO_NVARCHAR(BGY.BUDGET_YEAR), 3, 2)),
 			                            '-'),
 			                        HL4.ACRONYM),
+			                        '-'),
 			                     HL5.ACRONYM)
 			            		 AS PATH,
 			            		 U.FIRST_NAME || ' ' || U.LAST_NAME AS REQUESTER,

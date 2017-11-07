@@ -39,19 +39,17 @@ BEGIN
 									PARTNER_TYPE.TYPE_NAME AS HL6_PARTNER_TYPE_NAME,
 									BSR.AMOUNT AS BUDGET,
 									BSR.MODIFIED_DATE_TZ AS BSR_MODIFIED_DATE,
-									CONCAT(
 										CONCAT(
 											CONCAT(
 												CONCAT(
 													CONCAT(
 														CONCAT(
 															CONCAT(
-																HL1.ACRONYM, 
+																HL2.ORGANIZATION_ACRONYM,
 															SUBSTRING(TO_NVARCHAR(BGY.BUDGET_YEAR), 3, 2)), 
-														'-'),
-													HL3.ACRONYM),
-												'-'), 
-											HL4.ACRONYM), 
+												'-'),
+											HL4.ACRONYM),
+											'-'),
 										HL5.ACRONYM), 
 									HL6.ACRONYM) AS HL6_PATH,
 			            		 RTM.NAME AS ROUTE_TO_MARKET,

@@ -7,7 +7,8 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_CURRENCY" (
 						  currency_abbreviation NVARCHAR(50),
 						  currency_name NVARCHAR(100),
 						  currency_value DECIMAL(19, 6),
-						  currency_display NVARCHAR(255)
+						  currency_display NVARCHAR(255),
+						  default_currency tinyint
 						)
 	)
 	LANGUAGE SQLSCRIPT
@@ -26,7 +27,8 @@ BEGIN
 				   currency_abbreviation,
 				   currency_name,
 				   currency_value,
-				   CONCAT(CONCAT(currency_abbreviation, ' ('),CONCAT(country, ')'))  AS currency_display
+				   CONCAT(CONCAT(currency_abbreviation, ' ('),CONCAT(country, ')'))  AS currency_display,
+				   DEFAULT_CURRENCY
 			FROM CURRENCY
 			WHERE upper(currency_abbreviation) = upper(in_currency_abbreviation)
 			AND deleted = 0
@@ -38,7 +40,8 @@ BEGIN
 				   currency_abbreviation,
 				   currency_name,
 				   currency_value,
-				   CONCAT(CONCAT(currency_abbreviation, ' ('),CONCAT(country, ')'))  AS currency_display
+				   CONCAT(CONCAT(currency_abbreviation, ' ('),CONCAT(country, ')'))  AS currency_display,
+				   DEFAULT_CURRENCY
 			FROM CURRENCY
 			WHERE euro_conversion_id = in_euro_conversion_id
 			AND deleted = 0

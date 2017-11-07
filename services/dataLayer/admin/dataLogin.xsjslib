@@ -13,7 +13,6 @@ var spGetUserSessionTokenByUserId = "GET_USER_SESSION_TOKEN_BY_USER_ID";
 var spGetHashSha256 = "GET_HASH_SHA256";
 var spInsUserSessionToken = "INS_USER_SESSION_TOKEN";
 var spDelUserSessionToken = "DEL_USER_SESSION_TOKEN";
-var spGetTokenRecoveryByUserId = "GET_USER_RECOVERY_TOKEN_BY_USER";
 var spGetTokenRecoveryByToken = "GET_USER_RECOVERY_TOKEN_BY_TOKEN";
 var spDisableRecoveryToken = "UPD_DISABLE_RECOVERY_TOKEN";
 var spUPDUserSessionToken = "UPD_USER_SESSION_TOKEN";

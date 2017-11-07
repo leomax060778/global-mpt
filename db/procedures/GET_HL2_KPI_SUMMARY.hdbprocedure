@@ -10,6 +10,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL2_KPI_SUMM
         , TOTAL_VALUE_ALLOCATED DECIMAL(10,2)
         , TOTAL_VOLUME_ALLOCATED DECIMAL(10,2)
         , L2_ACRONYM NVARCHAR(255)
+        , ORGANIZATION_NAME NVARCHAR(255)
         , HL1_ID BIGINT
         , HL2_ID BIGINT
         , IS_LOCKED TINYINT
@@ -27,6 +28,7 @@ BEGIN
                          , coalesce(SUMMARY_VIEW.TOTAL_VALUE_ALLOCATED,0) as TOTAL_VALUE_ALLOCATED
                          , coalesce(SUMMARY_VIEW.TOTAL_VOLUME_ALLOCATED,0) as TOTAL_VOLUME_ALLOCATED
                          , UPPER(SUMMARY_VIEW.L2_ACRONYM) as L2_ACRONYM
+                         , SUMMARY_VIEW.ORGANIZATION_NAME
                          , SUMMARY_VIEW.HL1_ID
                          , SUMMARY_VIEW.HL2_ID
                          , SUMMARY_VIEW.IS_LOCKED

@@ -37,14 +37,13 @@ function handleGet(parameters, userSessionID){
 	var paramMethod =  httpUtil.getUrlParameterByName('METHOD') ? httpUtil.getUrlParameterByName('METHOD') : httpUtil.getUrlParameterByName('method');
 	var budgetYearId = httpUtil.getUrlParameterByName("BUDGET_YEAR_ID") || null;
 	var regionId = httpUtil.getUrlParameterByName("REGION_ID") || null;
-	var subRegionId = httpUtil.getUrlParameterByName("SUBREGION_ID") || null;
 
 	switch (method[paramMethod.toUpperCase()]){
 		case 1:{
-			rdo = blLevel1.getHistoryAllFirstVersion(budgetYearId, regionId, subRegionId, userSessionID);
+			rdo = blLevel1.getHistoryAllFirstVersion(budgetYearId, userSessionID);
 			break;}
 		case 2:{
-			rdo =blLevel2.getHistoryAllFirstVersion(paramId,userSessionID);
+			rdo = blLevel2.getHistoryAllFirstVersion(paramId,userSessionID);
 			break;}
 		case 3:{
 			rdo = blLevel3.getHistoryAllFirstVersion(paramId,userSessionID);

@@ -7,7 +7,6 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL1_BY_USER_
 		, description NVARCHAR(255)
 		, budget_year_id BIGINT
 		, region_id BIGINT
-		, subregion_id BIGINT
 		, created_date_tz TIMESTAMP
 		, modified_date_tz TIMESTAMP
 		, created_user_id BIGINT
@@ -15,7 +14,6 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL1_BY_USER_
 		, enabled TINYINT
 		, deleted TINYINT
 		, REGION_NAME NVARCHAR(255)
-		, SUBREGION_NAME NVARCHAR(255)
 		, BUDGET_YEAR BIGINT
 		, budget DECIMAL(19, 2)
         , team_type_id BIGINT
@@ -39,7 +37,6 @@ BEGIN
 		, HL1.description
 		, HL1.budget_year_id
 		, HL1.region_id
-		, HL1.subregion_id
 		, HL1.created_date_tz
 		, HL1.modified_date_tz
 		, HL1.created_user_id
@@ -47,7 +44,6 @@ BEGIN
 		, HL1.enabled
 		, HL1.deleted
 		, R.REGION_NAME
-		, SR.SUBREGION_NAME
 		, BUY.BUDGET_YEAR
 		, HL1.budget
         , HL1.TEAM_TYPE_ID
@@ -56,7 +52,6 @@ BEGIN
 	FROM HL1
 	INNER JOIN HL1_USER ON HL1_USER.HL1_ID = HL1.HL1_ID
 	LEFT JOIN REGION R ON R.region_id = HL1.region_id
-	LEFT JOIN SUBREGION SR ON SR.subregion_id = HL1.subregion_id
 	LEFT JOIN BUDGET_YEAR BUY ON BUY.budget_year_id = HL1.budget_year_id
 
 	WHERE

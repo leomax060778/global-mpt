@@ -26,8 +26,6 @@ BEGIN
                                                    RIGHT JOIN allocation_category_option_level ACOL
                                                            ON HCP.allocation_category_option_level_id =
                                                               ACOL.allocation_category_option_level_id
-                                                   LEFT JOIN hl4_category HC
-                                                          ON HC.hl4_category_id = HCP.hl4_category_id
                                                    LEFT JOIN allocation_category C
                                                           ON C.allocation_category_id = ACOL.allocation_category_id
                                                    LEFT JOIN allocation_option O
@@ -41,8 +39,6 @@ BEGIN
                                                            RIGHT JOIN allocation_category_option_level ACOL
                                                                    ON HCP.allocation_category_option_level_id =
                                                                       ACOL.allocation_category_option_level_id
-                                                           LEFT JOIN hl5_category HC
-                                                                  ON HC.hl5_category_id = HCP.hl5_category_id
                                                            LEFT JOIN allocation_category C
                                                                   ON C.allocation_category_id = ACOL.allocation_category_id
                                                            LEFT JOIN allocation_option O
@@ -56,8 +52,6 @@ BEGIN
                                                       RIGHT JOIN allocation_category_option_level ACOL
                                                               ON HCP.allocation_category_option_level_id =
                                                                  ACOL.allocation_category_option_level_id
-                                                      LEFT JOIN hl6_category HC
-                                                             ON HC.hl6_category_id = HCP.hl6_category_id
                                                       LEFT JOIN allocation_category C
                                                              ON C.allocation_category_id = ACOL.allocation_category_id
                                                       LEFT JOIN allocation_option O

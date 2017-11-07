@@ -7,9 +7,9 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL2_VERSION_
 		, description nvarchar(255)
 		--, budget_year_id bigint
 		--, region_id bigint
-		--, subregion_id bigint
+		, subregion_id bigint
 		--, region_name nvarchar(255)
-		--, subregion_name nvarchar(255)
+		, subregion_name nvarchar(255)
 		, PATH nvarchar(255)
 		--, budget_year bigint
 		, hl2_budget_total decimal(19,2)
@@ -38,9 +38,9 @@ BEGIN
 		, HL2.description
 		--, HL2.budget_year_id
 		--, HL2.region_id
-		--, HL2.subregion_id
+		, HL2.subregion_id
 		--, R.REGION_NAME
-		--, SR.SUBREGION_NAME
+		, SR.SUBREGION_NAME
 		, CONCAT ('CRM-',CONCAT (HL1.ACRONYM, SUBSTRING(TO_NVARCHAR(BUY.BUDGET_YEAR), 3, 2))) as PATH
 		--, BUY.BUDGET_YEAR
 		, HL2.hl2_budget_total
@@ -68,9 +68,9 @@ BEGIN
 		, HL2.description
 		--, HL2.budget_year_id
 		--, HL2.region_id
-		--, HL2.subregion_id
+		, HL2.subregion_id
 		--, R.REGION_NAME
-		--, SR.SUBREGION_NAME
+		, SR.SUBREGION_NAME
 		, CONCAT ('CRM-',CONCAT (HL1.ACRONYM, SUBSTRING(TO_NVARCHAR(BUY.BUDGET_YEAR), 3, 2))) as PATH
 		--, BUY.BUDGET_YEAR
 		, HL2.hl2_budget_total

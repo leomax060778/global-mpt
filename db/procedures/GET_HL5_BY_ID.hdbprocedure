@@ -53,6 +53,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL5_BY_ID" (
         , budget_spend_request_status nvarchar(255)
         , EMPLOYEE_RESPONSIBLE_USER nvarchar(7)
         , PERSON_RESPONSIBLE NVARCHAR(7)
+        , CURRENCY_VALUE DECIMAL(19,6)
 		)
 		
 ) 
@@ -114,11 +115,13 @@ out_result = select
                 , BSRS.display_name as budget_spend_request_status
                 , HL5.EMPLOYEE_RESPONSIBLE_USER
                 , HL5.PERSON_RESPONSIBLE
+                , CURRENCY.CURRENCY_VALUE
                  FROM HL5
                  LEFT JOIN BUDGET_SPEND_REQUEST BSR ON BSR.HL_ID = HL5.HL5_ID
                     AND BSR.HIERARCHY_LEVEL_ID = 2 AND BSR.BUDGET_SPEND_REQUEST_TYPE_ID = 1
                  LEFT JOIN BUDGET_SPEND_REQUEST_STATUS BSRS ON BSRS.BUDGET_SPEND_REQUEST_STATUS_ID = BSR.BUDGET_SPEND_REQUEST_STATUS_ID
                  LEFT JOIN CAMPAIGN_TYPE C_TYPE ON C_TYPE.CAMPAIGN_TYPE_ID = HL5.CAMPAIGN_TYPE_ID
+                 LEFT JOIN CURRENCY ON HL5.EURO_CONVERSION_ID = CURRENCY.EURO_CONVERSION_ID
                  WHERE HL5_ID = in_hl5_id
                  AND HL5.ENABLED = 1 AND HL5.DELETED = 0;
 END;

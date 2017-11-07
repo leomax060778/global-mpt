@@ -7,7 +7,6 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL1_VERSION_
 		, description nvarchar(255)
 		, budget_year bigint
 		, region_name nvarchar(255)
-		, subregion_name nvarchar(255)
 		, budget decimal(19, 6)
         , team_type nvarchar(255)
         , implement_execution_level tinyint
@@ -28,7 +27,6 @@ BEGIN
 		, hl1.description
 		, buy.budget_year
 		, region.region_name
-		, subregion.subregion_name
 		, hl1.budget
         , CASE WHEN hl1.team_type_id = 1 then 'Regional' WHEN hl1.team_type_id = 2 then 'Central' else '' end as TEAM_TYPE
         , hl1.implement_execution_level
@@ -37,7 +35,6 @@ BEGIN
 	FROM HL1_VERSION hl1
 	INNER JOIN BUDGET_YEAR BUY ON BUY.BUDGET_YEAR_ID = HL1.BUDGET_YEAR_ID
 	LEFT JOIN REGION ON HL1.region_id = REGION.region_id
-    LEFT JOIN SUBREGION ON HL1.subregion_id = SUBREGION.subregion_id
 	WHERE HL1.hl1_id = in_hl1_id AND HL1.version = in_version)
 	union all
     (SELECT
@@ -46,7 +43,6 @@ BEGIN
     		, hl1.description
     		, buy.budget_year
     		, region.region_name
-    		, subregion.subregion_name
     		, hl1.budget
             , CASE WHEN hl1.team_type_id = 1 then 'Regional' WHEN hl1.team_type_id = 2 then 'Central' else '' end as TEAM_TYPE
             , hl1.implement_execution_level
@@ -55,6 +51,5 @@ BEGIN
     	FROM hl1
     	INNER JOIN BUDGET_YEAR BUY ON BUY.BUDGET_YEAR_ID = HL1.BUDGET_YEAR_ID
     	LEFT JOIN REGION ON HL1.region_id = REGION.region_id
-        LEFT JOIN SUBREGION ON HL1.subregion_id = SUBREGION.subregion_id
     	WHERE HL1.hl1_id = in_hl1_id AND HL1.version = in_version);
 END;

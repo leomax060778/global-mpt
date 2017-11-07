@@ -81,7 +81,7 @@
 			 	INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_BUDGET_YEAR&quot; budgetYear ON budgetYear.BUDGET_YEAR_ID = hl1.BUDGET_YEAR_ID
 			 	INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_TEAM_TYPE&quot; teamType ON teamType.TEAM_TYPE_ID = hl1.TEAM_TYPE_ID
 			 	LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_REGION&quot; region ON region.REGION_ID = hl1.REGION_ID
-			 	LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_SUBREGION&quot; subregion ON subregion.REGION_ID = hl1.SUBREGION_ID
+			 	LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_SUBREGION&quot; subregion ON subregion.SUBREGION_ID = hl2.SUBREGION_ID
 			 	WHERE hl2.ENABLED = 1 AND hl2.DELETED = 0;
 
 	va_count_plan = SELECT hl1.HL1_ID, hl1.ACRONYM, hl1.BUDGET_YEAR_ID, count (hl2.ORGANIZATION_ACRONYM) AS COUNT_L1

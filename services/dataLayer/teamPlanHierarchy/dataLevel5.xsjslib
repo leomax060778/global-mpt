@@ -9,20 +9,15 @@ var spGetHl5ByHl4Id = "GET_HL5_BY_HL4_ID";
 var spGetHl5ById = "GET_HL5_BY_ID";
 var spGetHl5ByAcronym = "GET_HL5_BY_ACRONYM";
 var spGetCountHl6ByHl5Id = "GET_COUNT_HL6_BY_HL5_ID";
-var spGetHl5CategoryByCategoryId = "GET_HL5_CATEGORY_BY_CATEGORY_ID";
-var spGetHl5OptionByCategoryId = "GET_HL5_OPTION_BY_CATEGORY_ID";
 var spGetHl5StatusByHl5Id = "GET_HL5_STATUS_BY_HL5_ID";
 var spGetHl5ForSearch = "GET_HL5_FOR_SEARCH";
 var spGetHl5TotalBudgetByHl4Id = "GET_ALL_HL5_TOTAL_BUDGET";
 var spGetHl5RemainingBudgetByHl4Id = "GET_ALL_HL5_REMAINING_BUDGET";
 var spExistsInCrm = "HL5_EXISTS_IN_CRM";
 var spGetHl5MyBudgetByHl5Id = "GET_HL5_BUDGET_BY_ID";
-var spGetHl5CategoryOptionByHl5IdOptionId = "GET_HL5_CATEGORY_OPTION_BY_HL5_ID_OPTION_ID";
-var spGetHl5CategoryOption = "GET_HL5_OPTION_BY_CATEGORY_ID";
 var spGetHl5SalesByHl5Id = "GET_HL5_SALES_BY_ID";
 var spGetHl5AllocatedBudget = "GET_HL5_ALLOCATED_BUDGET";
 var spGetHl5Category = "GET_HL5_CATEGORY";
-var spGetHl5CategoryByHl5Id = "GET_HL5_CATEGORY_BY_HL5_ID";
 var spGetHl5CategoryByHl5CategoryId = "GET_HL5_CATEGORY_BY_HL5_CATEGORY_ID";
 var spGET_ALL_MARKETING_PROGRAM = "GET_ALL_MARKETING_PROGRAM";
 var spGET_ALL_BUSINESS_OWNER = "GET_ALL_BUSINESS_OWNER";
@@ -55,11 +50,7 @@ var spUpdateHl5Sale = "UPD_HL5_SALES";
 var spdelHl5Bugdet = "DEL_HL5_BUDGET";
 var spdelHl5BugdetHard = "DEL_HL5_BUDGET_HARD";
 var spDelHl5ById = "DEL_HL5_BY_ID";
-var spDelHl5Sales = "DEL_HL5_SALES";
 var spDelHl5SalesHard = "DEL_HL5_SALES_HARD";
-var spDelHl5Category = "DEL_HL5_CATEGORY";
-var spDelHl5CategoryOption = "DEL_HL5_CATEGORY_OPTION";
-var spDelHardHl5RequestCategoryOption = 'DEL_HARD_HL5_REQUEST_CATEGORY_OPTION';
 var spDelHl5RequestCategoryOption = 'DEL_HL5_REQUEST_CATEGORY_OPTION';
 
 var spResetHl5CategoryOptionUpdated = "RESET_HL5_CATEGORY_OPTION_UPDATED";
@@ -67,6 +58,7 @@ var GET_HL5_BY_IMPORT_ID = "GET_HL5_BY_IMPORT_ID";
 var DEL_HL5_HARD_BY_ID = "DEL_HL5_HARD_BY_ID";
 var DEL_HL5_CATEGORY_OPTION_HARD = "DEL_HL5_CATEGORY_OPTION_HARD";
 /******************************************************/
+var spDelHl5Sales = "DEL_HL5_SALES"
 
 function getMarketingActivityHl5(budgetYearId,currentHl5Id){
 	var params = {
@@ -175,24 +167,6 @@ function getCountHl5Childrens(id){
 
 }
 
-function getHl5Category(hl5_id,category_id,hl5CategoryId){
-
-	if(hl5_id && category_id){
-
-		var rdo = db.executeProcedureManual(spGetHl5Category,{'in_hl5_id':hl5_id, 'in_category_id':category_id});
-		return db.extractArray(rdo.out_hl5_category);
-	} else if (hl5_id && !category_id){
-
-		var rdo = db.executeProcedureManual(spGetHl5CategoryByHl5Id,{'in_hl5_id':hl5_id});
-		return db.extractArray(rdo.out_hl5_category);
-	} else if (!hl5_id && !category_id && hl5CategoryId){
-
-		var rdo = db.executeProcedureManual(spGetHl5CategoryByHl5CategoryId,{'in_hl5_category_id':hl5CategoryId});
-		return db.extractArray(rdo.out_hl5_category);
-	}
-	return null;
-}
-
 function getHl5CategoryByHl5CategoryId(categoryId){
 	if(categoryId != ""){
 		var params = {
@@ -200,17 +174,6 @@ function getHl5CategoryByHl5CategoryId(categoryId){
 		};
 		var rdo = db.executeProcedureManual(spGetHl5CategoryByHl5CategoryId,params);
 		return db.extractArray(rdo.out_hl5_category)[0];
-	}
-	return null;
-}
-
-function getHl5OptionByCategoryId(categoryId){
-	if(categoryId != ""){
-		var params = {
-			'in_hl5_category_id': categoryId
-		};
-		var rdo = db.executeProcedureManual(spGetHl5OptionByCategoryId,params);
-		return db.extractArray(rdo.out_hl5_category_option)[0];
 	}
 	return null;
 }
@@ -238,35 +201,6 @@ function getHl5ForSearch(budgetYearId, regionId, subRegionId, limit, offset, use
     };
 	var rdo = db.executeProcedureManual(spGetHl5ForSearch,parameters);
 	return {result: db.extractArray(rdo.out_result), total_rows: rdo.total_rows};
-}
-
-function getHl5CategoryByCategoryId(categoryId){
-	if(categoryId != ""){
-		var params = {
-			'in_category_id': categoryId
-		};
-		var rdo = db.executeProcedureManual(spGetHl5CategoryByCategoryId,params);
-		return db.extractArray(rdo.out_hl5_category)[0];
-	}
-	return null;
-}
-
-function getHl5CategoryOption(hl5CategoryId, hl5Id, optionId, autoCommit){
-
-	var params = {
-		'in_hl5_id' : hl5Id,
-		'in_option_id'  : optionId
-	};
-
-	if(hl5CategoryId && !hl5Id && !optionId){
-		var rdo = db.executeProcedureManual(spGetHl5CategoryOption,{'in_hl5_category_id':hl5CategoryId});
-		return db.extractArray(rdo.out_hl5_category_option);
-	} else if (!hl5CategoryId && hl5Id && optionId){
-		var rdo = db.executeProcedureManual(spGetHl5CategoryOptionByHl5IdOptionId,{'in_hl5_id':hl5Id, 'in_option_id':optionId});
-		return db.extractArray(rdo.out_hl5_category_option);
-	}
-	return null;
-
 }
 
 function getAllHl5(){
@@ -436,14 +370,13 @@ function insertHl5(hl5CrmDescription,acronym,distributionChannelId,budget,hl4Id
 		, 'in_priority_id': priority_id
 		, 'in_imported': imported ? imported : 0
 		, 'IN_IMPORT_ID' : import_id ? import_id : null
-		, 'in_co_funded': co_funded ? co_funded : 0
+		, 'in_co_funded': Number(co_funded) || 0
 		, 'in_allow_budget_zero': allow_budget_zero ? allow_budget_zero : 0
 		, 'in_is_power_user': is_power_user && Number(is_power_user) ? is_power_user : 1
-		, 'in_employee_responsible_user': emploreeResponsible
-		, 'in_person_responsible' : person_responsible
+		, 'in_employee_responsible_user': emploreeResponsible || null
+		, 'in_person_responsible' : person_responsible || null
 	};
 
-	
 	var rdo;
 	if(autoCommit){
 		rdo = db.executeScalar(spInsHl5,params,'out_hl5_id');
@@ -637,20 +570,6 @@ function delHl5BudgetHard(hl5Id, autoCommit){
 	return rdo;
 }
 
-function delHl5Sale(hl5Id, modifiedUserId, autoCommit){
-	var params = {
-		'in_hl5_id' : hl5Id,
-		'in_modified_user_id'  : modifiedUserId
-	};
-	var rdo;
-	if(autoCommit){
-		rdo = db.executeScalar(spDelHl5Sales,params,'out_result');
-	}else{
-		rdo = db.executeScalarManual(spDelHl5Sales,params,'out_result');
-	}
-	return rdo;
-}
-
 function delHl5SaleHard(hl5Id, autoCommit){
 	var params = {
 		'in_hl5_id' : hl5Id
@@ -709,41 +628,6 @@ function deleteHl5Budget(hl5Id, userId){
 		return db.executeScalarManual(spdelHl5Bugdet, {'in_hl5_id': hl5Id, 'in_modified_user_id': userId}, 'out_result');
 	}
 	return null;
-}
-
-//autoCommit = false then executeScalarManual else executeScalar.
-function deleteHl5Category(hl5Id, userId, autoCommit){
-	var params = {
-		'in_hl5_id' : hl5Id,
-		'in_user_id'  : userId
-	};
-	var rdo;
-	if(autoCommit){
-		rdo = db.executeScalar(spDelHl5Category,params,'out_result');
-	}else{
-		rdo = db.executeScalarManual(spDelHl5Category,params,'out_result');
-	}
-	return rdo;
-}
-
-//autoCommit = false then executeScalarManual else executeScalar.
-function deleteHl5CategoryOption(hl5Id, userId, autoCommit){
-	var params = {
-		'in_hl5_id' : hl5Id,
-		'in_user_id'  : userId
-	};
-	var rdo;
-	if(autoCommit){
-		rdo = db.executeScalar(spDelHl5CategoryOption,params,'out_result');
-	}else{
-		rdo = db.executeScalarManual(spDelHl5CategoryOption,params,'out_result');
-	}
-	return rdo;
-}
-
-function deleteHardHl5RequestCategoryOption(hl5Id){
-	var params = {'in_hl5_id': hl5Id};
-    return db.executeScalar(spDelHardHl5RequestCategoryOption,params,'out_result');
 }
 
 function deleteHl5RequestCategoryOption(hl5Id, userId){

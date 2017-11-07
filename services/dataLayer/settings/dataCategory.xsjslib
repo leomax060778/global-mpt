@@ -6,6 +6,7 @@ var ErrorLib = mapper.getErrors();
 /*************************************************/
 var spGetCountByHlId = "GET_CATEGORY_COUNT_BY_HL_ID";
 var spGET_CATEGORY_BY_HIERARCHY_LEVEL_ID = "GET_CATEGORY_BY_HIERARCHY_LEVEL_ID";
+var GET_CATEGORY_OPTION_BY_HIERARCHY_LEVEL_ID = "GET_CATEGORY_OPTION_BY_HIERARCHY_LEVEL_ID";
 
 var spINS_CATEGORY = "INS_CATEGORY";
 
@@ -48,26 +49,29 @@ function getCategoryById(hl){
 	return db.extractArray(result.out_result);
 }
 
-function getCountByHlId(hl){	
-	if(hl){
-		return db.executeScalarManual(spGetCountByHlId, {'in_hl_id':hierarchyLevel[hl]}, "out_hl_category");
-	}	
-	return null;
-}
 
-function getCategoryByHierarchyLevelId(hierarchy_level_id){
+function getCategoryOptionByHierarchyLevelId(hierarchy_level_id){
 	var params = {
 		'in_hierarchy_level_id' : hierarchy_level_id
 	};
-	var result = db.executeProcedure(spGET_CATEGORY_BY_HIERARCHY_LEVEL_ID, params);
+	var result = db.executeProcedure(GET_CATEGORY_OPTION_BY_HIERARCHY_LEVEL_ID, params);
 
-	var result = db.extractArray(result.out_result);
-	var rdo = {};
-	rdo.results = result;
+	return db.extractArray(result.out_result);
+}
 
-	return rdo;
+function getCategoryByHierarchyLevelId(hierarchy_level_id){
+    var params = {
+        'in_hierarchy_level_id' : hierarchy_level_id
+    };
+    var result = db.executeProcedure(spGET_CATEGORY_BY_HIERARCHY_LEVEL_ID, params);
 
-	//return rdo ? rdo:{};
+    var result = db.extractArray(result.out_result);
+    var rdo = {};
+    rdo.results = result;
+
+    return rdo;
+
+    //return rdo ? rdo:{};
 }
 
 function InsertCategory(description, nametag, hierarchyLevelId, measureId, InProcessingReport, userId, autoCommit) {
@@ -89,6 +93,7 @@ function InsertCategory(description, nametag, hierarchyLevelId, measureId, InPro
 	return rdo;
 }
 
+/*
 function UpdateCategoryHierarchyLevel(HL,categoryId,InProcessingReport,userId,autoCommit){
 	var params = {
 		'in_category_id': categoryId,
@@ -118,6 +123,7 @@ function UpdateCategoryHierarchyLevel(HL,categoryId,InProcessingReport,userId,au
 
 	return rdo;
 }
+*/
 
 function UpdateCategory(categoryId,description, nametag, hierarchyLevelId, measureId, InProcessingReport, userId, autoCommit) {
 	var params = {

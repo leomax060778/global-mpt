@@ -9,6 +9,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::UPD_HL2" (
 	,IN in_crt_related tinyint
 	,IN in_allow_automatic_budget_approval tinyint
 	,IN in_version integer
+	,IN in_subRegion_id bigint
 	,OUT out_result bigint
 	) 
 	LANGUAGE SQLSCRIPT
@@ -26,6 +27,7 @@ BEGIN
 	,HL2.in_budget = in_in_budget
 	,HL2.ALLOW_AUTOMATIC_BUDGET_APPROVAL = in_allow_automatic_budget_approval
 	,HL2.version = in_version
+	,HL2.subregion_id = in_subRegion_id
 	WHERE HL2.hl2_id = in_hl2_id;
 
 	SELECT ::ROWCOUNT INTO out_result FROM DUMMY;

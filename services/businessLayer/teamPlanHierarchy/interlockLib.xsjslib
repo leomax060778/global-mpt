@@ -8,6 +8,8 @@ var ErrorLib = mapper.getErrors();
 var util = mapper.getUtil();
 var businessLavel3 = mapper.getLevel3();
 var businessLavel2 = mapper.getLevel2();
+var dataHl2 = mapper.getDataLevel2();
+var dataHl3 = mapper.getDataLevel3();
 var blRegion = mapper.getRegion();
 var blSubRegion =  mapper.getSubRegion();
 /*************************************************/
@@ -32,12 +34,12 @@ function getAllOrganizationType(){
 
 function getGlobalTeam(hl3Id, userId){
 	var result = {};
-	var hl3 = businessLavel3.getLevel3ById(hl3Id, userId);
+	var hl3 = dataHl3.getLevel3ById(hl3Id, userId);
 	
 	if(hl3){
 		var objLevel2 = {};
 		objLevel2.IN_HL2_ID = hl3.HL2_ID;
-		var hl2 = businessLavel2.getLevel2ById(objLevel2);
+		var hl2 = dataHl2.getLevel2ById(objLevel2);
 		if(hl2){
 			var globals = businessLavel2.getAllCentralTeam();
 			result["Central teams"] = globals;

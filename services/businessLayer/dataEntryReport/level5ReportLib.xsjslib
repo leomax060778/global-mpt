@@ -71,10 +71,10 @@ function getL5ChangedFieldsByHl5Id(hl5Id, userId) {
             var object = {};
             object.display_name = l5ReportFields[field];
             var CRM_ACRONYM = "CRM";
-            var parentPath = CRM_ACRONYM + "-" + hl5.L1_ACRONYM + hl5.BUDGET_YEAR + "-" + hl5.L3_ACRONYM + "-" + hl5.L4_ACRONYM;
+            var parentPath = CRM_ACRONYM + "-" + hl5.L2_ACRONYM + hl5.BUDGET_YEAR + "-" + hl5.L4_ACRONYM;
             switch (field) {
                 case "ACRONYM":
-                    object.value = parentPath + hl5.ACRONYM;
+                    object.value = parentPath + "-" + hl5.ACRONYM;
                     break;
                 case "CAMPAIGN_TYPE_ID":
                     object.value = hl5.CAMPAIGN_TYPE;

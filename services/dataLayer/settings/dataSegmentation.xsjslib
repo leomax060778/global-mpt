@@ -22,7 +22,6 @@ var GET_SEGMENTATION_SALES_BY_ID = "GET_SEGMENTATION_SALES_BY_ID";
 var GET_SEGMENTATION_SALES_BY_NAME = "GET_SEGMENTATION_SALES_BY_NAME";
 var GET_ALL_SEGMENTATION_SALES = "GET_ALL_SEGMENTATION_SALES";
 var GET_SEGMENTATION_SALES_BY_PARENT_ID = "GET_SEGMENTATION_SALES_BY_PARENT_ID";
-var GET_COUNT_FORM_SEGMENTATION_SALE_BY_SEGMENTATION_SALE_ID = "GET_COUNT_FORM_SEGMENTATION_SALE_BY_SEGMENTATION_SALE_ID";
 /********************************************/
 
 /**SEGMENTATION REGION BUYING********************/
@@ -236,12 +235,6 @@ function getSegmentationSalesByParentId(segmentationSalesId){
     var parameters = {'IN_PARENT_ID': segmentationSalesId};
     var list = db.executeProcedureManual(GET_SEGMENTATION_SALES_BY_PARENT_ID, parameters);
     return db.extractArray(list.out_result);
-}
-
-function countRelatedSegmentationSales(id){
-    var parameters = {};
-    parameters.in_segmentation_sale_id = id;
-    return db.executeScalarManual(GET_COUNT_FORM_SEGMENTATION_SALE_BY_SEGMENTATION_SALE_ID, parameters, "out_result");
 }
 
 /********END SEGMENTATION SALES***************/

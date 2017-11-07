@@ -25,10 +25,10 @@ function handleGet(parameters, userSessionID){
 	if(parameters.length > 0){
         blLevel2.checkPermission(userSessionID, parameters[0].name, parameters[0].value);
 		if (parameters[0].name == hl2Id){
-			var objLevel2 = {};
-			objLevel2.IN_HL2_ID = parameters[0].value;
+			// var objLevel2 = {};
+			// objLevel2.IN_HL2_ID = parameters[0].value;
 			var isCarryOver = httpUtil.getUrlParameters().get("METHOD") == "CARRY_OVER";
-			var rdo = blLevel2.getLevel2ById(objLevel2, isCarryOver);
+			var rdo = blLevel2.getLevel2ById(parameters[0].value, isCarryOver);
 			httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
 		}
 		else if (parameters[0].name == GET_ALL_CENTRAL_TEAM){
@@ -67,21 +67,21 @@ function handleGet(parameters, userSessionID){
 
 //Implementation of POST call -- Insert HL2
 function handlePost(reqBody,userSessionID) {
-    blLevel1.checkPermission(userSessionID, null ,reqBody.IN_PLAN_ID);
+    blLevel1.checkPermission(userSessionID, null ,reqBody.HL1_ID);
 	var rdo =  blLevel2.insertHl2(reqBody,userSessionID);
 	return httpUtil.handleResponse(rdo,httpUtil.OK,httpUtil.AppJson);
 }
 
 //Implementation of UPDATE call -- UPDATE HL2
 function handlePut(reqBody,userSessionID){
-    blLevel2.checkPermission(userSessionID, null, reqBody.IN_HL2_ID);
+    blLevel2.checkPermission(userSessionID, null, reqBody.HL2_ID);
 	var rdo =  blLevel2.updateHl2(reqBody,userSessionID);
 	return httpUtil.handleResponse(rdo,httpUtil.OK,httpUtil.AppJson);
 };
 
 //Implementation of DELETE call -- Delete HL2
 function handleDelete(reqBody,userSessionID){
-    blLevel2.checkPermission(userSessionID, null, reqBody.IN_HL2_ID);
+    blLevel2.checkPermission(userSessionID, null, reqBody.HL2_ID);
 	var rdo = blLevel2.deleteHl2(reqBody,userSessionID);
 	return httpUtil.handleResponse(rdo,httpUtil.OK,httpUtil.AppJson);
 };

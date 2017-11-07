@@ -22,40 +22,39 @@ function handleGet(parameters, userSessionID){
 	if(parameters.length > 0){
         blLevel1.checkPermission(userSessionID, parameters[0].name, parameters[0].value);
 
-		if(parameters[0].name == method){
+		/*if(parameters[0].name == method){
 			var rdo = blLevel1.getAllLevel1();
 			httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);				
 		}
-		else if (parameters[0].name == hl1Id){
+		else*/ if (parameters[0].name == hl1Id){
 			var isCarryOver = httpUtil.getUrlParameters().get("METHOD") == "CARRY_OVER";
 			var rdo = blLevel1.getLevel1ById(parameters[0].value, isCarryOver);
 			httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
 		}
 		else if (parameters[0].name == GET_HL1_BY_FILTER){
 			//var objFilter = {};
-			var budgetYearId = httpUtil.getUrlParameters().get("BUDGET_YEAR_ID") || null;
+            var budgetYearId = httpUtil.getUrlParameters().get("BUDGET_YEAR_ID") || null;
 			var regionId = httpUtil.getUrlParameters().get("REGION_ID") || null;
-			var subRegionId = httpUtil.getUrlParameters().get("SUBREGION_ID") || null;
+            var subRegionId = httpUtil.getUrlParameters().get("SUBREGION_ID") || null;
 
-			var rdo = blLevel1.getLevel1ByFilters(budgetYearId, regionId, subRegionId, userSessionID);
+            var rdo = blLevel1.getLevel1ByFilters(budgetYearId, regionId, subRegionId, userSessionID);
+
 			httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
 		}
 		else if (httpUtil.getUrlParameters().get("section") == section){
             var budgetYearId = httpUtil.getUrlParameters().get("BUDGET_YEAR_ID") || null;
             var regionId = httpUtil.getUrlParameters().get("REGION_ID") || null;
-            var subRegionId = httpUtil.getUrlParameters().get("SUBREGION_ID") || null;
             var limit = httpUtil.getUrlParameters().get("LIMIT") || null;
             var offset = httpUtil.getUrlParameters().get("OFFSET") || null;
 
-			var rdo = blLevel1.getLevel1ForSearch(budgetYearId, regionId, subRegionId, limit, offset, userSessionID);
+			var rdo = blLevel1.getLevel1ForSearch(budgetYearId, regionId, limit, offset, userSessionID);
 			httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
 		}
 		else if (parameters[0].name == GET_DATA_KPI){
 			var budgetYearId = httpUtil.getUrlParameters().get("BUDGET_YEAR_ID") || null;
 			var regionId = httpUtil.getUrlParameters().get("REGION_ID") || null;
-			var subRegionId = httpUtil.getUrlParameters().get("SUBREGION_ID") || null;
 
-			var rdo = blLevel1.getLevel1Kpi(budgetYearId, regionId, subRegionId, userSessionID);
+			var rdo = blLevel1.getLevel1Kpi(budgetYearId, regionId, userSessionID);
 			httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
 		}
 		else{
@@ -84,8 +83,7 @@ function handlePut(reqBody,userSessionID){
 //Implementation of DELETE call -- Delete HL1
 function handleDelete(reqBody,userSessionID){
     blLevel1.checkPermission(userSessionID);
-
-	var rdo = blLevel1.deleteHl1(reqBody,userSessionID);
+	var rdo = blLevel1.deleteHl1(reqBody.HL1_ID,userSessionID);
 	return httpUtil.handleResponse(rdo,httpUtil.OK,httpUtil.AppJson);
 }
 
