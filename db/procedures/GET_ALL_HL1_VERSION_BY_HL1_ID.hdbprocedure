@@ -11,7 +11,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_ALL_HL1_VERS
     ,crt_related tinyint
     ,implement_execution_level tinyint
     ,team_type_id bigint
-    ,created_date_tz timestamp
+    ,created_date_tz timestamp 
     ,region_name nvarchar(255)
     ,budget_year integer
     ,path nvarchar(255)
@@ -70,7 +70,7 @@ out_result = select
     ,T.created_date_tz
     ,region.region_name
     ,budget_year.budget_year
-    ,CONCAT('CRM-',CONCAT(T.ACRONYM, SUBSTRING(TO_NVARCHAR(BUDGET_YEAR.BUDGET_YEAR), 3, 2))) AS PATH
+   	, "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BUDGET_YEAR.BUDGET_YEAR, T.ACRONYM, '', '', '', '', '') AS PATH
     from :AUX AS T
     LEFT JOIN REGION ON T.REGION_ID = REGION.REGION_ID
     LEFT JOIN BUDGET_YEAR ON BUDGET_YEAR.BUDGET_YEAR_ID = T.BUDGET_YEAR_ID

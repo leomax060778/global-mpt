@@ -31,18 +31,8 @@ BEGIN
         		, REPLACE(HL2.organization_acronym, 'N/A', '') AS organization_acronym
         		, REGION.region_name
         		, SUBREGION.subregion_name
-                ,CONCAT(
-                        CONCAT(
-                            CONCAT(
-                                CONCAT(
-                                    CONCAT(
-                                    HL2.organization_acronym, SUBSTRING(TO_NVARCHAR(BGY.BUDGET_YEAR), 3, 2)),
-                        '-'),
-                    HL4.ACRONYM),
-                    '-'),
-                 HL5.ACRONYM)
-        		 AS path
-                        , HL1.REGION_ID
+                , "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BGY.BUDGET_YEAR, HL1.acronym, HL2.organization_acronym, HL3.acronym, hl4.acronym, hl5.ACRONYM, '') AS path
+                , HL1.REGION_ID
         	FROM HL5 hl5
         	INNER JOIN HL4 hl4 ON hl4.hl4_id=hl5.hl4_id AND hl4.enabled=1 AND hl4.deleted=0
         	INNER JOIN HL3 ON HL4.hl3_id = HL3.hl3_id AND hl3.enabled=1 AND hl3.deleted=0
@@ -65,18 +55,8 @@ BEGIN
             		, REPLACE(HL2.organization_acronym, 'N/A', '') AS organization_acronym
             		, REGION.region_name
             		, SUBREGION.subregion_name
-                    ,CONCAT(
-                            CONCAT(
-                                CONCAT(
-                                    CONCAT(
-                                        CONCAT(
-                                        HL1.ACRONYM, SUBSTRING(TO_NVARCHAR(BGY.BUDGET_YEAR), 3, 2)),
-                            '-'),
-                        HL4.ACRONYM),
-                        '-'),
-                     HL5.ACRONYM)
-            		 AS path
-                            , HL1.REGION_ID
+                    , "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BGY.BUDGET_YEAR, HL1.acronym, HL2.organization_acronym, HL3.acronym, hl4.acronym, hl5.ACRONYM, '') AS path
+                    , HL1.REGION_ID
             	FROM HL5 hl5
             	INNER JOIN HL4 hl4 ON hl4.hl4_id=hl5.hl4_id AND hl4.enabled=1 AND hl4.deleted=0
             	INNER JOIN HL3 ON HL4.hl3_id = HL3.hl3_id AND hl3.enabled=1 AND hl3.deleted=0

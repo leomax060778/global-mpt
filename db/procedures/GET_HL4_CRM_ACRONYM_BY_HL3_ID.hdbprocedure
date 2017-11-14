@@ -1,0 +1,40 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL4_CRM_ACRONYM_BY_HL3_ID" (
+IN in_hl3_crm_acronym_id bigint,
+OUT out_result TABLE(	hl4_crm_acronym_id bigint,
+  						acronym nvarchar(25),
+  						crm_description nvarchar(100),
+  						details nvarchar(3000),
+  						business_details nvarchar(3000)
+  						),
+OUT out_result_availables TABLE(	hl4_crm_acronym_id bigint,
+                                    acronym nvarchar(25),
+                                    crm_description nvarchar(100),
+                                    details nvarchar(3000),
+                                    business_details nvarchar(3000)
+                                    )
+)
+LANGUAGE SQLSCRIPT
+SQL SECURITY INVOKER
+DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+READS SQL DATA AS
+BEGIN
+  out_result = SELECT 	hl4_crm_acronym_id,
+  						acronym,
+  						crm_description,
+  						details,
+  						business_details
+              FROM "HL4_CRM_ACRONYM"
+              	WHERE hl3_crm_acronym_id = in_hl3_crm_acronym_id
+              		AND ENABLED = 1
+              		AND DELETED = 0;
+
+  out_result_availables = SELECT 	hl4_crm_acronym_id,
+    						acronym,
+    						crm_description,
+    						details,
+    						business_details
+                FROM "HL4_CRM_ACRONYM"
+                	WHERE hl3_crm_acronym_id IS NULL
+                		AND ENABLED = 1
+                		AND DELETED = 0;
+END;

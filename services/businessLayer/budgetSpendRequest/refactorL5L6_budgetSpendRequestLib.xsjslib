@@ -219,13 +219,11 @@ function updateSalesBudgetSpendRequest(sales, id, level, conversionValue, userId
                         in_message: sale.MESSAGE,
                         in_user_id: userId
                     });
-
-                    // dataBudgetSpendRequest.deleteHardBudgetSpendRequestOtherBudgetApproverByBudgetSpendRequestId(budgetSpendRequestId);
                 }
 
                 var otherBudgetApprovers = [];
                 if (insertMessage) {
-                    sale.otherBudgetApprovers.forEach(function (otherBudgetApprover) {
+                    sale.OTHER_BUDGET_APPROVERS.forEach(function (otherBudgetApprover) {
                         if (otherBudgetApprover.FULL_NAME && otherBudgetApprover.EMAIL) {
 
                             var budgetApprover = dataBudgetSpendRequest.getOtherBudgetApproverByEmail(otherBudgetApprover.EMAIL);
@@ -257,10 +255,8 @@ function updateSalesBudgetSpendRequest(sales, id, level, conversionValue, userId
                 else {
                     var otherBudgetApproversEmail = dataBudgetSpendRequest.getOtherBudgetApproversByBudgetSpendRequestId(budgetSpendRequestId);
 
-
-                    sale.otherBudgetApprovers.forEach(function (otherBudgetApprover) {
+                    sale.OTHER_BUDGET_APPROVERS.forEach(function (otherBudgetApprover) {
                         if (otherBudgetApprover.FULL_NAME && otherBudgetApprover.EMAIL) {
-
                             var ba = otherBudgetApproversEmail.filter(function (elem) {
                                 return elem.EMAIL == otherBudgetApprover.EMAIL;
                             });
@@ -517,8 +513,8 @@ function countPendingBudgetRequestByHl6Id(hl6Id) {
     }
 }
 
-function setBudgetSpendRequestStatusNoLongerRequested(hlId, level, userId) {
-    return setBudgetSpendRequestStatus(hlId, level, userId, BUDGET_SPEND_REQUEST_STATUS.NO_LONGER_REQUESTED);
+function setBudgetSpendRequestStatusNoLongerRequested(hlId, level, userId, preserveOwnMoney) {
+    return setBudgetSpendRequestStatus(hlId, level, userId, BUDGET_SPEND_REQUEST_STATUS.NO_LONGER_REQUESTED, preserveOwnMoney);
 }
 
 function disableCoFundedBudgetSpendRequests(hlId, level, userId) {

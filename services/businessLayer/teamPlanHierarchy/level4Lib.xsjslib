@@ -74,7 +74,7 @@ var L3_CATEGORY_NOT_VALID = "Category is not valid.";
 var L3_CATEGORY_TOTAL_PERCENTAGE = "Category total percentage should be less than or equal to 100%.";
 var L3_CATEGORY_OPTION = "Error while trying to save Option.";
 var L3_CATEGORY_OPTION_NOT_VALID = "Option or User is not valid.";
-var L3_MSG_INITIATIVE_COULDNT_CHAGE_STATUS = "Couldn´t change INITIATIVE/CAMPAIGN status due to incomplete data. Please review Budget and Options information";
+var L3_MSG_INITIATIVE_COULDNT_CHAGE_STATUS = "Your records was saved as \"In progress\".  Please review your record for incomplete fields and/or pending budget approvals.";
 var L3_CAMPAIGN_FORECASTING_KPIS_COMMENT = "Please enter a comment to explain expected outcomes as you didn't select any Campaign type.";
 var L3_NOT_IMPLEMENT_EXECUTION_LEVEL = "This PROGRAMS/CAMPAIGNS does not implement execution level.";
 var L4_ID_NOT_FOUND = "The HL4 ID could not be found.";
@@ -105,7 +105,7 @@ function getHl4(id) {
     spResult.out_result.forEach(function (hl4) {
         var aux = {};
         aux = util.extractObject(hl4);
-        aux.CRM_ID = 'CRM-' + hl4.CRM_ID;
+        aux.CRM_ID = hl4.CRM_ID;
         aux.HL4_TOTAL = hl4.HL4_BUDGET;
         aux.TOTAL_HL5 = hl4.TOTAL_HL5;
         aux.QUANTITY_HL5_OUT_BUDGET = hl4.QUANTITY_HL5_OUT_BUDGET;
@@ -168,23 +168,7 @@ function getUserById(id) {
 function getLevel4ForSearch(budgetYearId, regionId, subRegionId, limit, offset, userSessionID) {
     var defaultBudgetYear = budgetYear.getDefaultBudgetYear();
     var results = dataHl4.getLevel4ForSearch(budgetYearId || defaultBudgetYear.BUDGET_YEAR_ID, regionId || 0, subRegionId || 0, limit || -1, offset || 0, userSessionID, util.isSuperAdmin(userSessionID) ? 1 : 0);
-    var total_rows = results.total_rows;
-    var resultRefactor = [];
-    results.result.forEach(function (object) {
-        var aux = {};
-
-        aux.ID = object.ID;
-        aux.PARENT_ID = object.PARENT_ID;
-        aux.BUDGET_YEAR = Number(ctypes.Int64(object.BUDGET_YEAR));
-        aux.ACRONYM = object.ACRONYM;
-        aux.ORGANIZATION_ACRONYM = object.ORGANIZATION_ACRONYM;
-        aux.REGION_NAME = object.REGION_NAME;
-        aux.SUBREGION_NAME = object.SUBREGION_NAME;
-        aux.PATH = "CRM-" + object.PATH;
-
-        resultRefactor.push(aux);
-    });
-    return {result: resultRefactor, total_rows: total_rows};
+    return results;
 }
 
 function getHl4ByBudgetYear(hl4Id){
@@ -908,7 +892,7 @@ function setHl4StatusInCRM(hl4_id, userId) {
     } else {
         hl4Ids = hl4_id;
     }
-    for(var i = 0; i < hl4Ids; i++){
+    for(var i = 0; i < hl4Ids.length; i++){
         setHl4Status(hl4Ids[i], HL4_STATUS.IN_CRM, userId);
     }
     return 1;
@@ -1152,6 +1136,27 @@ function notifyChangeByEmail(data, userId, event) {
     var rdo = mail.sendMail(mailObject, true);
 
 
+}
+
+function sendProcessingReportEmail(hl4Id) {
+    var objHl3 = {};
+    var appUrl = config.getAppUrl();
+
+    var hl4 = dataHl4.getHl4ById(hl4Id);
+    var hl3 = dataHl3.getLevel3ById(hl4.HL3_ID);
+
+    var hl3OwnerEmail = getUserById(hl3.CREATED_USER_ID).EMAIL;
+
+    var body = '<p> Dear Colleague </p>';
+    body += '<p>An initiative has been created in CRM.</p><br>';
+    body += '<p>' + appUrl + '/TeamPlanHierarchy/Level3/edit/' + hl4.HL3_ID + '/' + hl4Id + '</p>';
+
+
+    var mailObject = mail.getJson([{
+        "address": hl3OwnerEmail
+    }], "Marketing Planning Tool - Interlock Process", body);
+
+    mail.sendMail(mailObject, true);
 }
 
 function checkPermission(userSessionID, method, hl4Id) {

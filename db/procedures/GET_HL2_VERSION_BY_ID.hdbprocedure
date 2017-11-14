@@ -5,24 +5,17 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL2_VERSION_
 		hl2_id bigint
 		, acronym nvarchar(25)
 		, description nvarchar(255)
-		--, budget_year_id bigint
-		--, region_id bigint
 		, subregion_id bigint
-		--, region_name nvarchar(255)
 		, subregion_name nvarchar(255)
 		, PATH nvarchar(255)
-		--, budget_year bigint
 		, hl2_budget_total decimal(19,2)
 		, organization_acronym nvarchar(25)
 		, organization_name nvarchar(255)
-        --, team_type_id bigint
-        --, hl1_budget decimal(19,2)
         , version integer
         , crt_related tinyint
         , implement_execution_level tinyint
         , in_budget tinyint
         , allow_automatic_budget_approval tinyint
-        --, hl1_id bigint
 		)
 )
 	LANGUAGE SQLSCRIPT
@@ -36,24 +29,17 @@ BEGIN
 		HL2.hl2_id
 		, HL2.acronym
 		, HL2.description
-		--, HL2.budget_year_id
-		--, HL2.region_id
 		, HL2.subregion_id
-		--, R.REGION_NAME
 		, SR.SUBREGION_NAME
-		, CONCAT ('CRM-',CONCAT (HL1.ACRONYM, SUBSTRING(TO_NVARCHAR(BUY.BUDGET_YEAR), 3, 2))) as PATH
-		--, BUY.BUDGET_YEAR
+		, "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BUY.BUDGET_YEAR, HL1.ACRONYM, HL2.ORGANIZATION_ACRONYM, '', '', '', '') AS PATH
 		, HL2.hl2_budget_total
 		, HL2.ORGANIZATION_ACRONYM
 		, HL2.ORGANIZATION_NAME
-        --, HL2.TEAM_TYPE_ID
-        --, HL1.BUDGET AS HL1_BUDGET
         , hl2.version
         , hl2.crt_related
         , hl2.implement_execution_level
         , hl2.in_budget
         , hl2.allow_automatic_budget_approval
-        --, hl2.hl1_id
 	FROM HL2_VERSION HL2
 	LEFT JOIN REGION R ON R.region_id = HL2.region_id
 	LEFT JOIN SUBREGION SR ON SR.subregion_id = HL2.subregion_id
@@ -66,24 +52,17 @@ BEGIN
 		HL2.hl2_id
 		, HL2.acronym
 		, HL2.description
-		--, HL2.budget_year_id
-		--, HL2.region_id
 		, HL2.subregion_id
-		--, R.REGION_NAME
 		, SR.SUBREGION_NAME
-		, CONCAT ('CRM-',CONCAT (HL1.ACRONYM, SUBSTRING(TO_NVARCHAR(BUY.BUDGET_YEAR), 3, 2))) as PATH
-		--, BUY.BUDGET_YEAR
+		, "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BUY.BUDGET_YEAR, HL1.ACRONYM, HL2.ORGANIZATION_ACRONYM, '', '', '', '') AS PATH
 		, HL2.hl2_budget_total
 		, HL2.ORGANIZATION_ACRONYM
 		, HL2.ORGANIZATION_NAME
-        --, HL2.TEAM_TYPE_ID
-        --, HL1.BUDGET AS HL1_BUDGET
         , hl2.version
         , hl2.crt_related
         , hl2.implement_execution_level
         , hl2.in_budget
         , hl2.allow_automatic_budget_approval
-        --, hl2.hl1_id
 	FROM HL2
 	LEFT JOIN REGION R ON R.region_id = HL2.region_id
 	LEFT JOIN SUBREGION SR ON SR.subregion_id = HL2.subregion_id

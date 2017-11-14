@@ -1,0 +1,17 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_ALL_HL3_CRM_ACRONYM" (
+  OUT out_result TABLE(	HL3_CRM_ACRONYM_ID bigint,
+  						acronym nvarchar(25), 
+  						crm_description nvarchar(100)
+  						)
+)
+LANGUAGE SQLSCRIPT
+SQL SECURITY INVOKER
+DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+READS SQL DATA AS
+BEGIN
+  out_result = SELECT 	HL3_CRM_ACRONYM_ID,
+  						acronym, 
+  						crm_description
+              FROM "HL3_CRM_ACRONYM" WHERE ENABLED = 1 AND DELETED = 0
+              ORDER BY HL3_CRM_ACRONYM_ID;
+END;

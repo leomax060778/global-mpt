@@ -106,13 +106,13 @@ function getSegmentationFormByHl5Id(hl5Id) {
     var segmentationForms = data.getSegmentationFormByHl5Id(hl5Id);
     segmentationForms = JSON.parse(JSON.stringify(segmentationForms));
     segmentationForms.forEach(function (segmentationForm) {
-        segmentationForm.segmentationMarket = getMarketForEdit(segmentationForm.SEGMENTATION_FORM_ID);
-        segmentationForm.segmentationSale = getSaleForEdit(segmentationForm.SEGMENTATION_FORM_ID);
-        segmentationForm.segmentationIndustry = getIndustryForEdit(segmentationForm.SEGMENTATION_FORM_ID);
-        segmentationForm.segmentationFunction = getFunctionForEdit(segmentationForm.SEGMENTATION_FORM_ID);
-        segmentationForm.segmentationDepartment = getDepartmentForEdit(segmentationForm.SEGMENTATION_FORM_ID);
-        segmentationForm.segmentationTactic = getTacticForEdit(segmentationForm.SEGMENTATION_FORM_ID);
-        segmentationForm.segmentationItemOfInterest = getItemForInterestForEdit(segmentationForm.SEGMENTATION_FORM_ID);
+        segmentationForm.SEGMENTATION_MARKET = getMarketForEdit(segmentationForm.SEGMENTATION_FORM_ID);
+        segmentationForm.SEGMENTATION_SALE = getSaleForEdit(segmentationForm.SEGMENTATION_FORM_ID);
+        segmentationForm.SEGMENTATION_INDUSTRY = getIndustryForEdit(segmentationForm.SEGMENTATION_FORM_ID);
+        segmentationForm.SEGMENTATION_FUNCTION = getFunctionForEdit(segmentationForm.SEGMENTATION_FORM_ID);
+        segmentationForm.SEGMENTATION_DEPARTMENT = getDepartmentForEdit(segmentationForm.SEGMENTATION_FORM_ID);
+        segmentationForm.SEGMENTATION_TACTIC = getTacticForEdit(segmentationForm.SEGMENTATION_FORM_ID);
+        segmentationForm.SEGMENTATION_ITEM_OF_INTEREST = getItemForInterestForEdit(segmentationForm.SEGMENTATION_FORM_ID);
         segmentationForm.ATTACHMENTS = segmentationForm.ATTACHMENT_ID ? getSegmentationFormAttachment(segmentationForm.ATTACHMENT_ID) : [];
         segmentationForm.TARGET_GROUP_APPROVAL_WORKFLOW = !!segmentationForm.TARGET_GROUP_APPROVAL_WORKFLOW;
         segmentationForm.APPLY_SALE_PLAY_FOR_TARGET = !!segmentationForm.APPLY_SALE_PLAY_FOR_TARGET;
@@ -286,6 +286,8 @@ function updateSegmentationForm(segmentationFormInfo, userId) {
     updateSegmentationFormTactic(segmentationFormInfo, userId);
 
     updateSegmentationFormItemOfInterest(segmentationFormInfo, userId);
+
+    return true;
 }
 
 function deleteSegmentationForm(hl5Id, userId) {
@@ -305,8 +307,8 @@ function deleteSegmentationForm(hl5Id, userId) {
 
 function deleteSegmentationFormByHl5IdOptionId(hl5Id, optionIds, userId) {
     var segmentationFormIds = data.getSegmentationFormByHl5IdOptionId(hl5Id, optionIds);
-
-    segmentationFormIds.forEach(function (segmentationFormId) {
+    segmentationFormIds.forEach(function (segmentationForm) {
+        var segmentationFormId = segmentationForm.SEGMENTATION_FORM_ID;
         data.deleteSegmentationFormMarketBySegmentationFormId(segmentationFormId, userId);
         data.deleteSegmentationFormSaleBySegmentationFormId(segmentationFormId, userId);
         data.deleteSegmentationFormIndustryBySegmentationFormId(segmentationFormId, userId);

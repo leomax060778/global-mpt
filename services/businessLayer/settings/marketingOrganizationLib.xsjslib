@@ -16,7 +16,7 @@ function getAllMarketingOrganization(){
 }
 
 function getAllMarketingOrganizationByLevelHlId(level, hlId){
-	return dbMO.(hierarchyLevel[level.toUpperCase()], hlId);
+	return dbMO.getAllMarketingOrganizationByHlIdLevel(hierarchyLevel[level.toUpperCase()], hlId);
 }
 
 function InsertMarketingOrganization(organization, userId){

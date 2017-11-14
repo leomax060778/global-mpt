@@ -26,7 +26,7 @@ IF in_is_super_Admin = 1 THEN
     SELECT
       HL1.HL1_ID
     , HL1.ACRONYM as hl1_acronym
-    , SUBSTRING(TO_NVARCHAR(BGY.BUDGET_YEAR), 3, 2) as BUDGET_YEAR
+    , BGY.BUDGET_YEAR as BUDGET_YEAR
     , hl3.hl3_ID
     , hl3.acronym as hl3_acronym
     , hl1.description as HL1_DESCRIPTION
@@ -49,7 +49,7 @@ ELSE
     var_out_result = SELECT
       HL1.HL1_ID
     , HL1.ACRONYM as hl1_acronym
-    , SUBSTRING(TO_NVARCHAR(BGY.BUDGET_YEAR), 3, 2) as BUDGET_YEAR
+    , BGY.BUDGET_YEAR as BUDGET_YEAR
     , hl3.hl3_ID
     , hl3.acronym as hl3_acronym
     , hl1.description as HL1_DESCRIPTION
@@ -76,14 +76,17 @@ END IF;
         out_result =
         SELECT
           T.HL1_ID
-        , CONCAT(T.hl1_acronym, T.BUDGET_YEAR) AS HL1_PATH
+        --, CONCAT(T.hl1_acronym, T.BUDGET_YEAR) AS HL1_PATH
+        , "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(T.BUDGET_YEAR, T.hl1_acronym, '', '', '', '', '') AS HL1_PATH
         , T.HL3_ID
-        , CONCAT(CONCAT(CONCAT(T.H2_ACRONYM,T.BUDGET_YEAR), '-'), T.hl3_acronym) AS HL3_PATH
+        --, CONCAT(CONCAT(CONCAT(T.H2_ACRONYM,T.BUDGET_YEAR), '-'), T.hl3_acronym) AS HL3_PATH
+        , "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(T.BUDGET_YEAR, T.hl1_acronym, T.H2_ACRONYM, '', '', '', '') AS HL3_PATH
         , T.HL1_DESCRIPTION
         , T.HL3_DESCRIPTION
         , T.HL2_ID
         , T.HL2_DESCRIPTION
-        , CONCAT(T.H2_ACRONYM,T.BUDGET_YEAR) AS HL2_PATH
+        --, CONCAT(T.H2_ACRONYM,T.BUDGET_YEAR) AS HL2_PATH
+        , "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(T.BUDGET_YEAR, T.hl1_acronym, T.H2_ACRONYM, '', '', '', '') AS HL2_PATH
         FROM :var_out_result T
         WHERE T.REGION_ID = 0;
 
@@ -92,14 +95,17 @@ END IF;
         out_result =
         SELECT
           T.HL1_ID
-        , CONCAT(T.hl1_acronym, T.BUDGET_YEAR) AS HL1_PATH
+        --, CONCAT(T.hl1_acronym, T.BUDGET_YEAR) AS HL1_PATH
+        , "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(T.BUDGET_YEAR, T.hl1_acronym, '', '', '', '', '') AS HL1_PATH
         , T.HL3_ID
-        , CONCAT(CONCAT(CONCAT(T.H2_ACRONYM,T.BUDGET_YEAR), '-'), T.hl3_acronym) AS HL3_PATH
+        --, CONCAT(CONCAT(CONCAT(T.H2_ACRONYM,T.BUDGET_YEAR), '-'), T.hl3_acronym) AS HL3_PATH
+        , "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(T.BUDGET_YEAR, T.hl1_acronym, T.H2_ACRONYM, T.hl3_acronym, '', '', '') AS HL3_PATH
         , T.HL1_DESCRIPTION
         , T.HL3_DESCRIPTION
         , T.HL2_ID
         , T.HL2_DESCRIPTION
-        , CONCAT(T.H2_ACRONYM,T.BUDGET_YEAR) AS HL2_PATH
+        --, CONCAT(T.H2_ACRONYM,T.BUDGET_YEAR) AS HL2_PATH
+        , "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(T.BUDGET_YEAR, T.hl1_acronym, T.H2_ACRONYM, '', '', '', '') AS HL2_PATH
         FROM :var_out_result T
         WHERE (T.REGION_ID = in_region_id OR in_region_id = 0);
 

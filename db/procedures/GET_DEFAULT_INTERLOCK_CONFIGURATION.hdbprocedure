@@ -1,8 +1,8 @@
 PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_DEFAULT_INTERLOCK_CONFIGURATION" (
 	OUT out_result TABLE (
-	                      ORIGIN_TYPE NVARCHAR(255),
+	                      INTERLOCK_TYPE NVARCHAR(255),
 	                      INTERLOCK_DEFAULT_CONFIGURATION_ID INTEGER,
-                          INTERLOCK_REQUEST_ORIGIN_ID BIGINT,
+                          INTERLOCK_TYPE_ID BIGINT,
 						  ENTITY_ID_FROM BIGINT,
 						  ENTITY_ID_TO BIGINT,
 						  ORGANIZATION_TYPE_FROM BIGINT,
@@ -18,16 +18,16 @@ BEGIN
 
 			out_result =
 
-			SELECT iro.NAME as ORIGIN_TYPE,
+			SELECT it.DISPLAY_NAME as INTERLOCK_TYPE,
 			       idc.INTERLOCK_DEFAULT_CONFIGURATION_ID,
-			       idc.INTERLOCK_REQUEST_ORIGIN_ID,
+			       idc.INTERLOCK_TYPE_ID,
 				   idc.ENTITY_ID_FROM,
 				   idc.ENTITY_ID_TO,
 				   idc.ORGANIZATION_TYPE_FROM,
 				   idc.ORGANIZATION_TYPE_TO,
 				   idc.ENABLED
 			FROM INTERLOCK_DEFAULT_CONFIGURATION idc
-			JOIN interlock_request_origin iro on iro.interlock_request_origin_id = idc.interlock_request_origin_id
+			JOIN INTERLOCK_TYPE it on it.INTERLOCK_TYPE_ID = idc.INTERLOCK_TYPE_ID
 
 			where idc.deleted = 0;
 

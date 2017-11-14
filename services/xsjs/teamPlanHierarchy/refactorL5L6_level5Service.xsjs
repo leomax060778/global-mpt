@@ -41,7 +41,8 @@ function handleGet(params, userId) {
 		result = hl5.getHl5ByHl4Id(in_hl4_id);
 	} else if (in_hl5_id) {
         hl5.checkPermission(userId, null, in_hl5_id);
-		result = hl5.getHl5ById(in_hl5_id);
+        var isCarryOver = httpUtil.getUrlParameters().get("METHOD") == "CARRY_OVER";
+		result = hl5.getHl5ById(in_hl5_id, isCarryOver);
 	} else if (param_section && param_section == section){
         budgetYearId = httpUtil.getUrlParameters().get("BUDGET_YEAR_ID") || null;
         var regionId = httpUtil.getUrlParameters().get("REGION_ID") || null;
@@ -68,7 +69,7 @@ function handleGet(params, userId) {
 //Implementation of PUT call -- Update HL5
 function handlePut(reqBody, userId){
 	var parameters = httpUtil.getUrlParameters();
-    hl5.checkPermission(userId, null, parameters.get('HL5_ID') || reqBody.hl5.in_hl5_id);
+    hl5.checkPermission(userId, null, parameters.get('HL5_ID') || reqBody.HL5_ID || reqBody.hl5.in_hl5_id);
 
 	if(parameters.length > 0){
 		var aCmd = parameters.get('method');
@@ -96,8 +97,8 @@ function handlePut(reqBody, userId){
 
 //Implementation of DELETE call -- Delete HL5
 function handleDelete(reqBody, userId){
-    hl5.checkPermission(userId, null, reqBody.in_hl5_id);
-	var result = hl5.deleteHl5(reqBody, userId);
+    hl5.checkPermission(userId, null, reqBody.HL5_ID);
+	var result = hl5.deleteHl5(reqBody.HL5_ID, userId);
 	return httpUtil.handleResponse(result,httpUtil.OK,httpUtil.AppJson);
 }
 

@@ -12,6 +12,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL2_FOR_SEAR
             , budget_year integer
             , acronym nvarchar(25)
 			,organization_acronym nvarchar(25)
+			,PATH nvarchar(255)
 		)
 		, OUT totalRows integer
 	)
@@ -88,10 +89,12 @@ BEGIN
 if(in_limit = -1) then
 out_result =
     SELECT ID, PARENT_ID, BUDGET_YEAR, ACRONYM, ORGANIZATION_ACRONYM
+    , "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BUDGET_YEAR, ACRONYM, ORGANIZATION_ACRONYM, '', '', '', '') AS PATH
     FROM :TEMP_OUT_RESULT;
 else
     out_result =
     SELECT ID, PARENT_ID, BUDGET_YEAR, ACRONYM, ORGANIZATION_ACRONYM
+    , "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BUDGET_YEAR, ACRONYM, ORGANIZATION_ACRONYM, '', '', '', '') AS PATH
     FROM :TEMP_OUT_RESULT
     LIMIT :in_limit OFFSET :in_offset;
 end if;

@@ -66,6 +66,7 @@ var L1_MSG_PLAN_CANT_DELETE = "The selected Plan can not be deleted because has 
 var L1_MSG_USER_NOT_FOUND = "The User can not be found.";
 var L1_MSG_TYPE_VALUE_ERROR = "Some values are not valid.";
 var L1_MSG_MARKET_UNIT_ERROR = "Market Unit is not valid for the selected Region.";
+var L1_MSG_NOT_USERS_ASSOCIATED = "Must enter some users associated for this Plan.";
 var L1_CAMPAIGN_FORECASTING_KPIS_COMMENT = "Please enter a comment to explain expected outcomes as you didn't select any Campaign type.";
 var L1_CAMPAIGN_FORECASTING_KPIS_DETAILS = "Campaign Forecasting / KPIS details amount value is not valid.";
 var L1_CAMPAIGN_FORECASTING_KPIS_DETAILS_EURO = "Campaign Forecasting / KPIS details euro value is not valid.";
@@ -148,15 +149,21 @@ function insertHl1FromUpload(data, userId) {
 
     validateHl1ForUpload(data);
 
-    var hl1_id = dataHl1.insertLevel1(data.ACRONYM, data.DESCRIPTION, data.BUDGET_YEAR_ID, data.REGION_ID
-        , userId, data.BUDGET, data.TEAM_TYPE_ID, data.IMPLEMENT_EXECUTION_LEVEL, data.CRT_RELATED, data.IMPORT_ID, 1);
-
     //INSERT USERS RELATED TO HL2
-    data.HL1_ID = hl1_id;
     var listObjHl1User = util.parseAssignedUsers(data.USERS);
     /******************/
     listObjHl1User = completeUsers(listObjHl1User); //add SA users
     /******************/
+    if(!listObjHl1User || listObjHl1User.length == 0){
+        throw ErrorLib.getErrors().ImportError(
+            "", "", L1_MSG_NOT_USERS_ASSOCIATED);
+    }
+
+    var hl1_id = dataHl1.insertLevel1(data.ACRONYM, data.DESCRIPTION, data.BUDGET_YEAR_ID, data.REGION_ID
+        , userId, data.BUDGET, data.TEAM_TYPE_ID, data.IMPLEMENT_EXECUTION_LEVEL, data.CRT_RELATED, data.IMPORT_ID, 1);
+
+    data.HL1_ID = hl1_id;
+
     if (listObjHl1User) {
         if (validateHl1User(listObjHl1User)) {
             var arrHl1User = [];
@@ -433,13 +440,7 @@ function getLevel1Kpi(budgetYearId, regionId, userId) {
 
 function getLevel1ForSearch(budgetYearId, regionId, limit, offset, userSessionID) {
     var result = dataHl1.getLevel1ForSearch(budgetYearId || 1, regionId || 0, limit, offset || 0, userSessionID, util.isSuperAdmin(userSessionID) ? 1 : 0);
-    var total_rows = result.total_rows;
-    result = JSON.parse(JSON.stringify(result.result));
-
-    result.forEach(function (object) {
-        object.PATH = "CRM-" + object.ACRONYM + (object.BUDGET_YEAR % 100);
-    });
-    return {result: result, total_rows: total_rows};
+    return result;
 }
 
 function validateHl1(data) {
@@ -648,41 +649,6 @@ function validateHl1User(assignedUsersId) {
             throw ErrorLib.getErrors().CustomError("", "hl1Services/handlePost/validateHl1User", "Assigned user is invalid.");
     }
     return true;
-
-    /*var isValid = false;
-    var errors = {};
-    var BreakException = {};
-    var keys = ['USER_ID'];
-
-    if (!listObjHl2User)
-        return true;
-
-    try {
-
-        for (var i = 0; i < listObjHl2User.length; i++) {
-            keys.forEach(function (key) {
-                if (listObjHl2User[i][key] === null || listObjHl2User[i][key] === undefined) {
-                    errors[key] = null;
-                    throw BreakException;
-                } else {
-                    // validate attribute type
-                    isValid = validateType(key, listObjHl2User[i][key]);
-                    if (!isValid) {
-                        errors[key] = listObjHl2User[i][key];
-                        throw BreakException;
-                    }
-                }
-            });
-        }
-        isValid = true;
-    } catch (e) {
-        if (e !== BreakException)
-            throw ErrorLib.getErrors().CustomError("", "hl2Services/handlePost/validateHl2User", e.toString());
-        else
-            throw ErrorLib.getErrors().CustomError("", "hl2Services/handlePost/validateHl2User"
-                , JSON.stringify(errors));
-    }
-    return isValid;*/
 }
 
 /*VALIDATE IF EXITS DE PAIR HL2_USER IN DATABASE*/

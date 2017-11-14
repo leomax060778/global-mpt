@@ -58,26 +58,16 @@ BEGIN
 					);
 					
 	out_result = SELECT 
-						CONCAT(
-			                            CONCAT(
-			                                CONCAT(
-			                                    CONCAT(
-			                                        CONCAT(
-			                                        HL2.organization_acronym, SUBSTRING(TO_NVARCHAR(BGY.BUDGET_YEAR), 3, 2)),
-			                            '-'),
-			                        HL4.ACRONYM),
-			                        '-'),
-			                     HL5.ACRONYM)
-			            		 AS PATH,
-			            		 U.FIRST_NAME || ' ' || U.LAST_NAME AS REQUESTER,
-			            		 BSR.DESCRIPTION AS REQUESTED_RESOURCE,
-			            		 BSR.AMOUNT AS REQUESTED_BUDGET,
-			            		 BSR.CREATED_DATE_TZ,
-			            		 BSR.MODIFIED_DATE_TZ AS STATUS_CHANGE,
-			            		 BSR_STATUS.DISPLAY_NAME AS STATUS,
-			            		 CUR.CURRENCY_ID,
-			            		 CUR.CURRENCY_ABBREVIATION,
-			            		 CUR.CURRENCY_VALUE
+                     "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BGY.BUDGET_YEAR, HL1.ACRONYM, HL2.ORGANIZATION_ACRONYM, HL3.ACRONYM, HL4.ACRONYM, HL5.ACRONYM, '') AS PATH,
+                     U.FIRST_NAME || ' ' || U.LAST_NAME AS REQUESTER,
+                     BSR.DESCRIPTION AS REQUESTED_RESOURCE,
+                     BSR.AMOUNT AS REQUESTED_BUDGET,
+                     BSR.CREATED_DATE_TZ,
+                     BSR.MODIFIED_DATE_TZ AS STATUS_CHANGE,
+                     BSR_STATUS.DISPLAY_NAME AS STATUS,
+                     CUR.CURRENCY_ID,
+                     CUR.CURRENCY_ABBREVIATION,
+                     CUR.CURRENCY_VALUE
 			            		 
 			            FROM "MKTG_PLANNING_TOOL"."BUDGET_SPEND_REQUEST" BSR
 			            	INNER JOIN "MKTG_PLANNING_TOOL"."HL5" HL5

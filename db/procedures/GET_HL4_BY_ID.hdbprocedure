@@ -21,6 +21,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL4_BY_ID" (
     ,COST_CENTER NVARCHAR(10)
     ,MKT_ORG_ID integer
     ,DIS_CHANNEL_ID integer
+    , CRM_ID NVARCHAR(255)
 	) 
 ) 
 	LANGUAGE SQLSCRIPT
@@ -50,8 +51,13 @@ out_hl4 =
         ,HL4.COST_CENTER
         ,HL4.MKT_ORG_ID
     	,HL4.DIS_CHANNEL_ID
+    	,"MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BGY.BUDGET_YEAR, HL1.ACRONYM, HL2.ORGANIZATION_ACRONYM, HL3.ACRONYM, HL4.ACRONYM, '', '') as CRM_ID
    		      		      		      		      		      		      		      		   
 	FROM HL4
+	INNER JOIN HL3 ON HL3.HL3_ID = HL4.HL3_ID
+	INNER JOIN HL2 ON HL2.HL2_ID = HL3.HL2_ID
+	INNER JOIN HL1 ON HL1.HL1_ID = HL2.HL1_ID
+	INNER JOIN BUDGET_YEAR BGY ON HL1.BUDGET_YEAR_ID = BGY.BUDGET_YEAR_ID
 	WHERE HL4.hl4_id = in_hl4_id
 	  AND HL4.deleted = 0
 	  AND HL4.enabled = 1;

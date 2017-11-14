@@ -85,9 +85,14 @@ var RoleEnum = {
 	};
 //*************************
 
-var OriginMessageInterlock = {
+/*var OriginMessageInterlock = {
 	requester : 1,
 	moneyLender : 2
+};*/
+
+var InterlockType = {
+	REQUEST_MONEY: 1,
+	REGION_SPEND: 2
 };
 
 function getDebugMode(){
@@ -126,8 +131,12 @@ function getRoleEnum(){
 	return RoleEnum;
 }
 
-function getOriginMessageInterlock(){
+/*function getOriginMessageInterlock(){
 	return OriginMessageInterlock;
+}*/
+
+function getInterlockType(){
+    return InterlockType;
 }
 
 function getActivateNotificationLevel2(){

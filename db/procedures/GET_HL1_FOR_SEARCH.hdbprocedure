@@ -7,10 +7,11 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL1_FOR_SEAR
 		, IN in_isSA tinyint
 		, OUT total_rows INTEGER
 		, OUT out_result TABLE (
-			id bigint,
-			budget_year bigint,
-			acronym nvarchar(25),
-			region_name nvarchar(255)
+			id bigint
+			,budget_year bigint
+			,acronym nvarchar(25)
+			,region_name nvarchar(255)
+			,PATH nvarchar(255)
 		)
 	)
 	
@@ -73,6 +74,7 @@ BEGIN
                   , T.BUDGET_YEAR
                   , T.ACRONYM
                   , T.REGION_NAME
+                  , "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(T.BUDGET_YEAR, T.ACRONYM, '', '', '', '', '') AS PATH
                    from :va_subresult T
                 LIMIT :in_limit
                 OFFSET :in_offset;

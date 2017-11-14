@@ -1,10 +1,7 @@
 $.import("mktgplanningtool.services.commonLib", "mapper");
 var mapper = $.mktgplanningtool.services.commonLib.mapper;
 var dataL6DER = mapper.getDataLevel6Report();
-var dataHl6 = mapper.getDataLevel6();
-var dataHl5 = mapper.getDataLevel5();
 var dataPath = mapper.getDataPath();
-var dataObjective = mapper.getDataObjectives();
 var dataCampaignType = mapper.getDataCampaignType();
 var dataCategory = mapper.getDataCategory();
 var dataCampaignSubType = mapper.getDataCampaignSubType();
@@ -12,9 +9,7 @@ var dataRouteToMarket = mapper.getDataRouteToMarket();
 var dataMarketingOrganization = mapper.getDataMarketingOrganization();
 var dataCostCenter = mapper.getDataCostCenter();
 var dataMarketingProgram = mapper.getDataMarketingProgram();
-//var dataMarketingActivity = mapper.getDataMarketingActivity();
 var dataBusinessOwner = mapper.getDataBusinessOwner();
-var dbER = mapper.getDataEmployeeResponsible();
 var ErrorLib = mapper.getErrors();
 var util = mapper.getUtil();
 var dataPriority = mapper.getDataPriority();
@@ -24,17 +19,7 @@ var dataCategoryOptionLevel = mapper.getDataCategoryOptionLevel();
 
 function getAllL6DEReport(userId) {
     var hl6List = dataL6DER.getAllLevel6Report(userId);
-    var allHl6 = [];
-    hl6List.forEach(function (hl6) {
-        var aux = {};
-        Object.keys(hl6).forEach(function (key) {
-            aux[key] = key != 'HL6_PATH' ? hl6[key]
-                : 'CRM-' + hl6[key];
-        });
-        allHl6.push(aux);
-    });
-
-    return allHl6;
+    return hl6List;
 }
 
 function getAllL6DEReportForDownload(userId) {
@@ -51,8 +36,6 @@ function getL6ChangedFieldsByHl6Id(hl6Id, userId) {
     var processingReportData = dataL6DER.getL6ForProcessingReportByHl6Id(hl6Id);
 
     var hl6 = processingReportData.hl6;
-    //var hl6 = dataHl6.getHl6ById(hl6Id);
-    var hl5 = dataHl5.getHl5ById(hl6['HL5_ID']);
     var costCenter;
     Object.keys(l6ReportFields).forEach(function (field) {
         if (field == "CATEGORY") {
@@ -61,7 +44,6 @@ function getL6ChangedFieldsByHl6Id(hl6Id, userId) {
                     var object = {};
                     object.option = [];
                     object.display_name = hl6Category.CATEGORY_NAME;
-                    //var hl6CategoryOptions = dataCategoryOptionLevel.getAllocationOptionByCategoryAndLevelId(hl6Category.CATEGORY_ID, 'hl6', hl6Id);
                     hl6CategoryOptions[hl6Category.CATEGORY_ID].forEach(function (hl6CategoryOption) {
                         if (hl6CategoryOption.AMOUNT != 0 || hl6CategoryOption.UPDATED) {
                             object.option.push({
@@ -77,12 +59,9 @@ function getL6ChangedFieldsByHl6Id(hl6Id, userId) {
         } else {
             var object = {};
             object.display_name = l6ReportFields[field];
-            var CRM_ACRONYM = "CRM";
-            //var path = dataPath.getPathByLevelParent(6, hl6['HL5_ID']);
-            var parentPath = CRM_ACRONYM + "-" + hl6.L2_ACRONYM + hl6.BUDGET_YEAR + "-" + hl6.L4_ACRONYM + "-" + hl6.L5_ACRONYM;
             switch (field) {
                 case "ACRONYM":
-                    object.value = parentPath + hl6.ACRONYM;
+                    object.value = hl6.CRM_ID;
                     break;
                 case "DISTRIBUTION_CHANNEL_ID":
                     object.value = hl6.DISTRIBUTION_CHANNEL;
@@ -108,12 +87,7 @@ function getL6ChangedFieldsByHl6Id(hl6Id, userId) {
 
                 case "MARKETING_ACTIVITY_ID":
                     if (processingReportData.marketing_activity_id) {
-                        object.value = CRM_ACRONYM + '-'
-                            + processingReportData.marketing_activity_id.BUDGET_YEAR
-                            + processingReportData.marketing_activity_id.L1_ACRONYM
-                            + '-' + processingReportData.marketing_activity_id.L3_ACRONYM
-                            + '-' + processingReportData.marketing_activity_id.L4_ACRONYM
-                            + processingReportData.marketing_activity_id.L5_ACRONYM;
+                        object.value = processingReportData.marketing_activity_id.CRM_ID;
                     }
                     break;
                 case "SHOW_ON_DG_CALENDAR":
@@ -153,7 +127,7 @@ function getL6ChangedFieldsByHl6Id(hl6Id, userId) {
                     object.value = (new Date(hl6.ACTUAL_END_DATE)).toLocaleDateString();
                     break;
                 case "PARENT_PATH":
-                    object.value = parentPath;
+                    object.value = hl6.PARENT_PATH;
                     break;
                 case "PRIORITY_ID":
                     object.value = hl6.PRIORITY;

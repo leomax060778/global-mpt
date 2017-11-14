@@ -59,6 +59,10 @@
       <descriptions defaultDescription="ENTITY_ID_FROM"/>
       <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="INTERLOCK_REQUEST" columnName="ENTITY_ID_FROM"/>
     </attribute>
+    <attribute id="INTERLOCK_TYPE_ID" order="15" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="INTERLOCK_TYPE_ID"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="INTERLOCK_REQUEST" columnName="INTERLOCK_TYPE_ID"/>
+    </attribute>
   </attributes>
   <calculatedAttributes/>
   <privateDataFoundation>

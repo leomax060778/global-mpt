@@ -384,7 +384,7 @@ function sendMail(reqBody, defaultBody, OptionalSender){
 			//create email from JS Object and send
 			var mail = new $.net.Mail();
 
-			mail.sender = 'fsavat@folderit.net';//reqBody.FROM[0];
+			mail.sender = reqBody.FROM[0];
 			    if(OptionalSender && validateEmail(OptionalSender)){
 			    	mail.sender = OptionalSender;
 			    }

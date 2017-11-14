@@ -118,37 +118,21 @@ function getHl3ByUserGroupByHl1(userId, budgetYearId, regionId, subRegionId) {
     var isSA = userId ? util.isSuperAdmin(userId) : 1;
     var hl3 = data.getHl3PathByUserId(userId || 0, isSA, budgetYearId || 0, regionId || 0, subRegionId || 0);
     var collection = {};
-    var L0 = 'CRM-';
     hl3.forEach(function (item) {
         if (!collection[item.HL1_ID]) {
             collection[item.HL1_ID] = {
                 HL1_ID: item.HL1_ID
-                , PATH: L0 + item.HL1_PATH
+                , PATH: item.HL1_PATH
                 , HL1_DESCRIPTION: item.HL1_DESCRIPTION
                 , CHILDREN: {}
             };
         }
-        /*var hl3 = {
-         HL3_ID: item.HL3_ID,
-         PATH: L0 + item.HL3_PATH,
-         HL3_DESCRIPTION: item.HL3_DESCRIPTION
-         };
-         if(!collection[item.HL1_ID]) {
-         collection[item.HL1_ID] = {
-         HL1_ID: item.HL1_ID
-         , PATH: L0 + item.HL1_PATH
-         , HL1_DESCRIPTION: item.HL1_DESCRIPTION
-         , CHILDREN: [hl3]
-         };
-         } else {
-         collection[item.HL1_ID].CHILDREN.push(hl3);
-         }*/
     });
     hl3.forEach(function (item) {
         if (!collection[item.HL1_ID].CHILDREN[item.HL2_ID]) {
             collection[item.HL1_ID].CHILDREN[item.HL2_ID] = {
                 HL2_ID: item.HL2_ID
-                , PATH: L0 + item.HL2_PATH
+                , PATH: item.HL2_PATH
                 , HL2_DESCRIPTION: item.HL2_DESCRIPTION
                 , CHILDREN: []
             };
@@ -157,7 +141,7 @@ function getHl3ByUserGroupByHl1(userId, budgetYearId, regionId, subRegionId) {
     hl3.forEach(function (item) {
         collection[item.HL1_ID].CHILDREN[item.HL2_ID].CHILDREN.push({
             HL3_ID: item.HL3_ID,
-            PATH: L0 + item.HL3_PATH,
+            PATH: item.HL3_PATH,
             HL3_DESCRIPTION: item.HL3_DESCRIPTION
         });
     });
@@ -189,20 +173,7 @@ function getLevel3ForSearch(userSessionID, budget_year_id, region_id, subregion_
         subregion_id,
         offset,
         limit);
-    var result = query.result;
-    var resultRefactor = [];
-    for (var i = 0; i < result.length; i++) {
-        var aux = {};
-        var object = result[i];
-        aux.ID = object.ID;
-        aux.PARENT_ID = object.PARENT_ID;
-        aux.ORGANIZATION_ACRONYM = object.ORGANIZATION_ACRONYM;
-        aux.REGION_NAME = object.REGION_NAME;
-        aux.SUBREGION_NAME = object.SUBREGION_NAME;
-        aux.PATH = "CRM-" + object.PATH;
-        resultRefactor.push(aux);
-    }
-    return {result: resultRefactor, total_rows: query.total_rows};
+    return query;
 }
 
 function getLevel3ByAcronym(acronym, hl1Id, userId) {

@@ -15,9 +15,6 @@ function completeCRMPath(array, key) {
 
 	var path = 'CRM-';
 	array.forEach(function(data) {
-		if (data[key]) {
-			data[key] = path + data[key];
-		}
 		kEurAmount = calculateBudgetInEuros(data);
 
 		if (data.CURRENCY_ABBREVIATION === "EUR") {

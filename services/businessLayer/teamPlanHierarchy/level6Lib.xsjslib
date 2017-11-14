@@ -77,7 +77,7 @@ var L6_CAMPAIGN_FORECASTING_KPIS_VOLUME = "Campaign Forecasting / KPIS volume mu
 var L6_CAMPAIGN_FORECASTING_KPIS_VALUE = "Campaign Forecasting / KPIS value must be equal or lower than available value.";
 var L6_MSG_RESULTS_CAMPAIGN = "The Marketing Sub Tactic, Results/Campaign Forecasting must be set.";
 var L6_MSG_RESULTS_CAMPAIGN_PERCENT = "The Marketing Sub Tactic, Results/Campaign Forecasting must be 100%.";
-var L6_MSG_COULDNT_CHAGE_STATUS = "Couldn´t change Sub tactic/Campaign status due to incomplete data. Please review Budget and Options information";
+var L6_MSG_COULDNT_CHAGE_STATUS = "Your records was saved as \"In progress\".  Please review your record for incomplete fields and/or pending budget approvals.";
 var L6_CAMPAIGN_FORECASTING_KPIS_COMMENT = "Please enter a comment to explain expected outcomes as you didn't select any KPI type.";
 var L6_MSG_INITIATIVE_PROPERTIES_CANNOT_UPDATE = "Once Marketing Sub Tactic is already in CRM, properties CRM ID, Cost Center and Markting Organization cannot be modified.";
 var L6_MY_BUDGET_COMPLETE = "My Budget should be 100% complete.";
@@ -90,7 +90,7 @@ var L6_RESPONSIBLE_NOT_VALID = "Employee Responsible cannot be empty.";
 var L6_RESPONSIBLE_PERSON_NOT_VALID = "Responsible Person cannot be empty.";
 var L6_BUDGET_APPROVER_NOT_VALID = "Budget Approver cannot be empty.";
 var L6_PRIORITY_NOT_VALID = "Priority cannot be empty.";
-var L6_MSG_COULDNT_CHANGE_STATUS_DUE_PENDING_BUDGET_SPEND_REQUEST = "Couldn´t change 'Marketing Subtactic' status due to Pending Budget Spend requests. Please contact the Budget Approver";
+var L6_MSG_COULDNT_CHANGE_STATUS_DUE_PENDING_BUDGET_SPEND_REQUEST = "Your records was saved as \"In progress\".  Please review your record for incomplete fields and/or pending budget approvals.";
 
 
 
@@ -149,9 +149,8 @@ function getHl6ByHl5Id(hl5Id) {
                         aux[key] = hl6[key];
                     }
                 } else {
-                    aux.CRM_ID = 'CRM-' + hl6[key] + (hl6.HL6_ACRONYM.length === 1 ? '00' + hl6.HL6_ACRONYM
-                        : hl6.HL6_ACRONYM.length === 2 ? '0' + hl6.HL6_ACRONYM
-                            : hl6.HL6_ACRONYM);
+                    //the full path from the query
+                    aux.CRM_ID = hl6[key];
                 }
             });
             allHl6.push(aux);
@@ -272,22 +271,7 @@ function getUserById(id) {
 
 function getLevel6ForSearch(userSessionID, budget_year_id, region_id, subregion_id, limit, offset) {
     var list = dataHl6.getHl6ForSearch(userSessionID, util.isSuperAdmin(userSessionID) ? 1 : 0, budget_year_id, region_id || 0, subregion_id || 0, limit, offset || 0);
-    var resultRefactor = [];
-    var returnResult = {};
-    list.result.forEach(function (object) {
-        var aux = {};
-        aux.ID = object.ID;
-        aux.PARENT_ID = object.PARENT_ID;
-        aux.ORGANIZATION_ACRONYM = object.ORGANIZATION_ACRONYM;
-        aux.REGION_NAME = object.REGION_NAME;
-        aux.SUBREGION_NAME = object.SUBREGION_NAME;
-        aux.PATH = "CRM-" + object.PATH;
-        resultRefactor.push(aux);
-    });
-
-    returnResult.result = resultRefactor;
-    returnResult.total_rows = list.total_rows;
-    return returnResult;
+    return list;
 }
 
 function getHl6ByHl5IdUserId(hl5Id, userId) {
@@ -301,7 +285,7 @@ function getHl6ByHl5IdUserId(hl5Id, userId) {
             if (!result[hl6List[i].HL5_ID]) {
                 result[hl6List[i].HL5_ID] = {
                     PARENT_ID: hl6List[i].HL5_ID
-                    , PARENT_PATH: crm + hl6List[i].HL5_PATH
+                    , PARENT_PATH: hl6List[i].HL5_PATH
                     , CHILDREN: []
                 };
                 if (hl6List[i].HL6_ID) {
@@ -309,7 +293,7 @@ function getHl6ByHl5IdUserId(hl5Id, userId) {
                         HL6_ID: hl6List[i].HL6_ID
                         , PARENT_ID: hl6List[i].HL5_ID
                         , STATUS_DETAIL: hl6List[i].STATUS_DETAIL
-                        , HL6_PATH: crm + hl6List[i].HL5_PATH + hl6List[i].HL6_ACRONYM
+                        , HL6_PATH: hl6List[i].HL6_PATH
                         , CREATED_BY: hl6List[i].CREATED_BY
                         , HL6_BUDGET: hl6List[i].HL6_BUDGET
                         , IMPORTED: hl6List[i].IMPORTED
@@ -324,7 +308,7 @@ function getHl6ByHl5IdUserId(hl5Id, userId) {
                     HL6_ID: hl6List[i].HL6_ID
                     , PARENT_ID: hl6List[i].HL5_ID
                     , STATUS_DETAIL: hl6List[i].STATUS_DETAIL
-                    , HL6_PATH: crm + hl6List[i].HL5_PATH + hl6List[i].HL6_ACRONYM
+                    , HL6_PATH: hl6List[i].HL6_PATH
                     , CREATED_BY: hl6List[i].CREATED_BY
                     , HL6_BUDGET: hl6List[i].HL6_BUDGET
                     , IMPORTED: hl6List[i].IMPORTED
@@ -1698,10 +1682,7 @@ function changeHl6StatusOnDemand(hl6_id, userId) {
     var statusId = null;
 
     if(hl6.HL6_STATUS_DETAIL_ID == HL6_STATUS.IN_PROGRESS){
-        statusId = HL6_STATUS.VALID_FOR_CRM
-    } else if(hl6.HL6_STATUS_DETAIL_ID == HL6_STATUS.VALID_FOR_CRM){
-        statusId = existInCrm ? HL6_STATUS.UPDATE_IN_CRM
-            : HL6_STATUS.LOAD_DATA_ENTRY;
+        statusId = existInCrm ? HL6_STATUS.UPDATE_IN_CRM : HL6_STATUS.LOAD_DATA_ENTRY;
     } else {
         statusId = hl6.HL6_STATUS_DETAIL_ID;
     }
@@ -1739,7 +1720,7 @@ function setHl6StatusInCRM(hl6_id, userId) {
         hl6Ids = hl6_id;
     }
 
-    for (var i = 0; i < hl6Ids; i++) {
+    for (var i = 0; i < hl6Ids.length; i++) {
     	result = null;
         result = setHl6Status(hl6Ids[i], HL6_STATUS.IN_CRM, userId);
         if(result){

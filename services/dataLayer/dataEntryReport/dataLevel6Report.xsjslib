@@ -15,18 +15,12 @@ var UPD_PROCESSING_REPORT_EXPORT_DATA = "UPD_PROCESSING_REPORT_EXPORT_DATA";
 /*********** END LIST OF PROCEDURES ***************/
 
 function getAllLevel6Report(userId) {
-	var parameters = {};
-	var result = db.executeProcedureManual(GET_ALL_HL6_DE_REPORT, {});
-	var list = result['out_result'];
-	var spResult = [];
-	Object.keys(list).forEach(function(key) {
-		spResult.push(list[key]);
-	});
-	return spResult;
+	var data = db.executeProcedureManual(GET_ALL_HL6_DE_REPORT, {});
+    return db.extractArray(data.out_result);
 }
 function getAllLevel6ReportForDownload() {
     var data = db.executeProcedureManual(GET_PROCESSING_REPORT_FOR_DOWNLOAD, {in_object_type: 'CPT'});
-    return db.extractArray(data.out_result);
+
 }
 
 function updateLevel6ReportForDownload(HL6_ID) {

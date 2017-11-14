@@ -27,16 +27,7 @@ va_intermidate = SELECT
         hl6.hl6_ID AS HL6_ID
         ,hl6.hl6_crm_description AS HL6_CRM_DESCRIPTION
         ,hl6.acronym AS HL6_ACRONYM       
-	    ,    
-         	         CONCAT(
-         	        	CONCAT(
-         	        		CONCAT(
-         	        			CONCAT(
-         	        				CONCAT(HL2.ORGANIZATION_ACRONYM,SUBSTRING(TO_NVARCHAR(BGY.BUDGET_YEAR), 3, 2))
-         	    					,'-')
-         						, hl4.acronym)
-         					,'-')
-         				,hl5.acronym)
+        , "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BGY.BUDGET_YEAR, HL1.acronym, hl2.ORGANIZATION_ACRONYM, HL3.acronym, hl4.acronym, hl5.acronym, hl6.acronym)
 		AS HL5_PATH
 
         ,hl6.IN_BUDGET as IN_BUDGET

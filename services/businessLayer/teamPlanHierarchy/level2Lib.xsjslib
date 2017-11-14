@@ -293,6 +293,7 @@ function updateHl2(objLevel2, userId) {
 
     //Insert new HL2 version, if the date is into the valid range
     if (budgetYear.getLockFlagByHlIdLevel(currentHL2.HL2_ID, 'HL2') && validateChanges(currentHL2, objLevel2)) {
+        currentHL2.ACRONYM = currentHL2.ORGANIZATION_ACRONYM;
         insertLevel2Version(currentHL2, userId);
         currentHL2.VERSION += 1;
     }
@@ -310,7 +311,7 @@ function updateHl2(objLevel2, userId) {
         , objLevel2.CRT_RELATED
         , objLevel2.IN_BUDGET
         , objLevel2.ALLOW_AUTOMATIC_BUDGET_APPROVAL
-        , objLevel2.VERSION
+        , currentHL2.VERSION
         , objLevel2.SUBREGION_ID || null
         , userId
     );
@@ -461,16 +462,7 @@ function getLevel2ForSearch(userSessionID, budget_year_id, region_id, subregion_
 
     var resultDatabase = dataHl2.getLevel2ForSearch(userSessionID, util.isSuperAdmin(userSessionID) ? 1 : 0, budget_year_id || defaultBudgetYear.BUDGET_YEAR_ID
         , region_id || 0, subregion_id || 0, limit || -1, offset || 0);
-
-    var listFiltered = JSON.parse(JSON.stringify(resultDatabase.result));
-    listFiltered.forEach(function (object) {
-        object.PATH = "CRM-" + object.ACRONYM + (object.BUDGET_YEAR % 100) + '-' + object.ORGANIZATION_ACRONYM;
-    });
-
-    var resultFiltered = {};
-    resultFiltered.result = listFiltered;
-    resultFiltered.total_rows = resultDatabase.total_rows;
-    return resultFiltered;
+    return resultDatabase;
 }
 
 function existHl2(objLevel2) {
@@ -764,7 +756,7 @@ function validateVersionType(key, value) {
         case 'HL2_BUDGET_TOTAL':
             valid = Number(value) >= 0;
             break;
-        case 'ORGANIZATION_ACRONYM':
+        case 'ACRONYM':
             valid = value.replace(/\s/g, "").length == 2;
             break;
         case 'VERSION':
@@ -791,7 +783,7 @@ function validateLevel2Version(data) {
         'HL2_BUDGET_TOTAL',
         'CRT_RELATED',
         'IMPLEMENT_EXECUTION_LEVEL',
-        'ORGANIZATION_ACRONYM',
+        'ACRONYM',
         'ORGANIZATION_NAME',
         'IN_BUDGET',
         'ALLOW_AUTOMATIC_BUDGET_APPROVAL',

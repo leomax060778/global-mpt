@@ -218,3 +218,14 @@ function parseAssignedUsers(assignedUsers) {
         return user.USER_ID || user.IN_USER_ID;
     });
 }
+
+function getHierarchyLevelEnum() {
+    return {
+        HL1: 6,
+        HL2: 5,
+        HL3: 4,
+        HL4: 1,
+        HL5: 2,
+        HL6: 3
+    }
+}

@@ -22,7 +22,7 @@
         <viewAttribute datatype="TIMESTAMP" id="CREATED_DATE"/>
         <viewAttribute datatype="TIMESTAMP" id="STATUS_CHANGE_DATE"/>
         <viewAttribute datatype="NVARCHAR" id="REQUESTER" length="100"/>
-        <viewAttribute id="CONTACT_DATA" datatype="NVARCHAR" length="255"/>
+        <viewAttribute datatype="NVARCHAR" id="CONTACT_DATA" length="255"/>
       </viewAttributes>
       <calculatedViewAttributes/>
       <definition> 
@@ -35,7 +35,7 @@ select
 , ot_from.NAME as ORGANIZATION_TYPE_NAME_FROM  
 , coalesce(io_from.NAME, r_from.REGION_NAME,sr_from.SUBREGION_NAME) as ORGANIZATION_NAME_FROM
 , ie_from.NAME as INTERLOCK_ENTITY_NAME_FROM
-, CASE WHEN irm_from.interlock_request_origin_id = 1 THEN 'COMMIT MONEY' ELSE 'REQUEST MONEY' END as ACTION
+, CASE WHEN ir_from.interlock_type_id = 1 THEN 'COMMIT MONEY' ELSE 'REQUEST MONEY' END as ACTION
 , concat(concat(u.last_name,', '), u.first_name) AS REQUESTER
 from &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_INTERLOCK_REQUEST&quot; ir_from
 left join &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_INTERLOCK_REQUEST_INTERLOCK_ORGANIZATION&quot; iro_from on iro_from.INTERLOCK_REQUEST_ID = ir_from.INTERLOCK_REQUEST_ID
@@ -46,7 +46,6 @@ left join &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_INTERLOCK
 left join &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_REGION&quot; r_from on r_from.REGION_ID = irr_from.REGION_ID_FROM
 left join &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_INTERLOCK_REQUEST_SUBREGION&quot; irsr_from on irsr_from.INTERLOCK_REQUEST_ID = ir_from.INTERLOCK_REQUEST_ID
 left join &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_SUBREGION&quot; sr_from on sr_from.SUBREGION_ID = irsr_from.SUBREGION_ID_FROM
-INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_INTERLOCK_REQUEST_MESSAGE&quot; irm_from ON ir_from.INTERLOCK_REQUEST_ID = irm_from.INTERLOCK_REQUEST_ID
 inner join &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_USER&quot; u on u.user_id = ir_from.created_user_id 
 where ir_from.enabled = 1
 and ir_from.deleted = 0;
@@ -87,7 +86,6 @@ left join &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_INTERLOCK
 left join &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_SUBREGION&quot; sr on sr.SUBREGION_ID = irsr_to.SUBREGION_ID
 inner join &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_INTERLOCK_STATUS&quot; istat on istat.INTERLOCK_STATUS_ID = ir_to.INTERLOCK_STATUS_ID
 inner join &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_LOG_INTERLOCK_REQUEST_STATUS&quot; lis on lis.INTERLOCK_STATUS_ID = istat.INTERLOCK_STATUS_ID and lis.INTERLOCK_REQUEST_ID = ir_to.INTERLOCK_REQUEST_ID
-INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_INTERLOCK_REQUEST_MESSAGE&quot; irm_to ON ir_to.INTERLOCK_REQUEST_ID = irm_to.INTERLOCK_REQUEST_ID
 inner join :interlockContactData icd on icd.INTERLOCK_REQUEST_ID = ir_to.INTERLOCK_REQUEST_ID
 inner join &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_USER&quot; u on u.user_id = ir_to.created_user_id
 where ir_to.enabled = 1
@@ -155,11 +153,11 @@ END /********* End Procedure Script ************/</definition>
         <descriptions defaultDescription="STATUS_DETAIL"/>
         <keyMapping columnObjectName="Script_View" columnName="STATUS_DETAIL"/>
       </attribute>
-      <attribute id="CREATED_DATE" order="11" semanticType="empty">
+      <attribute id="CREATED_DATE" order="11">
         <descriptions defaultDescription="CREATED_DATE"/>
         <keyMapping columnObjectName="Script_View" columnName="CREATED_DATE"/>
       </attribute>
-      <attribute id="STATUS_CHANGE_DATE" order="12" semanticType="empty">
+      <attribute id="STATUS_CHANGE_DATE" order="12">
         <descriptions defaultDescription="STATUS_CHANGE_DATES"/>
         <keyMapping columnObjectName="Script_View" columnName="STATUS_CHANGE_DATE"/>
       </attribute>
@@ -168,6 +166,7 @@ END /********* End Procedure Script ************/</definition>
         <keyMapping columnObjectName="Script_View" columnName="REQUESTER"/>
       </attribute>
       <attribute id="CONTACT_DATA" order="14">
+        <descriptions/>
         <keyMapping columnObjectName="Script_View" columnName="CONTACT_DATA"/>
       </attribute>
     </attributes>
@@ -183,7 +182,8 @@ END /********* End Procedure Script ************/</definition>
       <measure id="REQUESTED_BUDGET" order="9" aggregationType="sum" measureType="simple">
         <descriptions defaultDescription="REQUESTED_BUDGET"/>
         <measureMapping columnObjectName="Script_View" columnName="REQUESTED_BUDGET"/>
-      </measure></baseMeasures>
+      </measure>
+    </baseMeasures>
     <calculatedMeasures/>
     <restrictedMeasures/>
     <localDimensions/>

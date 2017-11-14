@@ -138,8 +138,9 @@ SELECT   id
 		, organization_acronym
 		, region_name
 		, subregion_name
-		, CONCAT(CONCAT(CONCAT(CONCAT(CONCAT(CONCAT(organization_acronym, SUBSTRING(TO_NVARCHAR(BUDGET_YEAR), 3, 2)), '-')
-		    , hl4_acronym), '-'), hl5_acronym),hl6_acronym) AS path
+--		, CONCAT(CONCAT(CONCAT(CONCAT(CONCAT(CONCAT(organization_acronym, SUBSTRING(TO_NVARCHAR(BUDGET_YEAR), 3, 2)), '-')
+--		    , hl4_acronym), '-'), hl5_acronym),hl6_acronym) AS path
+, "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BUDGET_YEAR, hl1_acronym, organization_acronym, hl3_acronym, hl4_acronym, hl5_acronym, hl6_acronym) AS path
 		    from :TEMP_OUT_RESULT;
 else
 out_result =
@@ -148,8 +149,9 @@ SELECT   id
 		, organization_acronym
 		, region_name
 		, subregion_name
-		, CONCAT(CONCAT(CONCAT(CONCAT(CONCAT(CONCAT(organization_acronym, SUBSTRING(TO_NVARCHAR(BUDGET_YEAR), 3, 2)), '-')
-        		    , hl4_acronym), '-'), hl5_acronym),hl6_acronym) AS path
+--		, CONCAT(CONCAT(CONCAT(CONCAT(CONCAT(CONCAT(organization_acronym, SUBSTRING(TO_NVARCHAR(BUDGET_YEAR), 3, 2)), '-')
+--        		    , hl4_acronym), '-'), hl5_acronym),hl6_acronym) AS path
+, "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BUDGET_YEAR, hl1_acronym, organization_acronym, hl3_acronym, hl4_acronym, hl5_acronym, hl6_acronym) AS path
         from :TEMP_OUT_RESULT
         LIMIT :in_limit OFFSET :in_offset;
 end if;

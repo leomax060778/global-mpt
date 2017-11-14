@@ -12,7 +12,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL5_BY_HL4_I
             , REMAINING DECIMAL(19,2)
              , IMPORTED tinyint
              , ACRONYM NVARCHAR(4)
-             , HL5_CRM_DESCRIPTION NVARCHAR(255)
+             , HL5_CRM_DESCRIPTION NVARCHAR(255) 
         )
 )
 LANGUAGE SQLSCRIPT
@@ -23,24 +23,13 @@ BEGIN
 	
 va_intermidate = SELECT
         hl5.hl5_ID AS HL5_ID
-	    ,
-         	         CONCAT(
-         	        	CONCAT(
-         	        		CONCAT(
-         	        			CONCAT(
-         	        				CONCAT(HL2.ORGANIZATION_ACRONYM,SUBSTRING(TO_NVARCHAR(BGY.BUDGET_YEAR), 3, 2))
-         	    					,'-')
-         						, hl4.acronym)
-         					,'-')
-         				,hl5.acronym)
-		AS CRM_ID
-        
-        ,hl5_status_detail.detail AS STATUS_DETAIL
-        ,CONCAT(CONCAT(userTable.FIRST_NAME, ' '),userTable.LAST_NAME) AS CREATED_BY
-        ,hl5.BUDGET AS HL5_BUDGET
-        ,HL5.IMPORTED as IMPORTED
-        ,HL5.ACRONYM
-        ,HL5_CRM_DESCRIPTION
+    , "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BGY.BUDGET_YEAR, HL1.acronym, hl2.ORGANIZATION_ACRONYM, HL3.acronym, hl4.acronym, hl5.acronym, '') AS CRM_ID
+    ,hl5_status_detail.detail AS STATUS_DETAIL
+    ,CONCAT(CONCAT(userTable.FIRST_NAME, ' '),userTable.LAST_NAME) AS CREATED_BY
+    ,hl5.BUDGET AS HL5_BUDGET
+    ,HL5.IMPORTED as IMPORTED
+    ,HL5.ACRONYM
+    ,HL5_CRM_DESCRIPTION
     FROM HL5 Hl5
     INNER JOIN HL4 hl4 ON hl4.hl4_id=hl5.hl4_id AND hl4.enabled=1 AND hl4.deleted=0
     INNER JOIN HL3 hl3 ON hl3.hl3_id=hl4.hl3_id AND hl3.enabled=1 AND hl3.deleted=0

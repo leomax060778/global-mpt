@@ -31,13 +31,8 @@ BEGIN
         		, REPLACE(HL2.organization_acronym, 'N/A', '') AS organization_acronym
         		, REGION.region_name
         		, SUBREGION.subregion_name
-                		,CONCAT(
-                			CONCAT(
-                				CONCAT(HL2.organization_acronym,SUBSTRING(TO_NVARCHAR(BGY.BUDGET_YEAR), 3, 2))
-            					,'-')
-        					, hl4.acronym)
-        		 AS path
-                        , HL1.REGION_ID
+                , "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BGY.BUDGET_YEAR, HL1.acronym, HL2.organization_acronym, hl3.acronym, hl4.acronym, '', '') AS PATH
+                , HL1.REGION_ID
         	FROM HL4 hl4
         	INNER JOIN HL3 hl3 ON hl3.hl3_id=hl4.hl3_id AND hl3.enabled=1 AND hl3.deleted=0
         	INNER JOIN HL2 ON HL3.hl2_id = HL2.hl2_id AND hl2.enabled=1 AND hl2.deleted=0
@@ -58,13 +53,8 @@ BEGIN
         		, REPLACE(HL2.organization_acronym, 'N/A', '') AS organization_acronym
         		, REGION.region_name
         		, SUBREGION.subregion_name
-                		,CONCAT(
-                			CONCAT(
-                				CONCAT(HL2.organization_acronym,SUBSTRING(TO_NVARCHAR(BGY.BUDGET_YEAR), 3, 2))
-            					,'-')
-        					, hl4.acronym)
-        		 AS path
-                        , HL1.REGION_ID
+                , "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BGY.BUDGET_YEAR, HL1.acronym, HL2.organization_acronym, hl3.acronym, hl4.acronym, '', '') AS PATH
+                , HL1.REGION_ID
         	FROM HL4 hl4
         	INNER JOIN HL3 hl3 ON hl3.hl3_id=hl4.hl3_id AND hl3.enabled=1 AND hl3.deleted=0
         	INNER JOIN HL3_USER ON HL3.HL3_ID = HL3_USER.HL3_ID

@@ -27,7 +27,11 @@ var map = {};
 var mapKPY = {};
 var mapCategory = {};
 
-
+var hierarchyLevel = {
+    6: "HL1",
+    5: "HL2",
+    4: "HL3"
+}
 //map to asosciate hierarchy_level_id and business layer method to create new l5 or l6
 var mapInsertHierarchyLevelInsert = {
     2: blLevel5.insertHl5FromUpload,
@@ -250,6 +254,7 @@ function insertDictionaryHL(data, userId) {
 
     //Load Mapper to map CSV_COLUMN_NAME TO COLUMN_NAME
     this.getMapForL1L2L3();
+
 
     //iterate data
     for (var i = 0; i < data.length; i++) {

@@ -26,7 +26,8 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_BUDGET_SPEND
 						PARENT_PATH NVARCHAR(255),
 						ROUTE_TO_MARKET NVARCHAR(25),
 						STATUS_NAME NVARCHAR(255),
-						HL5_ACRONYM NVARCHAR(255)
+						HL5_ACRONYM NVARCHAR(255),
+						HL5_PATH NVARCHAR(255)
 						),
 	OUT out_messages TABLE(
 						MESSAGE NVARCHAR(3000),
@@ -165,17 +166,12 @@ BEGIN
 									HL5.HL5_ID,
 									HL5.HL5_CRM_DESCRIPTION,
 									HL5.BUDGET,
-									HL5.MODIFIED_DATE_TZ AS HL5_MODIFIED_DATE,
-			                                CONCAT(
-			                                    CONCAT(
-			                                        CONCAT(
-			                                        HL2.ORGANIZATION_ACRONYM, SUBSTRING(TO_NVARCHAR(BGY.BUDGET_YEAR), 3, 2)),
-			                            '-'),
-			                        HL4.ACRONYM)
-			            		 AS PARENT_PATH,
-			            		 RTM.NAME AS ROUTE_TO_MARKET,
-			            		 HL5_STATUS.DETAIL AS STATUS_NAME,
-			            		 HL5.ACRONYM AS HL5_ACRONYM
+									HL5.MODIFIED_DATE_TZ AS HL5_MODIFIED_DATE
+, "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BGY.BUDGET_YEAR, HL1.ACRONYM, HL2.ORGANIZATION_ACRONYM, HL3.ACRONYM, HL4.ACRONYM, '', '') AS PARENT_PATH
+,RTM.NAME AS ROUTE_TO_MARKET
+,HL5_STATUS.DETAIL AS STATUS_NAME
+,HL5.ACRONYM AS HL5_ACRONYM
+, "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BGY.BUDGET_YEAR, HL1.ACRONYM, HL2.ORGANIZATION_ACRONYM, HL3.ACRONYM, HL4.ACRONYM, HL5.ACRONYM, '') AS HL5_PATH
             		 
 				FROM :obtain_currency OB_CUR
 					INNER JOIN "MKTG_PLANNING_TOOL"."HL5" HL5

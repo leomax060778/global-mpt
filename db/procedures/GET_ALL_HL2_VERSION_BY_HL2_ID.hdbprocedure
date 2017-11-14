@@ -96,8 +96,10 @@ out_result = select
     ,subregion.subregion_name
     ,budget_year.budget_year
     ,T.created_date_tz
-    , CONCAT('CRM-',CONCAT(CONCAT(CONCAT(HL1.ACRONYM, SUBSTRING(TO_NVARCHAR(BUDGET_YEAR.BUDGET_YEAR), 3, 2)), '-'),
-      		T.organization_acronym)) AS PATH
+--    , CONCAT('CRM-',CONCAT(CONCAT(CONCAT(HL1.ACRONYM, SUBSTRING(TO_NVARCHAR(BUDGET_YEAR.BUDGET_YEAR), 3, 2)), '-'),
+--      		T.organization_acronym)) AS PATH
+	, "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BUDGET_YEAR.BUDGET_YEAR, HL1.ACRONYM, T.organization_acronym, '', '', '', '') AS PATH
+
     from :AUX AS T
     INNER JOIN HL1 ON HL1.HL1_ID = T.HL1_ID
     LEFT JOIN REGION ON T.REGION_ID = REGION.REGION_ID

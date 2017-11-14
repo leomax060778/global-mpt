@@ -22,18 +22,9 @@ var dataPriority = mapper.getDataPriority();
 
 function getAllL5DEReport(userId) {
     var hl5List = dataL5DER.getAllLevel5Report(userId);
-    var allHl5 = [];
-    hl5List.forEach(function (hl5) {
-        var aux = {};
-        Object.keys(hl5).forEach(function (key) {
-            aux[key] = key != 'HL5_PATH' ? hl5[key]
-                : 'CRM-' + hl5[key];
-        });
-        allHl5.push(aux);
-    });
-
-    return allHl5;
+    return hl5List;
 }
+
 function getAllL5DEReportForDownload(userId) {
     return dataL5DER.getAllLevel5ReportForDownload(userId);
 }
@@ -70,11 +61,9 @@ function getL5ChangedFieldsByHl5Id(hl5Id, userId) {
         } else {
             var object = {};
             object.display_name = l5ReportFields[field];
-            var CRM_ACRONYM = "CRM";
-            var parentPath = CRM_ACRONYM + "-" + hl5.L2_ACRONYM + hl5.BUDGET_YEAR + "-" + hl5.L4_ACRONYM;
             switch (field) {
                 case "ACRONYM":
-                    object.value = parentPath + "-" + hl5.ACRONYM;
+                    object.value = hl5.CRM_ID;
                     break;
                 case "CAMPAIGN_TYPE_ID":
                     object.value = hl5.CAMPAIGN_TYPE;
@@ -102,12 +91,7 @@ function getL5ChangedFieldsByHl5Id(hl5Id, userId) {
                 //TODO:
                 case "MARKETING_ACTIVITY_ID":
                     if (processingReportData.marketing_activity_id) {
-                        object.value = CRM_ACRONYM + '-'
-                            + processingReportData.marketing_activity_id.BUDGET_YEAR
-                            + processingReportData.marketing_activity_id.L1_ACRONYM
-                            + '-' + processingReportData.marketing_activity_id.L3_ACRONYM
-                            + '-' + processingReportData.marketing_activity_id.L4_ACRONYM
-                            + processingReportData.marketing_activity_id.L5_ACRONYM;
+                        object.value = processingReportData.marketing_activity_id.CRM_ID;
                     }
                     break;
 
@@ -145,7 +129,7 @@ function getL5ChangedFieldsByHl5Id(hl5Id, userId) {
                     object.value = (new Date(hl5.ACTUAL_END_DATE)).toLocaleDateString();
                     break;
                 case "PARENT_PATH":
-                    object.value = parentPath;
+                    object.value =  hl5.PARENT_PATH;
                     break;
                 case "PRIORITY_ID":
                     object.value = hl5.PRIORITY;

@@ -50,9 +50,9 @@ function getLevel4(){
     return $.mktgplanningtool.services.businessLayer.teamPlanHierarchy.level4Lib;
 }
 
-function getLevel4Prefilled(){
-    $.import("mktgplanningtool.services.businessLayer.teamPlanHierarchy","level4PrefilledLib");
-    return $.mktgplanningtool.services.businessLayer.teamPlanHierarchy.level4PrefilledLib;
+function getCrmAcronym(){
+    $.import("mktgplanningtool.services.businessLayer.teamPlanHierarchy","CrmAcronymLib");
+    return $.mktgplanningtool.services.businessLayer.teamPlanHierarchy.CrmAcronymLib;
 }
 
 function getLevel5(){
@@ -73,6 +73,11 @@ function getLevel5Mail(){
 function getLevel6(){
     $.import("mktgplanningtool.services.businessLayer.teamPlanHierarchy","level6Lib");
     return $.mktgplanningtool.services.businessLayer.teamPlanHierarchy.level6Lib;
+}
+
+function refactorL5L6_getLevel6(){
+    $.import("mktgplanningtool.services.businessLayer.teamPlanHierarchy","refactorL5L6_level6Lib");
+    return $.mktgplanningtool.services.businessLayer.teamPlanHierarchy.refactorL5L6_level6Lib;
 }
 
 function getLevel6Mail(){
@@ -197,6 +202,11 @@ function getInterlockMail(){
 function getPartner(){
     $.import("mktgplanningtool.services.businessLayer.teamPlanHierarchy","partnerLib");
     return $.mktgplanningtool.services.businessLayer.teamPlanHierarchy.partnerLib;
+}
+
+function refactorL5L6_getPartner(){
+    $.import("mktgplanningtool.services.businessLayer.teamPlanHierarchy","refactorL5L6_partnerLib");
+    return $.mktgplanningtool.services.businessLayer.teamPlanHierarchy.refactorL5L6_partnerLib;
 }
 
 function getValidationLib(){
@@ -442,9 +452,9 @@ function getDataLevel4(){
     return $.mktgplanningtool.services.dataLayer.teamPlanHierarchy.dataLevel4;
 }
 
-function getDataLevel4Prefilled(){
-    $.import("mktgplanningtool.services.dataLayer.teamPlanHierarchy","dataLevel4Prefilled");
-    return $.mktgplanningtool.services.dataLayer.teamPlanHierarchy.dataLevel4Prefilled;
+function getDataCrmAcronym(){
+    $.import("mktgplanningtool.services.dataLayer.teamPlanHierarchy","dataCrmAcronym");
+    return $.mktgplanningtool.services.dataLayer.teamPlanHierarchy.dataCrmAcronym;
 }
 
 function getDataPartner(){

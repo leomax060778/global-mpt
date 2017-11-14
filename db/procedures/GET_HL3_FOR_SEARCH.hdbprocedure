@@ -13,7 +13,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL3_FOR_SEAR
 			organization_acronym NVARCHAR(25),
 			region_name NVARCHAR(255),
 			subregion_name NVARCHAR(255),
-			path NVARCHAR(50)
+			path NVARCHAR(255)
 
 		)
 	) 
@@ -114,7 +114,9 @@ SELECT  id
 		, organization_acronym
 		, region_name
 		, subregion_name
-		, CONCAT(CONCAT(CONCAT(organization_acronym, SUBSTRING(TO_NVARCHAR(BUDGET_YEAR), 3, 2)), '-'), hl3_acronym) AS path
+		--, CONCAT(CONCAT(CONCAT(organization_acronym, SUBSTRING(TO_NVARCHAR(BUDGET_YEAR), 3, 2)), '-'), hl3_acronym) AS path
+		, "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BUDGET_YEAR, hl1_acronym, organization_acronym, hl3_acronym, '', '', '') AS path
+
 from :temp_out_result;
 
 SELECT COALESCE(COUNT(T.ID),0) INTO total_row FROM :my_results T;

@@ -9,6 +9,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_PATH_BY_LEVE
 	        , L4_ACRONYM NVARCHAR(25)
 	        , L5_ACRONYM NVARCHAR(25)
 	        , GRANDPARENT_ID INTEGER
+	        , CRM_ID NVARCHAR(255)
 	    )
 	)
 	LANGUAGE SQLSCRIPT
@@ -26,6 +27,7 @@ BEGIN
 		, NULL AS L4_ACRONYM
 		, NULL AS L5_ACRONYM
 		, null as GRANDPARENT_ID
+		, "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BGY.BUDGET_YEAR, HL1.acronym, '', '', '', '', '') AS CRM_ID
 		FROM HL1
 		INNER JOIN BUDGET_YEAR BGY ON HL1.BUDGET_YEAR_ID = BGY.BUDGET_YEAR_ID
 		where hl1.hl1_id = in_parent_id;
@@ -33,11 +35,12 @@ BEGIN
             	out_result = SELECT TOP 1
                 		SUBSTRING(TO_NVARCHAR(BGY.BUDGET_YEAR), 3, 2) as BUDGET_YEAR
                 		, HL1.ACRONYM AS L1_ACRONYM
-                        		, HL2.ORGANIZATION_ACRONYM AS L2_ACRONYM
-                        		, NULL AS L3_ACRONYM
-                        		, NULL AS L4_ACRONYM
-                        		, NULL AS L5_ACRONYM
+                        , HL2.ORGANIZATION_ACRONYM AS L2_ACRONYM
+                        , NULL AS L3_ACRONYM
+                        , NULL AS L4_ACRONYM
+                        , NULL AS L5_ACRONYM
                 		, HL2.HL1_ID as GRANDPARENT_ID
+                		, "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BGY.BUDGET_YEAR, HL1.acronym, hl2.ORGANIZATION_ACRONYM, '', '', '', '') AS CRM_ID
                 		FROM HL2
                 		INNER JOIN HL1 ON HL1.HL1_ID = HL2.HL1_ID
         				INNER JOIN BUDGET_YEAR BGY ON HL1.BUDGET_YEAR_ID = BGY.BUDGET_YEAR_ID
@@ -47,11 +50,12 @@ BEGIN
                 out_result = SELECT
                   SUBSTRING(TO_NVARCHAR(BGY.BUDGET_YEAR), 3, 2) as BUDGET_YEAR
                 		, HL1.ACRONYM AS L1_ACRONYM
-                        		, HL2.ORGANIZATION_ACRONYM AS L2_ACRONYM
-                        		, HL3.ACRONYM AS L3_ACRONYM
-                        		, NULL AS L4_ACRONYM
-                        		, NULL AS L5_ACRONYM
-                		, HL3.HL2_ID as GRANDPARENT_ID
+                        , HL2.ORGANIZATION_ACRONYM AS L2_ACRONYM
+                        , HL3.ACRONYM AS L3_ACRONYM
+                        , NULL AS L4_ACRONYM
+                        , NULL AS L5_ACRONYM
+                        , HL3.HL2_ID as GRANDPARENT_ID
+                        , "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BGY.BUDGET_YEAR, HL1.acronym, hl2.ORGANIZATION_ACRONYM, HL3.acronym, '', '', '') AS CRM_ID
                 FROM HL3
                 INNER JOIN HL2 ON HL2.HL2_ID = HL3.HL2_ID
                 INNER JOIN HL1 ON HL1.HL1_ID = HL2.HL1_ID
@@ -63,11 +67,12 @@ BEGIN
                 out_result = SELECT
                              SUBSTRING(TO_NVARCHAR(BGY.BUDGET_YEAR), 3, 2) as BUDGET_YEAR
                 		, HL1.ACRONYM AS L1_ACRONYM
-                        		, HL2.ORGANIZATION_ACRONYM AS L2_ACRONYM
-                        		, HL3.ACRONYM AS L3_ACRONYM
-                        		, HL4.ACRONYM AS L4_ACRONYM
-                        		, NULL AS L5_ACRONYM
+                        , HL2.ORGANIZATION_ACRONYM AS L2_ACRONYM
+                        , HL3.ACRONYM AS L3_ACRONYM
+                        , HL4.ACRONYM AS L4_ACRONYM
+                        , NULL AS L5_ACRONYM
                 		, HL4.HL3_ID as GRANDPARENT_ID
+                		, "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BGY.BUDGET_YEAR, HL1.acronym, hl2.ORGANIZATION_ACRONYM, HL3.acronym, hl4.acronym, '', '') AS CRM_ID
                 FROM HL4
                 INNER JOIN HL3 ON HL4.HL3_ID = HL3.HL3_ID
                 INNER JOIN HL2 ON HL3.HL2_ID = HL2.HL2_ID
@@ -79,11 +84,12 @@ BEGIN
             out_result = SELECT
                                 SUBSTRING(TO_NVARCHAR(BGY.BUDGET_YEAR), 3, 2) as BUDGET_YEAR
                 		, HL1.ACRONYM AS L1_ACRONYM
-                        		, HL2.ORGANIZATION_ACRONYM AS L2_ACRONYM
-                        		, HL3.ACRONYM AS L3_ACRONYM
-                        		, HL4.ACRONYM AS L4_ACRONYM
-                        		, HL5.ACRONYM AS L5_ACRONYM
+                        , HL2.ORGANIZATION_ACRONYM AS L2_ACRONYM
+                        , HL3.ACRONYM AS L3_ACRONYM
+                        , HL4.ACRONYM AS L4_ACRONYM
+                        , HL5.ACRONYM AS L5_ACRONYM
                 		, HL5.HL4_ID as GRANDPARENT_ID
+                		, "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BGY.BUDGET_YEAR, HL1.ACRONYM, hl2.ORGANIZATION_ACRONYM, HL3.ACRONYM, HL4.ACRONYM, HL5.ACRONYM, '') AS CRM_ID
                     FROM HL5
                     INNER JOIN HL4 ON HL5.HL4_ID = HL4.HL4_ID
                     INNER JOIN HL3 ON HL4.HL3_ID = HL3.HL3_ID
