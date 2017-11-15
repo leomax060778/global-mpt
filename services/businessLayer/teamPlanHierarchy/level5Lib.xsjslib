@@ -89,7 +89,7 @@ var L5_MSG_INITIATIVE_CRM_ACRONYM = "The Acronym has been used. The new Serial A
 
 var HL5_STATUS = {
     IN_PROGRESS: 1,
-    LOAD_DATA_ENTRY: 2,
+    CREATE_IN_CRM: 2,
     IN_CRM: 3,
     UPDATE_IN_CRM: 4,
     EXCEED_BUDGET: 5,
@@ -1625,7 +1625,7 @@ function changeHl5StatusOnDemand(hl5_id, userId) {
     var statusId = null;
 
     if (hl5.HL5_STATUS_DETAIL_ID == HL5_STATUS.IN_PROGRESS) {
-        statusId = existInCrm ? HL5_STATUS.UPDATE_IN_CRM : HL5_STATUS.LOAD_DATA_ENTRY;
+        statusId = existInCrm ? HL5_STATUS.UPDATE_IN_CRM : HL5_STATUS.CREATE_IN_CRM;
     } else {
         statusId = hl5.HL5_STATUS_DETAIL_ID;
     }

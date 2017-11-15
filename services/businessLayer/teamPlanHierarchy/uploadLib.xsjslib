@@ -28,10 +28,14 @@ var mapKPY = {};
 var mapCategory = {};
 
 var hierarchyLevel = {
-    6: "HL1",
-    5: "HL2",
-    4: "HL3"
-}
+    "hl1": 6,
+    "hl2": 5,
+    "hl3": 4,
+    "hl4": 1,
+    "hl5": 2,
+    "hl6": 3
+};
+
 //map to asosciate hierarchy_level_id and business layer method to create new l5 or l6
 var mapInsertHierarchyLevelInsert = {
     2: blLevel5.insertHl5FromUpload,
@@ -566,7 +570,7 @@ function level2Processor(userId, arrayPaths, IMPORT_ID) {
             var budget = 0;
             if (validateHl2(row)) {
                 hl.ACRONYM = getAcronym(obj.PATH);//getLevelString(obj.Level).Acronym;
-                hl.PARENT_ID = dataUpload.getParentIdByPath(obj.PARENT).HL_ID;
+                hl.PARENT_ID = dataUpload.getParentIdByPath(obj.PARENT, hierarchyLevel["hl1"]).HL_ID;
 
                 row.forEach(function (cell) {
                     var fieldMapper = getValue(cell.UPLOAD_KEY);
@@ -1118,7 +1122,7 @@ function level3Processor(userId, arrayPaths, IMPORT_ID) {
 
             if (validateHl3(row)) {
                 hl.ACRONYM = getAcronym(obj.PATH);
-                hl.PARENT_ID = dataUpload.getParentIdByPath(obj.PARENT).HL_ID;
+                hl.PARENT_ID = dataUpload.getParentIdByPath(obj.PARENT, hierarchyLevel["hl2"]).HL_ID;
                 hl.PATH = obj.PATH;
 
                 row.forEach(function (cell) {
@@ -1193,7 +1197,7 @@ function validateHl3(row) {
         var acronym = getAcronym(cell.PATH);
         var parent = cell.PARENT;
 
-        if (!dataUpload.getParentIdByPath(parent)) {
+        if (!dataUpload.getParentIdByPath(parent, hierarchyLevel["hl2"])) {
             error.details = "The parent doesn't exist";
             throw error;
         }
@@ -1227,7 +1231,7 @@ function validateHl2(row) {
         var acronym = getAcronym(cell.PATH);
         var parent = cell.PARENT;//path for parent hl1
 
-        if (!dataUpload.getParentIdByPath(parent)) {
+        if (!dataUpload.getParentIdByPath(parent, hierarchyLevel["hl1"])) {
             error.details = "The parent doesn't exist";
             throw error;
         }
@@ -1261,6 +1265,8 @@ function kpiProcessor(userId, arrayPaths, IMPORT_ID) {
 
             //get all row by each path
             var rows = dataUpload.getDataFromUploadDictionaryByPath(obj.PATH, userId);
+
+            //return validateKPI(rows);
 
             if (validateKPI(rows)) {
 
@@ -1300,7 +1306,7 @@ function kpiProcessor(userId, arrayPaths, IMPORT_ID) {
                 });
 
                 hl.TARGET_KPIS.KPIS.push(eod);
-                hl[hl.HIERARCHY_LEVEL_ID + '_ID'] = dataUpload.getParentIdByPath(getLevelKPI(obj.PATH).PATH).HL_ID;
+                hl[hl.HIERARCHY_LEVEL_ID + '_ID'] = dataUpload.getParentIdByPath(getLevelKPI(obj.PATH).PATH, hierarchyLevel[hl.HIERARCHY_LEVEL_ID.toLocaleLowerCase()]).HL_ID;
 
                 HLs.push(hl);
 
@@ -1319,9 +1325,9 @@ function kpiProcessor(userId, arrayPaths, IMPORT_ID) {
         }
     });
 
-throw JSON.stringify(HLs);
     var targetKpis = parseKpiForUpload(HLs);
 
+    //return HLs;
     return insertKpi(targetKpis, userId, IMPORT_ID, arrHl);
 }
 
@@ -1333,9 +1339,9 @@ function validateKPI(row) {
     //validate expected outcomes ids
     var HL;
 
-    HL = dataUpload.getParentIdByPath(getLevelKPI(row[0].PATH).PATH).HL_ID;
+    HL = dataUpload.getParentIdByPath(getLevelKPI(row[0].PATH).PATH, row[0].HIERARCHY_LEVEL_ID).HL_ID;
     if (!HL) {
-        error.details = "The CRM ID doesn't exist for an L2 or L3";
+        error.details = "The CRM ID doesn't exist for an L1, L2 or L3";
         throw error;
     }
 

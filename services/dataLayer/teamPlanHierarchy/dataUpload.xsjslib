@@ -109,11 +109,16 @@ function getDictionaryL5L6PathByUser(userId){
     return db.extractArray(rdo.OUT_RESULT);
 }
 
-function getParentIdByPath(path){
+function getParentIdByPath(path, hierarchyLevelId){
     var tablename = '"_SYS_BIC"."mktgplanningtool.db.data.views/CV_GET_LEVEL_PATH"';
     var columnreference = 'HL_ID';
     var columnFilter = 'PATH';
-    return getForeignId(tablename, columnreference, columnFilter, path);
+
+    var otherFilter = "";
+    if(hierarchyLevelId)
+        otherFilter = otherFilter + " and HIERARCHY_LEVEL_ID = " + hierarchyLevelId;
+
+    return getForeignId(tablename, columnreference, columnFilter, path, otherFilter);
 }
 
 function getForeignId(tableName, columnReference, columnFilter, findValue, otherFilter, operator){

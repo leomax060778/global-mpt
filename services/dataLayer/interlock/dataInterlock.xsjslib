@@ -25,15 +25,15 @@ var spUpdateInterlockOrganizationTypeTo = "UPD_INTERLOCK_ORGANIZATION_TYPE_TO";
 
 var spUpdateInterlock = "UPD_INTERLOCK";
 var spInsertInterlockLogStatus = "INS_INTERLOCK_LOG_STATUS";
-var spInsertInterlockRegion = "INS_INTERLOCK_REGION";
-var spInsertInterlockSubregion = "INS_INTERLOCK_SUBREGION";
+/*var spInsertInterlockRegion = "INS_INTERLOCK_REGION";
+var spInsertInterlockSubregion = "INS_INTERLOCK_SUBREGION";*/
 var spInsertInterlockContactData = "INS_INTERLOCK_CONTACT_DATA";
 var spInsertInterlockRequestMessage = "INS_INTERLOCK_REQUEST_MESSAGE";
 
 var spDeleteInterlockByIlId = "DEL_INTERLOCK_BY_IL_ID";
-var spDeleteInterlockRouteByIlId = "DEL_INTERLOCK_GLOBAL_TEAM_BY_IL_ID";
+/*var spDeleteInterlockRouteByIlId = "DEL_INTERLOCK_GLOBAL_TEAM_BY_IL_ID";
 var spDeleteInterlockRegionByIlId = "DEL_INTERLOCK_REGION_BY_IL_ID";
-var spDeleteInterlockSubregionByIlId = "DEL_INTERLOCK_SUBREGION_BY_IL_ID";
+var spDeleteInterlockSubregionByIlId = "DEL_INTERLOCK_SUBREGION_BY_IL_ID";*/
 var spDeleteInterlockContactDataById = "DEL_INTERLOCK_CONTACT_DATA";
 var spDeleteHardInterlockContactDataById = "DEL_HARD_INTERLOCK_CONTACT_DATA";
 var spDeleteInterlockRequestMessageById = "DEL_INTERLOCK_REQUEST_MESSAGE_BY_ID";
@@ -118,7 +118,7 @@ function getInterlockStatus() {
 
 function insertInterlock(objInterlock, userId) {
     var params = {};
-    params.in_entity_id = objInterlock.ENTITY_ID_TO;
+    params.in_entity_id_to = objInterlock.ENTITY_ID_TO;
     params.in_entity_id_from = objInterlock.ENTITY_ID_FROM;
 
     params.in_requested_resource = objInterlock.REQUESTED_RESOURCE;
@@ -163,7 +163,6 @@ function updateInterlockOrganizationTypeFrom(reqBody, userId){
     params.in_interlock_request_id = reqBody.INTERLOCK_REQUEST_ID;
     params.in_organization_id = reqBody.ORGANIZATION_ID_FROM;
     params.in_user_id = userId;
-
     var rdo = db.executeScalarManual(spUpdateInterlockOrganizationTypeFrom, params, 'out_result');
     return rdo;
 }
@@ -175,15 +174,13 @@ function updateInterlockOrganizationTypeTo(reqBody, userId){
     params.in_interlock_request_id = reqBody.INTERLOCK_REQUEST_ID;
     params.in_organization_id = reqBody.ORGANIZATION_ID_TO;
     params.in_user_id = userId;
-
     var rdo = db.executeScalarManual(spUpdateInterlockOrganizationTypeTo, params, 'out_result');
     return rdo;
 }
 
 function updateInterlock(objInterlock, userId) {
     var params = {};
-    params.in_entity_id = objInterlock.ENTITY_ID;
-    params.in_organization_type_id = objInterlock.ORGANIZATION_TYPE_ID;
+    params.in_entity_id_to = objInterlock.ENTITY_ID_TO;
     params.in_requested_resource = objInterlock.REQUESTED_RESOURCE;
     params.in_requested_budget = objInterlock.REQUESTED_BUDGET;
     params.in_interlock_status_id = objInterlock.STATUS_ID;
@@ -191,7 +188,6 @@ function updateInterlock(objInterlock, userId) {
     params.in_modified_user_id = userId;
 
     params.in_entity_id_from = objInterlock.ENTITY_ID_FROM;
-    params.in_organization_type_id_from = objInterlock.ORGANIZATION_TYPE_ID_FROM;
     params.in_comments = objInterlock.COMMENTS;
 
     return db.executeScalarManual(spUpdateInterlock, params, 'out_result');

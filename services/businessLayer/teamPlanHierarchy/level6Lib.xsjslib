@@ -97,7 +97,7 @@ var L6_MSG_COULDNT_CHANGE_STATUS_DUE_PENDING_BUDGET_SPEND_REQUEST = "Your record
 
 var HL6_STATUS = {
     IN_PROGRESS: 1,
-    LOAD_DATA_ENTRY: 2,
+    CREATE_IN_CRM: 2,
     IN_CRM: 3,
     UPDATE_IN_CRM: 4,
     EXCEED_BUDGET: 5,
@@ -1682,7 +1682,7 @@ function changeHl6StatusOnDemand(hl6_id, userId) {
     var statusId = null;
 
     if(hl6.HL6_STATUS_DETAIL_ID == HL6_STATUS.IN_PROGRESS){
-        statusId = existInCrm ? HL6_STATUS.UPDATE_IN_CRM : HL6_STATUS.LOAD_DATA_ENTRY;
+        statusId = existInCrm ? HL6_STATUS.UPDATE_IN_CRM : HL6_STATUS.CREATE_IN_CRM;
     } else {
         statusId = hl6.HL6_STATUS_DETAIL_ID;
     }

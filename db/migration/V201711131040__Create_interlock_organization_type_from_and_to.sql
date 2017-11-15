@@ -48,6 +48,6 @@ ALTER TABLE "MKTG_PLANNING_TOOL"."INTERLOCK_ORGANIZATION_TYPE_TO" ADD FOREIGN KE
 -- Update schema version
 
 INSERT INTO SCHEMA_VERSION(VERSION, DESCRIPTION, SCRIPT)
-VALUES('V5.0.0-84', 'Create Interlock Organization Type FROM & Interlock Organization Type TO', 'V201711131040__Create_interlock_organization_type_from_and_to.sql');
+VALUES('V5.0.0-85', 'Create Interlock Organization Type FROM & Interlock Organization Type TO', 'V201711131040__Create_interlock_organization_type_from_and_to.sql');
 
 COMMIT;

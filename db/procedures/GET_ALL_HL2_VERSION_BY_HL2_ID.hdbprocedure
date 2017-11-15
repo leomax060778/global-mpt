@@ -8,7 +8,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_ALL_HL2_VERS
      ,budget_year_id bigint
      ,region_id bigint
      ,subregion_id bigint
-     ,hl2_budget_total decimal(19,2)
+     ,budget decimal(19,2)
      ,organization_acronym nvarchar(25)
      ,organization_name nvarchar(252)
      ,team_type_id bigint
@@ -39,7 +39,7 @@ hl2_id
 ,budget_year_id
 ,region_id
 ,subregion_id
-,hl2_budget_total
+,hl2_budget_total as budget
 ,organization_acronym
 ,organization_name
 ,team_type_id
@@ -62,7 +62,7 @@ hl2_id
 ,budget_year_id
 ,region_id
 ,subregion_id
-,hl2_budget_total
+,hl2_budget_total as budget
 ,organization_acronym
 ,organization_name
 ,team_type_id
@@ -83,7 +83,7 @@ out_result = select
     ,T.budget_year_id
     ,T.region_id
     ,T.subregion_id
-    ,T.hl2_budget_total
+    ,T.budget
     ,T.organization_acronym
     ,T.organization_name
     ,T.team_type_id

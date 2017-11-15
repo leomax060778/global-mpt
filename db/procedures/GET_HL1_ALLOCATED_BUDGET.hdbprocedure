@@ -1,4 +1,4 @@
--PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL1_ALLOCATED_BUDGET" (
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL1_ALLOCATED_BUDGET" (
 	IN in_hl1_id BIGINT,
 	IN in_hl2_id BIGINT,
 	OUT out_hl1_allocated_budget DECIMAL(19,5)

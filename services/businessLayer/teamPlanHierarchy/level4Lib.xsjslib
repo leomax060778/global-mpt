@@ -81,7 +81,7 @@ var L4_ID_NOT_FOUND = "The HL4 ID could not be found.";
 
 var HL4_STATUS = {
     IN_PROGRESS: 1,
-    LOAD_DATA_ENTRY: 2,
+    CREATE_IN_CRM: 2,
     IN_CRM: 3,
     UPDATE_IN_CRM: 4,
     EXCEED_BUDGET: 5,
@@ -912,7 +912,7 @@ function changeHl4StatusOnDemand(hl4_id, userId) {
     var existInCrm = dataHl4.existsInCrm(hl4_id);
 
     var statusId = existInCrm ? HL4_STATUS.UPDATE_IN_CRM
-        : HL4_STATUS.LOAD_DATA_ENTRY;
+        : HL4_STATUS.CREATE_IN_CRM;
 
     return setHl4Status(hl4_id, statusId, userId);
 }

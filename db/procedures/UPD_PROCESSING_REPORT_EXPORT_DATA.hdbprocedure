@@ -102,7 +102,7 @@ BEGIN
                     WHERE HL4.HL4_STATUS_DETAIL_ID
                             IN (SELECT HL4_STATUS_DETAIL_ID
                                 FROM "MKTG_PLANNING_TOOL".HL4_STATUS_DETAIL
-                                WHERE DETAIL IN ('Load Data Entry',  'Update In CRM')) AND HL4.ENABLED = 1 AND HL4.DELETED = 0
+                                WHERE DETAIL IN ('Create In CRM',  'Update In CRM')) AND HL4.ENABLED = 1 AND HL4.DELETED = 0
                                 AND HL4.HL4_ID = IN_HL_ID;
                 ELSEIF IN_HIERARCHY_LEVEL = 'HL5'
                     THEN VA_OBJECT_TYPE := 'CPG';
@@ -111,7 +111,7 @@ BEGIN
                     WHERE HL5.HL5_STATUS_DETAIL_ID
                             IN (SELECT HL5_STATUS_DETAIL_ID
                                 FROM "MKTG_PLANNING_TOOL".HL5_STATUS_DETAIL
-                                WHERE DETAIL IN ('Load Data Entry',  'Update In CRM')) AND HL5.ENABLED = 1 AND HL5.DELETED = 0
+                                WHERE DETAIL IN ('Create In CRM',  'Update In CRM')) AND HL5.ENABLED = 1 AND HL5.DELETED = 0
                                 AND HL5.HL5_ID = IN_HL_ID;
                 ELSEIF IN_HIERARCHY_LEVEL = 'HL6'
                     THEN VA_OBJECT_TYPE := 'CPT';
@@ -120,7 +120,7 @@ BEGIN
                     WHERE HL6.HL6_STATUS_DETAIL_ID
                             IN (SELECT HL6_STATUS_DETAIL_ID
                                 FROM "MKTG_PLANNING_TOOL".HL6_STATUS_DETAIL
-                                WHERE DETAIL IN ('Load Data Entry',  'Update In CRM')) AND HL6.ENABLED = 1 AND HL6.DELETED = 0
+                                WHERE DETAIL IN ('Create In CRM',  'Update In CRM')) AND HL6.ENABLED = 1 AND HL6.DELETED = 0
                                 AND HL6.HL6_ID = IN_HL_ID;
             END IF;
 

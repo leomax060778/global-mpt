@@ -1,14 +1,13 @@
 PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::UPD_INTERLOCK" (
-	IN in_entity_id bigint,
-	IN in_organization_type_id bigint,
+	IN in_entity_id_to bigint,
 	IN in_requested_resource nvarchar(300),
 	IN in_requested_budget decimal(19, 6),
 	IN in_interlock_status_id bigint,
 	IN in_interlock_request_id bigint,
 	IN in_modified_user_id bigint,
 	IN in_entity_id_from bigint,
-	IN in_organization_type_id_from bigint,
 	IN in_comments NVARCHAR(255),
+
 	OUT out_result INTEGER
 	) 
 	LANGUAGE SQLSCRIPT
@@ -18,14 +17,12 @@ BEGIN
     DECLARE ID_INTERLOCK_REQUEST BIGINT;
     ID_INTERLOCK_REQUEST := 0;
 	UPDATE "MKTG_PLANNING_TOOL"."INTERLOCK_REQUEST"  SET
-															entity_id = in_entity_id,
-															organization_type_id = in_organization_type_id,
+															entity_id_to = in_entity_id_to,
 															requested_resource = in_requested_resource,
 															requested_budget = in_requested_budget,
 															interlock_status_id = in_interlock_status_id,
 															modified_user_id = in_modified_user_id,
 															entity_id_from = in_entity_id_from,
-															organization_type_id_from = in_organization_type_id_from,
 															comments = in_comments
 
 			 WHERE interlock_request_id = in_interlock_request_id;

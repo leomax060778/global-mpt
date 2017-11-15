@@ -231,7 +231,7 @@ function sendProcessingReportNightlyReport() {
                     DAYS: (new Date() - new Date(elem.CHANGE_STATUS_DATE)) / (1000 * 60 * 60 * 24)
                 };
 
-                if (elem.STATUS_NAME == 'Load Data Entry') {
+                if (elem.STATUS_NAME == 'Create In CRM') {
                     list[level]["Create In CRM"].push(obj);
                 } else {
                     list[level]["Update In CRM"].push(obj);

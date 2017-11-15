@@ -11,7 +11,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_INTERLOCK_BY
     OUT out_result_to TABLE(
 		interlock_request_id BIGINT
         ,organization_name NVARCHAR(255)
-        ,entity_id BIGINT
+        ,entity_id_to BIGINT
         ,entity NVARCHAR(255)
         ,organization_type_id BIGINT
         ,organization_type NVARCHAR(255)
@@ -76,7 +76,7 @@ out_result_to =
 select distinct
   ir_to.INTERLOCK_REQUEST_ID
 , coalesce(io_to.NAME, r_to.REGION_NAME, sr_to.SUBREGION_NAME) as ORGANIZATION_NAME
-, ie_to.INTERLOCK_ENTITY_ID as ENTITY_ID
+, ie_to.INTERLOCK_ENTITY_ID as ENTITY_ID_TO
 , ie_to.NAME as ENTITY
 , or_to.ORGANIZATION_RELATED_ID as organization_type_id
 , or_to.NAME as ORGANIZATION_TYPE
@@ -89,7 +89,7 @@ select distinct
 from INTERLOCK_REQUEST ir_to
 inner join INTERLOCK_STATUS istat on istat.INTERLOCK_STATUS_ID = ir_to.INTERLOCK_STATUS_ID
 inner join :aux_requestMessage irm_to ON ir_to.INTERLOCK_REQUEST_ID = irm_to.INTERLOCK_REQUEST_ID
-inner join INTERLOCK_ENTITY ie_to on ie_to.INTERLOCK_ENTITY_ID = ir_to.ENTITY_ID
+inner join INTERLOCK_ENTITY ie_to on ie_to.INTERLOCK_ENTITY_ID = ir_to.ENTITY_ID_TO
 inner join INTERLOCK_ORGANIZATION_TYPE_TO iot_to ON iot_to.INTERLOCK_REQUEST_ID = ir_to.INTERLOCK_REQUEST_ID
 inner join ORGANIZATION_RELATED or_to ON or_to.ORGANIZATION_RELATED_ID = iot_to.ORGANIZATION_RELATED_ID
 
