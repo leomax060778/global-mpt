@@ -65,6 +65,16 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL6_BY_ID"(
 	READS SQL DATA
 AS
 BEGIN
+va_own_money_budget_request = SELECT TOP 1 BSRS.budget_spend_request_status_id
+                               , BSRS.display_name as budget_spend_request_status
+                               , BSR.HL_ID as HL6_ID
+                               FROM BUDGET_SPEND_REQUEST BSR
+                               INNER JOIN BUDGET_SPEND_REQUEST_STATUS BSRS
+                               ON BSRS.BUDGET_SPEND_REQUEST_STATUS_ID = BSR.BUDGET_SPEND_REQUEST_STATUS_ID
+                                WHERE BSR.HL_ID = in_hl6_id
+                                AND BSR.HIERARCHY_LEVEL_ID = 3
+                                AND BSR.BUDGET_SPEND_REQUEST_TYPE_ID = 1
+                                ORDER BY BUDGET_SPEND_REQUEST_ID DESC;
 	out_result = SELECT
                 HL6.HL6_ID
 				, HL6.HL6_CRM_DESCRIPTION
@@ -118,14 +128,12 @@ BEGIN
                 , HL6.CO_FUNDED
                 , HL6.ALLOW_BUDGET_ZERO
                 , HL6.IS_POWER_USER
-                , BSRS.budget_spend_request_status_id
-                , BSRS.display_name as budget_spend_request_status
+                , BSRS.BUDGET_SPEND_REQUEST_STATUS_ID
+                , BSRS.BUDGET_SPEND_REQUEST_STATUS
                 , HL6.EMPLOYEE_RESPONSIBLE_USER
                 , HL6.PERSON_RESPONSIBLE
 			FROM HL6
-			LEFT JOIN BUDGET_SPEND_REQUEST BSR ON BSR.HL_ID = HL6.HL6_ID
-                                AND BSR.HIERARCHY_LEVEL_ID = 3 AND BSR.BUDGET_SPEND_REQUEST_TYPE_ID = 1
-                             LEFT JOIN BUDGET_SPEND_REQUEST_STATUS BSRS ON BSRS.BUDGET_SPEND_REQUEST_STATUS_ID = BSR.BUDGET_SPEND_REQUEST_STATUS_ID
+			LEFT JOIN :va_own_money_budget_request BSRS ON BSRS.HL6_ID = HL6.HL6_ID
             LEFT JOIN CAMPAIGN_TYPE C_TYPE ON C_TYPE.CAMPAIGN_TYPE_ID = HL6.CAMPAIGN_TYPE_ID
 			WHERE HL6.HL6_ID = in_hl6_id
 				AND HL6.ENABLED = 1

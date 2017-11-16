@@ -23,6 +23,7 @@ var UPD_IMPORT_L5_L6 = "UPD_IMPORT_L5_L6";
 var DEL_DICTIONARY_L5_L6_BY_USER_ID = "DEL_DICTIONARY_L5_L6_BY_USER_ID";
 var INS_IMPORT_HL = "INS_IMPORT_HL";
 var UPD_IMPORT_HL = "UPD_IMPORT_HL";
+var GET_DEFAULT_CURRENCY_FOR_HL_AND_LEVEL = "GET_DEFAULT_CURRENCY_FOR_HL_AND_LEVEL";
 /******************************************************/
 var hierarchyLevel = {
     "hl1": 6,
@@ -50,6 +51,11 @@ function getMapHLExcel(){
 function getLogByImport(importId){
     var rdo = db.executeProcedure(GET_UPLOAD_L5_L6_LOG, {'IN_IMPORT_ID':importId});
     return db.extractArray(rdo.OUT_RESULT);
+}
+
+function getDefaultCurrencyForHlLevel(hl_id, hierarchy_level_id){
+    var rdo = db.executeProcedureManual(GET_DEFAULT_CURRENCY_FOR_HL_AND_LEVEL, {'hl_id':hl_id, 'hierarchy_level_id': hierarchy_level_id});
+    return db.extractArray(rdo.OUT_RESULT)[0];
 }
 
 function getImports(){
@@ -86,7 +92,7 @@ function insertDictionary(path, key, value, hl, userId, parent){
         'IN_VALUE': value,
         'HIERARCHY_LEVEL_ID' :  hl ? hierarchyLevel[hl.toLowerCase()] : 0,
         'IN_USER_ID' : userId,
-        'IN_PARENT': parent
+        'IN_PARENT': parent || null
     };
     var rdo = db.executeScalarManual(spINS_DICTIONARY, params, "OUT_RESULT");
     return rdo;

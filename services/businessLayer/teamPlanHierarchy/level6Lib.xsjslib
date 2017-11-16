@@ -4,6 +4,7 @@ var mapper = $.mktgplanningtool.services.commonLib.mapper;
 var dataHl6 = mapper.getDataLevel6();
 var dataHl5 = mapper.getDataLevel5();
 var dataHl4 = mapper.getDataLevel4();
+var dataHl3 = mapper.getDataLevel3();
 var userBL = mapper.getUser();
 var dataExOut = mapper.getDataExpectedOutcome();
 var dataPartner = mapper.getDataPartner();
@@ -91,9 +92,7 @@ var L6_RESPONSIBLE_PERSON_NOT_VALID = "Responsible Person cannot be empty.";
 var L6_BUDGET_APPROVER_NOT_VALID = "Budget Approver cannot be empty.";
 var L6_PRIORITY_NOT_VALID = "Priority cannot be empty.";
 var L6_MSG_COULDNT_CHANGE_STATUS_DUE_PENDING_BUDGET_SPEND_REQUEST = "Your records was saved as \"In progress\".  Please review your record for incomplete fields and/or pending budget approvals.";
-
-
-
+var L6_MSG_COULDNT_CHANGE_STATUS_DUE_OWN_MONEY_BUDGET_SPEND_REQUEST_STATUS = "Your records was saved as \"In progress\". Please review your record for Own Money Budget Request approval.";
 
 var HL6_STATUS = {
     IN_PROGRESS: 1,
@@ -798,7 +797,7 @@ function insertInCrmBinding(crmBindingChangedFields, crmBindingChangedFieldsUpda
 function updateHl6(data, userId) {
 
     data = uiToServerParser(data);
-
+    var budgetSpendRequestStatus = budgetSpendRequest.getBudgetSpendRequestsStatus();
     if (!data.hl6.HL6_ID)
         throw ErrorLib.getErrors().CustomError("",
             "hl6Services/handlePost/updatehl6",
@@ -895,15 +894,17 @@ function updateHl6(data, userId) {
 
         );
 
-        if (objHL6.BUDGET != data.hl6.BUDGET) {
-            var l4Id = dataHl5.getHl5ById(data.hl6.HL5_ID).HL4_ID;
-            var budgetSpendRequestStatus = budgetSpendRequest.getBudgetSpendRequestsStatus();
+        var ownMoneyBudgetSpendRequestStatus = budgetSpendRequest.getOwnMoneyBudgetSpendRequestStatusByHlIdLevel(data.hl6.HL6_ID, 'HL6');
+        var automaticBudgetApproval = blLevel2.getHl2AllowAutomaticBudgetApprovalByHl5Id(data.hl6.HL5_ID) && data.hl6.IN_BUDGET;
+        if(!ownMoneyBudgetSpendRequestStatus || ownMoneyBudgetSpendRequestStatus == budgetSpendRequestStatus.NO_LONGER_REQUESTED){
+            budgetSpendRequest.insertOwnMoneyBudgetSpendRequest(data.hl6.BUDGET, data.hl6.HL6_ID, 'HL6', userId, automaticBudgetApproval);
+        } else {
+            if (objHL6.BUDGET != data.hl6.BUDGET) {
+                if (ownMoneyBudgetSpendRequestStatus && ownMoneyBudgetSpendRequestStatus != budgetSpendRequestStatus.PENDING)
+                    throw ErrorLib.getErrors().CustomError("", "hl5Services/handlePut/updateHl5", "Cannot update Marketing Subtactic Budget because Own money budget spend request is no longer in Pending Status.");
 
-            var ownMoneyBudgetSpendRequestStatus = budgetSpendRequest.getOwnMoneyBudgetSpendRequestStatusByHlIdLevel(data.hl6.HL6_ID, 'HL6');
-            if (ownMoneyBudgetSpendRequestStatus && ownMoneyBudgetSpendRequestStatus != budgetSpendRequestStatus.PENDING)
-                throw ErrorLib.getErrors().CustomError("", "hl6Services/handlePut/updateHl6", "Cannot update Marketing Subtactic Budget because Own money budget spend request is no longer in Pending Status.");
-
-            budgetSpendRequest.updateOwnMoneyBudgetSpendRequestByHlIdLevel(data.hl6.HL6_ID, 'HL6', data.hl6.BUDGET, blLevel2.getHl2AllowAutomaticBudgetApprovalByHl5Id(data.hl6.HL5_ID) && data.hl6.IN_BUDGET, userId);
+                budgetSpendRequest.updateOwnMoneyBudgetSpendRequestByHlIdLevel(data.hl6.HL6_ID, 'HL6', data.hl5.BUDGET, automaticBudgetApproval, userId);
+            }
         }
 
         insertInCrmBinding(validationResult.crmBindingChangedFields, validationResult.crmBindingChangedFieldsUpdate, data.hl6.HL6_ID);
@@ -1689,16 +1690,18 @@ function changeHl6StatusOnDemand(hl6_id, userId) {
 
     if (!hl6.ALLOW_BUDGET_ZERO) {
         var myBudget = dataHl6.getHl6MyBudgetByHl6Id(hl6_id);
-
         var isComplete = isMyBudgetComplete(myBudget);
-
         var hasBudgetRequestPending = budgetSpendRequest.countPendingBudgetRequestByHl6Id(hl6_id) > 0;
-
+        var budgetSpendRequestStatus = budgetSpendRequest.getBudgetSpendRequestsStatus();
         if (!isComplete || !hl6.EMPLOYEE_RESPONSIBLE_USER || !hl6.COST_CENTER_ID)
             throw ErrorLib.getErrors().CustomError("", "hl6Services/handlePut/changeHl6Status", L6_MSG_COULDNT_CHAGE_STATUS);
 
         if (hasBudgetRequestPending)
             throw ErrorLib.getErrors().CustomError("", "hl6Services/handlePut/changeHl6Status", L6_MSG_COULDNT_CHANGE_STATUS_DUE_PENDING_BUDGET_SPEND_REQUEST);
+
+        var ownMoneyBudgetSpendRequestStatus = budgetSpendRequest.getOwnMoneyBudgetSpendRequestStatusByHlIdLevel(hl6_id, 'HL6');
+        if (ownMoneyBudgetSpendRequestStatus && ownMoneyBudgetSpendRequestStatus != budgetSpendRequestStatus.APPROVED)
+            throw ErrorLib.getErrors().CustomError("", "hl5Services/handlePut/updateHl5", L6_MSG_COULDNT_CHANGE_STATUS_DUE_OWN_MONEY_BUDGET_SPEND_REQUEST_STATUS);
     }
 
     return setHl6Status(hl6_id, statusId, userId);
@@ -2033,6 +2036,14 @@ function uiToServerParser(object) {
 }
 
 function serverToUiParser(object) {
+    var budgetSpendRequestStatus = budgetSpendRequest.getBudgetSpendRequestsStatus();
+    var isNoLongerRequested = object.hl6.BUDGET_SPEND_REQUEST_STATUS_ID == budgetSpendRequestStatus.NO_LONGER_REQUESTED;
+    if(isNoLongerRequested){
+        object.hl6.in_totalbudget -= object.hl6.BUDGET;
+        object.hl6.BUDGET = 0;
+        object.hl6.BUDGET_SPEND_REQUEST_STATUS_ID = null;
+        object.hl6.BUDGET_SPEND_REQUEST_STATUS = '';
+    }
     var hl6_sale = {
         regions: [],
         globalteams: [],
@@ -2045,14 +2056,16 @@ function serverToUiParser(object) {
     };
     object.myBudget.forEach(function (obj) {
         var aux = {};
+        var percentage = isNoLongerRequested
+            ? 0 : obj.PERCENTAGE;
         if (obj.ORGANIZATION_TYPE === 1) {
             aux.REGION_ID = obj.ORGANIZATION_ID;
-            aux.PERCENTAGE = obj.PERCENTAGE;
+            aux.PERCENTAGE = percentage;
             aux.REGION_NAME = obj.ORGANIZATION_NAME;
             hl6_budget.regions.push(aux);
         } else {
             aux.ROUTE_ID = obj.ORGANIZATION_ID;
-            aux.PERCENTAGE = obj.PERCENTAGE;
+            aux.PERCENTAGE = percentage;
             aux.GLOBAL_TEAM_NAME = obj.ORGANIZATION_NAME;
             hl6_budget.globalteams.push(aux);
         }
@@ -2169,7 +2182,8 @@ function checkPermission(userSessionID, method, hl6Id) {
         var hl6 = dataHl6.getHl6ById(hl6Id);
         var hl5 = dataHl5.getHl5ById(hl6.HL5_ID);
         var hl4 = dataHl4.getHl4ById(hl5.HL4_ID);
-        var usersL3 = userBL.getUserByHl3Id(hl4.HL3_ID).users_in;
+        var l3 = dataHl3.getLevel3ById(hl4.HL3_ID, userSessionID);
+        var usersL3 = userBL.getUserByHl3Id(hl4.HL3_ID, l3.HL2_ID).users_in;
         var users = usersL3.find(function (user) {
             return user.USER_ID == userSessionID
         });

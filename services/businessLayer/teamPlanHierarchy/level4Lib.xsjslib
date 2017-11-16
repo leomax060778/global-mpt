@@ -159,8 +159,9 @@ function getHl4ById(id) {
 }
 
 function getUserById(id) {
-    if (!id)
+    if (!id) {
         throw ErrorLib.getErrors().BadRequest("The Parameter ID is not found", "userServices/handleGet/getUserById", L3_MSG_USER_NOT_FOUND);
+    }
     return dbUser.getUserById(id);
 
 }
@@ -1140,16 +1141,16 @@ function notifyChangeByEmail(data, userId, event) {
 
 function sendProcessingReportEmail(hl4Id) {
     var objHl3 = {};
-    var appUrl = config.getAppUrl();
+    var appUrl = config.getLoginUrl();
 
     var hl4 = dataHl4.getHl4ById(hl4Id);
     var hl3 = dataHl3.getLevel3ById(hl4.HL3_ID);
 
-    var hl3OwnerEmail = getUserById(hl3.CREATED_USER_ID).EMAIL;
+    var hl3OwnerEmail = getUserById(hl3.CREATED_USER_ID)[0].EMAIL;
 
     var body = '<p> Dear Colleague </p>';
     body += '<p>An initiative has been created in CRM.</p><br>';
-    body += '<p>' + appUrl + '/TeamPlanHierarchy/Level3/edit/' + hl4.HL3_ID + '/' + hl4Id + '</p>';
+    body += '<p>' + appUrl + '#/TeamPlanHierarchy/Level4/edit/' + hl4.HL3_ID + '/' + hl4Id + '</p>';
 
 
     var mailObject = mail.getJson([{
@@ -1162,7 +1163,8 @@ function sendProcessingReportEmail(hl4Id) {
 function checkPermission(userSessionID, method, hl4Id) {
     if (((method && method == "GET_BY_HL3_ID") || !method) && !util.isSuperAdmin(userSessionID)) {
         var hl4 = dataHl4.getHl4ById(hl4Id);
-        var usersL3 = userbl.getUserByHl3Id(hl4.HL3_ID).users_in;
+        var l3 = dataHl3.getLevel3ById(hl4.HL3_ID, userSessionID);
+        var usersL3 = userbl.getUserByHl3Id(hl4.HL3_ID, l3.HL2_ID).users_in;
         var users = usersL3.find(function (user) {
             return user.USER_ID == userSessionID
         });

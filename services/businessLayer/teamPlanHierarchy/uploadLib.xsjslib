@@ -237,16 +237,18 @@ function mapKeyForLevel(level, key) {
     return null;
 }
 
-
 function getLevelString(level) {
     switch (Number(level)) {
         case 1:
+        case 6:
             return "HL1";
             break;
         case 2:
+        case 5:
             return "HL2";
             break;
         case 3:
+        case 4:
             return "HL3";
             break;
     }
@@ -315,7 +317,6 @@ function insertDictionaryHlKPI(data, userId) {
         Object.keys(data[i]).forEach(function (key) {
             if (key != "CSV_ACRONYM" && key !="CSV_LEVEL") {
                 var newKey = mapKeyForLevel(level, key);
-                if(!newKey) throw JSON.stringify({key:key, data:data[i]});
                 dataUpload.insertDictionaryKPI(path, newKey, data[i][key], level, userId, null);
             }
         });
@@ -653,6 +654,7 @@ function processor(userId, arrayPaths, IMPORT_ID) {
     //initialize map
     getMapHLExcelComplete();
 
+     // var arrtest = [];
     arrayPaths.forEach(function (obj) {
 
         try {
@@ -668,6 +670,7 @@ function processor(userId, arrayPaths, IMPORT_ID) {
             var budget = 0;
 
             if (validate(row)) {
+
                 row.forEach(function (cell) {
 
                     var fieldMapper = getValue(cell.UPLOAD_KEY);
@@ -732,7 +735,7 @@ function processor(userId, arrayPaths, IMPORT_ID) {
                         else if (cell.UPLOAD_KEY == 'BUDGET') {
                             budget = Number(parseNumberBudget(cell.UPLOAD_VALUE));
                             if (!processDistributionComplete(row, budget)) {
-                                var error = ErrorLib.getErrors().ImportError("", "uploadL5L6Lib/Processor/", "Distribution budget is not complete.");
+                                var error = ErrorLib.getErrors().ImportError("", "", "Distribution budget is not complete.");
                                 error.row = row;
                                 //error.details = "Distribution budget is not complete.";
                                 throw error;
@@ -774,8 +777,8 @@ function processor(userId, arrayPaths, IMPORT_ID) {
                             hl.ACRONYM = obj.PATH.substring(hl.PARENT.length);
                         } else {
                             //var error = ErrorLib.getErrors().ImportError("","uploadL5L6Lib/processor",MSG_ACRONYM_NOT_FOUND);
-                            var error = ErrorLib.getErrors().ImportError("", "path: " + obj.PATH + " parent: " + hl.PARENT
-                                , MSG_ACRONYM_NOT_FOUND);
+                            var error = ErrorLib.getErrors().ImportError("", ""
+                                , MSG_ACRONYM_NOT_FOUND + "path: " + obj.PATH + " parent: " + hl.PARENT);
                             error.row = row;
                             throw error;
                         }
@@ -791,14 +794,16 @@ function processor(userId, arrayPaths, IMPORT_ID) {
                         hl.ACRONYM = obj.PATH.substring(hl.PARENT.length);
                     else {
 
-                        var error = ErrorLib.getErrors().ImportError("", "uploadL5L6Lib/processor", MSG_RECORD_WITHOUT_PARENT);
+                        var error = ErrorLib.getErrors().ImportError("", "", MSG_RECORD_WITHOUT_PARENT);
                         error.row = row;
                         throw error;
                     }
                 }
 
                 //set currency
-                hl.EURO_CONVERSION_ID = blcurrency.getCurrencyByDefaultBudgetYearIdAbbr("EUR").EURO_CONVERSION_ID;
+
+
+                hl.EURO_CONVERSION_ID = getDefaultCurrencyForBudgetYearByPath(hl);//blcurrency.getCurrencyByDefaultBudgetYearIdAbbr("EUR").EURO_CONVERSION_ID;
 
                 //set status
                 //hl.HL5_STATUS_DETAIL_ID = 1; //in progress
@@ -811,14 +816,16 @@ function processor(userId, arrayPaths, IMPORT_ID) {
                 hl.IMPORT_ID = IMPORT_ID;
 
                 if (hl.HIERARCHY_LEVEL_ID != 2 && hl.HIERARCHY_LEVEL_ID != 3) {
-                    var error = ErrorLib.getErrors().ImportError("", "uploadL5L6Lib/processor", "This record is incomplete or is not HL5/6");
+                    var error = ErrorLib.getErrors().ImportError("", "", "This record is incomplete or is not HL5/6");
                     error.row = row;
                     throw error;
                 }
 
-                if (mapInsertHierarchyLevelInsert[hl.HIERARCHY_LEVEL_ID](hl, userId))
-                    logImportSuccess(row, IMPORT_ID, userId)
+                 if (mapInsertHierarchyLevelInsert[hl.HIERARCHY_LEVEL_ID](hl, userId))
+                      logImportSuccess(row, IMPORT_ID, userId)
+
             }
+         //arrtest.push(hl);
         } catch (e) {
             if (e && e.code == 456) {
                 logImportError(e, IMPORT_ID, userId);
@@ -826,10 +833,21 @@ function processor(userId, arrayPaths, IMPORT_ID) {
                 logImportAnotherError(obj.PATH, obj.HIERARCHY_LEVEL_ID, e, IMPORT_ID, userId)
             }
         }
-    });
 
+    });
+    //throw JSON.stringify(arrtest);
 
     return true;
+}
+
+function getDefaultCurrencyForBudgetYearByPath(hl){
+    var currencyId;
+    if(hl.HL4_ID)
+        currencyId = dataUpload.getDefaultCurrencyForHlLevel(hl.HL4_ID, hierarchyLevel['hl4']).EURO_CONVERSION_ID;
+    else
+        currencyId = dataUpload.getDefaultCurrencyForHlLevel(hl.HL5_ID, hierarchyLevel['hl5']).EURO_CONVERSION_ID;
+
+    return currencyId;
 }
 
 function deleteDictionary(userId) {
@@ -920,7 +938,7 @@ function validateHl1(row) {
 function validate(row) {
 
     var parent;
-    var error = ErrorLib.getErrors().ImportError("", "uploadL5L6Lib/validate/", "");
+    var error = ErrorLib.getErrors().ImportError("", "", "");
     error.row = row;
     var fieldMapper;
     row.forEach(function (cell) {
@@ -942,6 +960,7 @@ function validate(row) {
                 var hl4 = dataL4.getHl4ById(value);
                 if (!hl4) {
                     error.details = MSG_HL4_NOT_FOUND;
+                    //throw JSON.stringify(fieldMapper);
                     throw error
                 }
                 ;
@@ -950,16 +969,18 @@ function validate(row) {
                 var hl5 = dataL5.getHl5ById(value);
                 if (!hl5) {
                     error.details = MSG_HL5_NOT_FOUND;
+                    //throw JSON.stringify(fieldMapper);
                     throw error;
                 }
             }
         } else {
-
+//            throw JSON.stringify(fieldMapper);
             error.details = fieldMapper.FOREIGN_COLUMN_REFERENCE + MSG_NOT_FOUND;
             throw error;
         }
 
     } else {
+        throw JSON.stringify(fieldMapper);
         error.details = MSG_FK_MAP_NOT_FOUND;
         throw error;
     }
@@ -1266,8 +1287,6 @@ function kpiProcessor(userId, arrayPaths, IMPORT_ID) {
             //get all row by each path
             var rows = dataUpload.getDataFromUploadDictionaryByPath(obj.PATH, userId);
 
-            //return validateKPI(rows);
-
             if (validateKPI(rows)) {
 
                 var eod = {};
@@ -1309,8 +1328,6 @@ function kpiProcessor(userId, arrayPaths, IMPORT_ID) {
                 hl[hl.HIERARCHY_LEVEL_ID + '_ID'] = dataUpload.getParentIdByPath(getLevelKPI(obj.PATH).PATH, hierarchyLevel[hl.HIERARCHY_LEVEL_ID.toLocaleLowerCase()]).HL_ID;
 
                 HLs.push(hl);
-
-
             }
         } catch (e) {
             arrHl.fails++;
@@ -1327,7 +1344,6 @@ function kpiProcessor(userId, arrayPaths, IMPORT_ID) {
 
     var targetKpis = parseKpiForUpload(HLs);
 
-    //return HLs;
     return insertKpi(targetKpis, userId, IMPORT_ID, arrHl);
 }
 
@@ -1348,16 +1364,12 @@ function validateKPI(row) {
     return true;
 }
 
-//hlList-->
-
 function insertKpi(hlList, userId, IMPORT_ID, arrHl) {
+
     var updateExpectedOutcomesMap = {
         HL1: blLevel1,
         HL2: blLevel2,
-        HL3: blLevel3,
-        1: blLevel1,
-        2: blLevel2,
-        3: blLevel3
+        HL3: blLevel3
     };
     hlList.forEach(function (hl) {
         var hl_length = hl.TARGET_KPIS.KPIS.length;
@@ -1365,6 +1377,7 @@ function insertKpi(hlList, userId, IMPORT_ID, arrHl) {
         try {
 
             var businessLayer = updateExpectedOutcomesMap[hl.HIERARCHY_LEVEL_ID];
+
             if(businessLayer){
                 businessLayer.updateExpectedOutcomes(hl, userId, true);
             } else {
@@ -1417,10 +1430,10 @@ function logImportKPISuccess(row, IMPORT_ID, userId) {
 function parseKpiForUpload(kpis){
     var result = {};
     kpis.forEach(function (kpi) {
-        if(!result[kpi.HIERARCHY_LEVEL_ID]){
-            result[kpi.HIERARCHY_LEVEL_ID] = JSON.parse(JSON.stringify(kpi));
+        if(!result[kpi.PATH]){
+            result[kpi.PATH] = JSON.parse(JSON.stringify(kpi));
         } else {
-            result[kpi.HIERARCHY_LEVEL_ID].TARGET_KPIS.KPIS.push(kpi.TARGET_KPIS.KPIS[0])
+            result[kpi.PATH].TARGET_KPIS.KPIS.push(kpi.TARGET_KPIS.KPIS[0])
         }
     });
 

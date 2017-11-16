@@ -73,18 +73,17 @@ function handleGet(parameters, userSessionID) {
 	httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
 }
 
-// function to manage an put request
 function handlePut(reqBody,userSessionID) {
-    businessLavel3.checkPermission(userSessionID);
-	var rdo = businessLavel3.updateHl3(reqBody, userSessionID);
-	httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
+    businessLavel3.checkPermission(userSessionID, null, reqBody.HL3_ID);
+    var rdo = businessLavel3.updateHl3(reqBody, userSessionID);
+    httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
 }
 
 // function to manage an del request
 function handleDelete(reqBody,userSessionID) {
-    businessLavel3.checkPermission(userSessionID);
-	var rdo = businessLavel3.deleteHl3(reqBody, userSessionID);
-	httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
+    businessLavel3.checkPermission(userSessionID, reqBody.HL3_ID);
+    var rdo = businessLavel3.deleteHl3(reqBody, userSessionID);
+    httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
 }
 
 // Call the main function

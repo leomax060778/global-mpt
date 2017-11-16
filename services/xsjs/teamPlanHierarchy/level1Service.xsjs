@@ -73,18 +73,17 @@ function handlePost(reqBody,userSessionID) {
 	return httpUtil.handleResponse(rdo,httpUtil.OK,httpUtil.AppJson);
 }
 
-//Implementation of UPDATE call -- UPDATE HL1
 function handlePut(reqBody,userSessionID){
-    blLevel1.checkPermission(userSessionID);
-	var rdo =  blLevel1.updateHl1(reqBody,userSessionID);
-	return httpUtil.handleResponse(rdo,httpUtil.OK,httpUtil.AppJson);
+    blLevel1.checkPermission(userSessionID, null, reqBody.HL1_ID);
+    var rdo =  blLevel1.updateHl1(reqBody,userSessionID);
+    return httpUtil.handleResponse(rdo,httpUtil.OK,httpUtil.AppJson);
 }
 
 //Implementation of DELETE call -- Delete HL1
 function handleDelete(reqBody,userSessionID){
-    blLevel1.checkPermission(userSessionID);
-	var rdo = blLevel1.deleteHl1(reqBody.HL1_ID,userSessionID);
-	return httpUtil.handleResponse(rdo,httpUtil.OK,httpUtil.AppJson);
+    blLevel1.checkPermission(userSessionID, null, reqBody.HL1_ID);
+    var rdo = blLevel1.deleteHl1(reqBody.HL1_ID,userSessionID);
+    return httpUtil.handleResponse(rdo,httpUtil.OK,httpUtil.AppJson);
 }
 
 //Call request processing  

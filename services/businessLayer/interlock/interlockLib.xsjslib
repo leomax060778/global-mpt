@@ -4,7 +4,8 @@ var mapper = $.mktgplanningtool.services.commonLib.mapper;
 var db = mapper.getdbHelper();
 var ErrorLib = mapper.getErrors();
 var dataInterlock = mapper.getDataInterLock();
-
+var organizationTypeLib = mapper.getOrganizationType();
+var interlockEntityLib = mapper.getInterlockEntity();
 var util = mapper.getUtil();
 var businessLavel3 = mapper.getLevel3();
 var businessLavel2 = mapper.getLevel2();
@@ -19,6 +20,7 @@ var mailInterlock = mapper.getInterlockMail();
 var config = mapper.getDataConfig();
 
 var userbl = mapper.getUser();
+
 /*************************************************/
 
 var L3_MSG_INTERLOCK_ENTITY = "Interlock entity can not be found.";
@@ -107,6 +109,16 @@ function getInterlockById(interlockId, userId) {
     }
 
     return result.INTERLOCK;
+}
+
+function getRequestInterlockByEmail(email,userId) {
+    if (!userId) {
+        throw ErrorLib.getErrors().CustomError("", "interlockService/handleGet/getRequestInterlockByEmail", "The user can not be found.");
+    }
+
+    var result = JSON.parse(JSON.stringify(dataInterlock.getRequestInterlockByEmail(email, INTERLOCK_TYPE.REQUEST_MONEY)));
+
+    return parseInterlock(result);
 }
 
 function parseInterlock(result) {
@@ -397,14 +409,14 @@ function insertInterlock(reqBody, userId) {
 
     if (resultId) {
         reqBody.INTERLOCK_REQUEST_ID = resultId;
-        
+
         //******** Insert Interlock From and To relations ********//
         var interlockOrganizationTypeFromId = dataInterlock.insertInterlockOrganizationTypeFrom(reqBody, userId);
         var interlockOrganizationTypeToId = dataInterlock.insertInterlockOrganizationTypeTo(reqBody, userId);
 
-        if(!interlockOrganizationTypeFromId || !interlockOrganizationTypeToId){
+        if (!interlockOrganizationTypeFromId || !interlockOrganizationTypeToId) {
             throw ErrorLib.getErrors().CustomError("", "interlockService/handlePost/insertInterlock", "The Interlock Organization relation can not be done.");
-        } 
+        }
 
         //******** Insert Interlock Organization based on the Organization type ********//
         // if (reqBody.ORGANIZATION_TYPE_FROM === reqBody.ORGANIZATION_TYPE) {
@@ -464,11 +476,11 @@ function insertInterlock(reqBody, userId) {
         dataInterlock.insertInterlockLogStatus(resultId, reqBody.STATUS_ID, userId, "");
 
         //Obtain Contact data list
-        var contactEmails = reqBody.CONTACT_DATA.split(";");
+        var contactEmails = reqBody.ASSOCIATED_CONTACTS;
         var contactData = [];
         //Format array with the Contact data
         contactEmails.forEach(function (email) {
-            contactData.push({'email': email, 'hash': getSYSUUID()});
+            contactData.push({'email': email.EMAIL, 'hash': getSYSUUID()});
         });
 
         //******** Insert Interlock Contact Data ********//
@@ -711,7 +723,6 @@ function validateInterlock(reqBody, userId) {
     var BreakException = {};
     var keys = [
         'STATUS_ID',
-        'CONTACT_DATA',
         'REQUESTED_RESOURCE',
         'REQUESTED_BUDGET'
     ];
@@ -781,7 +792,7 @@ function validateType(key, value) {
 }
 
 function getInterlockDefaults() {
-    var defaultInterlockConfiguration = dataInterlock.getDefaultInterlockConfiguration();
+    var defaultInterlockConfiguration = dataInterlock.getDefaultInterlockConfiguration().defaultConfiguration;
 
     var result = {};
 
@@ -792,10 +803,228 @@ function getInterlockDefaults() {
 }
 
 function getUnformattedInterlockDefaults() {
-    return dataInterlock.getDefaultInterlockConfiguration();
+    var result = {};
+    var organizationTypeList = JSON.parse(JSON.stringify(organizationTypeLib.getAllOrganizationType()));
+    var interlockEntities = JSON.parse(JSON.stringify(interlockEntityLib.getAllInterlockEntity()));
+    var interlockDefaultConfiguration = JSON.parse(JSON.stringify(dataInterlock.getDefaultInterlockConfiguration()));
+    interlockDefaultConfiguration.defaultConfiguration.forEach(function (interlockType) {
+        result[interlockType.INTERLOCK_TYPE] = {
+            INTERLOCK_TYPE: interlockType.INTERLOCK_TYPE,
+            INTERLOCK_TYPE_ID: interlockType.INTERLOCK_TYPE_ID,
+            INTERLOCK_DEFAULT_CONFIGURATION_ID: interlockType.INTERLOCK_DEFAULT_CONFIGURATION_ID,
+            INTERLOCK_DEFAULTS: {
+                ENABLE_DEFAULT_SELECTION: interlockType.ENABLE_DEFAULT_SELECTION,
+                ENTITY_FROM: {},
+                ENTITY_TO: {},
+                ORGANIZATION_TYPE_FROM: {},
+                ORGANIZATION_TYPE_TO: {}
+            }
+        };
+
+        interlockEntities.forEach(function (elem) {
+            if(!interlockDefaultConfiguration.entityFrom || !interlockDefaultConfiguration.entityFrom.length){
+                result[interlockType.INTERLOCK_TYPE].INTERLOCK_DEFAULTS.ENTITY_FROM[elem.INTERLOCK_ENTITY_ID] =
+                    {
+                        INTERLOCK_ENTITY_ID: elem.INTERLOCK_ENTITY_ID,
+                        NAME: elem.NAME,
+                        SELECTED: false
+                    }
+            } else {
+                interlockDefaultConfiguration.entityFrom.forEach(function (entity) {
+                    if (entity.INTERLOCK_TYPE_ID == interlockType.INTERLOCK_TYPE_ID){
+                        if(!result[interlockType.INTERLOCK_TYPE].INTERLOCK_DEFAULTS.ENTITY_FROM[elem.INTERLOCK_ENTITY_ID]){
+                            result[interlockType.INTERLOCK_TYPE].INTERLOCK_DEFAULTS.ENTITY_FROM[elem.INTERLOCK_ENTITY_ID] =
+                                {
+                                    INTERLOCK_ENTITY_ID: elem.INTERLOCK_ENTITY_ID,
+                                    NAME: elem.NAME,
+                                    SELECTED: elem.INTERLOCK_ENTITY_ID == entity.ENTITY_ID
+                                }
+                        } else {
+                            var object = result[interlockType.INTERLOCK_TYPE].INTERLOCK_DEFAULTS.ENTITY_FROM[elem.INTERLOCK_ENTITY_ID];
+                            object.SELECTED = object.SELECTED || (elem.INTERLOCK_ENTITY_ID == entity.ENTITY_ID);
+                            result[interlockType.INTERLOCK_TYPE].INTERLOCK_DEFAULTS.ENTITY_FROM[elem.INTERLOCK_ENTITY_ID] = object;
+                        }
+                    }
+                });
+            }
+        });
+        interlockEntities.forEach(function (elem) {
+            if(!interlockDefaultConfiguration.entityTo || !interlockDefaultConfiguration.entityTo.length){
+                result[interlockType.INTERLOCK_TYPE].INTERLOCK_DEFAULTS.ENTITY_TO[elem.INTERLOCK_ENTITY_ID] =
+                    {
+                        INTERLOCK_ENTITY_ID: elem.INTERLOCK_ENTITY_ID,
+                        NAME: elem.NAME,
+                        SELECTED: false
+                    }
+            } else {
+                interlockDefaultConfiguration.entityTo.forEach(function (entity) {
+                    if (entity.INTERLOCK_TYPE_ID == interlockType.INTERLOCK_TYPE_ID) {
+                        if (!result[interlockType.INTERLOCK_TYPE].INTERLOCK_DEFAULTS.ENTITY_TO[elem.INTERLOCK_ENTITY_ID]) {
+                            result[interlockType.INTERLOCK_TYPE].INTERLOCK_DEFAULTS.ENTITY_TO[elem.INTERLOCK_ENTITY_ID] =
+                                {
+                                    INTERLOCK_ENTITY_ID: elem.INTERLOCK_ENTITY_ID,
+                                    NAME: elem.NAME,
+                                    SELECTED: elem.INTERLOCK_ENTITY_ID == entity.ENTITY_ID
+                                }
+                        } else {
+                            var object = result[interlockType.INTERLOCK_TYPE].INTERLOCK_DEFAULTS.ENTITY_TO[elem.INTERLOCK_ENTITY_ID];
+                            object.SELECTED = object.SELECTED || (elem.INTERLOCK_ENTITY_ID == entity.ENTITY_ID);
+                            result[interlockType.INTERLOCK_TYPE].INTERLOCK_DEFAULTS.ENTITY_TO[elem.INTERLOCK_ENTITY_ID] = object;
+                        }
+                    }
+                });
+            }
+        });
+        organizationTypeList.forEach(function (elem) {
+            if(!interlockDefaultConfiguration.organizationTypeFrom || !interlockDefaultConfiguration.organizationTypeFrom.length){
+                result[interlockType.INTERLOCK_TYPE].INTERLOCK_DEFAULTS.ORGANIZATION_TYPE_FROM[elem.ORGANIZATION_TYPE_ID] =
+                    {
+                        ORGANIZATION_TYPE_ID: elem.ORGANIZATION_TYPE_ID,
+                        NAME: elem.NAME,
+                        SELECTED: false
+                    }
+            } else {
+                interlockDefaultConfiguration.organizationTypeFrom.forEach(function (entity) {
+                    if (entity.INTERLOCK_TYPE_ID == interlockType.INTERLOCK_TYPE_ID) {
+                        if (!result[interlockType.INTERLOCK_TYPE].INTERLOCK_DEFAULTS.ORGANIZATION_TYPE_FROM[elem.ORGANIZATION_TYPE_ID]) {
+                            result[interlockType.INTERLOCK_TYPE].INTERLOCK_DEFAULTS.ORGANIZATION_TYPE_FROM[elem.ORGANIZATION_TYPE_ID] =
+                                {
+                                    ORGANIZATION_TYPE_ID: elem.ORGANIZATION_TYPE_ID,
+                                    NAME: elem.NAME,
+                                    SELECTED: elem.ORGANIZATION_TYPE_ID == entity.ORGANIZATION_TYPE_ID
+                                }
+                        } else {
+                            var object = result[interlockType.INTERLOCK_TYPE].INTERLOCK_DEFAULTS.ORGANIZATION_TYPE_FROM[elem.ORGANIZATION_TYPE_ID];
+                            object.SELECTED = object.SELECTED || (elem.ORGANIZATION_TYPE_ID == entity.ORGANIZATION_TYPE_ID);
+                            result[interlockType.INTERLOCK_TYPE].INTERLOCK_DEFAULTS.ORGANIZATION_TYPE_FROM[elem.ORGANIZATION_TYPE_ID] = object;
+                        }
+                    }
+                });
+            }
+        });
+        organizationTypeList.forEach(function (elem) {
+            if(!interlockDefaultConfiguration.organizationTypeTo || !interlockDefaultConfiguration.organizationTypeTo.length){
+                result[interlockType.INTERLOCK_TYPE].INTERLOCK_DEFAULTS.ORGANIZATION_TYPE_TO[elem.ORGANIZATION_TYPE_ID] =
+                    {
+                        ORGANIZATION_TYPE_ID: elem.ORGANIZATION_TYPE_ID,
+                        NAME: elem.NAME,
+                        SELECTED: false
+                    }
+            } else {
+                interlockDefaultConfiguration.organizationTypeTo.forEach(function (entity) {
+                    if (entity.INTERLOCK_TYPE_ID == interlockType.INTERLOCK_TYPE_ID) {
+                        if (!result[interlockType.INTERLOCK_TYPE].INTERLOCK_DEFAULTS.ORGANIZATION_TYPE_TO[elem.ORGANIZATION_TYPE_ID]) {
+                            result[interlockType.INTERLOCK_TYPE].INTERLOCK_DEFAULTS.ORGANIZATION_TYPE_TO[elem.ORGANIZATION_TYPE_ID] =
+                                {
+                                    ORGANIZATION_TYPE_ID: elem.ORGANIZATION_TYPE_ID,
+                                    NAME: elem.NAME,
+                                    SELECTED: elem.ORGANIZATION_TYPE_ID == entity.ORGANIZATION_TYPE_ID
+                                }
+                        } else {
+                            var object = result[interlockType.INTERLOCK_TYPE].INTERLOCK_DEFAULTS.ORGANIZATION_TYPE_TO[elem.ORGANIZATION_TYPE_ID];
+                            object.SELECTED = object.SELECTED || (elem.ORGANIZATION_TYPE_ID == entity.ORGANIZATION_TYPE_ID);
+                            result[interlockType.INTERLOCK_TYPE].INTERLOCK_DEFAULTS.ORGANIZATION_TYPE_TO[elem.ORGANIZATION_TYPE_ID] = object;
+                        }
+                    }
+                });
+            }
+        });
+        result[interlockType.INTERLOCK_TYPE].INTERLOCK_DEFAULTS.ENTITY_FROM = util.objectToArray(result[interlockType.INTERLOCK_TYPE].INTERLOCK_DEFAULTS.ENTITY_FROM);
+        result[interlockType.INTERLOCK_TYPE].INTERLOCK_DEFAULTS.ENTITY_TO = util.objectToArray(result[interlockType.INTERLOCK_TYPE].INTERLOCK_DEFAULTS.ENTITY_TO);
+        result[interlockType.INTERLOCK_TYPE].INTERLOCK_DEFAULTS.ORGANIZATION_TYPE_FROM = util.objectToArray(result[interlockType.INTERLOCK_TYPE].INTERLOCK_DEFAULTS.ORGANIZATION_TYPE_FROM);
+        result[interlockType.INTERLOCK_TYPE].INTERLOCK_DEFAULTS.ORGANIZATION_TYPE_TO = util.objectToArray(result[interlockType.INTERLOCK_TYPE].INTERLOCK_DEFAULTS.ORGANIZATION_TYPE_TO);
+    });
+    return util.objectToArray(result);
 }
 
 function updateInterlockDefaults(reqBody, userId) {
-    return dataInterlock.updInterlockDefaults(reqBody, userId);
+    var interlockEntityFrom = [];
+    var interlockEntityTo = [];
+    var interlockOrganizationTypeFrom = [];
+    var interlockOrganizationTypeTo = [];
+    var interlock = [];
+    reqBody.forEach(function (configurationType) {
+        dataInterlock.deleteInterlockDefaultEntityConfigurationFromByInterlockTypeId(configurationType.INTERLOCK_TYPE_ID, userId);
+        dataInterlock.deleteInterlockDefaultEntityConfigurationToByInterlockTypeId(configurationType.INTERLOCK_TYPE_ID, userId);
+        dataInterlock.deleteInterlockDefaultOrganizationConfigurationFromByInterlockTypeId(configurationType.INTERLOCK_TYPE_ID, userId);
+        dataInterlock.deleteInterlockDefaultOrganizationConfigurationToByInterlockTypeId(configurationType.INTERLOCK_TYPE_ID, userId);
 
+        if(!!Number(configurationType.ENABLE_DEFAULT_SELECTION)) {
+            interlockEntityFrom = configurationType.ENTITY_FROM.map(function (entityId) {
+                return {
+                    in_entity_id: entityId
+                    , in_interlock_type_id: configurationType.INTERLOCK_TYPE_ID
+                    , in_created_user_id: userId
+                }
+            });
+
+            interlockEntityTo = configurationType.ENTITY_TO.map(function (entityId) {
+                return {
+                    in_entity_id: entityId
+                    , in_interlock_type_id: configurationType.INTERLOCK_TYPE_ID
+                    , in_created_user_id: userId
+                }
+            });
+
+            interlockOrganizationTypeFrom = configurationType.ORGANIZATION_TYPE_FROM.map(function (organizationTypeId) {
+                return {
+                    in_organization_type_id: organizationTypeId
+                    , in_interlock_type_id: configurationType.INTERLOCK_TYPE_ID
+                    , in_created_user_id: userId
+                }
+            });
+
+            interlockOrganizationTypeTo = configurationType.ORGANIZATION_TYPE_TO.map(function (organizationTypeId) {
+                return {
+                    in_organization_type_id: organizationTypeId
+                    , in_interlock_type_id: configurationType.INTERLOCK_TYPE_ID
+                    , in_created_user_id: userId
+                }
+            });
+
+            if (interlockEntityFrom.length)
+                dataInterlock.inssertInterlockDefaultEntityConfigurationFrom(interlockEntityFrom);
+
+            if (interlockEntityTo.length)
+                dataInterlock.inssertInterlockDefaultEntityConfigurationTo(interlockEntityTo);
+
+            if (interlockOrganizationTypeFrom.length)
+                dataInterlock.inssertInterlockDefaultOrganizationConfigurationFrom(interlockOrganizationTypeFrom);
+
+            if (interlockOrganizationTypeTo.length)
+                dataInterlock.inssertInterlockDefaultOrganizationConfigurationTo(interlockOrganizationTypeTo);
+        }
+
+        interlock.push({
+            in_interlock_default_configuration_id: configurationType.INTERLOCK_DEFAULT_CONFIGURATION_ID,
+            in_enable_default_selection: configurationType.ENABLE_DEFAULT_SELECTION,
+            in_interlock_type_id: configurationType.INTERLOCK_TYPE_ID,
+            in_user_id: userId
+        });
+    });
+
+    if(interlock.length)
+        dataInterlock.updInterlockDefaults(interlock, userId);
+
+    return true;
 }
+
+/**************CONTACT DATA**************************/
+function getContactDataByOrgRelatedAndOrgId(ORGANIZATION_RELATED_ID, ORGANIZATION_ID ){
+    return dataInterlock.getContactDataByOrgRelatedAndOrgId(ORGANIZATION_RELATED_ID, ORGANIZATION_ID);
+}
+
+function updateContactDataByOrgRelatedAndOrgId(data, userId){
+    var contactDataList = data.CONTACT_DATA_LIST;
+    var organizationRelatedId = data.ORGANIZATIO_RELATED_ID;
+    var organizationId = data.ORGANIZATION_ID;
+
+    if(contactDataList){
+        dataInterlock.deleteContactData(organizationRelatedId, organizationId);
+        contactDataList.forEach(function(cd){
+            dataInterlock.insertContactData(organizationRelatedId, organizationId, cd.USER_ID, userId);
+        })
+    }
+    return true;
+}
+/****************************************************/

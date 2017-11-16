@@ -1,11 +1,10 @@
 PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::UPD_DEFAULT_INTERLOCK_CONFIGURATION" (
-		IN in_interlock_default_configuration_id BIGINT,
-		IN in_entity_id_from BIGINT,
-		IN in_entity_id_to BIGINT,
-		IN in_organization_type_from BIGINT,
-		IN in_organization_type_to BIGINT,
-		IN in_enabled TINYINT,
-		IN in_user_id BIGINT,
+		IN defaultConfiguration TABLE (
+		    in_interlock_default_configuration_id BIGINT,
+            in_enable_default_selection BIGINT,
+            in_interlock_type_id BIGINT,
+            in_user_id BIGINT
+		),
 		OUT out_result BIGINT
 	) 
 	LANGUAGE SQLSCRIPT
@@ -15,14 +14,19 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::UPD_DEFAULT_INTE
 BEGIN
 
 	UPDATE INTERLOCK_DEFAULT_CONFIGURATION SET
-		ENTITY_ID_FROM = in_entity_id_from,
-		ENTITY_ID_TO = in_entity_id_to,
-		ORGANIZATION_TYPE_FROM = in_organization_type_from,
-		ORGANIZATION_TYPE_TO = in_organization_type_to,
-		ENABLED = in_enabled,
-		MODIFIED_USER_ID= in_user_id,
-		modified_date_tz = CURRENT_TIMESTAMP
-		where INTERLOCK_DEFAULT_CONFIGURATION_ID = in_interlock_default_configuration_id;
+		ENABLE_DEFAULT_SELECTION = T.IN_ENABLE_DEFAULT_SELECTION,
+		INTERLOCK_TYPE_ID = T.IN_INTERLOCK_TYPE_ID,
+		MODIFIED_USER_ID= T.IN_USER_ID,
+		MODIFIED_DATE_TZ = CURRENT_TIMESTAMP
+
+        from INTERLOCK_DEFAULT_CONFIGURATION, (
+            		    select IN_ENABLE_DEFAULT_SELECTION
+                               , IN_INTERLOCK_TYPE_ID
+                               , IN_USER_ID
+                               , IN_INTERLOCK_DEFAULT_CONFIGURATION_ID from :defaultConfiguration
+            		) T
+
+		where INTERLOCK_DEFAULT_CONFIGURATION_ID = T.IN_INTERLOCK_DEFAULT_CONFIGURATION_ID;
 	
 	SELECT ::ROWCOUNT INTO out_result FROM DUMMY;
 END;

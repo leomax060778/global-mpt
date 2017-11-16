@@ -11,9 +11,10 @@ var getGlobalTeams = "GET_ENTITIES_ORGANIZATIONS";
 var getMessage = "GET_MESSAGE";
 var getInterlockByHash = "HASH";
 var getInterlockById = "GET_INTERLOCK_BY_ID";
+var getInterlockByEmail = "GET_REQUEST_INTERLOCK_BY_EMAIL";
 var getInterlockRequest = "GET_REQUEST_INTERLOCK_BY_USER_ID";
 var getInterlockSend = "GET_SEND_INTERLOCK_BY_USER_ID";
-
+var getContactDataByOrgRelOrgId = "GET_CONTACT_DATA_BY_ORG_REL_ORG_ID";
 var saveInterlockMessage = "ADDMESSAGE";
 var interlockRequest = "REQUEST_INTERLOCK";
 var interlockSend = "SEND_INTERLOCK";
@@ -40,6 +41,9 @@ function handleGet(parameters, userId) {
             case getInterlockById:
                 rdo = interlockLib.getInterlockById(parameters[0].value, userId);
                 break;
+            case getInterlockByEmail:
+                rdo = interlockLib.getRequestInterlockByEmail(parameters[0].value, userId);
+                break;
             case getInterlockRequest:
                 rdo = interlockLib.getRequestInterlockByUserId(userId);
                 break;
@@ -55,6 +59,9 @@ function handleGet(parameters, userId) {
             case getDefaultConfiguration:
                 rdo = interlockLib.getUnformattedInterlockDefaults(parameters[0].value, userId);
                 break;
+            case getContactDataByOrgRelOrgId:
+                rdo : interlockLib.getContactDataByOrgRelatedAndOrgId(httpUtil.getUrlParameterByName("ORGANIZATION_RELATED_ID"),
+                    httpUtil.getUrlParameterByName("ORGANIZATION_ID"));
             default:
                 throw ErrorLib.getErrors().BadRequest("", "interLockService/handleGet", "invalid parameter name (can be: GET_GLOBALS_TEAM)");
                 break;

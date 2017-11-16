@@ -1,6 +1,7 @@
 /***************Import Library*******************/
 $.import("mktgplanningtool.services.commonLib", "mapper");
 var mapper = $.mktgplanningtool.services.commonLib.mapper;
+var dataHl3 = mapper.getDataLevel3();
 var dataHl4 = mapper.getDataLevel4();
 var dataHl5 = mapper.getDataLevel5();
 var dataCostCenter = mapper.getDataCostCenter();
@@ -77,8 +78,9 @@ var L5_MSG_INITIATIVE_HAS_LEVEL_6 = "The selected 'Marketing Tactic' can not be 
 var L5_MSG_INITIATIVE_ACTUAL_START_DATE = "The 'Marketing Tactic' actual start date cannot be found.";
 var L5_MSG_INITIATIVE_ACTUAL_END_DATE = "The 'Marketing Tactic' actual end date cannot be found.";
 var L5_MSG_INITIATIVE_INVALID_DATE_RANGE = "The Actual End Date must be greater than Actual Start Date";
-var L5_MSG_COULDNT_CHANGE_STATUS = "Your records was saved as \"In progress\".  Please review your record for incomplete fields and/or pending budget approvals.";
-var L5_MSG_COULDNT_CHANGE_STATUS_DUE_PENDING_BUDGET_SPEND_REQUEST = "Your records was saved as \"In progress\".  Please review your record for incomplete fields and/or pending budget approvals.";
+var L5_MSG_COULDNT_CHANGE_STATUS = "Your records was saved as \"In progress\". Please review your record for incomplete fields and/or pending budget approvals.";
+var L5_MSG_COULDNT_CHANGE_STATUS_DUE_PENDING_BUDGET_SPEND_REQUEST = "Your records was saved as \"In progress\". Please review your record for incomplete fields and/or pending budget approvals.";
+var L5_MSG_COULDNT_CHANGE_STATUS_DUE_OWN_MONEY_BUDGET_SPEND_REQUEST_STATUS = "Your records was saved as \"In progress\". Please review your record for Own Money Budget Request approval.";
 var L5_MSG_INITIATIVE_PROPERTIES_CANNOT_UPDATE = "Once Marketing Tactic is already in CRM, properties CRM ID, Cost Center and Markting Organization cannot be modified.";
 var L5_MY_BUDGET_COMPLETE = "My Budget should be 100% complete.";
 var L5_COST_CENTER_NOT_VALID = "Cost Center cannot be empty.";
@@ -758,7 +760,7 @@ function validateHl5Upload(data) {
 function updateHl5(data1, userId) {
 
     var data = uiToServerParser(data1);
-
+    var budgetSpendRequestStatus = budgetSpendRequest.getBudgetSpendRequestsStatus();
     var mapCOL = util.getMapCategoryOption('hl5');//Set Map for Category Option Level
 
     data.hl5.MARKETING_PROGRAM_ID = data.hl5.MARKETING_PROGRAM;
@@ -846,20 +848,21 @@ function updateHl5(data1, userId) {
         );
 
         insertInCrmBinding(validationResult.crmBindingChangedFields, validationResult.crmBindingChangedFieldsUpdate, hl5_id);
+        var ownMoneyBudgetSpendRequestStatus = budgetSpendRequest.getOwnMoneyBudgetSpendRequestStatusByHlIdLevel(hl5_id, 'HL5');
+        var automaticBudgetApproval = blLevel2.getHl2AllowAutomaticBudgetApprovalByHl4Id(data.hl5.HL4_ID) && data.hl5.IN_BUDGET;
+        if(!ownMoneyBudgetSpendRequestStatus || ownMoneyBudgetSpendRequestStatus == budgetSpendRequestStatus.NO_LONGER_REQUESTED){
+            budgetSpendRequest.insertOwnMoneyBudgetSpendRequest(data.hl5.BUDGET, hl5_id, 'HL5', userId, automaticBudgetApproval);
+        } else {
+            if (objHL5.BUDGET != data.hl5.BUDGET) {
+                if (ownMoneyBudgetSpendRequestStatus && ownMoneyBudgetSpendRequestStatus != budgetSpendRequestStatus.PENDING)
+                    throw ErrorLib.getErrors().CustomError("", "hl5Services/handlePut/updateHl5", "Cannot update Tactic Budget because Own money budget spend request is no longer in Pending Status.");
 
-        if (objHL5.BUDGET != data.hl5.BUDGET) {
-            var budgetSpendRequestStatus = budgetSpendRequest.getBudgetSpendRequestsStatus();
-
-
-            var ownMoneyBudgetSpendRequestStatus = budgetSpendRequest.getOwnMoneyBudgetSpendRequestStatusByHlIdLevel(hl5_id, 'HL5');
-            if (ownMoneyBudgetSpendRequestStatus && ownMoneyBudgetSpendRequestStatus != budgetSpendRequestStatus.PENDING)
-                throw ErrorLib.getErrors().CustomError("", "hl5Services/handlePut/updateHl5", "Cannot update Tactic Budget because Own money budget spend request is no longer in Pending Status.");
-
-            budgetSpendRequest.updateOwnMoneyBudgetSpendRequestByHlIdLevel(hl5_id, 'HL5', data.hl5.BUDGET, blLevel2.getHl2AllowAutomaticBudgetApprovalByHl4Id(data.hl5.HL4_ID) && data.hl5.IN_BUDGET, userId);
-            level6Lib.checkBudgetStatus(data.hl5);
+                budgetSpendRequest.updateOwnMoneyBudgetSpendRequestByHlIdLevel(hl5_id, 'HL5', data.hl5.BUDGET, automaticBudgetApproval, userId);
+                level6Lib.checkBudgetStatus(data.hl5);
+            }
         }
 
-        updateExpectedOutcomes(userId, hl5_id, data)
+        updateExpectedOutcomes(userId, hl5_id, data);
 
         dataHl5.delHl5BudgetHard(hl5_id, userId);
         var arrHl5Budget = [];
@@ -1633,7 +1636,7 @@ function changeHl5StatusOnDemand(hl5_id, userId) {
     if (!hl5.ALLOW_BUDGET_ZERO) {
         var hl5_category = getHl5CategoryOption(hl5_id);
         var myBudget = dataHl5.getHl5MyBudgetByHl5Id(hl5_id);
-
+        var budgetSpendRequestStatus = budgetSpendRequest.getBudgetSpendRequestsStatus();
         var isComplete = isMyBudgetComplete(myBudget) && isCategoryOptionComplete({
             hl5_category: hl5_category,
             hl5: {HL5_ID: hl5_id}
@@ -1646,6 +1649,10 @@ function changeHl5StatusOnDemand(hl5_id, userId) {
 
         if (hasBudgetRequestPending)
             throw ErrorLib.getErrors().CustomError("", "hl5Services/handlePut/changeHl5Status", L5_MSG_COULDNT_CHANGE_STATUS_DUE_PENDING_BUDGET_SPEND_REQUEST);
+
+        var ownMoneyBudgetSpendRequestStatus = budgetSpendRequest.getOwnMoneyBudgetSpendRequestStatusByHlIdLevel(hl5_id, 'HL5');
+        if (ownMoneyBudgetSpendRequestStatus && ownMoneyBudgetSpendRequestStatus != budgetSpendRequestStatus.APPROVED)
+            throw ErrorLib.getErrors().CustomError("", "hl5Services/handlePut/updateHl5", L5_MSG_COULDNT_CHANGE_STATUS_DUE_OWN_MONEY_BUDGET_SPEND_REQUEST_STATUS);
     }
 
     return setHl5Status(hl5_id, statusId, userId);
@@ -1993,6 +2000,14 @@ function uiToServerParser(object) {
 }
 
 function serverToUiParser(object) {
+    var budgetSpendRequestStatus = budgetSpendRequest.getBudgetSpendRequestsStatus();
+    var isNoLongerRequested = object.hl5.BUDGET_SPEND_REQUEST_STATUS_ID == budgetSpendRequestStatus.NO_LONGER_REQUESTED;
+    if(isNoLongerRequested){
+        object.hl5.in_totalbudget -= object.hl5.BUDGET;
+        object.hl5.BUDGET = 0;
+        object.hl5.BUDGET_SPEND_REQUEST_STATUS_ID = null;
+        object.hl5.BUDGET_SPEND_REQUEST_STATUS = '';
+    }
     var hl5_sale = {
         regions: [],
         globalteams: [],
@@ -2005,14 +2020,16 @@ function serverToUiParser(object) {
     };
     object.myBudget.forEach(function (obj) {
         var aux = {};
+        var percentage = isNoLongerRequested
+            ? 0 : obj.PERCENTAGE;
         if (obj.ORGANIZATION_TYPE === 1) {
             aux.REGION_ID = obj.ORGANIZATION_ID;
-            aux.PERCENTAGE = obj.PERCENTAGE;
+            aux.PERCENTAGE = percentage;
             aux.REGION_NAME = obj.ORGANIZATION_NAME;
             hl5_budget.regions.push(aux);
         } else {
             aux.ROUTE_ID = obj.ORGANIZATION_ID;
-            aux.PERCENTAGE = obj.PERCENTAGE;
+            aux.PERCENTAGE = percentage;
             aux.GLOBAL_TEAM_NAME = obj.ORGANIZATION_NAME;
             hl5_budget.globalteams.push(aux);
         }
@@ -2093,7 +2110,8 @@ function checkPermission(userSessionID, method, hl5Id) {
     if (((method && method == "GET_BY_HL5_ID") || !method) && !util.isSuperAdmin(userSessionID)) {
         var hl5 = dataHl5.getHl5ById(hl5Id);
         var hl4 = dataHl4.getHl4ById(hl5.HL4_ID);
-        var usersL3 = userBL.getUserByHl3Id(hl4.HL3_ID).users_in;
+        var l3 = dataHl3.getLevel3ById(hl4.HL3_ID, userSessionID);
+        var usersL3 = userBL.getUserByHl3Id(hl4.HL3_ID, l3.HL2_ID).users_in;
         var users = usersL3.find(function (user) {
             return user.USER_ID == userSessionID
         });

@@ -1,0 +1,104 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_INTERLOCK_BY_EMAIL" (
+	IN in_email nvarchar(255),
+	IN in_interlock_request_type_id bigint,
+	OUT out_result_from TABLE(
+		interlock_request_id BIGINT
+		, organization_name NVARCHAR(255)
+		, ORGANIZATION_ID BIGINT
+		, organization_type NVARCHAR(255)
+		, entity NVARCHAR(255)
+	    ),
+    OUT out_result_to TABLE(
+		interlock_request_id BIGINT
+        ,organization_name NVARCHAR(255)
+        ,entity_id_to BIGINT
+        ,entity NVARCHAR(255)
+        ,organization_type_id BIGINT
+        ,organization_type NVARCHAR(255)
+        ,requested_resource NVARCHAR(255)
+        ,budget DECIMAL(19, 6)
+        ,status_id BIGINT
+        ,status NVARCHAR(255)
+        ,created_user_id BIGINT
+        ,requester_email NVARCHAR(255)
+	    )
+)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	READS SQL DATA AS
+BEGIN
+
+aux_requestMessage =
+select
+distinct ir_from.INTERLOCK_REQUEST_ID
+from INTERLOCK_REQUEST ir_from
+INNER JOIN INTERLOCK_REQUEST_MESSAGE irm_from ON ir_from.INTERLOCK_REQUEST_ID = irm_from.INTERLOCK_REQUEST_ID
+WHERE irm_from.DELETED = 0 AND irm_from.ENABLED = 1;
+
+out_result_from =
+select distinct
+  ir_from.INTERLOCK_REQUEST_ID
+, coalesce(io_from.NAME, r_from.REGION_NAME,sr_from.SUBREGION_NAME) as ORGANIZATION_NAME
+, iot_from.ORGANIZATION_ID as ORGANIZATION_ID
+, or_from.NAME as ORGANIZATION_TYPE
+, ie_from.NAME as ENTITY
+
+from INTERLOCK_REQUEST ir_from
+inner join :aux_requestMessage irm_from ON ir_from.INTERLOCK_REQUEST_ID = irm_from.INTERLOCK_REQUEST_ID
+inner join INTERLOCK_ENTITY ie_from ON ie_from.INTERLOCK_ENTITY_ID = ir_from.ENTITY_ID_FROM
+inner join INTERLOCK_ORGANIZATION_TYPE_FROM iot_from ON iot_from.INTERLOCK_REQUEST_ID = ir_from.INTERLOCK_REQUEST_ID
+inner join ORGANIZATION_RELATED or_from ON or_from.ORGANIZATION_RELATED_ID = iot_from.ORGANIZATION_RELATED_ID
+
+left join INTERLOCK_ORGANIZATION io_from ON io_from.INTERLOCK_ORGANIZATION_ID = iot_from.ORGANIZATION_ID
+AND iot_from.ORGANIZATION_RELATED_ID = 1
+left join REGION r_from ON r_from.REGION_ID = iot_from.ORGANIZATION_ID
+AND iot_from.ORGANIZATION_RELATED_ID = 2
+left join SUBREGION sr_from ON sr_from.SUBREGION_ID = iot_from.ORGANIZATION_ID
+AND iot_from.ORGANIZATION_RELATED_ID = 3
+
+where ir_from.enabled = 1
+and ir_from.deleted = 0
+AND ir_from.interlock_type_id  = in_interlock_request_type_id
+and iot_from.enabled = 1
+and iot_from.deleted = 0
+order by ir_from.INTERLOCK_REQUEST_ID asc;
+
+out_result_to =
+select distinct
+  ir_to.INTERLOCK_REQUEST_ID
+, coalesce(io_to.NAME, r_to.REGION_NAME, sr_to.SUBREGION_NAME) as ORGANIZATION_NAME
+, ie_to.INTERLOCK_ENTITY_ID as ENTITY_ID_TO
+, ie_to.NAME as ENTITY
+, or_to.ORGANIZATION_RELATED_ID as organization_type_id
+, or_to.NAME as ORGANIZATION_TYPE
+, ir_to.REQUESTED_RESOURCE as REQUESTED_RESOURCE
+, ir_to.REQUESTED_BUDGET as budget
+, istat.INTERLOCK_STATUS_ID as STATUS_ID
+, istat.DISPLAY_NAME as STATUS
+, ir_to.created_user_id
+, ir_to.requester_email
+from INTERLOCK_CONTACT_DATA icd
+INNER JOIN INTERLOCK_REQUEST ir_to ON ICD.INTERLOCK_REQUEST_ID = ir_to.INTERLOCK_REQUEST_ID
+inner join INTERLOCK_STATUS istat on istat.INTERLOCK_STATUS_ID = ir_to.INTERLOCK_STATUS_ID
+inner join :aux_requestMessage irm_to ON ir_to.INTERLOCK_REQUEST_ID = irm_to.INTERLOCK_REQUEST_ID
+inner join INTERLOCK_ENTITY ie_to on ie_to.INTERLOCK_ENTITY_ID = ir_to.ENTITY_ID_TO
+inner join INTERLOCK_ORGANIZATION_TYPE_TO iot_to ON iot_to.INTERLOCK_REQUEST_ID = ir_to.INTERLOCK_REQUEST_ID
+inner join ORGANIZATION_RELATED or_to ON or_to.ORGANIZATION_RELATED_ID = iot_to.ORGANIZATION_RELATED_ID
+
+left join INTERLOCK_ORGANIZATION io_to ON io_to.INTERLOCK_ORGANIZATION_ID = iot_to.ORGANIZATION_ID
+AND iot_to.ORGANIZATION_RELATED_ID = 1
+left join REGION r_to ON r_to.REGION_ID = iot_to.ORGANIZATION_ID
+AND iot_to.ORGANIZATION_RELATED_ID = 2
+left join SUBREGION sr_to ON sr_to.SUBREGION_ID = iot_to.ORGANIZATION_ID
+AND iot_to.ORGANIZATION_RELATED_ID = 3
+
+where ir_to.enabled = 1
+and ir_to.deleted = 0
+AND ICD.EMAIL = in_email
+AND ir_to.interlock_type_id  = in_interlock_request_type_id
+and iot_to.enabled = 1
+and iot_to.deleted = 0
+order by ir_to.INTERLOCK_REQUEST_ID asc;
+
+END;

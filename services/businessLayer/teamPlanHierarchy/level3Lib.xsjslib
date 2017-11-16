@@ -176,15 +176,13 @@ function getLevel3ForSearch(userSessionID, budget_year_id, region_id, subregion_
     return query;
 }
 
-function getLevel3ByAcronym(acronym, hl1Id, userId) {
-    return data.getLevel3ByAcronym(acronym, hl1Id, userId);
+function getLevel3ByAcronym(acronym, hl2Id, userId) {
+    return data.getLevel3ByAcronym(acronym, hl2Id, userId);
 }
 
 function existsHl3(objHl3, userId) {
     var hl2 = dataHl2.getLevel2ById(objHl3.HL2_ID);
-    objHl3.HL1_ID = hl2.HL1_ID;
-
-    var hl3 = getLevel3ByAcronym(objHl3.ACRONYM, hl2.HL1_ID, userId);
+    var hl3 = getLevel3ByAcronym(objHl3.ACRONYM, hl2.HL2_ID, userId);
     if (hl3.HL3_ID && Number(hl3.HL3_ID) !== (Number(objHl3.HL3_ID) || 0))
         return true;
     else
@@ -433,15 +431,14 @@ function validateFormHl3(objHl3) {
 
         if (existsHl3(objHl3))
             throw ErrorLib.getErrors().CustomError("",
-                "hl3Services/handlePost/insertHl3",
+                "",
                 L2_MSG_TEAM_EXISTS);
     } catch (e) {
         if (e !== BreakException)
-            throw ErrorLib.getErrors().CustomError("",
-                "hl3Services/handlePost/insertHl3", e.toString());
+            throw e;
         else
             throw ErrorLib.getErrors().CustomError("",
-                "hl3Services/handlePost/insertHl3", JSON.stringify(errors));
+                "", JSON.stringify(errors));
     }
     return isValid;
 }
@@ -602,7 +599,11 @@ function checkBudgetStatus(hl2Id, userId, hl3Id, newHl3Budget) {
 
 function checkPermission(userSessionID, method, hl3Id) {
     if (((method && method == "GET_BY_HL3_ID") || !method) && !util.isSuperAdmin(userSessionID)) {
-        var usersL3 = userbl.getUserByHl3Id(hl3Id).users_in;
+        var l3 = data.getLevel3ById(hl3Id, userSessionID);
+        if(!l3)
+            throw ErrorLib.getErrors().CustomError("", "level3/getLevel3ById", "HL3 does not existn.");
+
+        var usersL3 = userbl.getUserByHl3Id(hl3Id, l3.HL2_ID).users_in;
         var users = usersL3.find(function (user) {
             return user.USER_ID == userSessionID
         });

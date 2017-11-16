@@ -1,0 +1,37 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_DEFAULT_CURRENCY_FOR_HL_AND_LEVEL" (
+	    in hl_id integer
+	, in hierarchy_level_id integer
+	,OUT out_result TABLE (euro_conversion_id BIGINT
+						)
+	)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	READS SQL DATA AS
+BEGIN
+
+IF hierarchy_level_id = 1 THEN --level 4
+
+out_result =
+    select currency.euro_conversion_id
+    from hl4
+    inner join hl3 on hl3.hl3_id = hl4.hl3_id
+    inner join hl2 on hl2.hl2_id = hl3.hl2_id
+    inner join hl1 on hl1.hl1_id = hl2.hl1_id
+    inner join budget_year bgy on bgy.budget_year_id = hl1.budget_year_id
+    inner join currency on currency.budget_year_id = bgy.budget_year_id
+    where
+    hl4.hl4_id = hl_id and currency.default_currency = 1;
+ELSEIF hierarchy_level_id = 2 THEN --level 5
+out_result = select currency.euro_conversion_id
+    from hl5
+    inner join hl4 on hl4.hl4_id = hl5.hl4_id
+    inner join hl3 on hl3.hl3_id = hl4.hl3_id
+    inner join hl2 on hl2.hl2_id = hl3.hl2_id
+    inner join hl1 on hl1.hl1_id = hl2.hl1_id
+    inner join budget_year bgy on bgy.budget_year_id = hl1.budget_year_id
+    inner join currency on currency.budget_year_id = bgy.budget_year_id
+    where
+    hl5.hl5_id = hl_id and currency.default_currency = 1;
+END IF;
+END;

@@ -137,10 +137,10 @@ function getLevel3ById(hl3Id, userId) {
 		return {};
 }
 
-function getLevel3ByAcronym(acronym, hl1Id, userId) {
+function getLevel3ByAcronym(acronym, hl2Id, userId) {
 	var parameters = {};
 	parameters.in_acronym = acronym.toUpperCase();
-	parameters.in_hl1_id = hl1Id;
+	parameters.in_hl2_id = hl2Id;
 	var result = db.executeProcedureManual(GET_HL3_BY_ACRONYM, parameters);
 	var list = db.extractArray(result.out_result);
 	if(list.length)
