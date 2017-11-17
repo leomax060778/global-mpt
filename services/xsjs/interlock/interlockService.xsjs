@@ -34,9 +34,7 @@ function handleGet(parameters, userId) {
 
         switch (parameters[0].name) {
             case getGlobalTeams:
-                rdo.entity = interlockLib.getAllEntity();
-                rdo.organizations = interlockLib.getOrganizations(parameters[0].value, userId);
-                rdo.defaults = interlockLib.getInterlockDefaults();
+                rdo = interlockLib.getInterlockDefaults();
                 break;
             case getInterlockById:
                 rdo = interlockLib.getInterlockById(parameters[0].value, userId);
@@ -60,8 +58,9 @@ function handleGet(parameters, userId) {
                 rdo = interlockLib.getUnformattedInterlockDefaults(parameters[0].value, userId);
                 break;
             case getContactDataByOrgRelOrgId:
-                rdo : interlockLib.getContactDataByOrgRelatedAndOrgId(httpUtil.getUrlParameterByName("ORGANIZATION_RELATED_ID"),
+                 rdo = interlockLib.getContactDataByOrgRelatedAndOrgId(httpUtil.getUrlParameterByName("ORGANIZATION_RELATED_ID"),
                     httpUtil.getUrlParameterByName("ORGANIZATION_ID"));
+                 break;
             default:
                 throw ErrorLib.getErrors().BadRequest("", "interLockService/handleGet", "invalid parameter name (can be: GET_GLOBALS_TEAM)");
                 break;

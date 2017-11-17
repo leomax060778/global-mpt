@@ -95,6 +95,16 @@ var InterlockType = {
 	REGION_SPEND: 2
 };
 
+var OrganizationRelated = {
+	CENTRAL : 1,
+	REGION : 2,
+	SUBREGION: 3
+};
+
+function getOrganizationRelated(or){
+	return OrganizationRelated[or];
+}
+
 function getDebugMode(){
 	return getConfigurationByName("DebugMode")[0].VALUE;
 }

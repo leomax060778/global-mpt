@@ -4,6 +4,8 @@ var mapper = $.mktgplanningtool.services.commonLib.mapper;
 var db = mapper.getdbHelper();
 var ErrorLib = mapper.getErrors();
 var dataInterlock = mapper.getDataInterlockOrganization();
+var InterlockLib = mapper.getInterlock();
+var dataConfig = mapper.getDataConfig();
 
 /*************************************************/
 
@@ -13,7 +15,19 @@ var OBJECT_NOT_FOUND = "The object Interlock Organization can not be found";
 /*************************************************/
 
 function getAllInterlockOrganization(){
-	return dataInterlock.getAllInterlockOrganization();
+	var interlockList =  dataInterlock.getAllInterlockOrganization();
+	if(interlockList){
+		interlockList = JSON.parse(JSON.stringify(interlockList));
+		interlockList.forEach(function(i){
+			var contactData =InterlockLib.getContactDataByOrgRelatedAndOrgId(
+                dataConfig.getOrganizationRelated("CENTRAL")
+				,i.INTERLOCK_ORGANIZATION_ID);
+            i.ASSOCIATED_CONTACTS = contactData.assigned;
+            i.AVAILABLE_CONTACTS = contactData.availables;
+		});
+	}
+
+	return interlockList;
 }
 
 function getInterlockOrganizationById(interlockOrganizationId, userId){
@@ -40,7 +54,9 @@ function updateInterlockOrganization(reqBody, userId){
 	validateInterlockOrganization(reqBody, userId, "Update");
 	
 	//******** Update Interlock Organization ********//
-	return dataInterlock.updateInterlockOrganization(reqBody, userId);
+	dataInterlock.updateInterlockOrganization(reqBody, userId);
+
+	return InterlockLib.updateContactDataByOrgRelatedAndOrgId(reqBody,userId);
 }
 
 function deleteInterlockOrganization(reqBody, userId){

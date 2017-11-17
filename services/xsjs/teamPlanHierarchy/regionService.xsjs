@@ -14,6 +14,7 @@ function processRequest(){
 }
 
 function handleGet(parameters){
+
 	if(parameters.length > 0){
 		if(parameters[0].name == regionId){		
 			var rdo = blRegion.getRegionById(parameters[0].value);

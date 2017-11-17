@@ -115,7 +115,8 @@ function getInterlockById(id) {
         var result = {};
         result.INTERLOCK = db.extractArray(rdo.out_result)[0];
         result.CONTACTS = db.extractArray(rdo.out_contact_data);
-
+        result.AVAILABLE_CONTACTS = db.extractArray(rdo.out_result_availables);
+        
         return result;
     }
     return null;
@@ -156,7 +157,7 @@ function insertInterlock(objInterlock, userId) {
     params.in_interlock_status_id = objInterlock.STATUS_ID;
     params.in_interlock_type_id = objInterlock.INTERLOCK_TYPE_ID;
     params.in_created_user_id = userId;
-    params.in_comments = objInterlock.COMMENTS;
+    params.in_comments = objInterlock.COMMENTS || null;
 
     var rdo = db.executeScalarManual(spInsertInterlock, params, 'out_result');
     return rdo;
@@ -218,7 +219,7 @@ function updateInterlock(objInterlock, userId) {
     params.in_modified_user_id = userId;
 
     params.in_entity_id_from = objInterlock.ENTITY_ID_FROM;
-    params.in_comments = objInterlock.COMMENTS;
+    params.in_comments = objInterlock.COMMENTS || null;
 
     return db.executeScalarManual(spUpdateInterlock, params, 'out_result');
 }
