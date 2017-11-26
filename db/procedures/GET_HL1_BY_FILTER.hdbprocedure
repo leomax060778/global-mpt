@@ -12,6 +12,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL1_BY_FILTE
         , L1_BUDGET_ALLOCATED DECIMAL(19, 2)
         , HL2_TOTAL_COUNT INTEGER
         , ACRONYM NVARCHAR(25)
+        , CRM_ID NVARCHAR(25)
         , BUDGET_YEAR NVARCHAR(255)
         , REGION_NAME NVARCHAR(255)
         , IS_LOCKED TINYINT
@@ -42,6 +43,7 @@ BEGIN
 	SELECT
 		SUMMARY.HL1_ID
 		, SUMMARY.L1_BUDGET
+		, "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(SUMMARY.BUDGET_YEAR, SUMMARY.L1_ACRONYM, '', '', '', '', '') AS CRM_ID
 		, SUMMARY.L1_BUDGET_PERCENTAGE
 		, SUMMARY.L1_BUDGET_REMAINING
 		, SUMMARY.L1_BUDGET_ALLOCATED
@@ -73,6 +75,7 @@ BEGIN
                             		, T.L1_BUDGET_ALLOCATED
                             		, T.HL2_TOTAL_COUNT
                             		, T.ACRONYM
+                            		, T.CRM_ID
                             		, T.BUDGET_YEAR
                             		, T.REGION_NAME
                             		, T.IS_LOCKED
@@ -95,6 +98,7 @@ BEGIN
                             , T.L1_BUDGET_ALLOCATED
                             , T.HL2_TOTAL_COUNT
                             , T.ACRONYM
+                            , T.CRM_ID
                             , T.BUDGET_YEAR
                             , T.REGION_NAME
                             , T.IS_LOCKED

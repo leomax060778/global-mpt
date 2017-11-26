@@ -57,6 +57,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL6_BY_ID"(
             , budget_spend_request_status nvarchar(255)
             , EMPLOYEE_RESPONSIBLE_USER nvarchar(7)
             , PERSON_RESPONSIBLE NVARCHAR(7)
+            , STATUS NVARCHAR(25)
 		)
 	)
 	LANGUAGE SQLSCRIPT
@@ -132,9 +133,11 @@ va_own_money_budget_request = SELECT TOP 1 BSRS.budget_spend_request_status_id
                 , BSRS.BUDGET_SPEND_REQUEST_STATUS
                 , HL6.EMPLOYEE_RESPONSIBLE_USER
                 , HL6.PERSON_RESPONSIBLE
+                , STATUS.DETAIL AS STATUS
 			FROM HL6
 			LEFT JOIN :va_own_money_budget_request BSRS ON BSRS.HL6_ID = HL6.HL6_ID
             LEFT JOIN CAMPAIGN_TYPE C_TYPE ON C_TYPE.CAMPAIGN_TYPE_ID = HL6.CAMPAIGN_TYPE_ID
+            LEFT JOIN HL6_STATUS_DETAIL STATUS ON HL6.HL6_STATUS_DETAIL_ID = STATUS.HL6_STATUS_DETAIL_ID
 			WHERE HL6.HL6_ID = in_hl6_id
 				AND HL6.ENABLED = 1
 				AND HL6.DELETED = 0;

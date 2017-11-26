@@ -6,6 +6,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL2_BY_HL1_I
 							hl2_id BIGINT
                             , hl1_id BIGINT
                             , organization_acronym NVARCHAR(25)
+                            , CRM_ID NVARCHAR(25)
                             , organization_name NVARCHAR(255)
                             , SUBREGION_NAME NVARCHAR(255)
                             , HL2_BUDGET_REMAINING DECIMAL(19,2)
@@ -34,6 +35,7 @@ BEGIN
 	out_result = SELECT SUMMARY.HL2_ID AS hl2_id,
                         SUMMARY.HL1_ID AS hl1_id,
                         SUMMARY.L2_ACRONYM AS organization_acronym,
+                        "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BGY.BUDGET_YEAR, L1.ACRONYM, SUMMARY.L2_ACRONYM, '', '', '', '') AS CRM_ID,
                         SUMMARY.L2_ORGANIZATION_NAME AS organization_name,
                         SUMMARY.SUBREGION_NAME,
                         SUMMARY.L2_BUDGET_REMAINING AS HL2_BUDGET_REMAINING,
@@ -49,6 +51,8 @@ BEGIN
                         SUMMARY.BUDGET_DISTRIBUTION_AMOUNT
                         , SUMMARY.SUB_AMOUNT
                         FROM  "_SYS_BIC"."mktgplanningtool.db.data.views/CV_HL2_BUDGET_DISTRIBUTION_SUMMARY" SUMMARY
+                        JOIN HL1 L1 on L1.hl1_id = in_hl1_id
+                        JOIN BUDGET_YEAR BGY ON BGY.budget_year_id = L1.budget_year_id
 	WHERE SUMMARY.HL1_ID = in_hl1_id
 	  AND (in_is_super_Admin = 1 OR SUMMARY.HL2_ID IN (SELECT HL2_ID FROM HL2_USER WHERE USER_ID = in_user_id))
     ORDER BY SUMMARY.L2_ACRONYM;

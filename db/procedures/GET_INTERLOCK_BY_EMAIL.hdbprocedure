@@ -21,6 +21,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_INTERLOCK_BY
         ,status NVARCHAR(255)
         ,created_user_id BIGINT
         ,requester_email NVARCHAR(255)
+        ,hash NVARCHAR(255)
 	    )
 )
 	LANGUAGE SQLSCRIPT
@@ -78,6 +79,7 @@ select distinct
 , istat.DISPLAY_NAME as STATUS
 , ir_to.created_user_id
 , ir_to.requester_email
+, icd.HASH
 from INTERLOCK_CONTACT_DATA icd
 INNER JOIN INTERLOCK_REQUEST ir_to ON ICD.INTERLOCK_REQUEST_ID = ir_to.INTERLOCK_REQUEST_ID
 inner join INTERLOCK_STATUS istat on istat.INTERLOCK_STATUS_ID = ir_to.INTERLOCK_STATUS_ID

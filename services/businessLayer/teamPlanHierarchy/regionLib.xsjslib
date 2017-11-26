@@ -8,17 +8,19 @@ var InterlockLib = mapper.getInterlock();
 
 /** ***********END INCLUDE LIBRARIES*************** */
 
-function getAllRegions() {
+function getAllRegions(fromExecutionLevel) {
 	var regionlist = dataRegion.getAllRegions();
     if(regionlist){
     	regionlist = JSON.parse(JSON.stringify(regionlist));
-        regionlist.forEach(function(i){
-            var contactData =InterlockLib.getContactDataByOrgRelatedAndOrgId(
-                dataConfig.getOrganizationRelated("REGION")
-                ,i.REGION_ID);
-            i.ASSOCIATED_CONTACTS = contactData.assigned;
-            i.AVAILABLE_CONTACTS = contactData.availables;
-        });
+    	if(!fromExecutionLevel) {
+            regionlist.forEach(function (i) {
+                var contactData = InterlockLib.getContactDataByOrgRelatedAndOrgId(
+                    dataConfig.getOrganizationRelated("REGION")
+                    , i.REGION_ID);
+                i.ASSOCIATED_CONTACTS = contactData.assigned;
+                i.AVAILABLE_CONTACTS = contactData.availables;
+            });
+        }
     }
 
     return regionlist;

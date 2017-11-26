@@ -25,6 +25,7 @@ var allocationCategory = mapper.getAllocationCategoryLib();
 var dataCategory = mapper.getDataCategory();
 var expectedOutcomesLevelLib = mapper.getExpectedOutcomesLevelLib();
 var allocationCategoryOptionLevelLib = mapper.getAllocationCategoryOptionLevelLib();
+var budgetSpendRequestLib = mapper.getBudgetSpendRequest();
 /** ***********END INCLUDE LIBRARIES*************** */
 var LEVEL3 = 3;
 var L2_MSG_TEAM_NOT_FOUND = "The Priority/Sub-Team can not be found.";
@@ -159,6 +160,8 @@ function getLevel3ById(hl3Id, userId) {
     hl3.DESCRIPTION = hl3.HL3_DESCRIPTION;
     hl3.HL2_BUDGET_REMAINING = Number(hl3.HL2_BUDGET) - Number(hl2BudgetAllocated || 0);
     hl3.ASSIGNED_USERS = hl3Users.users_in;
+    hl3.BUDGET_APPROVERS = budgetSpendRequestLib.getL3BudgetApproverByL3Id(hl3Id).assigned;
+    hl3.BUDGET_APPROVERS_AVAILABLE = budgetSpendRequestLib.getL3BudgetApproverByL3Id(hl3Id).available;
     hl3.AVAILABLE_USERS = hl3Users.users_out;
     return hl3;
 }
@@ -279,7 +282,8 @@ function insertHl3(objHl3, userId) {
 
     //INSERT USERS RELATED TO HL3
     objHl3.HL3_ID = hl3Id;
-    setUsersHl3(objHl3, userId);
+    var listObjHl3User = setUsersHl3(objHl3, userId);
+    setBudgetApproversHl3(objHl3, listObjHl3User, userId);
     insertExpectedOutcomes(objHl3, userId);
     insertCategoryOption(objHl3, userId);
 
@@ -361,11 +365,39 @@ function updateHl3(objHl3, userId) {
         userId
     );
 
-    setUsersHl3(objHl3, userId);
+    var listObjHl3User = setUsersHl3(objHl3, userId);
+    setBudgetApproversHl3(objHl3, listObjHl3User, userId);
     updateExpectedOutcomes(objHl3, userId);
     updateCategoryoption(objHl3, userId);
 
     return result;
+}
+function setBudgetApproversHl3(objHl3, listObjHl3User, userId){
+    if (validateApprovers(listObjHl3User, objHl3.BUDGET_APPROVERS)) {
+        budgetSpendRequestLib.deleteL3BudgetApprover(objHl3.HL3_ID, objHl3.BUDGET_APPROVERS);
+        budgetSpendRequestLib.insertL3BudgetApprover(objHl3.HL3_ID, objHl3.BUDGET_APPROVERS, userId)
+    } else {
+        throw ErrorLib.getErrors().CustomError("", "", "The Approvers do not match the Assigned Users.")
+    }
+
+}
+
+function validateApprovers(listObjHl3User, listObjHl3Approvers) {
+    return arrayContainsArray(listObjHl3User, listObjHl3Approvers);
+}
+
+function arrayContainsArray(superset, subset) {
+    if (subset) subset.forEach(function (approver) {
+        if (!existUser(superset, approver)) return false;
+    });
+    return true;
+}
+
+function existUser(userArray, user) {
+    userArray.forEach(function (u) {
+        if (u == user.USER_ID) return true;
+    });
+    return false;
 }
 
 function setUsersHl3(objHl3, userId) {
@@ -385,6 +417,7 @@ function setUsersHl3(objHl3, userId) {
     }
 
     dataHl3User.insertLevel3User(hl3User);
+    return listObjHl3User;
 }
 
 // Local method to validate input request
@@ -871,6 +904,7 @@ function getLevel3Kpi(hl2Id, userId) {
     listFromData.forEach(function (hl) {
         mapKpi[hl.L3_ACRONYM] = mapKpi[hl.L3_ACRONYM] || {
             HL2_ID: hl.HL2_ID,
+            CRM_ID: hl.CRM_ID,
             HL3_ID: hl.HL3_ID,
             ACRONYM: hl.L3_ACRONYM,
             IS_LOCKED: hl.IS_LOCKED,

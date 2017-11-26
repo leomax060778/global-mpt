@@ -10,6 +10,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL2_KPI_SUMM
         , TOTAL_VALUE_ALLOCATED DECIMAL(10,2)
         , TOTAL_VOLUME_ALLOCATED DECIMAL(10,2)
         , L2_ACRONYM NVARCHAR(255)
+        , CRM_ID NVARCHAR(25)
         , ORGANIZATION_NAME NVARCHAR(255)
         , HL1_ID BIGINT
         , HL2_ID BIGINT
@@ -28,11 +29,14 @@ BEGIN
                          , coalesce(SUMMARY_VIEW.TOTAL_VALUE_ALLOCATED,0) as TOTAL_VALUE_ALLOCATED
                          , coalesce(SUMMARY_VIEW.TOTAL_VOLUME_ALLOCATED,0) as TOTAL_VOLUME_ALLOCATED
                          , UPPER(SUMMARY_VIEW.L2_ACRONYM) as L2_ACRONYM
+                         , "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BGY.BUDGET_YEAR, HL1.ACRONYM, UPPER(SUMMARY_VIEW.L2_ACRONYM), '', '', '', '') AS CRM_ID
                          , SUMMARY_VIEW.ORGANIZATION_NAME
                          , SUMMARY_VIEW.HL1_ID
                          , SUMMARY_VIEW.HL2_ID
                          , SUMMARY_VIEW.IS_LOCKED
                          FROM "_SYS_BIC"."mktgplanningtool.db.data.views/CV_HL2_KPI_SUMMARY" SUMMARY_VIEW
+                         JOIN HL1 ON HL1.hl1_id = in_hl1_id
+                         JOIN BUDGET_YEAR BGY ON BGY.BUDGET_YEAR_ID = HL1.BUDGET_YEAR_ID
 	WHERE SUMMARY_VIEW.HL1_ID = in_hl1_id
 	    AND SUMMARY_VIEW.HL2_ID IN (SELECT HL2_ID FROM HL2_USER WHERE USER_ID = in_user_id OR in_is_super_Admin = 1)
         order by UPPER(SUMMARY_VIEW.L2_ACRONYM);

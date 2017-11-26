@@ -11,8 +11,17 @@ var blLevel1 = mapper.getLevel1();
 var blLevel3 = mapper.getLevel3();
 var blLevel2 = mapper.getLevel2();
 var blcurrency = mapper.getCurrency();
+var blUser = mapper.getUser();
 var dataL4 = mapper.getDataLevel4();
 var dataL5 = mapper.getDataLevel5();
+var blObjectives = mapper.getObjectiveLib();
+var blCampaignSubType = mapper.getCampaignSubTypeLib();
+var blCampaignType = mapper.getCampaignTypeLib();
+var blAllocationCategory = mapper.getAllocationCategoryLib();
+var blAllocationOption = mapper.getAllocationOptionLib();
+var dataCampaignType = mapper.getDataCampaignType();
+var dataObjective = mapper.getDataObjectives();
+var dataCampaignSubType = mapper.getDataCampaignSubType();
 /** ***********END INCLUDE LIBRARIES*************** */
 
 var MSG_HL4_NOT_FOUND = "Hl4 not found.";
@@ -43,6 +52,20 @@ var mapInsertHierarchyLevelInsert = {
     6: blLevel1.insertHl1FromUpload,
     5: blLevel2.insertHl2FromUpload,
     4: blLevel3.insertHl3FromUpload
+};
+
+var mapCampaignObjetveLib = {
+    UPLOAD_OBJECTIVE: blObjectives
+    , UPLOAD_CAMPAIGN_SUB_TYPE: blCampaignSubType
+    , UPLOAD_CAMPAIGN_TYPE: blCampaignType
+    , UPLOAD_USER : blUser
+};
+
+var mapCampaignObjetveGetList = {
+    UPLOAD_OBJECTIVE: dataObjective.getAllObjectives
+    , UPLOAD_CAMPAIGN_SUB_TYPE: dataCampaignSubType.getAllCampaignSubType
+    , UPLOAD_CAMPAIGN_TYPE: dataCampaignType.getAllCampaignType
+    , UPLOAD_USER: blUser.getAll
 };
 
 //get map excel upload file configuration for static relation between field on database tables and excel column header
@@ -1439,6 +1462,55 @@ function parseKpiForUpload(kpis){
 
     return util.objectToArray(result);
 }
+
+function checkUploadEntity(data, uploadType){
+    var list = mapCampaignObjetveGetList[uploadType.toUpperCase()]();
+    var toUpdate = 0;
+    var toInsert = 0;
+    if(list && list.length) {
+        data.check.forEach(function (element) {
+            var exist = false;
+            for (var i = 0; i < list.length; i++) {
+                var nameField = list[i].IN_NAME || list[i].NAME || list[i].USER_NAME;
+                if (element.IN_NAME.trim().toUpperCase() === nameField.trim().toUpperCase()) {
+                    exist = true;
+                    break;
+                }
+            }
+            if (exist) {
+                toUpdate++;
+            } else {
+                toInsert++;
+            }
+        });
+    } else {
+        toInsert = data.check.length;
+    }
+
+    return {toCreate: toInsert, toUpdate: toUpdate};
+}
+
+function uploadEntity(data, uploadType, userId) {
+    var businessLayer = mapCampaignObjetveLib[uploadType.toUpperCase()];
+    var entityList = data.batch;
+    var entitiesUpdated = 0;
+    var entitiesCreated = 0;
+    var entityId;
+
+    entityList.forEach(function(entity){
+        var bdEntity = businessLayer.getByName(entity.IN_NAME);
+
+        if(!bdEntity){
+            entityId = businessLayer.insertEntity(entity, userId);
+            entitiesCreated++;
+        } else {
+            entityId = businessLayer.updateEntity(entity, userId);
+            entitiesUpdated++;
+        }
+    });
+    return {toCreate: entitiesCreated, toUpdate: entitiesUpdated};
+}
+
 /**/
 
 //   HL2_1

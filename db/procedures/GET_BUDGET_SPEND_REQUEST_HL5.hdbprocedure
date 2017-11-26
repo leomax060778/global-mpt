@@ -29,24 +29,17 @@ AS
 BEGIN
 
 	
-	related_hl2_users =	SELECT DISTINCT HL3.HL2_ID
+	related_hl3_users =	SELECT DISTINCT HL3.HL3_ID
 								FROM "MKTG_PLANNING_TOOL"."HL5" HL5
-									INNER JOIN "MKTG_PLANNING_TOOL"."HL4" HL4 
-										ON HL4.hl4_id = HL5.hl4_id 
-				            		INNER JOIN "MKTG_PLANNING_TOOL"."HL3" HL3
-				            			ON HL4.hl3_id = HL3.hl3_id 
-				            		INNER JOIN "MKTG_PLANNING_TOOL"."HL3_USER" HL3_USER
-				            			ON HL3.HL3_ID = HL3_USER.HL3_ID
-				            		INNER JOIN "MKTG_PLANNING_TOOL"."USER" U
-				            			ON U.USER_ID = in_user_id
-									INNER JOIN "MKTG_PLANNING_TOOL"."HL2_BUDGET_SPEND_APPROVER" hl2BudgetSpendApprover
-										ON hl2BudgetSpendApprover.USER_ID = U.USER_ID
-									INNER JOIN USER_ROLE userRole 
-										ON userRole.USER_ID = U.USER_ID
-								WHERE hl2BudgetSpendApprover.HL2_ID = HL3.HL2_ID
-									AND U.ENABLED = 1 AND U.DELETED = 0;
-								
-								
+									INNER JOIN "MKTG_PLANNING_TOOL"."HL4" HL4 ON HL4.hl4_id = HL5.hl4_id
+				            		INNER JOIN "MKTG_PLANNING_TOOL"."HL3" HL3 ON HL4.hl3_id = HL3.hl3_id
+				            		INNER JOIN "MKTG_PLANNING_TOOL"."HL3_USER" HL3_USER ON HL3.HL3_ID = HL3_USER.HL3_ID
+				            		--INNER JOIN "MKTG_PLANNING_TOOL"."USER" U ON U.USER_ID = in_user_id
+									INNER JOIN "MKTG_PLANNING_TOOL"."HL3_BUDGET_SPEND_APPROVER" hl3BudgetSpendApprover ON hl3BudgetSpendApprover.USER_ID = in_user_id --U.USER_ID
+									--INNER JOIN USER_ROLE userRole ON userRole.USER_ID = U.USER_ID
+								WHERE hl3BudgetSpendApprover.HL3_ID = HL3.HL3_ID;
+									--AND U.ENABLED = 1 AND U.DELETED = 0;
+
 								
 	out_result = 	SELECT DISTINCT
                     BSR.BUDGET_SPEND_REQUEST_ID
@@ -77,15 +70,19 @@ BEGIN
                 INNER JOIN "MKTG_PLANNING_TOOL"."BUDGET_SPEND_REQUEST_TYPE" BSR_TYPE ON BSR_TYPE.BUDGET_SPEND_REQUEST_TYPE_ID = BSR.BUDGET_SPEND_REQUEST_TYPE_ID
                 INNER JOIN HL4 hl4 ON hl4.hl4_id = HL5.hl4_id
                 INNER JOIN HL3 ON HL4.hl3_id = HL3.hl3_id
-                INNER JOIN HL3_USER ON HL3.HL3_ID = HL3_USER.HL3_ID
+                --INNER JOIN HL3_USER ON HL3.HL3_ID = HL3_USER.HL3_ID
                 INNER JOIN HL2 ON HL3.hl2_id = HL2.hl2_id
                 INNER JOIN HL1 ON HL2.hl1_id = HL1.hl1_id
-                INNER JOIN :related_hl2_users HL2_USERS ON HL2_USERS.HL2_ID = HL2.HL2_ID
+                INNER JOIN :related_hl3_users HL3_USERS ON HL3_USERS.HL3_ID = HL3.HL3_ID
                 INNER JOIN BUDGET_YEAR BGY ON HL1.budget_year_id = BGY.budget_year_id
                 LEFT JOIN "MKTG_PLANNING_TOOL"."ROUTE_TO_MARKET" RTM ON RTM.ROUTE_TO_MARKET_ID = HL5.ROUTE_TO_MARKET_ID
                 INNER JOIN "MKTG_PLANNING_TOOL"."HL5_STATUS_DETAIL" HL5_STATUS ON HL5_STATUS.HL5_STATUS_DETAIL_ID = HL5.HL5_STATUS_DETAIL_ID
             WHERE HL5.ENABLED = 1
                 AND HL5.DELETED = 0
+                AND HL5.BUDGET != 0
+                AND HL5.ALLOW_BUDGET_ZERO = 0
                 AND BSR.BUDGET_SPEND_REQUEST_STATUS_ID != in_excluded_status_id
-                AND BSR.HIERARCHY_LEVEL_ID = 2;
+                AND BSR.HIERARCHY_LEVEL_ID = 2
+                AND BSR.ENABLED = 1
+                AND BSR.DELETED = 0;
 END;

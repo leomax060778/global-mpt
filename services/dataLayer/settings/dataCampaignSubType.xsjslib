@@ -50,10 +50,12 @@ function getCampaignSubTypeById(idCampaignSubType) {
         return null;
 }
 
-function insertCampaignSubType(name, crmKey, userId) {
+function insertCampaignSubType(name, crmKey, rolloverText, example, userId) {
     var parameters = {};
     parameters.IN_NAME = name;
     parameters.IN_CRM_KEY = crmKey;
+    parameters.IN_ROLLOVER_TEXT = rolloverText;
+    parameters.IN_EXAMPLE = example;
     parameters.IN_CREATED_USER_ID = userId;
     return db.executeScalarManual(INS_CAMPAIGN_SUB_TYPE, parameters, "out_result");
 }
@@ -76,11 +78,13 @@ function getCampaignSubTypeByCrmKey(crmKey) {
     return null;
 }
 
-function updateCampaignSubType(campaignTypeId, name, crmKey, userId) {
+function updateCampaignSubType(campaignTypeId, name, crmKey, rolloverText, example, userId) {
     var parameters = {};
     parameters.IN_CAMPAIGN_SUB_TYPE_ID = campaignTypeId;
     parameters.IN_NAME = name;
     parameters.IN_CRM_KEY = crmKey;
+    parameters.IN_ROLLOVER_TEXT = rolloverText;
+    parameters.IN_EXAMPLE = example;
     parameters.IN_MODIFIED_USER_ID = userId;
     return db.executeScalarManual(UPD_CAMPAIGN_SUB_TYPE, parameters, "out_result");
 }

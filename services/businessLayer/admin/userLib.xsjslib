@@ -7,6 +7,7 @@ var util = mapper.getUtil();
 var mail = mapper.getMail();
 var db = mapper.getdbHelper();
 var dbUserRole = mapper.getDataUserRole();
+var RoleLib = mapper.getRole();
 var config = mapper.getDataConfig();
 var businessLavel3 = mapper.getLevel3();
 var dataHl1User = mapper.getDataLevel1User();
@@ -510,7 +511,7 @@ function validateUser(user) {
         throw ErrorLib.getErrors().CustomError("",
             "userServices/handlePost/insertUser", "The EMAIL is invalid");
 
-    if (!util.validateLength(user.PHONE, 255, 0, "Phone"))
+    if (user.PHONE && user.PHONE.trim() && !util.validateLength(user.PHONE, 255, 0, "Phone"))
         throw ErrorLib.getErrors().CustomError("",
             "userServices/handlePost/insertUser", "The PHONE is invalid");
 
@@ -572,4 +573,49 @@ function validateHL2BudgetApproverByUserId(HL2Id, userId){
 	}
 		
 	return false;
+}
+
+/**
+ * Specific to Upload
+ * @param {string} user_name
+ * @returns {user}
+ */
+function getByName(user_name){
+    return this.getUserByUserName(user_name);
+}
+
+/**
+ * Specific to Upload
+ * @param entity
+ * @param userId
+ */
+function insertEntity(entity, userId){
+
+    var user = {};
+    user.USER_NAME = entity.IN_NAME;
+    user.FIRST_NAME = entity.IN_FIRST_NAME;
+    user.LAST_NAME = entity.IN_LAST_NAME;
+    user.EMAIL = entity.IN_EMAIL;
+    user.PHONE = entity.IN_PHONE;
+    user.USE_DEFAULT_PASSWORD = 1;
+    user.ROLE_ID =  RoleLib.getRoleByName(entity.IN_ROLE_NAME).ROLE_ID || "";
+    return insertUser(user, userId);
+}
+
+/**
+ * Specific to Upload
+ * @param entity
+ * @param userId
+ */
+function updateEntity(entity, userId){
+    var user = {};
+    user.USER_ID = getUserByUserName(entity.IN_NAME).USER_ID;
+    user.USER_NAME = entity.IN_NAME;
+    user.FIRST_NAME = entity.IN_FIRST_NAME;
+    user.LAST_NAME = entity.IN_LAST_NAME;
+    user.EMAIL = entity.IN_EMAIL;
+    user.PHONE = entity.IN_PHONE;
+    user.USE_DEFAULT_PASSWORD = 1;
+    user.ROLE_ID =  RoleLib.getRoleByName(entity.IN_ROLE_NAME).ROLE_ID || "";
+    return updateUser(user, userId);
 }

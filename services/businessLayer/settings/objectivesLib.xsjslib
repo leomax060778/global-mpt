@@ -102,3 +102,15 @@ function validateObjective(data) {
 
     return true;
 }
+
+function getByName(name){
+    return dataObjective.getObjectiveByName(name);
+}
+
+function insertEntity(data, userId) {
+    return insertObjective(data, userId);
+}
+
+function updateEntity(data, userId) {
+    return updateObjective(data, userId);
+}

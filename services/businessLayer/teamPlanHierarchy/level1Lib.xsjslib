@@ -412,6 +412,7 @@ function getLevel1Kpi(budgetYearId, regionId, userId) {
     listFromData.forEach(function (hl) {
         mapKpi[hl.L1_ACRONYM] = mapKpi[hl.L1_ACRONYM] || {
             HL1_ID: hl.HL1_ID,
+            CRM_ID: hl.CRM_ID,
             HL1_DESCRIPTION: hl.HL1_DESCRIPTION,
             ACRONYM: hl.L1_ACRONYM,
             BUDGET_YEAR: hl.BUDGET_YEAR,

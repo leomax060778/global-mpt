@@ -39,6 +39,7 @@ var BUDGET_SPEND_REQUEST_STATUS = {
 };
 
 var L2_ID_MISSING = "Team ID was not found.";
+var L3_ID_MISSING = "Team ID was not found.";
 
 var DEFAULT_DELETE_MESSAGE = "Budget Spend Request deleted by user.";
 
@@ -58,6 +59,17 @@ function getL2BudgetApproverByL2Id(l2Id) {
     var hl2 = dataHl2.getLevel2ById(l2Id);
     return dataBudgetSpendRequest.getL2BudgetApproverByL2Id(l2Id, hl2.HL1_ID);
 }
+function getL3BudgetApproverByL3Id(l3Id) {
+    if (!l3Id || !Number(l3Id))
+        throw ErrorLib
+            .getErrors()
+            .CustomError(
+                "",
+                "",
+                L3_ID_MISSING);
+
+    return dataBudgetSpendRequest.getL3BudgetApproverByL3Id(l3Id);
+}
 
 function insertL2BudgetApprover(l2Id, budgetApproverIds, userId) {
     if (budgetApproverIds && budgetApproverIds.length) {
@@ -70,6 +82,21 @@ function insertL2BudgetApprover(l2Id, budgetApproverIds, userId) {
         });
         return dataBudgetSpendRequest
             .insertL2BudgetApprover(l2BudgetApproverToInsert);
+    }
+    return true;
+}
+
+function insertL3BudgetApprover(l3Id, budgetApproverIds, userId) {
+    if (budgetApproverIds && budgetApproverIds.length) {
+        var l3BudgetApproverToInsert = budgetApproverIds.map(function (elem) {
+            return {
+                in_hl3_id: l3Id,
+                in_budget_approver_id: elem.USER_ID,
+                in_user_id: userId
+            };
+        });
+        return dataBudgetSpendRequest
+            .insertL3BudgetApprover(l3BudgetApproverToInsert);
     }
     return true;
 }
@@ -410,6 +437,17 @@ function deleteL2BudgetApprover(l2Id, budgetApproverIds) {
 
     return dataBudgetSpendRequest.deleteL2BudgetApprover(l2Id,
         l2BudgetApproverToDelete);
+}
+function deleteL3BudgetApprover(l3Id, budgetApproverIds) {
+    var l3BudgetApproverToDelete = [];
+    budgetApproverIds.forEach(function (elem) {
+        l3BudgetApproverToDelete.push({
+            in_user_id: elem.USER_ID
+        });
+    });
+
+    return dataBudgetSpendRequest.deleteL3BudgetApprover(l3Id,
+        l3BudgetApproverToDelete);
 }
 
 function validateApprovers(listApprovers) {

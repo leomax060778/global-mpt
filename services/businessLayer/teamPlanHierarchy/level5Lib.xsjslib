@@ -400,7 +400,8 @@ function insertHl5(data, userId) {
                 , data.hl5.PERSON_RESPONSIBLE
             );
         if (hl5_id > 0) {
-            budgetSpendRequest.insertOwnMoneyBudgetSpendRequest(data.hl5.BUDGET, hl5_id, 'HL5', userId, blLevel2.getHl2AllowAutomaticBudgetApprovalByHl4Id(data.hl5.HL4_ID) && data.hl5.IN_BUDGET);
+            var automaticBudgetApproval = blLevel2.getHl2AllowAutomaticBudgetApprovalByHl4Id(data.hl5.HL4_ID) && data.hl5.IN_BUDGET && !!Number(data.hl5.BUDGET);// && !Number(data.hl5.ALLOW_BUDGET_ZERO);
+            budgetSpendRequest.insertOwnMoneyBudgetSpendRequest(data.hl5.BUDGET, hl5_id, 'HL5', userId, automaticBudgetApproval);
 
             var mapCOL = util.getMapCategoryOption('hl5');//Set Map for Category Option Level
 
@@ -539,15 +540,13 @@ function insertHl5(data, userId) {
 
             insertHl5RequestCategoryOption(hl5_id, data.hl5_service_request_category_option, userId);
         }
-
+        dataL5Report.updateLevel5ReportForDownload(hl5_id); //Update Processing Report Export Data
         if(data.hl5.ACRONYM){
             return hl5_id;
         } else {
             return {CRM_ID: 'CRM-' + pathBL.getCleanPathByLevelParent(5, data.hl5.HL4_ID).PATH_TPH + acronym}
         }
     }
-
-    dataL5Report.updateLevel5ReportForDownload(hl5_id); //Update Processing Report Export Data
 }
 
 function insertHl5RequestCategoryOption(hl5Id, requestCategoryOption, userId) {
@@ -849,13 +848,13 @@ function updateHl5(data1, userId) {
 
         insertInCrmBinding(validationResult.crmBindingChangedFields, validationResult.crmBindingChangedFieldsUpdate, hl5_id);
         var ownMoneyBudgetSpendRequestStatus = budgetSpendRequest.getOwnMoneyBudgetSpendRequestStatusByHlIdLevel(hl5_id, 'HL5');
-        var automaticBudgetApproval = blLevel2.getHl2AllowAutomaticBudgetApprovalByHl4Id(data.hl5.HL4_ID) && data.hl5.IN_BUDGET;
+        var automaticBudgetApproval = blLevel2.getHl2AllowAutomaticBudgetApprovalByHl4Id(data.hl5.HL4_ID) && data.hl5.IN_BUDGET && !!Number(data.hl5.BUDGET);
         if(!ownMoneyBudgetSpendRequestStatus || ownMoneyBudgetSpendRequestStatus == budgetSpendRequestStatus.NO_LONGER_REQUESTED){
             budgetSpendRequest.insertOwnMoneyBudgetSpendRequest(data.hl5.BUDGET, hl5_id, 'HL5', userId, automaticBudgetApproval);
         } else {
             if (objHL5.BUDGET != data.hl5.BUDGET) {
-                if (ownMoneyBudgetSpendRequestStatus && ownMoneyBudgetSpendRequestStatus != budgetSpendRequestStatus.PENDING)
-                    throw ErrorLib.getErrors().CustomError("", "hl5Services/handlePut/updateHl5", "Cannot update Tactic Budget because Own money budget spend request is no longer in Pending Status.");
+                if (ownMoneyBudgetSpendRequestStatus && ownMoneyBudgetSpendRequestStatus == budgetSpendRequestStatus.APPROVED)
+                    throw ErrorLib.getErrors().CustomError("", "hl5Services/handlePut/updateHl5", "Cannot update Tactic Budget because Own money budget spend request is already Approved.");
 
                 budgetSpendRequest.updateOwnMoneyBudgetSpendRequestByHlIdLevel(hl5_id, 'HL5', data.hl5.BUDGET, automaticBudgetApproval, userId);
                 level6Lib.checkBudgetStatus(data.hl5);
@@ -894,10 +893,10 @@ function updateHl5(data1, userId) {
             var aux = {};
             var arrSaleHl5 = [];
             data.hl5_sale.forEach(function (sale) {
-                sale.HL5_SALE_ID = data.hl5.HL5_ID;
-                if (aux[sale.ORGANIZATION_ID]) {
+                //sale.HL5_SALE_ID = data.hl5.HL5_ID;
+                if (!aux[sale.ORGANIZATION_ID]) {
                     arrSaleHl5.push({
-                        in_hl5_sale_id: sale.HL5_SALE_ID
+                        in_hl5_sale_id: sale.HL_SALES_ID
                         , in_description: ORGANIZATION_TYPE[sale.ORGANIZATION_TYPE] === 3 ? sale.DESCRIPTION : null
                         , in_currency_id: data.SALE_CURRENCY_ID
                         , in_user_id: userId
@@ -1075,14 +1074,13 @@ function updateHl5(data1, userId) {
         dataCategoryOptionLevel.updateCategoryOption(categoryOptionBulk, 'hl5');
 
         updateHl5RequestCategoryOption(hl5_id, data.hl5_service_request_category_option, userId);
-
+        dataL5Report.updateLevel5ReportForDownload(hl5_id); //Update Processing Report Export Data
         if(data.hl5.ACRONYM){
             return data;
         } else {
             return {CRM_ID: 'CRM-' + pathBL.getCleanPathByLevelParent(5, data.hl5.HL4_ID).PATH_TPH + acronym}
         }
     }
-    dataL5Report.updateLevel5ReportForDownload(hl5_id); //Update Processing Report Export Data
 }
 
 function deleteHl5(hl5, userId, rollBack) {

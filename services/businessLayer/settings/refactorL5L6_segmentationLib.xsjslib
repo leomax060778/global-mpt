@@ -540,8 +540,6 @@ function updateSegmentationSales(reqbody, userId) {
 }
 
 function deleteSegmentationSales(id, userId) {
-    if (data.deleteSegmentationSales(id))
-        throw ErrorLib.getErrors().CustomError("", "segmentationLib/deleteSegmentationSales", MSG_SEGMENATION_SALES_CANT_DELETE);
     return data.deleteSegmentationSales(id, userId);
 }
 

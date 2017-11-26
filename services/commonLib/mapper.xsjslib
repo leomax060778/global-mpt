@@ -138,6 +138,11 @@ function getUser(){
     return $.mktgplanningtool.services.businessLayer.admin.userLib;
 }
 
+function getRequestAccess(){
+    $.import("mktgplanningtool.services.businessLayer.admin","requestAccessLib");
+    return $.mktgplanningtool.services.businessLayer.admin.requestAccessLib;
+}
+
 function getUserMail(){
 	$.import("mktgplanningtool.services.mails","userMailLib");
     return $.mktgplanningtool.services.mails.userMailLib;
@@ -480,6 +485,11 @@ function getDataInterlockEntity(){
 function getDataUser(){
     $.import("mktgplanningtool.services.dataLayer.admin","dataUser");
     return $.mktgplanningtool.services.dataLayer.admin.dataUser;
+}
+
+function getDataRequestAccess(){
+    $.import("mktgplanningtool.services.dataLayer.admin","dataRequestAccess");
+    return $.mktgplanningtool.services.dataLayer.admin.dataRequestAccess;
 }
 
 function getDataRegion(){

@@ -18,10 +18,10 @@ function completeCRMPath(array, key) {
 		kEurAmount = calculateBudgetInEuros(data);
 
 		if (data.CURRENCY_ABBREVIATION === "EUR") {
-			data.REQUESTED_BUDGET = "" + kEurAmount + " K EUR";
+			data.REQUESTED_BUDGET = "" + Number(kEurAmount).toFixed(2) + " K EUR";
 		} else {
 			data.REQUESTED_BUDGET = "" + data.REQUESTED_BUDGET + " "
-					+ data.CURRENCY_ABBREVIATION + " (" + kEurAmount
+					+ data.CURRENCY_ABBREVIATION + " (" + Number(kEurAmount).toFixed(2)
 					+ " K EUR)";
 		}
 	});

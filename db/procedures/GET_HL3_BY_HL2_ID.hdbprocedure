@@ -9,6 +9,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL3_BY_HL2_I
                              HL3_BUDGET_REMAINING DECIMAL(19, 2),
                              HL4_TOTAL_COUNT INTEGER,
                              ACRONYM NVARCHAR(255),
+                             CRM_ID NVARCHAR(25),
                              IS_LOCKED TINYINT,
                              CATEGORY_NAME NVARCHAR(255),
                              OPTION_NAME NVARCHAR(255),
@@ -33,6 +34,7 @@ BEGIN
                         SUMMARY.L3_BUDGET_REMAINING AS hl3_budget_remaining,
                         SUMMARY.TOTAL_OF_PRIORITIES AS hl4_total_count,
                         SUMMARY.L3_ACRONYM AS ACRONYM,
+                        "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BGY.BUDGET_YEAR, HL1.ACRONYM, UPPER(HL2.ORGANIZATION_ACRONYM), SUMMARY.L3_ACRONYM, '', '', '') AS CRM_ID,
                         SUMMARY.IS_LOCKED,
                         SUMMARY.CATEGORY_NAME,
                         SUMMARY.OPTION_NAME,
@@ -43,6 +45,9 @@ BEGIN
                         SUMMARY.VERSION
 
                         FROM  "_SYS_BIC"."mktgplanningtool.db.data.views/CV_HL3_BUDGET_DISTRIBUTION_SUMMARY" SUMMARY
+                        JOIN HL2 ON HL2.hl2_id = in_hl2_id
+                        JOIN HL1 ON HL1.hl1_id = HL2.hl1_id
+                        JOIN BUDGET_YEAR BGY ON BGY.budget_year_id = HL1.budget_year_id
 	WHERE SUMMARY.hl2_id = in_hl2_id
 	  AND (in_is_super_Admin = 1 OR SUMMARY.HL3_ID IN (SELECT HL3_ID FROM HL3_USER WHERE USER_ID = in_user_id))
     ORDER BY SUMMARY.L3_ACRONYM;

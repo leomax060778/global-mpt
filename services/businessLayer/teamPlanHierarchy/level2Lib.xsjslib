@@ -440,6 +440,7 @@ function getLevel2ById(hl2Id, carryOver) {
         hl2Result.ACRONYM = hl2Result.ORGANIZATION_ACRONYM;
         hl2Result.BUDGET = hl2Result.HL2_BUDGET_TOTAL;
         hl2Result.BUDGET_APPROVERS = budgetApprovers.getL2BudgetApproverByL2Id(hl2Id).assigned;
+        hl2Result.BUDGET_APPROVERS_AVAILABLE = budgetApprovers.getL2BudgetApproverByL2Id(hl2Id).available;
         hl2Result.ASSIGNED_USERS = hl2Users.users_in;
         hl2Result.AVAILABLE_USERS = hl2Users.users_out;
         hl2Result.HL1_BUDGET_REMAINING = Number(hl2Result.HL1_BUDGET) - Number(hl1BudgetAllocated || 0);
@@ -982,6 +983,7 @@ function getLevel2Kpi(hl1Id, userId) {
     listFromData.forEach(function (hl) {
         mapKpi[hl.L2_ACRONYM] = mapKpi[hl.L2_ACRONYM] || {
             HL2_ID: hl.HL2_ID,
+            CRM_ID: hl.CRM_ID,
             HL1_ID: hl.HL1_ID,
             ACRONYM: hl.L2_ACRONYM,
             ORGANIZATION_NAME: hl.ORGANIZATION_NAME,

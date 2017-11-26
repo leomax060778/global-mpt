@@ -5,6 +5,7 @@ var httpUtil = mapper.getHttp();
 var ErrorLib = mapper.getErrors();
 var user = mapper.getUser();
 var config = mapper.getDataConfig();
+var requestAccess = mapper.getRequestAccess();
 /******************************************/
 
 var getAll = "ALL";
@@ -20,6 +21,9 @@ var getUsersByHl3Id = "USERSBYHL3ID";
 var getPermissionsByUser = "PERMISSIONSBYUSER";
 var hl2Id = "hl2Id";
 var level3 = "L3";
+var getRequestAccess = "GET_ACCESS_REQUESTS";
+var deleteRequestAccess = "DELETE_ACCESS_REQUEST";
+var processRequestAccess = "PROCESS_ACCESS_REQUEST";
 
 function processRequest() {
     httpUtil.processRequest(handleGet, handlePost, handlePut, handleDelete, false, config.getResourceIdByName(config.userAccess()));
@@ -67,6 +71,10 @@ function handleGet(parameters, userId) {
                     parameters.get('LEVEL'),parameters.get('LEVEL_ID'),parameters.get('USER_ID'));
                 return httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
                 break;
+            case getRequestAccess:
+                rdo = requestAccess.getAllRequestAccess();
+                return httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
+                break;
             default:
                 throw ErrorLib.getErrors().BadRequest("", "userServices/handleGet", "insufficient parameters");
         }
@@ -98,6 +106,11 @@ function handlePut(reqBody, userId) {
                 var rdo = user.userLevelPermission(reqBody, userId);
                 return httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
                 break;
+
+            case processRequestAccess:
+                var rdo = requestAccess.processRequestAccess(reqBody, userId);
+                return httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
+                break;
             default:
                 throw ErrorLib.getErrors().BadRequest("", "userServices/handlePut", parameters);
 
@@ -109,7 +122,19 @@ function handlePut(reqBody, userId) {
 
 //Implementation of DELETE call -- Delete User
 function handleDelete(reqBody, userId) {
-    var rdo = user.deleteUser(reqBody, userId);
+    var parameters = httpUtil.getUrlParameters();
+    var rdo = null;
+    if (parameters.length > 0) {
+        var aCmd = parameters.get('method');
+        switch (aCmd) {
+            case deleteRequestAccess:
+                rdo = requestAccess.deleteRequestAccess(reqBody.REQUEST_ACCESS_ID, userId);
+                break;
+        }
+    } else {
+        rdo = user.deleteUser(reqBody, userId);
+    }
+    // var rdo = user.deleteUser(reqBody, userId);
     return httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
 };
 

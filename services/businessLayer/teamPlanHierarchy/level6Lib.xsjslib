@@ -430,7 +430,8 @@ function insertHl6(data, userId) {
             data.hl6.HL6_ID = hl6_id;
 
             var l4Id = dataHl5.getHl5ById(data.hl6.HL5_ID).HL4_ID;
-            budgetSpendRequest.insertOwnMoneyBudgetSpendRequest(data.hl6.BUDGET, hl6_id, 'HL6', userId, blLevel2.getHl2AllowAutomaticBudgetApprovalByHl4Id(l4Id) && data.hl6.IN_BUDGET);
+            var automaticBudgetApproval = blLevel2.getHl2AllowAutomaticBudgetApprovalByHl4Id(l4Id) && data.hl6.IN_BUDGET && !!Number(data.hl6.BUDGET);
+            budgetSpendRequest.insertOwnMoneyBudgetSpendRequest(data.hl6.BUDGET, hl6_id, 'HL6', userId, automaticBudgetApproval);
 
             insertInCrmBinding(validationResult.crmBindingChangedFields, validationResult.crmBindingChangedFieldsUpdate, hl6_id);
 
@@ -895,15 +896,15 @@ function updateHl6(data, userId) {
         );
 
         var ownMoneyBudgetSpendRequestStatus = budgetSpendRequest.getOwnMoneyBudgetSpendRequestStatusByHlIdLevel(data.hl6.HL6_ID, 'HL6');
-        var automaticBudgetApproval = blLevel2.getHl2AllowAutomaticBudgetApprovalByHl5Id(data.hl6.HL5_ID) && data.hl6.IN_BUDGET;
+        var automaticBudgetApproval = blLevel2.getHl2AllowAutomaticBudgetApprovalByHl5Id(data.hl6.HL5_ID) && data.hl6.IN_BUDGET && !!Number(data.hl6.BUDGET);
         if(!ownMoneyBudgetSpendRequestStatus || ownMoneyBudgetSpendRequestStatus == budgetSpendRequestStatus.NO_LONGER_REQUESTED){
             budgetSpendRequest.insertOwnMoneyBudgetSpendRequest(data.hl6.BUDGET, data.hl6.HL6_ID, 'HL6', userId, automaticBudgetApproval);
         } else {
             if (objHL6.BUDGET != data.hl6.BUDGET) {
-                if (ownMoneyBudgetSpendRequestStatus && ownMoneyBudgetSpendRequestStatus != budgetSpendRequestStatus.PENDING)
-                    throw ErrorLib.getErrors().CustomError("", "hl5Services/handlePut/updateHl5", "Cannot update Marketing Subtactic Budget because Own money budget spend request is no longer in Pending Status.");
+                if (ownMoneyBudgetSpendRequestStatus && ownMoneyBudgetSpendRequestStatus == budgetSpendRequestStatus.APPROVED)
+                    throw ErrorLib.getErrors().CustomError("", "hl6Services/handlePut/updateHl6", "Cannot update Marketing SubTactic Budget because Own money budget spend request is already Approved.");
 
-                budgetSpendRequest.updateOwnMoneyBudgetSpendRequestByHlIdLevel(data.hl6.HL6_ID, 'HL6', data.hl5.BUDGET, automaticBudgetApproval, userId);
+                budgetSpendRequest.updateOwnMoneyBudgetSpendRequestByHlIdLevel(data.hl6.HL6_ID, 'HL6', data.hl6.BUDGET, automaticBudgetApproval, userId);
             }
         }
 

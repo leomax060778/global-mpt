@@ -54,6 +54,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL5_BY_ID" (
         , EMPLOYEE_RESPONSIBLE_USER nvarchar(7)
         , PERSON_RESPONSIBLE NVARCHAR(7)
         , CURRENCY_VALUE DECIMAL(19,6)
+        , STATUS NVARCHAR(25)
 		)
 		
 ) 
@@ -126,10 +127,12 @@ out_result = select
                 , HL5.EMPLOYEE_RESPONSIBLE_USER
                 , HL5.PERSON_RESPONSIBLE
                 , CURRENCY.CURRENCY_VALUE
+                , STATUS.DETAIL AS STATUS
                  FROM HL5
                  LEFT JOIN :va_own_money_budget_request BSRS ON BSRS.HL5_ID = HL5.HL5_ID
                  LEFT JOIN CAMPAIGN_TYPE C_TYPE ON C_TYPE.CAMPAIGN_TYPE_ID = HL5.CAMPAIGN_TYPE_ID
                  LEFT JOIN CURRENCY ON HL5.EURO_CONVERSION_ID = CURRENCY.EURO_CONVERSION_ID
+                 LEFT JOIN HL5_STATUS_DETAIL STATUS ON HL5.HL5_STATUS_DETAIL_ID = STATUS.HL5_STATUS_DETAIL_ID
                  WHERE HL5.HL5_ID = in_hl5_id
                  AND HL5.ENABLED = 1 AND HL5.DELETED = 0;
 END;

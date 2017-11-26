@@ -11,6 +11,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL1_KPI_SUMM
         , TOTAL_VALUE_ALLOCATED DECIMAL(10,2)
         , TOTAL_VOLUME_ALLOCATED DECIMAL(10,2)
         , L1_ACRONYM NVARCHAR(255)
+        , CRM_ID NVARCHAR(25)
         , HL1_DESCRIPTION NVARCHAR(255)
         , BUDGET_YEAR NVARCHAR(255)
         , REGION_NAME NVARCHAR(255)
@@ -30,6 +31,7 @@ BEGIN
                          , SUMMARY_VIEW.TOTAL_VALUE_ALLOCATED
                          , SUMMARY_VIEW.TOTAL_VOLUME_ALLOCATED
                          , UPPER(SUMMARY_VIEW.L1_ACRONYM) as L1_ACRONYM
+                         , "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(SUMMARY_VIEW.BUDGET_YEAR, SUMMARY_VIEW.L1_ACRONYM, '', '', '', '', '') AS CRM_ID
                          , SUMMARY_VIEW.HL1_DESCRIPTION
                          , SUMMARY_VIEW.BUDGET_YEAR
                          , SUMMARY_VIEW.REGION_NAME
@@ -50,6 +52,7 @@ BEGIN
                              , T.TOTAL_VALUE_ALLOCATED
                              , T.TOTAL_VOLUME_ALLOCATED
                              , T.L1_ACRONYM
+                             , T.CRM_ID
                              , T.HL1_DESCRIPTION
                              , T.BUDGET_YEAR
                              , T.REGION_NAME
@@ -65,6 +68,7 @@ BEGIN
                              , T.TOTAL_VALUE_ALLOCATED
                              , T.TOTAL_VOLUME_ALLOCATED
                              , T.L1_ACRONYM
+                             , T.CRM_ID
                              , T.HL1_DESCRIPTION
                              , T.BUDGET_YEAR
                              , T.REGION_NAME

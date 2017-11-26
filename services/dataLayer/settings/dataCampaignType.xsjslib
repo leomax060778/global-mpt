@@ -40,12 +40,14 @@ function getCampaignTypeByObjectiveId(objectiveId) {
         return null;
 }
 
-function insertCampaignType(name, additionalFields, crmKey, userId) {
+function insertCampaignType(name, additionalFields, crmKey, rolloverText, example, userId) {
     var parameters = {};
     parameters.IN_NAME = name;
     parameters.IN_CREATED_USER_ID = userId;
     parameters.IN_SHOW_ADDITIONAL_FIELDS = additionalFields;
     parameters.IN_CRM_KEY = crmKey;
+    parameters.IN_ROLLOVER_TEXT = rolloverText;
+    parameters.IN_EXAMPLE = example;
     return db.executeScalarManual(INS_CAMPAIGN_TYPE, parameters, "out_result");
 }
 
@@ -67,13 +69,15 @@ function getCampaignTypeByCrmKey(crmKey) {
     return null;
 }
 
-function updateCampaignType(campaignTypeId, name, additionalFields, crmKey, userId) {
+function updateCampaignType(campaignTypeId, name, additionalFields, crmKey, rolloverText, example, userId) {
     var parameters = {};
     parameters.IN_CAMPAIGN_TYPE_ID = campaignTypeId;
     parameters.IN_NAME = name;
     parameters.IN_MODIFIED_USER_ID = userId;
     parameters.IN_SHOW_ADDITIONAL_FIELDS = additionalFields;
     parameters.IN_CRM_KEY = crmKey;
+    parameters.IN_ROLLOVER_TEXT = rolloverText;
+    parameters.IN_EXAMPLE = example;
     return db.executeScalarManual(UPD_CAMPAIGN_TYPE, parameters, "out_result");
 }
 

@@ -15,3 +15,13 @@ function parseNotifyCreateUser(userObj, basicData, userName){
 	
 	return mailObj;	
 }
+
+function parseNotifyCreateRequestAccess(basicData, requestAccessData){
+// function parseNotifyCreateUser(userObj, basicData, userName){
+	var mailObj = {};
+
+	mailObj.body = ' <p> Dear ' + basicData.SITE_ADMIN_NAME + ' </p>  <p>The following user (' + requestAccessData.USER_NAME + ') ' + requestAccessData.FIRST_NAME + ' ' + requestAccessData.LAST_NAME + ' has requested access to the tool and it is pending for your review.</p>';
+    mailObj.subject = basicData.ENVIRONMENT+' Marketing Planning Tool - Request Access Created';
+
+	return mailObj;
+}

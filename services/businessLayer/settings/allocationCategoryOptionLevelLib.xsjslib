@@ -56,14 +56,16 @@ function updateCategoryOptionLevel(data, userId) {
                         hierarchylevel,
                         data.IN_OPTION_LIST[i],
                         data.IN_PROCESSING_REPORT,
-                        userId);
+                        userId,
+                        data.IN_MAKE_CATEGORY_MANDATORY);
                 } else {
                     dataCategoryOptionLevel.insertAllocationCATEGORYOptionLevel(
                         data.IN_CATEGORY_ID,
                         data.IN_OPTION_LIST[i],
                         hierarchylevel,
                         data.IN_PROCESSING_REPORT,
-                        userId);
+                        userId,
+                        data.IN_MAKE_CATEGORY_MANDATORY);
                 }
 
                 ++countInsert;
@@ -99,6 +101,7 @@ function getHlCategoryOptionByLevelHlId(level, hlId) {
             result[categoryOption.CATEGORY_NAME] = {
                 CATEGORY_ID: categoryOption.CATEGORY_ID,
                 CATEGORY_NAME: categoryOption.CATEGORY_NAME,
+                MAKE_CATEGORY_MANDATORY: categoryOption.MAKE_CATEGORY_MANDATORY,
                 OPTIONS: [{
                     OPTION_ID: categoryOption.OPTION_ID,
                     OPTION_NAME: categoryOption.OPTION_NAME,

@@ -18,6 +18,15 @@ function getRoleById(id) {
 
 }
 
+function getRoleByName(roleName){
+	var roles = getAllRole();
+	return roles.find(function(role){
+		if(role.NAME.toUpperCase() === roleName.trim().toUpperCase()) {
+		    return role
+		};
+	});
+}
+
 function insertRole(role, createRole) {
 	if (validateRole(role)) {
 		return data.insertRole(role, createRole);

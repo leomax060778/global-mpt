@@ -4,14 +4,15 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_ALLOCATION_C
 	IN in_level_id BIGINT,
 	IN in_in_processing_report TINYINT,
 	IN in_user_id BIGINT,
+	IN in_make_category_mandatory TINYINT,
 	OUT out_result BIGINT
 ) 
 	LANGUAGE SQLSCRIPT
 	SQL SECURITY INVOKER 
 	AS
 BEGIN
-		INSERT INTO "MKTG_PLANNING_TOOL"."ALLOCATION_CATEGORY_OPTION_LEVEL"(allocation_category_id, allocation_option_id, hierarchy_level_id,in_processing_report,created_user_id)
-		VALUES(in_category_id, in_option_id, in_level_id, in_in_processing_report, in_user_id);
+		INSERT INTO "MKTG_PLANNING_TOOL"."ALLOCATION_CATEGORY_OPTION_LEVEL"(allocation_category_id, allocation_option_id, hierarchy_level_id,in_processing_report,created_user_id, make_category_mandatory)
+		VALUES(in_category_id, in_option_id, in_level_id, in_in_processing_report, in_user_id, in_make_category_mandatory);
 		
 		SELECT TOP 1 CURRENT_IDENTITY_VALUE() INTO out_result FROM "MKTG_PLANNING_TOOL"."ALLOCATION_CATEGORY_OPTION_LEVEL";
 END;
