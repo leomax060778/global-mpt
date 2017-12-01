@@ -1,23 +1,23 @@
-PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_ALLOCATION_CATEGORY_OPTION_LEVEL_BY_LEVEL"(
-		IN in_hierarchy_level_id BIGINT, 
-		OUT out_result TABLE (
-			option_id INTEGER,
-			category_id INTEGER,
-			category_option_level_id INTEGER,
-			enabled TINYINT,
-			deleted TINYINT
-		)
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_ALLOCATION_CATEGORY_OPTION_LEVEL_BY_LEVEL" (
+	IN in_hierarchy_level_id bigint,
+	OUT out_result TABLE (
+	    option_id integer
+	    , category_id integer
+	    , category_option_level_id integer
+	    , enabled tinyint
+        , deleted tinyint
+	    )
 	)
 	LANGUAGE SQLSCRIPT
 	SQL SECURITY INVOKER
-	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
-AS
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL" AS
 BEGIN
-	out_result = SELECT ACOL.allocation_option_id AS option_id, 
-				ACOL.allocation_category_id AS category_id, 
-				ACOL.allocation_category_option_level_id AS category_option_level_id, 
-				ACOL.enabled, 
-				ACOL.deleted
-			FROM allocation_category_option_level AS ACOL
-			WHERE ACOL.hierarchy_level_id = in_hierarchy_level_id;
+	out_result =
+    SELECT ACOL.allocation_option_id as option_id
+    , ACOL.allocation_category_id as category_id
+	, ACOL.allocation_category_option_level_id as category_option_level_id
+	, ACOL.enabled
+	, ACOL.deleted
+	from allocation_category_option_level ACOL
+	where ACOL.hierarchy_level_id = in_hierarchy_level_id;
 END;

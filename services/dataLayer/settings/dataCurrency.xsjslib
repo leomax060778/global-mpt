@@ -10,6 +10,8 @@ var spGET_CURRENCY = "GET_CURRENCY";
 var spINS_CURRENCY = "INS_CURRENCY";
 var spUPD_CURRENCY = "UPD_CURRENCY";
 var spGET_CURRENCY_BY_DEFAULT_BUDGET_YEAR_AND_ABBR = "GET_CURRENCY_BY_DEFAULT_BUDGET_YEAR_AND_ABBR";
+
+var spUpdateDefaultCurrency = "UPD_DEFAULT_CURRENCY_BY_BUDGET_YEAR";
 /******************************************************/
 function InsertCurrency(country, abbr, currencyName, value, userId, budgetYearId,autoCommit){
 	var params = {
@@ -28,6 +30,22 @@ function InsertCurrency(country, abbr, currencyName, value, userId, budgetYearId
 	}
 
 	return result;
+}
+
+function UpdateDefaultCurrency(currency_id, budgetYearId, userId,autoCommit){
+    var params = {
+        'in_currency_id': currency_id,
+        'in_user_id': userId,
+        'in_budget_year': budgetYearId
+    }
+
+    if(autoCommit){
+        var result =db.executeScalar(spUpdateDefaultCurrency, params, 'out_result');
+    }else{
+        var result =db.executeScalarManual(spUpdateDefaultCurrency, params, 'out_result');
+    }
+
+    return result;
 }
 
 function UpdateCurrency(country, abbr, currencyName, value, userId, budgetYearId,autoCommit){

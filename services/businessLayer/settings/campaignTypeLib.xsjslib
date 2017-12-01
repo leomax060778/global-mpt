@@ -24,16 +24,23 @@ function getCampaignTypeByObjectiveId(objectiveId) {
 
 function insertCampaignType(payload, userId) {
     validateCampaignType(payload);
-    return dataCampaignType.insertCampaignType(payload.IN_NAME, payload.IN_SHOW_ADDITIONAL_FIELDS, payload.IN_CRM_KEY, userId);
+    return dataCampaignType.insertCampaignType(
+        payload.IN_NAME.trim()
+        , payload.IN_SHOW_ADDITIONAL_FIELDS
+        , payload.IN_CRM_KEY.trim()
+        , payload.IN_ROLLOVER_TEXT.trim() || null
+        , payload.IN_EXAMPLE.trim() || null
+        , userId
+    );
 }
 function validateCampaignType(data) {
     if(!data)
         throw ErrorLib.getErrors().CustomError("", "campaignTypeService/handlePost/validateCampaignType", CAMPAIGN_TYPE_DATA);
 
-    if(!data.IN_NAME)
+    if(!data.IN_NAME.trim())
         throw ErrorLib.getErrors().CustomError("", "campaignTypeService/handlePost/validateCampaignType", CAMPAIGN_TYPE_NAME);
 
-    if(!data.IN_CRM_KEY)
+    if(!data.IN_CRM_KEY.trim())
         throw ErrorLib.getErrors().CustomError("", "campaignTypeService/handlePost/validateCampaignType", CAMPAIGN_TYPE_CRM_KEY);
 
     var campaignType = dataCampaignType.getCampaignTypeByName(data.IN_NAME);
@@ -49,11 +56,15 @@ function validateCampaignType(data) {
 
 function updateCampaignType(campaignTypeData, userId){
     validateCampaignType(campaignTypeData);
-    return dataCampaignType.updateCampaignType(campaignTypeData.IN_CAMPAIGN_TYPE_ID
-        , campaignTypeData.IN_NAME
+    return dataCampaignType.updateCampaignType(
+        campaignTypeData.IN_CAMPAIGN_TYPE_ID
+        , campaignTypeData.IN_NAME.trim()
         , campaignTypeData.IN_SHOW_ADDITIONAL_FIELDS
-        , campaignTypeData.IN_CRM_KEY
-        , userId);
+        , campaignTypeData.IN_CRM_KEY.trim()
+        , campaignTypeData.IN_ROLLOVER_TEXT.trim() || null
+        , campaignTypeData.IN_EXAMPLE.trim() || null
+        , userId
+    );
 }
 
 function deleteCampaignType(campaignTypeData, userId, confirm){
@@ -81,4 +92,16 @@ function deleteCampaignType(campaignTypeData, userId, confirm){
 
 
 
+}
+
+function getByName(name){
+    return dataCampaignType.getCampaignTypeByName(name);
+}
+
+function insertEntity(data, userId) {
+    return insertCampaignType(data, userId);
+}
+
+function updateEntity(data, userId) {
+    return updateCampaignType(data, userId);
 }

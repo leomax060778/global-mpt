@@ -1,0 +1,19 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::UPD_HL4_HL3_CRM_ACRONYM" (
+	IN in_hl3_crm_acronym_id bigint,
+ 	IN in_hl4_crm_acronym_id bigint,
+ 	IN in_modified_user_id bigint,
+  OUT out_result bigint
+)
+LANGUAGE SQLSCRIPT
+SQL SECURITY INVOKER
+DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+AS
+BEGIN
+	UPDATE HL4_CRM_ACRONYM
+	SET hl3_crm_acronym_id  = in_hl3_crm_acronym_id,
+		modified_date_tz = CURRENT_TIMESTAMP,
+		modified_user_id = in_modified_user_id
+	WHERE hl4_crm_acronym_id = in_hl4_crm_acronym_id;
+			
+SELECT ::ROWCOUNT into out_result FROM DUMMY;
+END;

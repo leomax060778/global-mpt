@@ -1,18 +1,16 @@
-PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_ALL_HIERARCHY_LEVEL"(
-		OUT out_result TABLE (
-			hierarchy_level_id BIGINT,
-			description NVARCHAR(255)
-		)
-	)
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_ALL_HIERARCHY_LEVEL" (
+	OUT out_result TABLE(hierarchy_level_id BIGINT, description NVARCHAR(255)) 
+) 
 	LANGUAGE SQLSCRIPT
-	SQL SECURITY INVOKER
+	SQL SECURITY INVOKER 
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
-	READS SQL DATA
-AS
+	READS SQL DATA AS
 BEGIN
-	out_result = SELECT hierarchy_level_id, 
-				description
-			FROM hierarchy_level
-			WHERE deleted = 0
-				AND enabled = 1;
+
+	out_result = SELECT hierarchy_level_id,
+		   description
+	FROM hierarchy_level
+	WHERE deleted = 0
+	  AND enabled = 1;
+
 END;

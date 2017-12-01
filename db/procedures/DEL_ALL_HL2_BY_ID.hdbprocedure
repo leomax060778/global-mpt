@@ -1,15 +1,14 @@
-PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::DEL_ALL_HL2_BY_ID"(
-		IN in_hl2_id BIGINT, 
-		OUT out_result BIGINT
-	)
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::DEL_ALL_HL2_BY_ID" (
+	IN in_hl2_id BIGINT,
+	OUT out_result BIGINT) 
 	LANGUAGE SQLSCRIPT
-	SQL SECURITY INVOKER
+	SQL SECURITY INVOKER 
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
-AS
+	AS
 BEGIN
-	DELETE FROM HL2_USER
-	WHERE hl2_id = in_hl2_id;
-	SELECT ::ROWCOUNT
-		INTO out_result
-		FROM DUMMY;
+
+		DELETE FROM HL2_USER
+		WHERE hl2_id = in_hl2_id;
+		SELECT ::ROWCOUNT INTO out_result FROM DUMMY;
+
 END;

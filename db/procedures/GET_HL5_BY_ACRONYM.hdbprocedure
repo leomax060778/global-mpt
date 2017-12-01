@@ -1,20 +1,19 @@
-PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL5_BY_ACRONYM"(
-		IN in_hl5_acronym NVARCHAR(25), 
-		IN in_hl4_id BIGINT, 
-		OUT out_result TABLE (
-			hl5_id BIGINT
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL5_BY_ACRONYM" ( 
+	in in_hl5_acronym nvarchar(25)
+	,in in_hl4_id bigint
+	,OUT out_result TABLE (
+		  hl5_id bigint
 		)
-	)
+) 
 	LANGUAGE SQLSCRIPT
-	SQL SECURITY INVOKER
+	SQL SECURITY INVOKER 
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
-	READS SQL DATA
-AS
+	READS SQL DATA AS
 BEGIN
-	out_result = SELECT hl5_id
-			FROM HL5
-			WHERE upper(acronym) = upper(in_hl5_acronym)
-				AND HL5.hl4_id = in_hl4_id
-				AND ENABLED = 1
-				AND DELETED = 0;
+out_result = select 
+hl5_id
+ FROM HL5
+ WHERE upper(acronym) = upper(in_hl5_acronym)
+ AND HL5.hl4_id = in_hl4_id
+ AND ENABLED = 1 AND DELETED = 0;
 END;

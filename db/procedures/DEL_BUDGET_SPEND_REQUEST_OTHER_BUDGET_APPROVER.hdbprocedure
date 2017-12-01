@@ -1,26 +1,22 @@
-PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::DEL_BUDGET_SPEND_REQUEST_OTHER_BUDGET_APPROVER"(
-		IN otherBudgetApprovers TABLE (
-			in_other_budget_approver_id BIGINT,
-			in_budget_spend_request_id BIGINT
-		), 
-		OUT out_result BIGINT
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::DEL_BUDGET_SPEND_REQUEST_OTHER_BUDGET_APPROVER" (
+	IN otherBudgetApprovers TABLE (
+	in_other_budget_approver_id bigint,
+	in_budget_spend_request_id bigint
 	)
+	,OUT out_result bigint
+	) 
 	LANGUAGE SQLSCRIPT
-	SQL SECURITY INVOKER
-	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
-AS
+	SQL SECURITY INVOKER 
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL" AS
 BEGIN
-	DECLARE budgetSpendRequestId BIGINT;
+    DECLARE budgetSpendRequestId BIGINT;
 
-	SELECT TOP 1
-			 in_budget_spend_request_id
-		INTO budgetSpendRequestId
-		FROM :otherBudgetApprovers;
-	DELETE FROM BUDGET_SPEND_REQUEST_OTHER_BUDGET_APPROVER AS BSR_OBA
-	WHERE (BSR_OBA.OTHER_BUDGET_APPROVER_ID NOT IN (SELECT in_other_budget_approver_id
-				FROM :otherBudgetApprovers))
-		AND BSR_OBA.BUDGET_SPEND_REQUEST_ID = budgetSpendRequestId;
-	SELECT ::ROWCOUNT
-		INTO out_result
-		FROM DUMMY;
+    SELECT TOP 1 in_budget_spend_request_id INTO budgetSpendRequestId
+    FROM :otherBudgetApprovers;
+
+	DELETE FROM BUDGET_SPEND_REQUEST_OTHER_BUDGET_APPROVER BSR_OBA
+    	WHERE BSR_OBA.OTHER_BUDGET_APPROVER_ID not in (select in_other_budget_approver_id from :otherBudgetApprovers)
+    	and BSR_OBA.BUDGET_SPEND_REQUEST_ID = budgetSpendRequestId;
+	
+	SELECT ::ROWCOUNT INTO out_result FROM DUMMY;
 END;

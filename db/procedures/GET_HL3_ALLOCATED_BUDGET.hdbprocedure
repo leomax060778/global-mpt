@@ -9,6 +9,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL3_ALLOCATE
 	AS
 BEGIN
 	DECLARE va_hl3_allocated_budget DECIMAL(19,5);
+	
 	va_hl3_allocated_budget := 0;
 	
 	SELECT SUM(HL4.hl4_fnc_budget_total_mkt)

@@ -5,8 +5,8 @@ var dataHl2 = mapper.getDataLevel2();
 var dataHl1User = mapper.getDataLevel1User();
 var ErrorLib = mapper.getErrors();
 var util = mapper.getUtil();
-var db = mapper.getdbHelper();
-var blPath = mapper.getPath();
+// var db = mapper.getdbHelper();
+// var blPath = mapper.getPath();
 var userbl = mapper.getUser();
 var userRoleLib = mapper.getUserRole();
 var config = mapper.getDataConfig();
@@ -18,7 +18,8 @@ var expectedOutcomesLib = mapper.getExpectedOutcomes();
 var dataExOut = mapper.getDataExpectedOutcome();
 var dataCategoryOptionLevel = mapper.getDataCategoryOptionLevel();
 var dataCategory = mapper.getDataCategory();
-
+var expectedOutcomesLevelLib = mapper.getExpectedOutcomesLevelLib();
+var allocationCategoryOptionLevelLib = mapper.getAllocationCategoryOptionLevelLib();
 /** ***********END INCLUDE LIBRARIES*************** */
 
 var TEAM_TYPE = {
@@ -35,7 +36,7 @@ var HIERARCHY_LEVEL = {
     HL6: 3
 };
 
-var map = {
+/*var map = {
     IN_HL1_ID: "HL1_ID",
     IN_ACRONYM: "ACRONYM",
     IN_HL1_BUDGET_TOTAL: "BUDGET",
@@ -56,7 +57,7 @@ var map = {
     IN_UPDATED: "UPDATED",
     IN_ALLOCATION_CATEGORY_ID: "ALLOCATION_CATEGORY_ID",
     IN_HL1_CATEGORY_OPTION_ID: "HL1_CATEGORY_OPTION_ID"
-};
+};*/
 
 var L1_MSG_LEVEL_1_EXISTS = "Another Plan with the same acronym and budget year already exists";
 var L1_MSG_NO_PRIVILEGE = "Not enough privilege to do this action.";
@@ -65,78 +66,77 @@ var L1_MSG_PLAN_CANT_DELETE = "The selected Plan can not be deleted because has 
 var L1_MSG_USER_NOT_FOUND = "The User can not be found.";
 var L1_MSG_TYPE_VALUE_ERROR = "Some values are not valid.";
 var L1_MSG_MARKET_UNIT_ERROR = "Market Unit is not valid for the selected Region.";
+var L1_MSG_NOT_USERS_ASSOCIATED = "Must enter some users associated for this Plan.";
 var L1_CAMPAIGN_FORECASTING_KPIS_COMMENT = "Please enter a comment to explain expected outcomes as you didn't select any Campaign type.";
 var L1_CAMPAIGN_FORECASTING_KPIS_DETAILS = "Campaign Forecasting / KPIS details amount value is not valid.";
 var L1_CAMPAIGN_FORECASTING_KPIS_DETAILS_EURO = "Campaign Forecasting / KPIS details euro value is not valid.";
 var L1_CAMPAIGN_FORECASTING_KPIS_NOT_VALID = "Campaign Forecasting / KPIS is not valid.";
-var L1_CAMPAIGN_FORECASTING_KPIS_VOLUME = "Campaign Forecasting / KPIS volume must be equal or lower than available volume.";
-var L1_CAMPAIGN_FORECASTING_KPIS_VALUE = "Campaign Forecasting / KPIS value must be equal or lower than available value.";
+// var L1_CAMPAIGN_FORECASTING_KPIS_VOLUME = "Campaign Forecasting / KPIS volume must be equal or lower than available volume.";
+// var L1_CAMPAIGN_FORECASTING_KPIS_VALUE = "Campaign Forecasting / KPIS value must be equal or lower than available value.";
 
 
 var L1_CATEGORY_NOT_EMPTY = "Category cannot be empty.";
 var L1_CATEGORY_INCORRECT_NUMBER = "Incorrect number of categories.";
 var L1_CATEGORY_NOT_VALID = "Category is not valid.";
-var L1_CATEGORY_OPTIONS_INCORRECT_NUMBER = "Incorrect number of options.";
+// var L1_CATEGORY_OPTIONS_INCORRECT_NUMBER = "Incorrect number of options.";
 var L1_CATEGORY_OPTION_NOT_VALID = "Option is not valid.";
 var L1_CATEGORY_TOTAL_PERCENTAGE = "Budget Distribution should be equal to 100%.";
 var L1_BUDGET_ZERO_CATEGORY_TOTAL_PERCENTAGE_ZERO = "When Plan budget is zero then Category total percentage should be equal to 0%.";
 var L1_CATEGORY_OPTIONS_NOT_EMPTY = "Option percentage should be less than or equal to 100%.";
 
 
-function getAllLevel1() {
+/*function getAllLevel1() {
     return dataHl1.getAllLevel1();
-}
+}*/
 
 function getLevel1ById(hl1Id, carryOver) {
     if (!hl1Id)
         throw ErrorLib.getErrors().BadRequest("The Parameter hl1Id is not found", "level1Services/handleGet/getLevel1ById", L1_MSG_PLAN_NOT_FOUND);
 
-    var hl1Result = {};
-    hl1Result = JSON.parse(JSON.stringify(dataHl1.getLevel1ById(hl1Id)));
+    var hl1Result = JSON.parse(JSON.stringify(dataHl1.getLevel1ById(hl1Id)));
     var hl1BudgetAllocated = dataHl1.getHl1AllocatedBudget(hl1Result.HL1_ID, 0);
-    hl1Result.expectedOutcomes = expectedOutcomesLib.getExpectedOutcomesByHL1Id(hl1Id);
-
-    if (carryOver) {
-        hl1Result.hl2_category = level2.getCarryOverHl1CategoryOption(hl1Id);
-    } else {
-        hl1Result.hl1_category = getCategoryOption(hl1Id);
-    }
-
-    hl1Result.HL1_BUDGET_REMAINING = Number(hl1Result.BUDGET) - Number(hl1BudgetAllocated);
+    var hl1Users = userbl.getUserByHl1Id(hl1Id);
+    var hl1TargetKpi = expectedOutcomesLib.getExpectedOutcomesByHL1Id(hl1Id);
+    hl1Result.TARGET_KPIS = carryOver ? expectedOutcomesLib.filterKpiByLevel(hl1TargetKpi, 'HL2') : parseKpiForEdition(hl1TargetKpi);
+    hl1Result.ASSIGNED_USERS = hl1Users.users_in;
+    hl1Result.AVAILABLE_USERS = hl1Users.users_out;
+    hl1Result.CATEGORIES = carryOver ? level2.getCarryOverHl1CategoryOption(hl1Id) : getCategoryOption(hl1Id);
+    hl1Result.BUDGET_REMAINING = Number(hl1Result.BUDGET) - Number(hl1BudgetAllocated);
     return hl1Result;
 }
 
 /*INSERT A NEW HL2 WITH CREO O MORE USERS ASICIATIONS*/
 function insertHl1(data, userId) {
-    data = uiToServerParser(data);
+    data.ASSIGNED_USERS = util.parseAssignedUsers(data.ASSIGNED_USERS);
     validateHl1(data);
+    validateHl1User(data.ASSIGNED_USERS);
 
+    var hl1_id = dataHl1.insertLevel1(
+        data.ACRONYM,
+        data.DESCRIPTION,
+        data.BUDGET_YEAR_ID,
+        TEAM_TYPE.REGIONAL == data.TEAM_TYPE_ID ? data.REGION_ID : null,
+        userId,
+        data.BUDGET,
+        data.TEAM_TYPE_ID,
+        data.IMPLEMENT_EXECUTION_LEVEL,
+        data.CRT_RELATED);
 
-    var hl1_id = dataHl1.insertLevel1(data.ACRONYM, data.DESCRIPTION, data.BUDGET_YEAR_ID, data.REGION_ID, data.SUBREGION_ID, userId, data.BUDGET, data.TEAM_TYPE_ID, data.IMPLEMENT_EXECUTION_LEVEL, data.CRT_RELATED);
-
-    //INSERT USERS RELATED TO HL2
     data.HL1_ID = hl1_id;
-    var listObjHl1User = data.USERS;
-    /******************/
-    listObjHl1User = completeUsers(listObjHl1User); //add SA users
-    /******************/
-    if (listObjHl1User) {
-        if (validateHl1User(listObjHl1User)) {
-            var arrHl1User = [];
-            for (var i = 0; i < listObjHl1User.length; i++) {
-                arrHl1User.push({
-                    in_hl1_id: hl1_id
-                    , in_user_id: listObjHl1User[i].USER_ID
-                    , in_created_user_id: userId
-                });
-            }
+    var assignedUsersIds = completeUsers(data.ASSIGNED_USERS);
 
-            if (arrHl1User.length > 0) {
-                dataHl1User.delAllLevel1User(data.HL1_ID);
-                dataHl1User.insertLevel1User(arrHl1User);
-            }
+    var assignedUsersIdsCollection = assignedUsersIds.map(function (assignedUserId) {
+        return {
+            in_hl1_id: hl1_id
+            , in_user_id: assignedUserId
+            , in_created_user_id: userId
         }
-    }
+    });
+
+    // throw JSON.stringify(assignedUsersIdsCollection);
+
+    dataHl1User.delAllLevel1User(data.HL1_ID);
+    dataHl1User.insertLevel1User(assignedUsersIdsCollection);
 
     insertExpectedOutcomes(data, userId);
     insertCategoryOption(data, userId);
@@ -149,22 +149,28 @@ function insertHl1FromUpload(data, userId) {
 
     validateHl1ForUpload(data);
 
-    var hl1_id = dataHl1.insertLevel1(data.ACRONYM, data.DESCRIPTION, data.BUDGET_YEAR_ID, data.REGION_ID, data.SUBREGION_ID
-        , userId, data.BUDGET, data.TEAM_TYPE_ID, data.IMPLEMENT_EXECUTION_LEVEL, data.CRT_RELATED, data.IMPORT_ID, 1);
-
     //INSERT USERS RELATED TO HL2
-    data.HL1_ID = hl1_id;
-    var listObjHl1User = data.USERS;
+    var listObjHl1User = util.parseAssignedUsers(data.USERS);
     /******************/
     listObjHl1User = completeUsers(listObjHl1User); //add SA users
     /******************/
+    if(!listObjHl1User || listObjHl1User.length == 0){
+        throw ErrorLib.getErrors().ImportError(
+            "", "", L1_MSG_NOT_USERS_ASSOCIATED);
+    }
+
+    var hl1_id = dataHl1.insertLevel1(data.ACRONYM, data.DESCRIPTION, data.BUDGET_YEAR_ID, data.REGION_ID
+        , userId, data.BUDGET, data.TEAM_TYPE_ID, data.IMPLEMENT_EXECUTION_LEVEL, data.CRT_RELATED, data.IMPORT_ID, 1);
+
+    data.HL1_ID = hl1_id;
+
     if (listObjHl1User) {
         if (validateHl1User(listObjHl1User)) {
             var arrHl1User = [];
             for (var i = 0; i < listObjHl1User.length; i++) {
                 arrHl1User.push({
                     in_hl1_id: hl1_id
-                    , in_user_id: listObjHl1User[i].USER_ID
+                    , in_user_id: listObjHl1User[i]
                     , in_created_user_id: userId
                 });
             }
@@ -187,7 +193,6 @@ function insertLevel1Version(currentHL1, userId) {
         currentHL1.DESCRIPTION,
         currentHL1.BUDGET_YEAR_ID,
         currentHL1.REGION_ID,
-        currentHL1.SUBREGION_ID,
         userId,
         currentHL1.BUDGET,
         currentHL1.TEAM_TYPE_ID,
@@ -197,8 +202,10 @@ function insertLevel1Version(currentHL1, userId) {
 }
 
 function updateHl1(data, userId) {
-    data = uiToServerParser(data);
+    data.ASSIGNED_USERS = util.parseAssignedUsers(data.ASSIGNED_USERS);
     validateHl1(data);
+    validateHl1User(data.ASSIGNED_USERS);
+
 
     var hl1Id = data.HL1_ID;
     var currentHL1 = dataHl1.getLevel1ById(data.HL1_ID);
@@ -211,77 +218,76 @@ function updateHl1(data, userId) {
         insertLevel1Version(currentHL1, userId);
         currentHL1.VERSION += 1;
     }
-    var updated = dataHl1.updateLevel1(data.HL1_ID, data.ACRONYM, data.DESCRIPTION, data.BUDGET_YEAR_ID, data.REGION_ID, data.SUBREGION_ID, userId, data.BUDGET, data.TEAM_TYPE_ID, data.IMPLEMENT_EXECUTION_LEVEL, data.CRT_RELATED, currentHL1.VERSION);
+    var updated = dataHl1.updateLevel1(
+        data.HL1_ID
+        , data.ACRONYM
+        , data.DESCRIPTION
+        , data.BUDGET_YEAR_ID
+        , TEAM_TYPE.REGIONAL == data.TEAM_TYPE_ID ? data.REGION_ID : null
+        , userId
+        , data.BUDGET
+        , data.TEAM_TYPE_ID
+        , data.IMPLEMENT_EXECUTION_LEVEL
+        , data.CRT_RELATED
+        , currentHL1.VERSION
+    );
 
     if (budgetChanged) {
         level2.checkBudgetStatus(data.HL1_ID, userId);
     }
 
-    var listObjHl1User = data.USERS;
     var hl2List = dataHl2.getAllLevel2(data.HL1_ID, userId);
     var hl1Users = dataHl1User.getAllHl1User(data.HL1_ID);
     var arrHl1User = [];
     var arrHl2User = [];
     var arrDelHl2User = [];
-    if (listObjHl1User) {
-        if (validateHl1User(listObjHl1User)) {
-            //delete all in HL2_USER
-            dataHl1User.delAllLevel1User(data.HL1_ID);
 
-            for (var i = 0; i < listObjHl1User.length; i++) {
-                arrHl1User.push({
-                    in_hl1_id: data.HL1_ID
-                    , in_user_id: listObjHl1User[i].USER_ID
+    dataHl1User.delAllLevel1User(data.HL1_ID);
+
+    for (var i = 0; i < data.ASSIGNED_USERS.length; i++) {
+        arrHl1User.push({
+            in_hl1_id: data.HL1_ID
+            , in_user_id: data.ASSIGNED_USERS[i]
+            , in_created_user_id: userId
+        });
+
+        if (notExistHl1UserInList(hl1Users, data.ASSIGNED_USERS[i])) {
+            arrHl2User = hl2List.map(function (hl2) {
+                return {
+                    in_hl2_id: hl2.HL2_ID
+                    , in_user_id: data.ASSIGNED_USERS[i]
                     , in_created_user_id: userId
-                });
-
-                if (notExistHl1UserInList(hl1Users, listObjHl1User[i].USER_ID)) {
-                    hl2List.forEach(function (hl2) {
-                        arrHl2User.push({
-                            in_hl2_id: hl2.HL2_ID
-                            , in_user_id: listObjHl1User[i].USER_ID
-                            , in_created_user_id: userId
-                        });
-                    });
-                }
-
-            }
-            if (arrHl1User.length > 0) {
-                dataHl1User.insertLevel1User(arrHl1User);
-            }
-            if (arrHl2User.length > 0) {
-                dataHl2User.insertLevel2User(arrHl2User);
-            }
-
-            for (var j = 0; j < hl1Users.length; j++) {
-                if (notExistHl1UserInList(listObjHl1User, hl1Users[j].USER_ID)) {
-                    hl2List.forEach(function (hl2) {
-                        arrDelHl2User.push({
-                            in_hl2_id: hl2.HL2_ID
-                            , in_user_id: hl1Users[j].USER_ID
-                        });
-                    });
-                }
-            }
-            if (arrDelHl2User.length > 0)
-                dataHl2User.deleteLevel2User(arrDelHl2User);
+                };
+            });
         }
     }
-    else {
-        dataHl1User.delAllLevel2User(data.HL1_ID);
-        hl2List.forEach(function (hl2) {
-            dataHl2User.delAllLevel2User(hl2.HL2_ID, userId);
-        });
+    if (arrHl1User.length > 0) {
+        dataHl1User.insertLevel1User(arrHl1User);
     }
+    if (arrHl2User.length > 0) {
+        dataHl2User.insertLevel2User(arrHl2User);
+    }
+
+    for (var j = 0; j < hl1Users.length; j++) {
+        if (notExistHl1UserInList(data.ASSIGNED_USERS, hl1Users[j].USER_ID)) {
+            arrDelHl2User = hl2List.map(function (hl2) {
+                return {
+                    in_hl2_id: hl2.HL2_ID
+                    , in_user_id: hl1Users[j].USER_ID
+                };
+            });
+        }
+    }
+    if (arrDelHl2User.length > 0)
+        dataHl2User.deleteLevel2User(arrDelHl2User);
 
     updateExpectedOutcomes(data, userId);
     updateCategoryoption(data, userId);
     return updated;
 }
 
-function deleteHl1(hl1, userId) {
+function deleteHl1(hl1Id, userId) {
     //verify if userId is SUPERADMIN, then can delete
-    var hl1Id = hl1.IN_HL1_ID;
     var rol = userRoleLib.getUserRoleByUserId(userId);
     var userRoleId = 0;
     if (rol) {
@@ -304,42 +310,49 @@ function deleteHl1(hl1, userId) {
     return dataHl1.deleteHl1(hl1Id, userId);
 }
 
-function completeUsers(users) {
+function completeUsers(assignedUsers) {
     var id = config.getRoleEnum().SuperAdmin;
-    var listUsers = [];
+    /*var listUsers = [];
     for (var j = 0; j < users.length; j++) {
-        listUsers.push(users[j]['USER_ID']);
-    }
+        listUsers.push(users[j].USER_ID);
+    }*/
     var saUsers = userbl.getUserByRoleId(id);
 
     for (var i = 0; i < saUsers.length; i++) {
-        if (!contains(listUsers, saUsers[i]['USER_ID'])) {
-            users.push(saUsers[i]);
+        if (!contains(assignedUsers, saUsers[i].USER_ID)) {
+            assignedUsers.push(saUsers[i].USER_ID);
         }
     }
 
-    return users;
+    return assignedUsers;
 }
 
-function contains(a, obj) {
-    var i = a.length;
+function contains(assignedUsers, superAdminId) {
+    var i = assignedUsers.length;
     while (i--) {
-        if (a[i] === obj) {
+        if (assignedUsers[i] === superAdminId) {
             return true;
         }
     }
     return false;
 }
 
-function notExistHl1UserInList(hl2Users, hl2UserId) {
-    var exist = 0;
-    hl2Users.forEach(function (hl2User) {
-        if (hl2User.USER_ID == hl2UserId) {
-            ++exist;
+function notExistHl1UserInList(baseUsersIdsList, assignedUserId) {
+    var notExist = true;
+    for (var i = 0; i < baseUsersIdsList.length; i++) {
+        var id = baseUsersIdsList[i].USER_ID || baseUsersIdsList[i];
+        if (id == assignedUserId) {
+            notExist = !notExist;
+            break;
         }
-    });
+    }
+    /*baseUsersIdsList.forEach(function (hl2User) {
+        if (hl2User.USER_ID == hl2UserId) {
+            ++notExist;
+        }
+    });*/
 
-    return !exist;
+    return notExist;
 }
 
 function getLevel1ByUser(userId) {
@@ -385,24 +398,25 @@ function getLevel1ByFilters(budgetYearId, regionId, subRegionId, userId) {
     return result;
 }
 
-function getLevel1Kpi(budgetYearId, regionId, subRegionId, userId) {
+function getLevel1Kpi(budgetYearId, regionId, userId) {
     var isSA = false;
     var result = {};
     if (config.getApplySuperAdminToAllInitiatives()) {
         isSA = userbl.isSuperAdmin(userId);
     }
 
-    var listFromData = dataHl1.getHl1KpiSummary(budgetYearId, regionId, subRegionId, userId, isSA);
+    var listFromData = dataHl1.getHl1KpiSummary(budgetYearId, regionId, userId, isSA);
 
     var mapKpi = {};
 
     listFromData.forEach(function (hl) {
         mapKpi[hl.L1_ACRONYM] = mapKpi[hl.L1_ACRONYM] || {
             HL1_ID: hl.HL1_ID,
+            CRM_ID: hl.CRM_ID,
+            HL1_DESCRIPTION: hl.HL1_DESCRIPTION,
             ACRONYM: hl.L1_ACRONYM,
             BUDGET_YEAR: hl.BUDGET_YEAR,
-            REGION_NAME: hl.REGION_NAME,
-            SUBREGION_NAME: hl.MARKET_UNIT_NAME
+            REGION_NAME: hl.REGION_NAME
         };
         var auxKpi = mapKpi[hl.L1_ACRONYM].kpi || [];
         if (hl.KPI_TYPE_NAME) {
@@ -425,21 +439,9 @@ function getLevel1Kpi(budgetYearId, regionId, subRegionId, userId) {
     return result;
 }
 
-
-function getExpectedOutcomeByL1Id(hl1Id) {
-    var listEO = expectedOutcomesLib.getExpectedOutcomesByHL1Id(hl1Id, true);
-    return listEO.detail;
-}
-
-function getLevel1ForSearch(budgetYearId, regionId, subRegionId, limit, offset, userSessionID) {
-    var result = dataHl1.getLevel1ForSearch(budgetYearId || 1, regionId || 0, subRegionId || 0, limit, offset || 0, userSessionID, util.isSuperAdmin(userSessionID) ? 1 : 0);
-    var total_rows = result.total_rows;
-    result = JSON.parse(JSON.stringify(result.result));
-
-    result.forEach(function (object) {
-        object.PATH = "CRM-" + object.ACRONYM + (object.BUDGET_YEAR % 100);
-    });
-    return {result: result, total_rows: total_rows};
+function getLevel1ForSearch(budgetYearId, regionId, limit, offset, userSessionID) {
+    var result = dataHl1.getLevel1ForSearch(budgetYearId || 1, regionId || 0, limit, offset || 0, userSessionID, util.isSuperAdmin(userSessionID) ? 1 : 0);
+    return result;
 }
 
 function validateHl1(data) {
@@ -457,8 +459,7 @@ function validateHl1(data) {
     ];
 
     var keysTeamType = [
-        'REGION_ID',
-        'SUBREGION_ID'
+        'REGION_ID'
     ];
 
     if (!data)
@@ -475,14 +476,11 @@ function validateHl1(data) {
                 //the organization type is Central team
                 if (key === 'TEAM_TYPE_ID' && data[key] == TEAM_TYPE.REGIONAL) {
                     keysTeamType.forEach(function (k) {
-                        if (k != 'SUBREGION_ID' && (data[k] === null || data[k] === undefined)) {
+                        if (k == 'REGION_ID' && (data[k] === null || data[k] === undefined)) {
                             errors[k] = null;
                             throw BreakException;
                         } else {
-                            // validate attribute type
-                            isValid = k == 'SUBREGION_ID' && data.SUBREGION_ID ? validateType(k, data[k]) : true;
-
-                            if (k != 'SUBREGION_ID')
+                            if (k == 'REGION_ID')
                                 isValid = validateType(k, data[k]);
 
                             if (!isValid) {
@@ -533,8 +531,7 @@ function validateHl1ForUpload(data) {
     ];
 
     var keysTeamType = [
-        'REGION_ID',
-        'SUBREGION_ID'
+        'REGION_ID'
     ];
 
     if (!data) {
@@ -557,14 +554,12 @@ function validateHl1ForUpload(data) {
                 //the organization type is Central team
                 if (key === 'TEAM_TYPE_ID' && data[key] == TEAM_TYPE.REGIONAL) {
                     keysTeamType.forEach(function (k) {
-                        if (k != 'SUBREGION_ID' && (data[k] === null || data[k] === undefined)) {
+                        if (k == 'REGION_ID' && (data[k] === null || data[k] === undefined)) {
                             errors[k] = null;
                             throw BreakException;
                         } else {
-                            // validate attribute type
-                            isValid = k == 'SUBREGION_ID' && data.SUBREGION_ID ? validateType(k, data[k]) : true;
 
-                            if (k != 'SUBREGION_ID')
+                            if (k == 'REGION_ID')
                                 isValid = validateType(k, data[k]);
 
                             if (!isValid) {
@@ -646,49 +641,23 @@ function validateType(key, value) {
 }
 
 /*VALIDATE TYPES VALUES OF RELATED OBJECT TO HL2_USER*/
-function validateHl1User(listObjHl2User) {
-    var isValid = false;
-    var errors = {};
-    var BreakException = {};
-    var keys = ['USER_ID'];
+function validateHl1User(assignedUsersId) {
+    if (!assignedUsersId || !assignedUsersId.length)
+        throw ErrorLib.getErrors().CustomError("", "hl1Services/handlePost/validateHl1User", "Assigned user list is empty.");
 
-    if (!listObjHl2User)
-        return true;
-
-    try {
-
-        for (var i = 0; i < listObjHl2User.length; i++) {
-            keys.forEach(function (key) {
-                if (listObjHl2User[i][key] === null || listObjHl2User[i][key] === undefined) {
-                    errors[key] = null;
-                    throw BreakException;
-                } else {
-                    // validate attribute type
-                    isValid = validateType(key, listObjHl2User[i][key]);
-                    if (!isValid) {
-                        errors[key] = listObjHl2User[i][key];
-                        throw BreakException;
-                    }
-                }
-            });
-        }
-        isValid = true;
-    } catch (e) {
-        if (e !== BreakException)
-            throw ErrorLib.getErrors().CustomError("", "hl2Services/handlePost/validateHl2User", e.toString());
-        else
-            throw ErrorLib.getErrors().CustomError("", "hl2Services/handlePost/validateHl2User"
-                , JSON.stringify(errors));
+    for (var i = 0; i < assignedUsersId.length; i++) {
+        if (!Number(assignedUsersId[i]))
+            throw ErrorLib.getErrors().CustomError("", "hl1Services/handlePost/validateHl1User", "Assigned user is invalid.");
     }
-    return isValid;
+    return true;
 }
 
 /*VALIDATE IF EXITS DE PAIR HL2_USER IN DATABASE*/
-function validateHl1UserPair(userId, hl1Id) {
+/*function validateHl1UserPair(userId, hl1Id) {
     return dataHl1User.existsHl1UserPair(userId, hl1Id);
-}
+}*/
 
-function uiToServerParser(object) {
+/*function uiToServerParser(object) {
     var data = JSON.stringify(object, function (key, value) {
         if (Array.isArray(value)) {
             return value;
@@ -705,7 +674,7 @@ function uiToServerParser(object) {
     data = JSON.parse(data);
 
     return data;
-}
+}*/
 
 function checkPermission(userSessionID, method, hl1Id) {
     if (((method && method == "HL1_ID") || !method) && !util.isSuperAdmin(userSessionID)) {
@@ -759,11 +728,6 @@ function validateChanges(originalHL1, newHL1) {
                     validation = true;
                 }
                 break;
-            case 'SUBREGION_ID':
-                if (originalHL1.SUBREGION_ID !== newHL1.SUBREGION_ID) {
-                    validation = true;
-                }
-                break;
             case 'TEAM_TYPE_ID':
                 if (Number(originalHL1.TEAM_TYPE_ID) !== Number(newHL1.TEAM_TYPE_ID)) {
                     validation = true;
@@ -783,34 +747,27 @@ function getHistoryDetail(HL_ID, VERSION) {
     return dataHl1.getLevel1VersionById(HL_ID, VERSION);
 }
 
-function getHistoryAllFirstVersion(budgetYearId, regionId, subRegionId, userSessionID) {
-    return dataHl1.getLevel1VersionForFilter(budgetYearId, regionId, subRegionId,
-        userSessionID, userbl.isSuperAdmin(userSessionID));
+function getHistoryAllFirstVersion(budgetYearId, userSessionID) {
+    return dataHl1.getLevel1VersionForFilter(budgetYearId, userSessionID, userbl.isSuperAdmin(userSessionID));
 }
 
 function insertExpectedOutcomes(data, userId) {
-    var outcome = {};
-    outcome.CREATED_USER_ID = userId;
-    outcome.HL1_ID = data.HL1_ID;
-    outcome.COMMENTS = data.hl1_expected_outcomes.COMMENTS || "";
-    var hl1_expected_outcomes_id = dataExOut.insertHL1ExpectedOutcomes(outcome.HL1_ID, outcome.COMMENTS, outcome.CREATED_USER_ID);
-
-    if (data.hl1_expected_outcomes.hl1_expected_outcomes_details.length) {
+    var hl1ExpectedOutcomesId = dataExOut.insertHL1ExpectedOutcomes(data.HL1_ID, data.TARGET_KPIS.COMMENTS || '', userId);
+    var mapEOL = expectedOutcomesLevelLib.getKpiTypeOptionMapByHlId(HIERARCHY_LEVEL.HL1);
+    if (data.TARGET_KPIS.KPIS.length) {
         var hl1ExpectedOutcomesDetail = [];
-        data.hl1_expected_outcomes.hl1_expected_outcomes_details.forEach(function (expectedOutcomeDetail) {
-            var hl1Detail = {
-                in_hl1_expected_outcomes_id: hl1_expected_outcomes_id,
-                in_expected_outcome_level_id: dataExOut.getExpectedOutcomeLevelByLevelAndOptionId(HIERARCHY_LEVEL.HL1, expectedOutcomeDetail.OUTCOMES_ID).EXPECTED_OUTCOME_LEVEL_ID,
+        data.TARGET_KPIS.KPIS.forEach(function (expectedOutcomeDetail) {
+            var expectedOutcomeLevelId = mapEOL[expectedOutcomeDetail.OUTCOMES_TYPE_ID]
+            && mapEOL[expectedOutcomeDetail.OUTCOMES_TYPE_ID][expectedOutcomeDetail.OUTCOMES_ID]
+                ? mapEOL[expectedOutcomeDetail.OUTCOMES_TYPE_ID][expectedOutcomeDetail.OUTCOMES_ID]
+                : expectedOutcomeDetail.EXPECTED_OUTCOME_LEVEL_ID;
+            hl1ExpectedOutcomesDetail.push({
+                in_hl1_expected_outcomes_id: hl1ExpectedOutcomesId,
+                in_expected_outcome_level_id: expectedOutcomeLevelId,
                 in_euro_value: expectedOutcomeDetail.EURO_VALUE,
                 in_volume_value: Number(expectedOutcomeDetail.VOLUME_VALUE),
                 in_created_user_id: userId
-            };
-            hl1ExpectedOutcomesDetail.push(hl1Detail);
-            // expectedOutcomeDetail.CREATED_USER_ID = userId;
-            // expectedOutcomeDetail.HL1_EXPECTED_OUTCOMES_ID = hl1_expected_outcomes_id;
-            // expectedOutcomeDetail.VOLUME_VALUE = Number(expectedOutcomeDetail.VOLUME_VALUE);
-            // expectedOutcomeDetail.EXPECTED_OUTCOME_LEVEL_ID = dataExOut.getExpectedOutcomeLevelByLevelAndOptionId(HIERARCHY_LEVEL.HL1, expectedOutcomeDetail.OUTCOMES_ID).EXPECTED_OUTCOME_LEVEL_ID;
-            // dataExOut.insertHL1ExpectedOutcomesDetail(expectedOutcomeDetail.HL1_EXPECTED_OUTCOMES_ID, expectedOutcomeDetail.EXPECTED_OUTCOME_LEVEL_ID, expectedOutcomeDetail.EURO_VALUE, expectedOutcomeDetail.VOLUME_VALUE, expectedOutcomeDetail.CREATED_USER_ID || userId);
+            });
         });
 
         dataExOut.insertHL1ExpectedOutcomesDetail(hl1ExpectedOutcomesDetail);
@@ -824,13 +781,12 @@ function updateExpectedOutcomes(data, userId) {
 }
 
 function validateKpi(data) {
-    if (data.hl1_expected_outcomes) {
-
-        if ((!data.hl1_expected_outcomes.hl1_expected_outcomes_details || !data.hl1_expected_outcomes.hl1_expected_outcomes_details.length)
-            && !data.hl1_expected_outcomes.COMMENTS)
+    if (data.TARGET_KPIS) {
+        if ((!data.TARGET_KPIS.KPIS || !data.TARGET_KPIS.KPIS.length)
+            && !data.TARGET_KPIS.COMMENTS)
             throw ErrorLib.getErrors().CustomError("", "hl1Services/handlePost/insertHl1", L1_CAMPAIGN_FORECASTING_KPIS_COMMENT);
 
-        data.hl1_expected_outcomes.hl1_expected_outcomes_details.forEach(function (kpiDetail) {
+        data.TARGET_KPIS.KPIS.forEach(function (kpiDetail) {
             if (Number(kpiDetail.VOLUME_VALUE) != 0 && !Number(kpiDetail.VOLUME_VALUE))
                 throw ErrorLib.getErrors().CustomError("", "hl1Services/handlePost/insertHl1", L1_CAMPAIGN_FORECASTING_KPIS_DETAILS);
             if (!kpiDetail.EURO_VALUE || !Number(kpiDetail.EURO_VALUE))
@@ -843,25 +799,22 @@ function validateKpi(data) {
 }
 
 function validateCategoryOption(data) {
-    if (!data.hl1_category || !data.hl1_category.length)
+    if (!data.CATEGORIES || !data.CATEGORIES.length)
         throw ErrorLib.getErrors().CustomError("", "hl1Services/handlePost/validateCategoryOption", L1_CATEGORY_NOT_EMPTY);
 
-    if (!data.HL1_ID && data.hl1_category.length !== dataCategory.getAllocationCategoryCountByHlId("hl1"))
+    if (!data.HL1_ID && data.CATEGORIES.length !== dataCategory.getAllocationCategoryCountByHlId("hl1"))
         throw ErrorLib.getErrors().CustomError("", "hl1Services/handlePost/validateCategoryOption", L1_CATEGORY_INCORRECT_NUMBER);
     var percentagePerOption = 0;
-    for (var i = 0; i < data.hl1_category.length; i++) {
-        var hl1Category = data.hl1_category[i];
+    for (var i = 0; i < data.CATEGORIES.length; i++) {
+        var hl1Category = data.CATEGORIES[i];
 
         if (!hl1Category.CATEGORY_ID || !Number(hl1Category.CATEGORY_ID))
             throw ErrorLib.getErrors().CustomError("", "hl1Services/handlePost/validateCategoryOption", L1_CATEGORY_NOT_VALID);
 
-        if (!hl1Category.hl1_category_option || !hl1Category.hl1_category_option.length)
+        if (!hl1Category.OPTIONS || !hl1Category.OPTIONS.length)
             throw ErrorLib.getErrors().CustomError("", "hl1Services/handlePost/validateCategoryOption", L1_CATEGORY_OPTIONS_NOT_EMPTY);
 
-        // if (!data.HL1_ID && hl1Category.hl1_category_option.length !== dataOption.getAllocationOptionCountByCategoryIdLevelId(hl1Category.CATEGORY_ID, 'hl1'))
-        //     throw ErrorLib.getErrors().CustomError("", "hl1Services/handlePost/validateCategoryOption", L1_CATEGORY_OPTIONS_INCORRECT_NUMBER);
-
-        hl1Category.hl1_category_option.forEach(function (option) {
+        hl1Category.OPTIONS.forEach(function (option) {
             if (!option.OPTION_ID || !Number(option.OPTION_ID))
                 throw ErrorLib.getErrors().CustomError("", "hl1Services/handlePost/validateCategoryOption", L1_CATEGORY_OPTION_NOT_VALID);
             if ((parseFloat(option.AMOUNT) && !Number(option.AMOUNT)) || Number(option.AMOUNT) > 100 || Number(option.AMOUNT) < 0)
@@ -882,54 +835,22 @@ function validateCategoryOption(data) {
 }
 
 function getCategoryOption(hl1_id) {
-    var hl1Categories = dataCategoryOptionLevel.getAllocationCategory(hl1_id, 'hl1');
-    var result = [];
-    if (hl1Categories && hl1Categories.length) {
-        var allocationOptions = util.getAllocationOptionByCategoryAndLevelId('hl1', hl1_id);
-        hl1Categories.forEach(function (catgory) {
-            var aux = util.extractObject(catgory);
-            var hl1Category = {};
-            aux.hl1_category_option = allocationOptions[aux.CATEGORY_ID];
-            hl1Category.hl1_category_option = [];
-            Object.keys(aux).forEach(function (key) {
-                if (key === "hl1_category_option") {
-                    for (var i = 0; i < aux[key].length; i++) {
-                        var option = {};
-                        Object.keys(aux[key][i]).forEach(function (auxKey) {
-                            option[auxKey] = aux[key][i][auxKey];
-                        });
-                        hl1Category.hl1_category_option.push(option);
-                    }
-                } else {
-                    hl1Category[key] = aux[key];
-                }
-            });
-            result.push(hl1Category);
-        });
-    } else {
-        result = allocationCategory.getCategoryByHierarchyLevelId(HIERARCHY_LEVEL.HL1).results;
-    }
-    return {result: result};
+    return allocationCategoryOptionLevelLib.getHlCategoryOptionByLevelHlId('HL1', hl1_id);
 }
 
 function insertCategoryOption(data, userId) {
     var categoryOptionBulk = [];
-    // var mapAvailableCOL = util.getMapAvailableCategoryOptionByLevel('hl1');
     var mapCOL = util.getMapCategoryOption('hl1');
 
-    data.hl1_category.forEach(function (hl1Category) {
-        hl1Category.hl1_category_option.forEach(function (hl1CategoryOption) {
-            // hl1Category.categoryOptionLevelId = mapAvailableCOL[hl1Category.CATEGORY_ID][hl1CategoryOption.OPTION_ID];
-            hl1Category.categoryOptionLevelId = mapCOL[hl1Category.CATEGORY_ID][hl1CategoryOption.OPTION_ID];
-            // if(hl1Category.categoryOptionLevelId) {
+    data.CATEGORIES.forEach(function (hl1Category) {
+        hl1Category.OPTIONS.forEach(function (hl1CategoryOption) {
             categoryOptionBulk.push({
                 in_hl1_id: data.HL1_ID
-                , in_category_option_level_id: hl1Category.categoryOptionLevelId
+                , in_category_option_level_id: mapCOL[hl1Category.CATEGORY_ID][hl1CategoryOption.OPTION_ID]
                 , in_amount: hl1CategoryOption.AMOUNT || 0
                 , in_user_id: userId
                 , in_updated: 0
             });
-            // }
         });
     });
     dataCategoryOptionLevel.insertCategoryOption(categoryOptionBulk, 'hl1');
@@ -940,35 +861,22 @@ function insertCategoryOption(data, userId) {
 function updateCategoryoption(data, userId) {
     var insertBulk = [];
     var updateBulk = [];
-    // var deleteBulk = [];
-    // var mapAvailableCOL = util.getMapAvailableCategoryOptionByLevel('hl1');
     var mapCOL = util.getMapCategoryOption('hl1');
-    data.hl1_category.forEach(function (hl1Category) {
-        hl1Category.hl1_category_option.forEach(function (hl1CategoryOption) {
-            // hl1Category.categoryOptionLevelId = mapAvailableCOL[hl1Category.CATEGORY_ID][hl1CategoryOption.OPTION_ID];
-            hl1Category.categoryOptionLevelId = mapCOL[hl1Category.CATEGORY_ID][hl1CategoryOption.OPTION_ID];
-            // if(hl1Category.categoryOptionLevelId){
+    data.CATEGORIES.forEach(function (hl1Category) {
+        hl1Category.OPTIONS.forEach(function (option) {
             var categoryOption = {
-                in_category_option_level_id: hl1Category.categoryOptionLevelId
-                , in_amount: hl1CategoryOption.AMOUNT || 0
+                in_category_option_level_id: mapCOL[hl1Category.CATEGORY_ID][option.OPTION_ID]
+                , in_amount: option.AMOUNT || 0
                 , in_user_id: userId
                 , in_updated: 0
                 , in_hl1_id: data.HL1_ID
             };
-            if (!hl1CategoryOption.HL1_CATEGORY_OPTION_ID) {
+            if (!option.CATEGORY_OPTION_ID) {
                 categoryOption.in_hl1_id = data.HL1_ID;
                 insertBulk.push(categoryOption);
             } else {
                 updateBulk.push(categoryOption);
             }
-            /*} else {
-                var categoryOptionLevelId = mapCOL[hl1Category.CATEGORY_ID][hl1CategoryOption.OPTION_ID];
-                deleteBulk.push({
-                    in_category_option_level_id: categoryOptionLevelId
-                    , in_user_id: userId
-                    , in_hl1_id: data.HL1_ID
-                });
-            }*/
         });
     });
 
@@ -978,8 +886,14 @@ function updateCategoryoption(data, userId) {
     if (insertBulk && insertBulk.length)
         dataCategoryOptionLevel.insertCategoryOption(insertBulk, 'hl1');
 
-    // if (deleteBulk && deleteBulk.length)
-    //     dataCategoryOptionLevel.deleteCategoryOption(deleteBulk, 'hl1');
-
     return true;
+}
+
+function parseKpiForEdition(targetKpis){
+    targetKpis.KPIS.forEach(function (kpi) {
+        kpi.VALUE_AVAILABLE_TO_ALLOCATE = undefined;
+        kpi.VOLUME_AVAILABLE_TO_ALLOCATE = undefined;
+    });
+
+    return targetKpis;
 }

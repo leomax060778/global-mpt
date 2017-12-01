@@ -16,6 +16,7 @@ var HIERARCHY_LEVEL = {
 };
 
 function updateCategoryOptionLevel(data, userId) {
+    var message;
     if(!data || !data.IN_CATEGORY_ID || !data.IN_LEVEL.length)
         throw ErrorLib.getErrors().BadRequest();
 
@@ -35,7 +36,10 @@ function updateCategoryOptionLevel(data, userId) {
             });
             var optionToDelete = dataCategoryOptionLevel.getAllocationCategoryOptionLevelToDelete(data.IN_CATEGORY_ID, hierarchylevel, allocationOptions, userId);
 
-            dataCategoryOptionLevel.deleteAllocationCATEGORYOptionLevel(data.IN_CATEGORY_ID, hierarchylevel,userId);
+            var associationDeleteCount = dataCategoryOptionLevel.deleteAllocationCATEGORYOptionLevel(data.IN_CATEGORY_ID, hierarchylevel, allocationOptions, userId);
+            if (associationDeleteCount !== optionToDelete.length){
+                message = "Some options could not be removed because they are in use";
+            }
 
             for(var i = 0; i < totalOptions; i++){
                 var categoryOptionLevel = dataCategoryOptionLevel.getAllocationOptionLevelByCategoryAndLevelId(data.IN_CATEGORY_ID, level, data.IN_OPTION_LIST[i]);
@@ -52,14 +56,16 @@ function updateCategoryOptionLevel(data, userId) {
                         hierarchylevel,
                         data.IN_OPTION_LIST[i],
                         data.IN_PROCESSING_REPORT,
-                        userId);
+                        userId,
+                        data.IN_MAKE_CATEGORY_MANDATORY);
                 } else {
                     dataCategoryOptionLevel.insertAllocationCATEGORYOptionLevel(
                         data.IN_CATEGORY_ID,
                         data.IN_OPTION_LIST[i],
                         hierarchylevel,
                         data.IN_PROCESSING_REPORT,
-                        userId);
+                        userId,
+                        data.IN_MAKE_CATEGORY_MANDATORY);
                 }
 
                 ++countInsert;
@@ -71,7 +77,7 @@ function updateCategoryOptionLevel(data, userId) {
                 throw ErrorLib.getErrors().CustomError("",
                     "categoryOptionLevelServices/handlePut/updateCategoryOptionLevel",
                     "Could not complete the process.");
-      
+
             if(optionIds.length){
                 var error = ErrorLib.getErrors().AcronymError("", "", 'Allocation Option assignment error.');
                 error.data = optionIds;
@@ -81,7 +87,9 @@ function updateCategoryOptionLevel(data, userId) {
             }
         }
 	});
-	
+    if (message){
+        return {message: message};
+    }
     return (data.IN_LEVEL.length * data.IN_OPTION_LIST.length);
 }
 
@@ -93,6 +101,7 @@ function getHlCategoryOptionByLevelHlId(level, hlId) {
             result[categoryOption.CATEGORY_NAME] = {
                 CATEGORY_ID: categoryOption.CATEGORY_ID,
                 CATEGORY_NAME: categoryOption.CATEGORY_NAME,
+                MAKE_CATEGORY_MANDATORY: categoryOption.MAKE_CATEGORY_MANDATORY,
                 OPTIONS: [{
                     OPTION_ID: categoryOption.OPTION_ID,
                     OPTION_NAME: categoryOption.OPTION_NAME,

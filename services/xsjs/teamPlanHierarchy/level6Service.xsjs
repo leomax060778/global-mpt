@@ -12,7 +12,7 @@ var method = "method";
 var id = "id";
 var setStatusInCRM = "SETINCRM";
 var changeStatus = "CHANGESTATUS";
-var sendInCrmNotificationMail = "SENDMAIL";
+// var sendInCrmNotificationMail = "SENDMAIL";
 var categories = "HL5_CATEGORIES";
 var expectedOutcomes = "HL5_EXPECTED_OUTCOMES";
 var getHl6ByUserId = 'GET_HL6_BY_USER_ID';
@@ -72,9 +72,9 @@ function handlePut(reqBody, userId){
 		var aCmd = parameters.get('method');
 		var hl6Id = !reqBody ? parameters.get('HL6_ID') : reqBody.hl6Ids;
 		switch (aCmd) {
-			case sendInCrmNotificationMail:
+			/*case sendInCrmNotificationMail:
 					hl6.sendProcessingReportEmail(hl6Id, userId);
-					//fallthrough
+					//fallthrough*/
 		    case setStatusInCRM: //set status In CRM
 		    	var rdo = hl6.setHl6StatusInCRM(hl6Id, userId);
 				return	httpUtil.handleResponse(rdo,httpUtil.OK,httpUtil.AppJson);

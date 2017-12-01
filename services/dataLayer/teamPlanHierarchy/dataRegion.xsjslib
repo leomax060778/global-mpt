@@ -77,10 +77,7 @@ function delRegion(objRegion, userId){
 //DETERMINE IF EXIST A ENTITY OF REGION
 function existRegion(objRegion){
 	var region = getRegionByName(objRegion);
-	if(region && region.length > 0)
-		return true;
-	else
-		return false;
+	return region && region.length > 0;
 }
 
 function canDeleteRegion(objRegion){

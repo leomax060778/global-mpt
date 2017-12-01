@@ -1,0 +1,17 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_CONTACT_DATA_BY_ORG_REL_AND_ORG_ID"
+(   IN in_organization_related_id BIGINT,
+    IN in_organization_id BIGINT,
+    IN in_contact_data_id BIGINT,
+    IN in_created_user_id BIGINT,
+    OUT out_result BIGINT
+)
+LANGUAGE SQLSCRIPT
+SQL SECURITY INVOKER
+DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+AS
+BEGIN
+
+    INSERT INTO INTERLOCK_ORGANIZATION_CONTACT_DATA(ORGANIZATION_RELATED_ID, ORGANIZATION_ID, CONTACT_DATA_ID, CREATED_USER_ID)
+    VALUES(in_organization_related_id, in_organization_id, in_contact_data_id, in_created_user_id);
+	SELECT ::ROWCOUNT INTO out_result FROM DUMMY;
+END;

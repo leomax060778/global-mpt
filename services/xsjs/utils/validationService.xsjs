@@ -8,7 +8,7 @@ var config = mapper.getDataConfig();
 /******************************************/
 
 function processRequest(){
-	return httpUtil.processRequest(handleGet,handlePost,handlePut,handleDelete,false, config.getResourceIdByName(config.level1()));
+	return httpUtil.processRequest(handleGet,handlePost,handlePut,handleDelete,false, "",true);
 }
 
 //Implementation of GET call -- GET HL1

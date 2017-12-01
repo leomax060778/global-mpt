@@ -74,13 +74,14 @@ var L3_CATEGORY_NOT_VALID = "Category is not valid.";
 var L3_CATEGORY_TOTAL_PERCENTAGE = "Category total percentage should be less than or equal to 100%.";
 var L3_CATEGORY_OPTION = "Error while trying to save Option.";
 var L3_CATEGORY_OPTION_NOT_VALID = "Option or User is not valid.";
-var L3_MSG_INITIATIVE_COULDNT_CHAGE_STATUS = "Couldn´t change INITIATIVE/CAMPAIGN status due to incomplete data. Please review Budget and Options information";
+var L3_MSG_INITIATIVE_COULDNT_CHAGE_STATUS = "Your records was saved as \"In progress\".  Please review your record for incomplete fields and/or pending budget approvals.";
 var L3_CAMPAIGN_FORECASTING_KPIS_COMMENT = "Please enter a comment to explain expected outcomes as you didn't select any Campaign type.";
 var L3_NOT_IMPLEMENT_EXECUTION_LEVEL = "This PROGRAMS/CAMPAIGNS does not implement execution level.";
+var L4_ID_NOT_FOUND = "The HL4 ID could not be found.";
 
 var HL4_STATUS = {
     IN_PROGRESS: 1,
-    LOAD_DATA_ENTRY: 2,
+    CREATE_IN_CRM: 2,
     IN_CRM: 3,
     UPDATE_IN_CRM: 4,
     EXCEED_BUDGET: 5,
@@ -104,7 +105,7 @@ function getHl4(id) {
     spResult.out_result.forEach(function (hl4) {
         var aux = {};
         aux = util.extractObject(hl4);
-        aux.CRM_ID = 'CRM-' + hl4.CRM_ID;
+        aux.CRM_ID = hl4.CRM_ID;
         aux.HL4_TOTAL = hl4.HL4_BUDGET;
         aux.TOTAL_HL5 = hl4.TOTAL_HL5;
         aux.QUANTITY_HL5_OUT_BUDGET = hl4.QUANTITY_HL5_OUT_BUDGET;
@@ -116,11 +117,20 @@ function getHl4(id) {
     var responseObj = {
         "results": result,
         "total_budget": spResult.out_total_budget,
-        "remaining_budget": spResult.out_remaining_budget
+        "remaining_budget": spResult.out_remaining_budget,
+        "out_total_allocated": spResult.out_total_allocated
     };
 
     responseObj.budget_year = budgetYear.getBudgetYearByLevelParent(4, id, true);
     return responseObj;
+}
+
+function getHL4CarryOverById(hl4Id, userId){
+    if (!hl4Id){
+        throw ErrorLib.getErrors().BadRequest("The HL4 ID could not be found.", "hl4Services/handleGet/getHl5", L4_ID_NOT_FOUND);
+    }
+
+    return dataHl4.getHL4CarryOverById(hl4Id);
 }
 
 function getParentRemainingBudgetByParentId(hl3Id) {
@@ -149,8 +159,9 @@ function getHl4ById(id) {
 }
 
 function getUserById(id) {
-    if (!id)
+    if (!id) {
         throw ErrorLib.getErrors().BadRequest("The Parameter ID is not found", "userServices/handleGet/getUserById", L3_MSG_USER_NOT_FOUND);
+    }
     return dbUser.getUserById(id);
 
 }
@@ -158,23 +169,7 @@ function getUserById(id) {
 function getLevel4ForSearch(budgetYearId, regionId, subRegionId, limit, offset, userSessionID) {
     var defaultBudgetYear = budgetYear.getDefaultBudgetYear();
     var results = dataHl4.getLevel4ForSearch(budgetYearId || defaultBudgetYear.BUDGET_YEAR_ID, regionId || 0, subRegionId || 0, limit || -1, offset || 0, userSessionID, util.isSuperAdmin(userSessionID) ? 1 : 0);
-    var total_rows = results.total_rows;
-    var resultRefactor = [];
-    results.result.forEach(function (object) {
-        var aux = {};
-
-        aux.ID = object.ID;
-        aux.PARENT_ID = object.PARENT_ID;
-        aux.BUDGET_YEAR = Number(ctypes.Int64(object.BUDGET_YEAR));
-        aux.ACRONYM = object.ACRONYM;
-        aux.ORGANIZATION_ACRONYM = object.ORGANIZATION_ACRONYM;
-        aux.REGION_NAME = object.REGION_NAME;
-        aux.SUBREGION_NAME = object.SUBREGION_NAME;
-        aux.PATH = "CRM-" + object.PATH;
-
-        resultRefactor.push(aux);
-    });
-    return {result: resultRefactor, total_rows: total_rows};
+    return results;
 }
 
 function getHl4ByBudgetYear(hl4Id){
@@ -271,7 +266,7 @@ function insertHl4(data, userId) {
                         hl4Category.hl4_category_option.forEach(function (hl4CategoryOption) {
                             hl4CategoryOption.in_created_user_id = userId;
                             hl4CategoryOption.in_amount = hl4CategoryOption.in_amount || 0;
-                            hl4CategoryOption.in_updated = hl4Category.in_in_processing_report && hl4CategoryOption.in_amount ? 1 : 0;
+                            hl4CategoryOption.in_updated = hl4CategoryOption.in_amount ? 1 : 0;
                             hl4Category.categoryOptionLevelId = mapCOL[hl4Category.in_category_id][hl4CategoryOption.in_option_id];
                             categoryOptionBulk.push({
                                 in_id: hl4_id
@@ -747,7 +742,10 @@ function isCategoryOptionComplete(data) {
             percentagePerOption = percentagePerOption + Number(option.in_amount);
 
         });
-        if (percentagePerOption > 100) {
+        if(!hl4Category.in_make_category_mandatory && percentagePerOption === 0 ){
+            categoryOptionComplete = true;
+            break;
+        } else if (percentagePerOption > 100) {
             throw ErrorLib.getErrors().CustomError("", "hl4Services/handlePost/insertHl4", L3_CATEGORY_TOTAL_PERCENTAGE);
         } else if (percentagePerOption < 100) {
             categoryOptionComplete = false;
@@ -793,7 +791,7 @@ function getLevel4ByAcronym(acronym, hl2_id) {
 }
 
 function existsHl4inPlan(objHL4) {
-    var hl3 = dataHl3.getLevel3ById({IN_HL3_ID: objHL4.in_hl3_id});
+    var hl3 = dataHl3.getLevel3ById(objHL4.in_hl3_id);
     var hl4 = getLevel4ByAcronym(objHL4.in_acronym, hl3.HL2_ID);
     return !!(hl4.HL4_ID && Number(hl4.HL4_ID) !== Number(objHL4.in_hl4_id));
 }
@@ -813,7 +811,7 @@ function checkBudgetStatus(objHl3, hl4_id, new_hl4_budget) {
         objHl.IN_HL3_ID = Number(objHl3) ? objHl3 : objHl3.IN_HL3_ID;
         objHl.IN_HL4_ID = hl4_id;
 
-        var hl3 = dataHl3.getLevel3ById(objHl);
+        var hl3 = dataHl3.getLevel3ById(objHl.IN_HL3_ID);
 
         var hl3AllocatedBudget = dataHl3.getHl3AllocatedBudget(objHl.IN_HL3_ID, hl4_id);
         return (Number(hl3.HL3_FNC_BUDGET_TOTAL) - Number(hl3AllocatedBudget) - Number(new_hl4_budget)) >= 0 ? 1 : 0;
@@ -893,14 +891,22 @@ function resetHl4CategoryOptionUpdated(hl4Id, userId) {
 /* Set HL4 status to In CRM */
 function setHl4StatusInCRM(hl4_id, userId) {
     var hl4Ids = [];
+    var result;
     if(!(hl4_id.constructor === Array)){
         hl4Ids.push(hl4_id);
     } else {
         hl4Ids = hl4_id;
     }
-    for(var i = 0; i < hl4Ids; i++){
-        setHl4Status(hl4Ids[i], HL4_STATUS.IN_CRM, userId);
+    for(var i = 0; i < hl4Ids.length; i++){
+        if(!Number(hl5Ids[i]))
+            throw ErrorLib.getErrors().CustomError("", "", L5_MSG_INITIATIVE_NOT_FOUND);
+
+        result = setHl4Status(hl4Ids[i], HL4_STATUS.IN_CRM, userId);
+        if (result) {
+            mail.sendInCRMMail(hl4Ids[i], "hl4");
+        }
     }
+
     return 1;
 }
 
@@ -918,7 +924,7 @@ function changeHl4StatusOnDemand(hl4_id, userId) {
     var existInCrm = dataHl4.existsInCrm(hl4_id);
 
     var statusId = existInCrm ? HL4_STATUS.UPDATE_IN_CRM
-        : HL4_STATUS.LOAD_DATA_ENTRY;
+        : HL4_STATUS.CREATE_IN_CRM;
 
     return setHl4Status(hl4_id, statusId, userId);
 }
@@ -1144,10 +1150,32 @@ function notifyChangeByEmail(data, userId, event) {
 
 }
 
+/*function sendProcessingReportEmail(hl4Id) {
+    var objHl3 = {};
+    var appUrl = config.getLoginUrl();
+
+    var hl4 = dataHl4.getHl4ById(hl4Id);
+    var hl3 = dataHl3.getLevel3ById(hl4.HL3_ID);
+
+    var hl3OwnerEmail = getUserById(hl3.CREATED_USER_ID)[0].EMAIL;
+
+    var body = '<p> Dear Colleague </p>';
+    body += '<p>An initiative has been created in CRM.</p><br>';
+    body += '<p>' + appUrl + '#/TeamPlanHierarchy/Level4/edit/' + hl4.HL3_ID + '/' + hl4Id + '</p>';
+
+
+    var mailObject = mail.getJson([{
+        "address": hl3OwnerEmail
+    }], "Marketing Planning Tool - Interlock Process", body);
+
+    mail.sendMail(mailObject, true);
+}*/
+
 function checkPermission(userSessionID, method, hl4Id) {
     if (((method && method == "GET_BY_HL3_ID") || !method) && !util.isSuperAdmin(userSessionID)) {
         var hl4 = dataHl4.getHl4ById(hl4Id);
-        var usersL3 = userbl.getUserByHl3Id(hl4.HL3_ID).users_in;
+        var l3 = dataHl3.getLevel3ById(hl4.HL3_ID, userSessionID);
+        var usersL3 = userbl.getUserByHl3Id(hl4.HL3_ID, l3.HL2_ID).users_in;
         var users = usersL3.find(function (user) {
             return user.USER_ID == userSessionID
         });

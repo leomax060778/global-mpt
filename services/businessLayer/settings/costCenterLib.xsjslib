@@ -211,19 +211,20 @@ function updCostCenter(data, userId, isUpload){
         dataCostCenter.updCostCenter(data.COST_CENTER_ID, data.NAME, data.DESCRIPTION, userId, data.CODE, data.SALE_ORGANIZATION_ID, data.in_person_responsible);
 	}
 
-	if(!isUpload) {
-		var firstTime = true;
-		data.employee_responsible.forEach(function(employeeResponsible){
-			if(!employeeResponsible.EMPLOYEE_RESPONSIBLE_ID){
-				employeeResponsible.EMPLOYEE_RESPONSIBLE_ID = dataEmployeeResponsible.insEmployeeResponsible(employeeResponsible.FULL_NAME, employeeResponsible.EMPLOYEE_NUMBER, userId);
-			}
-						updCostCenterEmployeeResponsible(costCenterId, employeeResponsible.EMPLOYEE_RESPONSIBLE_ID, userId, firstTime);
-			firstTime = false;
-		});
-		updCostCenterTeams(data.COST_CENTER_ID, data.cost_center_teams, userId, data.SALE_ORGANIZATION_ID);
-	} else {
-		updCostCenterEmployeeResponsible(costCenterId, data.employee_responsible.EMPLOYEE_RESPONSIBLE_ID, userId);
-	}
+    if (!isUpload) {
+        var firstTime = true;
+        delCostCenterEmployeeResponsibleByCostCenterId(costCenterId, userId, 'hard');
+        data.employee_responsible.forEach(function (employeeResponsible) {
+            if (!employeeResponsible.EMPLOYEE_RESPONSIBLE_ID) {
+                employeeResponsible.EMPLOYEE_RESPONSIBLE_ID = dataEmployeeResponsible.insEmployeeResponsible(employeeResponsible.FULL_NAME, employeeResponsible.EMPLOYEE_NUMBER, userId);
+            }
+            updCostCenterEmployeeResponsible(costCenterId, employeeResponsible.EMPLOYEE_RESPONSIBLE_ID, userId, firstTime);
+            firstTime = false;
+        });
+        updCostCenterTeams(data.COST_CENTER_ID, data.cost_center_teams, userId, data.SALE_ORGANIZATION_ID);
+    } else {
+        updCostCenterEmployeeResponsible(costCenterId, data.employee_responsible.EMPLOYEE_RESPONSIBLE_ID, userId);
+    }
 
 	return data;
 }
@@ -339,7 +340,7 @@ function checkValidTeams(teams){
 	var validTeams = true;
 
 	for(var i = 0; i < teams.length; i++){
-		if(!dataHl3.getLevel3ById({IN_HL3_ID: teams[i]}).HL3_ID){
+		if(!dataHl3.getLevel3ById(teams[i]).HL3_ID){
 			validTeams = false;
 			break
 		}
@@ -427,7 +428,7 @@ function uploadCostCenter(data, userId){
 			var budgetYear = dbBudget.getBudgetYear(budgetYearAcronym);
 			var hl2 = dataHl2.getLevelByAcronymAndOrganizationAcronym(planAcronym,budgetYear.BUDGET_YEAR_ID,organizationAcronym);
 
-			var teamId = dataHl3.getLevel3ByAcronym({IN_ACRONYM: costCenter.in_team, IN_HL2_ID: hl2.HL2_ID, IN_HL1_ID: hl2.HL1_ID}).HL3_ID;
+            var teamId = dataHl3.getLevel3ByAcronym(costCenter.in_team, hl2.HL1_ID).HL3_ID;
 			if (teamId) {
 				if (duplicatedCostCenter.indexOf(costCenter.in_code) !== -1) {
 					insCostCenterTeams(costCenterId, teamId, userId, costCenter.in_marketing_organization_id, isUpload);

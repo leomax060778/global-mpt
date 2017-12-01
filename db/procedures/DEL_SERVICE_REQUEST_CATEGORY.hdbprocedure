@@ -1,20 +1,19 @@
-PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::DEL_SERVICE_REQUEST_CATEGORY"(
-		IN in_category_id BIGINT, 
-		IN in_user_id BIGINT, 
-		OUT out_result BIGINT
-	)
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::DEL_SERVICE_REQUEST_CATEGORY" (
+	IN in_category_id BIGINT,
+	IN in_user_id BIGINT,
+	OUT out_result BIGINT)
 	LANGUAGE SQLSCRIPT
 	SQL SECURITY INVOKER
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
-AS
+	AS
 BEGIN
 	UPDATE SERVICE_REQUEST_CATEGORY
-SET deleted = 1, 
-		enabled = 0, 
-		modified_user_id = in_user_id, 
-		modified_date_tz = CURRENT_TIMESTAMP
-WHERE SERVICE_REQUEST_CATEGORY_ID = in_category_id;
-	SELECT ::ROWCOUNT
-		INTO out_result
-		FROM DUMMY;
+		SET deleted = 1,
+		    enabled = 0,
+			modified_user_id = in_user_id,
+			modified_date_tz = CURRENT_TIMESTAMP
+		WHERE SERVICE_REQUEST_CATEGORY_ID = in_category_id;
+
+		SELECT ::ROWCOUNT INTO out_result FROM DUMMY;
+
 END;

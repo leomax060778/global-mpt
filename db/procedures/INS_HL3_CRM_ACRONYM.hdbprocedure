@@ -1,0 +1,21 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_HL3_CRM_ACRONYM" (
+	IN in_acronym NVARCHAR(25),
+  	IN in_crm_description nvarchar(100),
+  	IN in_created_user_id bigint,
+  	OUT out_result bigint
+)
+LANGUAGE SQLSCRIPT
+SQL SECURITY INVOKER
+DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+AS
+BEGIN
+    INSERT INTO "HL3_CRM_ACRONYM"(acronym,
+  								crm_description,
+    							created_user_id
+    							)
+      VALUES(	in_acronym, 
+      			in_crm_description,
+      			in_created_user_id
+      		);
+    SELECT TOP 1 CURRENT_IDENTITY_VALUE() INTO out_result FROM "HL3_CRM_ACRONYM";
+END;

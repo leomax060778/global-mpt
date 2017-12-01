@@ -15,3 +15,27 @@ function parseNotifyCreateUser(userObj, basicData, userName){
 	
 	return mailObj;	
 }
+
+function parseNotifyCreateRequestAccess(basicData, requestAccessData){
+// function parseNotifyCreateUser(userObj, basicData, userName){
+	var mailObj = {};
+
+	mailObj.body = ' <p> Dear ' + basicData.SITE_ADMIN_NAME + ' </p>  <p>The following user (' + requestAccessData.USER_NAME + ') ' + requestAccessData.FIRST_NAME + ' ' + requestAccessData.LAST_NAME + ' has requested access to the tool and it is pending for your review.</p>';
+    mailObj.subject = basicData.ENVIRONMENT+' Marketing Planning Tool - Request Access Created';
+
+	return mailObj;
+}
+
+function parseGeneralMail(data, basicData) {
+    var mailObj = {};
+    var subject = 'MPT - Processing Report Message';
+    mailObj.subject = basicData.ENVIRONMENT !== "Production" ? basicData.ENVIRONMENT + ' ' + subject : subject;
+
+    var body = '<p> Dear Collegue ' + data.ADDRESSEE_NAME + ',</p>';
+    body += '<p>' + data.SENDER_NAME + ' has sent you the following message:</p>';
+    body += '<p>' + data.MESSAGE + '</p>';
+    body += '<p>Please replay to <a href="mailto:' + data.SENDER_EMAIL + '?subject= RE: ' + mailObj.subject + '">' + data.SENDER_NAME + '</a></p>';
+    mailObj.body = body;
+
+    return mailObj;
+}

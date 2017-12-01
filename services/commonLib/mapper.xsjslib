@@ -40,19 +40,9 @@ function getApplication(){
     return $.mktgplanningtool.services.businessLayer.settings.applicationLib;
 }
 
-function getPlanning(){
-    $.import("mktgplanningtool.services.businessLayer.settings","planningLib");
-    return $.mktgplanningtool.services.businessLayer.settings.planningLib;
-}
-
 function getLevel3(){
     $.import("mktgplanningtool.services.businessLayer.teamPlanHierarchy","level3Lib");
     return $.mktgplanningtool.services.businessLayer.teamPlanHierarchy.level3Lib;
-}
-
-function refactorL1_getLevel3(){
-    $.import("mktgplanningtool.services.businessLayer.teamPlanHierarchy","refactorL1_level3Lib");
-    return $.mktgplanningtool.services.businessLayer.teamPlanHierarchy.refactorL1_level3Lib;
 }
 
 function getLevel4(){
@@ -60,14 +50,24 @@ function getLevel4(){
     return $.mktgplanningtool.services.businessLayer.teamPlanHierarchy.level4Lib;
 }
 
-function getLevel4Prefilled(){
-    $.import("mktgplanningtool.services.businessLayer.teamPlanHierarchy","level4PrefilledLib");
-    return $.mktgplanningtool.services.businessLayer.teamPlanHierarchy.level4PrefilledLib;
+function getCrmAcronym(){
+    $.import("mktgplanningtool.services.businessLayer.teamPlanHierarchy","CrmAcronymLib");
+    return $.mktgplanningtool.services.businessLayer.teamPlanHierarchy.CrmAcronymLib;
 }
 
 function getLevel5(){
     $.import("mktgplanningtool.services.businessLayer.teamPlanHierarchy","level5Lib");
     return $.mktgplanningtool.services.businessLayer.teamPlanHierarchy.level5Lib;
+}
+
+function refactorL5L6_getLevel5(){
+    $.import("mktgplanningtool.services.businessLayer.teamPlanHierarchy","refactorL5L6_level5Lib");
+    return $.mktgplanningtool.services.businessLayer.teamPlanHierarchy.refactorL5L6_level5Lib;
+}
+
+function getLevel4Mail(){
+    $.import("mktgplanningtool.services.mails","level4MailLib");
+    return $.mktgplanningtool.services.mails.level4MailLib;
 }
 
 function getLevel5Mail(){
@@ -78,6 +78,11 @@ function getLevel5Mail(){
 function getLevel6(){
     $.import("mktgplanningtool.services.businessLayer.teamPlanHierarchy","level6Lib");
     return $.mktgplanningtool.services.businessLayer.teamPlanHierarchy.level6Lib;
+}
+
+function refactorL5L6_getLevel6(){
+    $.import("mktgplanningtool.services.businessLayer.teamPlanHierarchy","refactorL5L6_level6Lib");
+    return $.mktgplanningtool.services.businessLayer.teamPlanHierarchy.refactorL5L6_level6Lib;
 }
 
 function getLevel6Mail(){
@@ -123,19 +128,24 @@ function getCostCenter(){
     return $.mktgplanningtool.services.businessLayer.settings.costCenterLib;
 }
 
-function refactorL1_getCostCenter(){
-    $.import("mktgplanningtool.services.businessLayer.settings","refactorL1_costCenterLib");
-    return $.mktgplanningtool.services.businessLayer.settings.refactorL1_costCenterLib;
-}
-
 function getSegmentation(){
     $.import("mktgplanningtool.services.businessLayer.settings","segmentationLib");
     return $.mktgplanningtool.services.businessLayer.settings.segmentationLib;
 }
 
+function refactorL5L6_getSegmentation(){
+    $.import("mktgplanningtool.services.businessLayer.settings","refactorL5L6_segmentationLib");
+    return $.mktgplanningtool.services.businessLayer.settings.refactorL5L6_segmentationLib;
+}
+
 function getUser(){
     $.import("mktgplanningtool.services.businessLayer.admin","userLib");
     return $.mktgplanningtool.services.businessLayer.admin.userLib;
+}
+
+function getRequestAccess(){
+    $.import("mktgplanningtool.services.businessLayer.admin","requestAccessLib");
+    return $.mktgplanningtool.services.businessLayer.admin.requestAccessLib;
 }
 
 function getUserMail(){
@@ -158,19 +168,10 @@ function getLevel1(){
     return $.mktgplanningtool.services.businessLayer.teamPlanHierarchy.level1Lib;
 }
 
-function refactorL1_getLevel1(){
-    $.import("mktgplanningtool.services.businessLayer.teamPlanHierarchy","refactorL1_level1Lib");
-    return $.mktgplanningtool.services.businessLayer.teamPlanHierarchy.refactorL1_level1Lib;
-}
 
 function getLevel2(){
     $.import("mktgplanningtool.services.businessLayer.teamPlanHierarchy","level2Lib");
     return $.mktgplanningtool.services.businessLayer.teamPlanHierarchy.level2Lib;
-}
-
-function refactorL1_getLevel2(){
-    $.import("mktgplanningtool.services.businessLayer.teamPlanHierarchy","refactorL1_level2Lib");
-    return $.mktgplanningtool.services.businessLayer.teamPlanHierarchy.refactorL1_level2Lib;
 }
 
 function getRole(){
@@ -213,14 +214,9 @@ function getPartner(){
     return $.mktgplanningtool.services.businessLayer.teamPlanHierarchy.partnerLib;
 }
 
-function getOutcomes2(){
-    $.import("mktgplanningtool.services.businessLayer.teamPlanHierarchy","outcomesLib");
-    return $.mktgplanningtool.services.businessLayer.teamPlanHierarchy.outcomesLib;
-}
-
-function getOutcomesType(){
-    $.import("mktgplanningtool.services.businessLayer.settings","outcomesTypeLib");
-    return $.mktgplanningtool.services.businessLayer.settings.outcomesTypeLib;
+function refactorL5L6_getPartner(){
+    $.import("mktgplanningtool.services.businessLayer.teamPlanHierarchy","refactorL5L6_partnerLib");
+    return $.mktgplanningtool.services.businessLayer.teamPlanHierarchy.refactorL5L6_partnerLib;
 }
 
 function getValidationLib(){
@@ -233,29 +229,14 @@ function getOutcomes(){
     return $.mktgplanningtool.services.businessLayer.settings.outcomesLib;
 }
 
-function refactorL1_getOutcomes(){
-    $.import("mktgplanningtool.services.businessLayer.settings","refactorL1_outcomesLib");
-    return $.mktgplanningtool.services.businessLayer.settings.refactorL1_outcomesLib;
-}
-
 function getExpectedOutcomes(){
     $.import("mktgplanningtool.services.businessLayer.settings","expectedOutcomesLib");
     return $.mktgplanningtool.services.businessLayer.settings.expectedOutcomesLib;
 }
 
-function refactorL1_getExpectedOutcomes(){
-    $.import("mktgplanningtool.services.businessLayer.settings","refactorL1_expectedOutcomesLib");
-    return $.mktgplanningtool.services.businessLayer.settings.refactorL1_expectedOutcomesLib;
-}
-
-function getCategory(){
-    $.import("mktgplanningtool.services.businessLayer.settings","categoryLib");
-    return $.mktgplanningtool.services.businessLayer.settings.categoryLib;
-}
-
-function getMeasure(){
-    $.import("mktgplanningtool.services.businessLayer.settings","measureLib");
-    return $.mktgplanningtool.services.businessLayer.settings.measureLib;
+function refactorL5L6_getExpectedOutcomes(){
+    $.import("mktgplanningtool.services.businessLayer.settings","refactorL5L6_expectedOutcomesLib");
+    return $.mktgplanningtool.services.businessLayer.settings.refactorL5L6_expectedOutcomesLib;
 }
 
 function getLevel4DEReport(){
@@ -273,6 +254,11 @@ function getLevel6DEReport(){
     return $.mktgplanningtool.services.businessLayer.dataEntryReport.level6ReportLib;
 }
 
+function getUtilDEReport(){
+    $.import("mktgplanningtool.services.businessLayer.dataEntryReport","utilReportLib");
+    return $.mktgplanningtool.services.businessLayer.dataEntryReport.utilReportLib;
+}
+
 function getRolePermission(){
     $.import("mktgplanningtool.services.businessLayer.admin","rolePermissionLib");
     return $.mktgplanningtool.services.businessLayer.admin.rolePermissionLib;
@@ -281,11 +267,6 @@ function getRolePermission(){
 function getPermission(){
     $.import("mktgplanningtool.services.businessLayer.admin","permissionLib");
     return $.mktgplanningtool.services.businessLayer.admin.permissionLib;
-}
-
-function getResource(){
-    $.import("mktgplanningtool.services.businessLayer.admin","resourceLib");
-    return $.mktgplanningtool.services.businessLayer.admin.resourceLib;
 }
 
 function getBudgetReport(){
@@ -308,11 +289,6 @@ function getBudgetYear(){
     return $.mktgplanningtool.services.businessLayer.settings.budgetYearLib;
 }
 
-function getHl(){
-    $.import("mktgplanningtool.services.businessLayer.settings","hlLib");
-    return $.mktgplanningtool.services.businessLayer.settings.hlLib;
-}
-
 function getMarketingOrganization(){
     $.import("mktgplanningtool.services.businessLayer.settings","marketingOrganizationLib");
     return $.mktgplanningtool.services.businessLayer.settings.marketingOrganizationLib;
@@ -321,16 +297,6 @@ function getMarketingOrganization(){
 function getEmployeeResponsible(){
     $.import("mktgplanningtool.services.businessLayer.settings","employeeResponsibleLib");
     return $.mktgplanningtool.services.businessLayer.settings.employeeResponsibleLib;
-}
-
-function getResponsiblePerson(){
-    $.import("mktgplanningtool.services.businessLayer.settings","responsiblePersonLib");
-    return $.mktgplanningtool.services.businessLayer.settings.responsiblePersonLib;
-}
-
-function getBudgetApprover(){
-    $.import("mktgplanningtool.services.businessLayer.settings","budgetApproverLib");
-    return $.mktgplanningtool.services.businessLayer.settings.budgetApproverLib;
 }
 
 function getApi(){
@@ -343,11 +309,6 @@ function getCurrency(){
     return $.mktgplanningtool.services.businessLayer.settings.currencyLib;
 }
 
-function getCategory(){
-    $.import("mktgplanningtool.services.businessLayer.settings","categoryLib");
-    return $.mktgplanningtool.services.businessLayer.settings.categoryLib;
-}
-
 function getMeasure(){
     $.import("mktgplanningtool.services.businessLayer.settings","measureLib");
     return $.mktgplanningtool.services.businessLayer.settings.measureLib;
@@ -356,11 +317,6 @@ function getMeasure(){
 function getConfig(){
     $.import("mktgplanningtool.services.businessLayer.util","configuration");
     return $.mktgplanningtool.services.businessLayer.util.configuration;
-}
-
-function getExpectedOutcomeLib(){
-    $.import("mktgplanningtool.services.businessLayer.settings","expectedOutcomesLib");
-    return $.mktgplanningtool.services.businessLayer.settings.expectedOutcomesLib;
 }
 
 function getExpectedOutcomesOptionLib(){
@@ -378,10 +334,6 @@ function getAllocationCategoryLib(){
     return $.mktgplanningtool.services.businessLayer.settings.allocationCategoryLib;
 }
 
-function refactorL1_getAllocationCategoryLib(){
-    $.import("mktgplanningtool.services.businessLayer.settings","refactorL1_allocationCategoryLib");
-    return $.mktgplanningtool.services.businessLayer.settings.refactorL1_allocationCategoryLib;
-}
 
 function getAllocationOptionLib(){
     $.import("mktgplanningtool.services.businessLayer.settings","allocationOptionLib");
@@ -426,6 +378,11 @@ function getPlanning(){
 function getBudgetSpendRequest(){
     $.import("mktgplanningtool.services.businessLayer.budgetSpendRequest","budgetSpendRequestLib");
     return $.mktgplanningtool.services.businessLayer.budgetSpendRequest.budgetSpendRequestLib;
+}
+
+function refactorL5L6_getBudgetSpendRequest(){
+    $.import("mktgplanningtool.services.businessLayer.budgetSpendRequest","refactorL5L6_budgetSpendRequestLib");
+    return $.mktgplanningtool.services.businessLayer.budgetSpendRequest.refactorL5L6_budgetSpendRequestLib;
 }
 
 function getBudgetSpendReportLib(){
@@ -505,19 +462,14 @@ function getDataLevel3(){
     return $.mktgplanningtool.services.dataLayer.teamPlanHierarchy.dataLevel3;
 }
 
-function refactorL1_getDataLevel3(){
-    $.import("mktgplanningtool.services.dataLayer.teamPlanHierarchy","refactorL1_dataLevel3");
-    return $.mktgplanningtool.services.dataLayer.teamPlanHierarchy.refactorL1_dataLevel3;
-}
-
 function getDataLevel4(){
     $.import("mktgplanningtool.services.dataLayer.teamPlanHierarchy","dataLevel4");
     return $.mktgplanningtool.services.dataLayer.teamPlanHierarchy.dataLevel4;
 }
 
-function getDataLevel4Prefilled(){
-    $.import("mktgplanningtool.services.dataLayer.teamPlanHierarchy","dataLevel4Prefilled");
-    return $.mktgplanningtool.services.dataLayer.teamPlanHierarchy.dataLevel4Prefilled;
+function getDataCrmAcronym(){
+    $.import("mktgplanningtool.services.dataLayer.teamPlanHierarchy","dataCrmAcronym");
+    return $.mktgplanningtool.services.dataLayer.teamPlanHierarchy.dataCrmAcronym;
 }
 
 function getDataPartner(){
@@ -543,6 +495,11 @@ function getDataInterlockEntity(){
 function getDataUser(){
     $.import("mktgplanningtool.services.dataLayer.admin","dataUser");
     return $.mktgplanningtool.services.dataLayer.admin.dataUser;
+}
+
+function getDataRequestAccess(){
+    $.import("mktgplanningtool.services.dataLayer.admin","dataRequestAccess");
+    return $.mktgplanningtool.services.dataLayer.admin.dataRequestAccess;
 }
 
 function getDataRegion(){
@@ -575,10 +532,6 @@ function getDataLevel2(){
     return $.mktgplanningtool.services.dataLayer.teamPlanHierarchy.dataLevel2;
 }
 
-function refactorL1_getDataLevel2(){
-    $.import("mktgplanningtool.services.dataLayer.teamPlanHierarchy","refactorL1_dataLevel2");
-    return $.mktgplanningtool.services.dataLayer.teamPlanHierarchy.refactorL1_dataLevel2;
-}
 
 function getDataLevel2User(){
     $.import("mktgplanningtool.services.dataLayer.teamPlanHierarchy","dataLevel2User");
@@ -610,11 +563,6 @@ function getDataCategory(){
     return $.mktgplanningtool.services.dataLayer.settings.dataCategory;
 }
 
-function refactorL1_getDataCategory(){
-    $.import("mktgplanningtool.services.dataLayer.settings","refactorL1_dataCategory");
-    return $.mktgplanningtool.services.dataLayer.settings.refactorL1_dataCategory;
-}
-
 function getDataMeasure(){
     $.import("mktgplanningtool.services.dataLayer.settings","dataMeasure");
     return $.mktgplanningtool.services.dataLayer.settings.dataMeasure;
@@ -638,11 +586,6 @@ function getDataCategoryOptionLevel(){
 function getDataOutcomeType(){
     $.import("mktgplanningtool.services.dataLayer.settings","dataOutcomeType");
     return $.mktgplanningtool.services.dataLayer.settings.dataOutcomeType;
-}
-
-function refactorL1_getDataOutcomeType(){
-    $.import("mktgplanningtool.services.dataLayer.settings","refactorL1_dataOutcomeType");
-    return $.mktgplanningtool.services.dataLayer.settings.refactorL1_dataOutcomeType;
 }
 
 function getDataOutcome(){
@@ -726,10 +669,6 @@ function getDataBudgetYear(){
     return $.mktgplanningtool.services.dataLayer.settings.dataBudgetYear;
 }
 
-function getDataHl(){
-    $.import("mktgplanningtool.services.dataLayer.settings","dataHl");
-    return $.mktgplanningtool.services.dataLayer.settings.dataHl;
-}
 
 function getDataMarketingOrganization(){
     $.import("mktgplanningtool.services.dataLayer.settings","dataMarketingOrganization");
@@ -755,10 +694,6 @@ function getDataCampaignSubType(){
     $.import("mktgplanningtool.services.dataLayer.settings","dataCampaignSubType");
     return $.mktgplanningtool.services.dataLayer.settings.dataCampaignSubType;
 }
-function getDataMarketingProgram(){
-    $.import("mktgplanningtool.services.dataLayer.settings","dataMarketingProgram");
-    return $.mktgplanningtool.services.dataLayer.settings.dataMarketingProgram;
-}
 
 function getDataSalesOrganization(){
     $.import("mktgplanningtool.services.dataLayer.settings","dataSalesOrganizations");
@@ -778,16 +713,6 @@ function getDataRouteToMarket(){
 function getDataEmployeeResponsible(){
     $.import("mktgplanningtool.services.dataLayer.settings","dataEmployeeResponsible");
     return $.mktgplanningtool.services.dataLayer.settings.dataEmployeeResponsible;
-}
-
-function getDataResponsiblePerson(){
-    $.import("mktgplanningtool.services.dataLayer.settings","dataResponsiblePerson");
-    return $.mktgplanningtool.services.dataLayer.settings.dataResponsiblePerson;
-}
-
-function getDataBudgetApprover(){
-    $.import("mktgplanningtool.services.dataLayer.settings","dataBudgetApprover");
-    return $.mktgplanningtool.services.dataLayer.settings.dataBudgetApprover;
 }
 
 function getDataApi(){
@@ -820,10 +745,11 @@ function getDataExpectedOutcome(){
     return $.mktgplanningtool.services.dataLayer.settings.dataExpectedOutcome;
 }
 
-function refactorL1_getDataExpectedOutcome(){
-    $.import("mktgplanningtool.services.dataLayer.settings","refactorL1_dataExpectedOutcome");
-    return $.mktgplanningtool.services.dataLayer.settings.refactorL1_dataExpectedOutcome;
+function refactorL5L6_getDataExpectedOutcome(){
+    $.import("mktgplanningtool.services.dataLayer.settings","refactorL5L6_dataExpectedOutcome");
+    return $.mktgplanningtool.services.dataLayer.settings.refactorL5L6_dataExpectedOutcome;
 }
+
 
 function getDataExpectedOutcomeOption(){
     $.import("mktgplanningtool.services.dataLayer.settings","dataExpectedOutcomeOption");
@@ -851,39 +777,6 @@ function getDataAttachment(){
     return $.mktgplanningtool.services.dataLayer.attachment.dataAttachment;
 }
 
-/***************************************** LEGACY *****************************************/
-function getLevel5Legacy(){
-    $.import("mktgplanningtool.services.businessLayer.teamPlanHierarchy","level5LibLegacy");
-    return $.mktgplanningtool.services.businessLayer.teamPlanHierarchy.level5LibLegacy;
-}
-function getLevel6Legacy(){
-    $.import("mktgplanningtool.services.businessLayer.teamPlanHierarchy","level6LibLegacy");
-    return $.mktgplanningtool.services.businessLayer.teamPlanHierarchy.level6LibLegacy;
-}
-function getLevel5DEReportLegacy(){
-    $.import("mktgplanningtool.services.businessLayer.dataEntryReport","level5ReportLibLegacy");
-    return $.mktgplanningtool.services.businessLayer.dataEntryReport.level5ReportLibLegacy;
-}
-function getLevel6DEReportLegacy(){
-    $.import("mktgplanningtool.services.businessLayer.dataEntryReport","level6ReportLibLegacy");
-    return $.mktgplanningtool.services.businessLayer.dataEntryReport.level6ReportLibLegacy;
-}
-function getDataLevel5Legacy(){
-    $.import("mktgplanningtool.services.dataLayer.teamPlanHierarchy","dataLevel5Legacy");
-    return $.mktgplanningtool.services.dataLayer.teamPlanHierarchy.dataLevel5Legacy;
-}
-function getDataLevel6Legacy(){
-    $.import("mktgplanningtool.services.dataLayer.teamPlanHierarchy","dataLevel6Legacy");
-    return $.mktgplanningtool.services.dataLayer.teamPlanHierarchy.dataLevel6Legacy;
-}
-function getDataLevel5ReportLegacy(){
-    $.import("mktgplanningtool.services.dataLayer.dataEntryReport","dataLevel5ReportLegacy");
-    return $.mktgplanningtool.services.dataLayer.dataEntryReport.dataLevel5ReportLegacy;
-}
-function getDataLevel6ReportLegacy(){
-    $.import("mktgplanningtool.services.dataLayer.dataEntryReport","dataLevel6ReportLegacy");
-    return $.mktgplanningtool.services.dataLayer.dataEntryReport.dataLevel6ReportLegacy;
-}
 
 function getDataBudgetSpendRequest(){
     $.import("mktgplanningtool.services.dataLayer.budgetSpendRequest","dataBudgetSpendRequest");

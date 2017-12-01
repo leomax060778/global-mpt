@@ -1,42 +1,45 @@
-PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_CATEGORY_OPTION_BY_HIERARCHY_LEVEL_ID"(
-		IN in_hierarchy_level_id BIGINT, 
-		OUT out_result TABLE (
-			category_id INTEGER,
-			hierarchy_level_id INTEGER,
-			measure_id INTEGER,
-			category_name NVARCHAR(60),
-			description NVARCHAR(255),
-			in_processing_report TINYINT,
-			option_id INTEGER,
-			option_name NVARCHAR(60)
-		)
-	)
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_CATEGORY_OPTION_BY_HIERARCHY_LEVEL_ID" (
+	IN in_hierarchy_level_id BIGINT,
+	OUT out_result TABLE (
+        category_id integer
+        , hierarchy_level_id integer
+        , measure_id integer
+        , category_name nvarchar(60)
+        , description nvarchar(255)
+        , in_processing_report tinyint
+        , option_id integer
+        , option_name nvarchar(60)
+        , make_category_mandatory TINYINT
+        , single_option_only TINYINT
+        )
+	) 
 	LANGUAGE SQLSCRIPT
-	SQL SECURITY INVOKER
+	SQL SECURITY INVOKER 
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
-	READS SQL DATA
-AS
+	READS SQL DATA AS
 BEGIN
-	out_result = SELECT AC.ALLOCATION_CATEGORY_ID AS CATEGORY_ID, 
-				ACOL.HIERARCHY_LEVEL_ID, 
-				AC.MEASURE_ID, 
-				AC.NAME AS CATEGORY_NAME, 
-				AC.DESCRIPTION, 
-				ACOL.IN_PROCESSING_REPORT, 
-				AO.ALLOCATION_OPTION_ID AS OPTION_ID, 
-				AO.NAME AS OPTION_NAME
-			FROM allocation_category_option_level AS acol
-				INNER JOIN allocation_category AS ac
-				ON acol.allocation_category_id = ac.allocation_category_id
-				INNER JOIN allocation_option AS ao
-				ON acol.allocation_option_id = ao.allocation_option_id
-			WHERE acol.hierarchy_level_id = in_hierarchy_level_id
-				AND ac.enabled = 1
-				AND ac.deleted = 0
-				AND ao.enabled = 1
-				AND ao.deleted = 0
-				AND acol.enabled = 1
-				AND acol.deleted = 0
-			ORDER BY upper(ac.name) ASC, 
-				upper(ao.name) ASC;
+	out_result =
+    SELECT AC.ALLOCATION_CATEGORY_ID AS CATEGORY_ID
+    ,ACOL.HIERARCHY_LEVEL_ID
+    ,AC.MEASURE_ID
+    ,AC.NAME AS CATEGORY_NAME
+    ,AC.DESCRIPTION
+    ,ACOL.IN_PROCESSING_REPORT
+    ,AO.ALLOCATION_OPTION_ID AS OPTION_ID
+    ,AO.NAME AS OPTION_NAME
+    ,ACOL.make_category_mandatory
+    ,AC.SINGLE_OPTION_ONLY
+    from allocation_category_option_level acol
+    inner join allocation_category ac on acol.allocation_category_id = ac.allocation_category_id
+    inner join allocation_option ao on acol.allocation_option_id = ao.allocation_option_id
+    where acol.hierarchy_level_id = in_hierarchy_level_id
+    and ac.enabled = 1
+    and ac.deleted = 0
+    and ao.enabled = 1
+    and ao.deleted = 0
+    and acol.enabled = 1
+    and acol.deleted = 0
+    order by upper(ac.name)
+    , upper(ao.name);
+
 END;

@@ -1,20 +1,17 @@
-PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::DEL_HL3_USER"(
-		IN arrDelHl3User TABLE (
-			in_hl3_id BIGINT,
-			in_user_id BIGINT
-		), 
-		OUT out_result BIGINT
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::DEL_HL3_USER" (
+	IN arrDelHl3User TABLE (in_hl3_id BIGINT,
+	in_user_id BIGINT)
+	,OUT out_result BIGINT
 	)
 	LANGUAGE SQLSCRIPT
-	SQL SECURITY INVOKER
+	SQL SECURITY INVOKER 
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
-AS
+	AS
 BEGIN
-	DELETE FROM HL3_USER
-	WHERE ((HL3_USER.HL3_ID, HL3_USER.USER_ID) IN (SELECT in_hl3_id, 
-				in_user_id
-			FROM :arrDelHl3User));
-	SELECT ::ROWCOUNT
-		INTO out_result
-		FROM DUMMY;
+
+		delete from HL3_USER 
+        where (HL3_USER.HL3_ID, HL3_USER.USER_ID) in (select in_hl3_id, in_user_id from :arrDelHl3User);
+
+		SELECT ::ROWCOUNT INTO out_result FROM DUMMY;
+
 END;

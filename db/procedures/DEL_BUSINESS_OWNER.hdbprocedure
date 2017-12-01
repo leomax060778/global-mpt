@@ -8,7 +8,6 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::DEL_BUSINESS_OWN
    DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
    AS
 BEGIN
-
 	UPDATE BUSINESS_OWNER
         SET
         enabled = 0

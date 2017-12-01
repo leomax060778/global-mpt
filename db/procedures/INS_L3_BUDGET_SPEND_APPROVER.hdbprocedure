@@ -1,0 +1,25 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_L3_BUDGET_SPEND_APPROVER" (
+	IN l3BudgetApprover TABLE (
+        in_hl3_id bigint,
+        in_budget_approver_id bigint,
+        in_user_id bigint
+	)
+	,OUT out_hl3_user_id bigint
+	) 
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER 
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL" AS
+BEGIN
+	INSERT INTO HL3_BUDGET_SPEND_APPROVER (
+	 hl3_id
+	,user_id
+	,created_user_id
+	)
+	(select
+	 in_hl3_id
+	,in_budget_approver_id
+	,in_user_id
+	from :l3BudgetApprover);
+	
+	SELECT TOP 1 CURRENT_IDENTITY_VALUE() INTO out_hl3_user_id FROM HL3_BUDGET_SPEND_APPROVER;
+END;

@@ -1,31 +1,27 @@
-PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::DEL_HL1_ALLOCATION_CATEGORY_OPTION_BY_ID"(
-		IN myTable TABLE (
-			in_category_option_level_id BIGINT,
-			in_user_id BIGINT,
-			in_hl1_id BIGINT
-		), 
-		OUT out_result INT
-	)
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::DEL_HL1_ALLOCATION_CATEGORY_OPTION_BY_ID" (
+	IN myTable TABLE(
+        in_category_option_level_id bigint,
+        in_user_id bigint,
+        in_hl1_id bigint
+        ),
+    OUT out_result int)
 	LANGUAGE SQLSCRIPT
-	SQL SECURITY INVOKER
+	SQL SECURITY INVOKER 
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
-AS
+	AS
 BEGIN
 	UPDATE HL1_CATEGORY_OPTION
-SET deleted = 1, 
-		enabled = 0, 
-		modified_user_id = in_user_id, 
-		modified_date_tz = CURRENT_TIMESTAMP
-FROM HL1_CATEGORY_OPTION,
-		(
-				SELECT IN_USER_ID, 
-				IN_CATEGORY_OPTION_LEVEL_ID, 
-				IN_HL1_ID
-			FROM :myTable
-		) AS T
-WHERE allocation_category_option_level_id = T.IN_CATEGORY_OPTION_LEVEL_ID
-		AND HL1_ID = IN_HL1_ID;
-	SELECT ::ROWCOUNT
-		INTO out_result
-		FROM DUMMY;
+	SET deleted = 1,
+	enabled = 0,
+    modified_user_id = in_user_id,
+    modified_date_tz = CURRENT_TIMESTAMP
+
+	from HL1_CATEGORY_OPTION, (
+        select IN_USER_ID, IN_CATEGORY_OPTION_LEVEL_ID, IN_HL1_ID from :myTable
+    ) T
+    where allocation_category_option_level_id = T.IN_CATEGORY_OPTION_LEVEL_ID
+    AND HL1_ID = IN_HL1_ID;
+	
+	SELECT ::ROWCOUNT INTO out_result FROM DUMMY;
+
 END;

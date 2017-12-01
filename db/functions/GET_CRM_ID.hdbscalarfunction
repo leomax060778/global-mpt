@@ -1,0 +1,38 @@
+FUNCTION "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"
+    (in budgetYear bigint
+    , in L1_acronym nvarchar(255)
+    , in L2_acronym nvarchar(255)
+    , in L3_acronym nvarchar(255)
+    , in L4_acronym nvarchar(255)
+    , in L5_acronym nvarchar(255)
+    , in L6_acronym nvarchar(255))
+	RETURNS result nvarchar(255)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER 
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	AS
+BEGIN
+    declare crmPrefix nvarchar(4);
+    crmPrefix := 'CRM-';
+
+    IF coalesce(L6_acronym, '') != '' THEN --path for L6
+            select CONCAT(CONCAT(CONCAT(CONCAT(CONCAT(CONCAT(L2_acronym, SUBSTRING(TO_NVARCHAR(budgetYear), LENGTH(budgetYear) - 1, 2)), '-'), L4_acronym), '-'), L5_acronym)
+            , (select case when LENGTH(L6_acronym) = 2 then CONCAT('0',L6_acronym) when LENGTH(L6_acronym) = 1 then CONCAT('00',L6_acronym) else L6_acronym end from dummy))
+            into result from dummy;
+    ELSEIF coalesce(L5_acronym, '') != '' THEN --path for L5
+        select CONCAT(CONCAT(CONCAT(CONCAT(CONCAT(L2_acronym, SUBSTRING(TO_NVARCHAR(budgetYear), LENGTH(budgetYear) - 1, 2)), '-'), L4_acronym), '-'), L5_acronym) into result from dummy;
+    ELSEIF coalesce(L4_acronym,'') != '' THEN --path for L4
+        select CONCAT(CONCAT(CONCAT(L2_acronym, SUBSTRING(TO_NVARCHAR(budgetYear), LENGTH(budgetYear) - 1, 2)), '-'), L4_acronym) into result from dummy;
+    ELSEIF coalesce(L3_acronym,'') != '' THEN --path for L3
+        select CONCAT(CONCAT(CONCAT(L2_acronym, SUBSTRING(TO_NVARCHAR(budgetYear), LENGTH(budgetYear) - 1, 2)), '-'), L3_acronym) into result from dummy;
+    ELSEIF coalesce(L2_acronym,'') != '' THEN --path for L2
+        select CONCAT(L2_acronym, SUBSTRING(TO_NVARCHAR(budgetYear), LENGTH(budgetYear) - 1, 2)) into result from dummy;
+    ELSEIF coalesce(L1_acronym,'') != '' THEN --path for L2
+            select CONCAT(L1_acronym, SUBSTRING(TO_NVARCHAR(budgetYear), LENGTH(budgetYear) - 1, 2)) into result from dummy;
+    ELSE
+        select 'CRM' into result from dummy;
+    END IF;
+
+    select concat(crmPrefix, :result) into result from dummy;
+
+END;

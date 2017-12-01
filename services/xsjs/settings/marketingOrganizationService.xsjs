@@ -49,8 +49,7 @@ function handlePost(reqBody, userId) {
 			MObl.uploadMarketingOrganization(reqBody, userId);
 			break;
 		default:
-			result = httpUtil.handleResponse(MObl.InsertMarketingOrganization(reqBody, userId),
-				httpUtil.OK, httpUtil.AppJson);
+			result = MObl.InsertMarketingOrganization(reqBody, userId);
 			break;
 	}
 	return httpUtil.handleResponse(result,httpUtil.OK,httpUtil.AppJson);

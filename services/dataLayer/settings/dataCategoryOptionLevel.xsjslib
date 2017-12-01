@@ -52,13 +52,14 @@ function getAllocationCategoryByCategoryIdLevelId(categoryId, levelId){
 }
 
 
-function insertAllocationCATEGORYOptionLevel(categoryId, optionId, levelId, inProcessingReport, userId, autoCommit) {
+function insertAllocationCATEGORYOptionLevel(categoryId, optionId, levelId, inProcessingReport, userId, make_category_mandatory, autoCommit) {
 	var params = {
 		'in_category_id': categoryId,
 		'in_option_id': optionId,
 		'in_level_id': levelId,
 		'in_in_processing_report': inProcessingReport,
-		'in_user_id': userId
+		'in_user_id': userId,
+        'in_make_category_mandatory':make_category_mandatory
 	};
 	var rdo;
 	if (autoCommit) {
@@ -85,23 +86,25 @@ function updateAllocationCategoryOptionLevelProcessingReport(categoryId, levelId
 	return rdo;
 }
 
-function updateAllocationCategoryOptionLevel(categoryId, levelId, optionId, processingReport, userId,autoCommit){
+function updateAllocationCategoryOptionLevel(categoryId, levelId, optionId, processingReport, userId, make_category_mandatory,autoCommit){
     var params = {
         'in_category_id': categoryId,
         'in_level_id': levelId,
         'in_option_id':optionId,
         'in_user_id' : userId,
-        'in_in_processing_report':processingReport
+        'in_in_processing_report':processingReport,
+        'in_make_category_mandatory':make_category_mandatory
     };
 
     return db.executeScalarManual(UPD_ALLOCATION_CATEGORY_OPTION_LEVEL,params,'out_result');
 }
 
-function deleteAllocationCATEGORYOptionLevel(categoryId, levelId,userId, autoCommit){
+function deleteAllocationCATEGORYOptionLevel(categoryId, levelId, allocationOptions, userId, autoCommit){
 	var params = {
 		'in_category_id': categoryId,
 		'in_level_id': levelId,
-		'in_user_id' : userId
+		'in_user_id' : userId,
+		'optionList': allocationOptions
 	};
 	var rdo;
 	if(autoCommit){

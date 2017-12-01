@@ -1,27 +1,24 @@
-PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_COUNT_MARKETING_PROGRAM_IN_USE_BY_ID"(
-		IN in_marketing_program_id BIGINT, 
-		OUT out_result INTEGER
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_COUNT_MARKETING_PROGRAM_IN_USE_BY_ID" (
+		IN in_marketing_program_id bigint,
+		OUT out_result integer
 	)
 	LANGUAGE SQLSCRIPT
 	SQL SECURITY INVOKER
-	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
-AS
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL" AS
 BEGIN
-	SELECT sum(t.counter)
-		INTO out_result
-		FROM (
-						SELECT count(hl5.marketing_program_id) AS counter
-				FROM hl5
-				WHERE hl5.enabled = 1
-					AND hl5.deleted = 0
-					AND hl5.marketing_program_id = in_marketing_program_id
+	select sum(t.counter) into out_result
+    from(
+    select count(hl5.marketing_program_id) as counter
+    from hl5
+    where
+    hl5.enabled = 1 and hl5.deleted = 0
+    and hl5.marketing_program_id = in_marketing_program_id
+    union ALL
+    select count(hl6.marketing_program_id) as counter
+    from hl6
+    where
+    hl6.enabled = 1 and hl6.deleted = 0
+    and hl6.marketing_program_id = in_marketing_program_id
+    ) t;
 
-				UNION ALL
-
-						SELECT count(hl6.marketing_program_id) AS counter
-				FROM hl6
-				WHERE hl6.enabled = 1
-					AND hl6.deleted = 0
-					AND hl6.marketing_program_id = in_marketing_program_id
-			) AS t;
 END;

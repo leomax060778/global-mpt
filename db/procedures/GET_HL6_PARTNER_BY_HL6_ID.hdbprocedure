@@ -28,6 +28,7 @@ in in_hl6_id bigint
 	
 BEGIN
 
+
 temp_out_hl6_partner =
 	    SELECT hl6_partner.partner_name,
         hl6_partner.hl6_partner_id,

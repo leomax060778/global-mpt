@@ -168,10 +168,10 @@ function insCostCenter(name, description, userId, code, salesOrganizationId, per
 		in_user_id: userId,
 		in_code: code,
 		in_description: description,
-		in_sales_organization_id: salesOrganizationId,
-		in_person_responsible: personResponsible
+		in_sales_organization_id: salesOrganizationId || null,
+		in_person_responsible: personResponsible || null
 	};
-
+	
 	return db.executeScalarManual(INS_COST_CENTER, parameters, 'out_cost_center_id');
 }
 

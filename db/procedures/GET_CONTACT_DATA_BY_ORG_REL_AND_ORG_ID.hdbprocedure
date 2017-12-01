@@ -1,0 +1,74 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_CONTACT_DATA_BY_ORG_REL_AND_ORG_ID"
+(   IN in_organization_related_id BIGINT,
+    IN in_organization_id BIGINT,
+        OUT out_result TABLE(
+              INTERLOCK_ORGANIZATION_CONTACT_DATA_ID BIGINT,
+              ORGANIZATION_RELATED_ID BIGINT,
+              ORGANIZATION_ID BIGINT,
+              CONTACT_DATA_ID BIGINT,
+              USER_NAME NVARCHAR(255),
+              EMAIL NVARCHAR(255),
+              FIRST_NAME NVARCHAR(255),
+              LAST_NAME NVARCHAR(255),
+              ROLE_ID BIGINT,
+              ROLE_NAME NVARCHAR(255)
+        ),
+        OUT out_result_availables TABLE(
+              CONTACT_DATA_ID BIGINT,
+              USER_NAME NVARCHAR(255),
+              EMAIL NVARCHAR(255),
+              FIRST_NAME NVARCHAR(255),
+              LAST_NAME NVARCHAR(255),
+              ROLE_ID BIGINT,
+              ROLE_NAME NVARCHAR(255)
+        )
+)
+LANGUAGE SQLSCRIPT
+SQL SECURITY INVOKER
+DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+AS
+BEGIN
+	
+out_result =
+	SELECT
+    IOCD.INTERLOCK_ORGANIZATION_CONTACT_DATA_ID as INTERLOCK_ORGANIZATION_CONTACT_DATA_ID ,
+    IOCD.ORGANIZATION_RELATED_ID as ORGANIZATION_RELATED_ID,
+    IOCD.ORGANIZATION_ID as ORGANIZATION_ID,
+    U.USER_ID as CONTACT_DATA_ID,
+    U.USER_NAME as USER_NAME,
+    U.EMAIL as EMAIL,
+    U.FIRST_NAME as FIRST_NAME,
+    U.LAST_NAME as LAST_NAME,
+    R.ROLE_ID as ROLE_ID,
+    R.NAME AS ROLE_NAME
+    FROM INTERLOCK_ORGANIZATION_CONTACT_DATA IOCD
+    INNER JOIN USER U ON IOCD.CONTACT_DATA_ID = U.USER_ID
+    INNER JOIN USER_ROLE UR ON UR.USER_ID = U.USER_ID
+    INNER JOIN ROLE R ON R.ROLE_ID = UR.ROLE_ID
+	WHERE 
+	IOCD.ORGANIZATION_RELATED_ID = in_organization_related_id
+	and IOCD.ORGANIZATION_ID = in_organization_id
+	and IOCD.deleted = 0 and IOCD.enabled = 1;
+
+out_result_availables =
+    SELECT
+        U.USER_ID as CONTACT_DATA_ID,
+        U.USER_NAME as USER_NAME,
+        U.EMAIL as EMAIL,
+        U.FIRST_NAME as FIRST_NAME,
+        U.LAST_NAME as LAST_NAME,
+        R.ROLE_ID as ROLE_ID,
+        R.NAME AS ROLE_NAME
+        FROM USER U 
+        INNER JOIN USER_ROLE UR ON UR.USER_ID = U.USER_ID
+        INNER JOIN ROLE R ON R.ROLE_ID = UR.ROLE_ID
+    	WHERE
+    	U.USER_ID NOT IN (
+    	    SELECT CONTACT_DATA_ID AS USER_ID
+    	    FROM INTERLOCK_ORGANIZATION_CONTACT_DATA
+    	    WHERE   ORGANIZATION_RELATED_ID = in_organization_related_id
+                  	and ORGANIZATION_ID = in_organization_id
+                  	and deleted = 0 and enabled = 1
+    	)
+    	and U.deleted = 0 and U.enabled = 1;
+END;

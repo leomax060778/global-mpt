@@ -37,9 +37,11 @@ function handleGet(params,userId){
 				if(flags) {
 					result.in_processing_report = flags.IN_PROCESSING_REPORT;
 					result.in_show_copy_configuration_check_box = !!flags.SHOW_COPY_OPTION_TO_SEGMENTATION_CHECK_BOX;
+                    result.in_make_category_mandatory = !!flags.MAKE_CATEGORY_MANDATORY;
 				} else {
 					result.in_processing_report = 0;
 					result.in_show_copy_configuration_check_box = false;
+                    result.in_make_category_mandatory = false;
 				}
 			} else {
 				result.results = AllocationOptionLib.getAssignedOptionByCategoryIdByLevelId(categoryId,levelId, true);

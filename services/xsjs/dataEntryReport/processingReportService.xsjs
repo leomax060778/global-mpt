@@ -10,7 +10,8 @@ var config = mapper.getDataConfig();
 /******************************************/
 
 function processRequest(){
-    return	httpUtil.processRequest(handleGet,handlePost,handlePut,handleDelete, false, config.getResourceIdByName(config.level3()));
+    //return	httpUtil.processRequest(handleGet,handlePost,handlePut,handleDelete, false, config.getResourceIdByName(config.level3()));
+	return httpUtil.processRequest(handleGet,handlePost,handlePut,handleDelete,false,"", true);
 }
 
 function handleGet(param){
@@ -20,8 +21,10 @@ function handleGet(param){
     var rdo;
     switch (hierarchy){
         case 'HL4':
-            if(method)
-                rdo = businessPlanL4.getAllL4DEReportForDownload();
+            if(method === "DOWNLOAD_CREATE_IN_CRM")
+                rdo = businessPlanL4.getAllL4CreateInCrmDEReportForDownload();
+            else if(method === "DOWNLOAD_UPDATE_IN_CRM")
+                rdo = businessPlanL4.getAllHL4ChangedFields();
             else if (!hl_id){
                 rdo = businessPlanL4.getAllL4DEReport();
             }
@@ -30,8 +33,10 @@ function handleGet(param){
             }
             break;
         case 'HL5':
-            if(method)
-                rdo = businessPlanL5.getAllL5DEReportForDownload();
+            if(method === "DOWNLOAD_CREATE_IN_CRM")
+                rdo = businessPlanL5.getAllL5CreateInCrmDEReportForDownload();
+            else if(method === "DOWNLOAD_UPDATE_IN_CRM")
+                rdo = businessPlanL5.getAllHL5ChangedFields();
             else if (!hl_id){
                 rdo = businessPlanL5.getAllL5DEReport();
             }
@@ -40,8 +45,10 @@ function handleGet(param){
             }
             break;
         default:
-            if(method)
-                rdo = businessPlanL6.getAllL6DEReportForDownload();
+            if(method === "DOWNLOAD_CREATE_IN_CRM")
+                rdo = businessPlanL6.getAllL6CreateInCrmDEReportForDownload();
+            else if(method === "DOWNLOAD_UPDATE_IN_CRM")
+                rdo = businessPlanL6.getAllHL6ChangedFields();
             else if (!hl_id){
                 rdo = businessPlanL6.getAllL6DEReport();
             }

@@ -27,7 +27,7 @@ var spDeleteExpOutcomeDetail = "DEL_HL4_EXPECTED_OUTCOMES_DETAIL_BY_HL4_ID";
 
 /**L2***********************************************/
 var spGetExpOutByHl2Id = "GET_EXPECTED_OUTCOMES_BY_HL2_ID";
-var spGetHl2ExpOutDetail = "GET_EXPECTED_OUTCOMES_DETAILS_EO_HL2_ID";
+var GET_HL2_KPI_BY_HL2_ID = "GET_HL2_KPI_BY_HL2_ID";
 var spInsertHl2ExpOutcome = "INS_HL2_EXPECTED_OUTCOMES";
 var spInsertHl2ExpOutcomeDetail = "INS_HL2_EXPECTED_OUTCOMES_DETAIL";
 var spDeleteHl2ExpOutcome = "DEL_HL2_EXPECTED_OUTCOMES_BY_HL2_ID";
@@ -36,7 +36,7 @@ var spDeleteHl2ExpOutcomeDetail = "DEL_HL2_EXPECTED_OUTCOMES_DETAIL_BY_HL2_ID";
 
 /**L3***********************************************/
 var spGetExpOutByHl3Id = "GET_EXPECTED_OUTCOMES_BY_HL3_ID";
-var spGetHl3ExpOutDetail = "GET_EXPECTED_OUTCOMES_DETAILS_EO_HL3_ID";
+var GET_HL3_KPI_BY_HL3_ID = "GET_HL3_KPI_BY_HL3_ID";
 var spInsertHl3ExpOutcome = "INS_HL3_EXPECTED_OUTCOMES";
 var spInsertHl3ExpOutcomeDetail = "INS_HL3_EXPECTED_OUTCOMES_DETAIL";
 var spDeleteHl3ExpOutcome = "DEL_HL3_EXPECTED_OUTCOMES_BY_HL3_ID";
@@ -67,8 +67,9 @@ var spDeleteHl6ExpOutcomeDetail = "DEL_HL6_EXPECTED_OUTCOMES_DETAIL_BY_HL6_ID";
 
 
 /**L1***********************************************/
-var spGetExpOutByHl1Id = "GET_EXPECTED_OUTCOMES_BY_HL1_ID";
-var spGetHl1ExpOutDetail = "GET_EXPECTED_OUTCOMES_DETAILS_EO_HL1_ID";
+// var spGetExpOutByHl1Id = "GET_EXPECTED_OUTCOMES_BY_HL1_ID";
+// var GET_KPI_BY_HL1_ID = "GET_KPI_BY_HL1_ID";
+var GET_HL1_KPI_BY_HL1_ID = "GET_HL1_KPI_BY_HL1_ID";
 var spInsertHl1ExpOutcome = "INS_HL1_EXPECTED_OUTCOMES";
 var spInsertHl1ExpOutcomeDetail = "INS_HL1_EXPECTED_OUTCOMES_DETAIL";
 var spDeleteHl1ExpOutcome = "DEL_HL1_EXPECTED_OUTCOMES_BY_HL1_ID";
@@ -325,8 +326,8 @@ function getExpectedOutcomeByHl2Id(id){
 
 function getHl2ExpectedOutcomeDetailById(id){
     if(id){
-        var rdo = db.executeProcedure(spGetHl2ExpOutDetail, {'in_hl2_expected_outcomes_id':id});
-        return db.extractArray(rdo.out_expected_outcomes_details);
+        var rdo = db.executeProcedure(GET_HL2_KPI_BY_HL2_ID, {'in_hl2_id':id});
+        return db.extractArray(rdo.out_result);
     }
     return null;
 }
@@ -341,8 +342,8 @@ function getExpectedOutcomeByHl3Id(id){
 
 function getHl3ExpectedOutcomeDetailById(id){
     if(id){
-        var rdo = db.executeProcedure(spGetHl3ExpOutDetail, {'in_hl3_expected_outcomes_id':id});
-        return db.extractArray(rdo.out_expected_outcomes_details);
+        var rdo = db.executeProcedure(GET_HL3_KPI_BY_HL3_ID, {'in_hl3_id':id});
+        return db.extractArray(rdo.out_result);
     }
     return null;
 }
@@ -357,15 +358,6 @@ function insertHl2ExpectedOutcomes(in_hl2_id, in_comments, in_created_user_id){
 }
 
 function insertHl2ExpectedOutcomesDetail(arrL2Kpi){
-    /*
-     var parameters = {};
-     parameters.in_hl2_expected_outcomes_id = in_hl2_expected_outcomes_id;
-     parameters.in_expected_outcome_level_id = in_expected_outcome_level_id;
-     parameters.in_euro_value = in_euro_value;
-     parameters.in_volume_value = in_volume_value;
-     parameters.in_created_user_id = in_created_user_id;
-     */
-
     var rdo = db.executeScalarManual(spInsertHl2ExpOutcomeDetail, arrL2Kpi, 'out_hl2_expected_outcomes_details_id');
     return rdo;
 }
@@ -458,16 +450,16 @@ function deleteHl6ExpectedOutcomesDetail(in_hl6_id, in_user_id){
 /*L1*/
 function getExpectedOutcomeByHL1Id(id){
     if(id){
-        var rdo = db.executeProcedure(spGetExpOutByHl1Id, {'in_hl1_id':id});
-        return db.extractArray(rdo.out_expected_outcomes);
+        var rdo = db.executeProcedure(GET_KPI_BY_HL1_ID, {'in_hl1_id':id});
+        return db.extractArray(rdo.out_result);
     }
     return null;
 }
 
 function getHL1ExpectedOutcomeDetailById(id){
     if(id){
-        var rdo = db.executeProcedure(spGetHl1ExpOutDetail, {'in_hl1_expected_outcomes_id':id});
-        return db.extractArray(rdo.out_expected_outcomes_details);
+        var rdo = db.executeProcedure(GET_HL1_KPI_BY_HL1_ID, {'in_hl1_id':id});
+        return db.extractArray(rdo.out_result);
     }
     return null;
 }

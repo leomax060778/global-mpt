@@ -16,23 +16,30 @@ var spGetInterlockMessageByInterlockId = "GET_INTERLOCK_MESSAGE_BY_INTERLOCK_ID"
 var spGetInterlockByUserIdOriginId = "GET_INTERLOCK_BY_USER_ID_ORIGIN_ID";
 var spGetInterlockByHash = "GET_INTERLOCK_BY_HASH";
 var spGetInterlockContactDataByHash = "GET_INTERLOCK_CONTACT_DATA_BY_HASH";
-var spGetInterlockCentralRegionContactByEmail = "GET_INTERLOCK_CENTRAL_REGION_CONTACT_DATA_BY_EMAIL";
 
 var spInsertInterlock = "INS_INTERLOCK";
+var spInsertInterlockOrganizationTypeFrom = "INS_INTERLOCK_ORGANIZATION_TYPE_FROM";
+var spInsertInterlockOrganizationTypeTo = "INS_INTERLOCK_ORGANIZATION_TYPE_TO";
+var spUpdateInterlockOrganizationTypeFrom = "UPD_INTERLOCK_ORGANIZATION_TYPE_FROM";
+var spUpdateInterlockOrganizationTypeTo = "UPD_INTERLOCK_ORGANIZATION_TYPE_TO";
+
 var spUpdateInterlock = "UPD_INTERLOCK";
 var spInsertInterlockLogStatus = "INS_INTERLOCK_LOG_STATUS";
-var spInsertInterlockRoute = "INS_INTERLOCK_ROUTE";
-var spInsertInterlockRegion = "INS_INTERLOCK_REGION";
-var spInsertInterlockSubregion = "INS_INTERLOCK_SUBREGION";
+/*var spInsertInterlockRegion = "INS_INTERLOCK_REGION";
+var spInsertInterlockSubregion = "INS_INTERLOCK_SUBREGION";*/
 var spInsertInterlockContactData = "INS_INTERLOCK_CONTACT_DATA";
 var spInsertInterlockRequestMessage = "INS_INTERLOCK_REQUEST_MESSAGE";
 
 var spDeleteInterlockByIlId = "DEL_INTERLOCK_BY_IL_ID";
-var spDeleteInterlockRouteByIlId = "DEL_INTERLOCK_GLOBAL_TEAM_BY_IL_ID";
+var spGetInterlockByEmail = "GET_INTERLOCK_BY_EMAIL";
+/*var spDeleteInterlockRouteByIlId = "DEL_INTERLOCK_GLOBAL_TEAM_BY_IL_ID";
 var spDeleteInterlockRegionByIlId = "DEL_INTERLOCK_REGION_BY_IL_ID";
-var spDeleteInterlockSubregionByIlId = "DEL_INTERLOCK_SUBREGION_BY_IL_ID";
+var spDeleteInterlockSubregionByIlId = "DEL_INTERLOCK_SUBREGION_BY_IL_ID";*/
 var spDeleteInterlockContactDataById = "DEL_INTERLOCK_CONTACT_DATA";
+var spDeleteHardInterlockContactDataById = "DEL_HARD_INTERLOCK_CONTACT_DATA";
 var spDeleteInterlockRequestMessageById = "DEL_INTERLOCK_REQUEST_MESSAGE_BY_ID";
+var spDeleteInterlockOrganizationTypeFromByIlId = "DEL_INTERLOCK_ORGANIZATION_TYPE_FROM_BY_ID";
+var spDeleteInterlockOrganizationTypeToByIlId = "DEL_INTERLOCK_ORGANIZATION_TYPE_TO_BY_ID";
 
 var spGetInterlockContactRegionCentralTeam = "GET_INTERLOCK_CENTRAL_REGION_CONTACT_DATA";
 
@@ -46,6 +53,21 @@ var DEL_INTERLOCK_REQUEST_INTERLOCK_ORGANIZATION_BY_IL_ID = "DEL_INTERLOCK_REQUE
 var GET_DEFAULT_INTERLOCK_CONFIGURATION = "GET_DEFAULT_INTERLOCK_CONFIGURATION";
 var UPD_DEFAULT_INTERLOCK_CONFIGURATION = "UPD_DEFAULT_INTERLOCK_CONFIGURATION";
 
+var INS_INTERLOCK_DEFAULT_ENTITY_CONFIGURATION_FROM = "INS_INTERLOCK_DEFAULT_ENTITY_CONFIGURATION_FROM";
+var INS_INTERLOCK_DEFAULT_ENTITY_CONFIGURATION_TO = "INS_INTERLOCK_DEFAULT_ENTITY_CONFIGURATION_TO";
+var INS_INTERLOCK_DEFAULT_ORGANIZATION_TYPE_CONFIGURATION_FROM = "INS_INTERLOCK_DEFAULT_ORGANIZATION_TYPE_CONFIGURATION_FROM";
+var INS_INTERLOCK_DEFAULT_ORGANIZATION_TYPE_CONFIGURATION_TO = "INS_INTERLOCK_DEFAULT_ORGANIZATION_TYPE_CONFIGURATION_TO";
+var DEL_INTERLOCK_DEFAULT_ENTITY_CONFIGURATION_FROM_BY_INTERLOCK_TYPE_ID = "DEL_INTERLOCK_DEFAULT_ENTITY_CONFIGURATION_FROM_BY_INTERLOCK_TYPE_ID";
+var DEL_INTERLOCK_DEFAULT_ENTITY_CONFIGURATION_TO_BY_INTERLOCK_TYPE_ID = "DEL_INTERLOCK_DEFAULT_ENTITY_CONFIGURATION_TO_BY_INTERLOCK_TYPE_ID";
+var DEL_INTERLOCK_DEFAULT_ORGANIZATION_TYPE_CONFIGURATION_FROM_BY_INTERLOCK_TYPE_ID = "DEL_INTERLOCK_DEFAULT_ORGANIZATION_TYPE_CONFIGURATION_FROM_BY_INTERLOCK_TYPE_ID";
+var DEL_INTERLOCK_DEFAULT_ORGANIZATION_TYPE_CONFIGURATION_TO_BY_INTERLOCK_TYPE_ID = "DEL_INTERLOCK_DEFAULT_ORGANIZATION_TYPE_CONFIGURATION_TO_BY_INTERLOCK_TYPE_ID";
+
+/************CONTACT DATA**************/
+var spGET_CONTACT_DATA_BY_ORG_REL_AND_ORG_ID = "GET_CONTACT_DATA_BY_ORG_REL_AND_ORG_ID";
+var spINS_CONTACT_DATA_BY_ORG_REL_AND_ORG_ID = "INS_CONTACT_DATA_BY_ORG_REL_AND_ORG_ID";
+var spDEL_CONTACT_DATA_BY_ORG_REL_AND_ORG_ID = "DEL_CONTACT_DATA_BY_ORG_REL_AND_ORG_ID";
+/**************************************/
+
 /******************************************************/
 
 /********** GET **********/
@@ -58,10 +80,24 @@ function getInterlockReport(isSA, userId) {
     return result;
 }
 
-function getInterlockByUserIdOriginId(userId, originId) {
+function getRequestInterlockByEmail(email, interlockRequestTypeId){
+    var params = {};
+    params.in_email = email;
+    params.in_interlock_request_type_id = interlockRequestTypeId;
+
+    var rdo = db.executeProcedureManual(spGetInterlockByEmail, params);
+    var result = {};
+    result.INTERLOCKS_FROM = db.extractArray(rdo.out_result_from);
+    result.INTERLOCKS_TO = db.extractArray(rdo.out_result_to);
+    result.CONTACTS = [];
+
+    return result;
+}
+
+function getInterlockByUserIdOriginId(userId, interlockRequestTypeId) {
     var params = {};
     params.in_user_id = userId;
-    params.in_origin_id = originId;
+    params.in_interlock_request_type_id = interlockRequestTypeId;
 
     var rdo = db.executeProcedureManual(spGetInterlockByUserIdOriginId, params);
     var result = {};
@@ -79,7 +115,8 @@ function getInterlockById(id) {
         var result = {};
         result.INTERLOCK = db.extractArray(rdo.out_result)[0];
         result.CONTACTS = db.extractArray(rdo.out_contact_data);
-
+        result.AVAILABLE_CONTACTS = db.extractArray(rdo.out_result_availables);
+        
         return result;
     }
     return null;
@@ -112,25 +149,69 @@ function getInterlockStatus() {
 
 function insertInterlock(objInterlock, userId) {
     var params = {};
-    params.in_entity_id = objInterlock.ENTITY_ID;
-    params.in_organization_type_id = objInterlock.ORGANIZATION_TYPE_ID;
+    params.in_entity_id_to = objInterlock.ENTITY_ID_TO;
+    params.in_entity_id_from = objInterlock.ENTITY_ID_FROM;
+
     params.in_requested_resource = objInterlock.REQUESTED_RESOURCE;
     params.in_requested_budget = objInterlock.REQUESTED_BUDGET;
     params.in_interlock_status_id = objInterlock.STATUS_ID;
+    params.in_interlock_type_id = objInterlock.INTERLOCK_TYPE_ID;
     params.in_created_user_id = userId;
-
-    params.in_entity_id_from = objInterlock.ENTITY_ID_FROM;
-    params.in_organization_type_id_from = objInterlock.ORGANIZATION_TYPE_ID_FROM;
-    params.in_comments = objInterlock.COMMENTS;
+    params.in_comments = objInterlock.COMMENTS || null;
 
     var rdo = db.executeScalarManual(spInsertInterlock, params, 'out_result');
     return rdo;
 }
 
+function insertInterlockOrganizationTypeFrom(reqBody, userId) {
+    var params = {};
+    params.in_organization_related_id = reqBody.ORGANIZATION_RELATED_ID_FROM;
+    params.in_organization_type_id = reqBody.ORGANIZATION_TYPE_ID_FROM;
+    params.in_interlock_request_id = reqBody.INTERLOCK_REQUEST_ID;
+    params.in_organization_id = reqBody.ORGANIZATION_ID_FROM;
+    params.in_created_user_id = userId;
+
+    var rdo = db.executeScalarManual(spInsertInterlockOrganizationTypeFrom, params, 'out_result');
+    return rdo;
+}
+
+function insertInterlockOrganizationTypeTo(reqBody, userId) {
+    var params = {};
+    params.in_organization_related_id = reqBody.ORGANIZATION_RELATED_ID_TO;
+    params.in_organization_type_id = reqBody.ORGANIZATION_TYPE_ID_TO;
+    params.in_interlock_request_id = reqBody.INTERLOCK_REQUEST_ID;
+    params.in_organization_id = reqBody.ORGANIZATION_ID_TO;
+    params.in_created_user_id = userId;
+
+    var rdo = db.executeScalarManual(spInsertInterlockOrganizationTypeTo, params, 'out_result');
+    return rdo;
+}
+
+function updateInterlockOrganizationTypeFrom(reqBody, userId) {
+    var params = {};
+    params.in_organization_related_id = reqBody.ORGANIZATION_RELATED_ID_FROM;
+    params.in_organization_type_id = reqBody.ORGANIZATION_TYPE_ID_FROM;
+    params.in_interlock_request_id = reqBody.INTERLOCK_REQUEST_ID;
+    params.in_organization_id = reqBody.ORGANIZATION_ID_FROM;
+    params.in_user_id = userId;
+    var rdo = db.executeScalarManual(spUpdateInterlockOrganizationTypeFrom, params, 'out_result');
+    return rdo;
+}
+
+function updateInterlockOrganizationTypeTo(reqBody, userId) {
+    var params = {};
+    params.in_organization_related_id = reqBody.ORGANIZATION_RELATED_ID_TO;
+    params.in_organization_type_id = reqBody.ORGANIZATION_TYPE_ID_TO;
+    params.in_interlock_request_id = reqBody.INTERLOCK_REQUEST_ID;
+    params.in_organization_id = reqBody.ORGANIZATION_ID_TO;
+    params.in_user_id = userId;
+    var rdo = db.executeScalarManual(spUpdateInterlockOrganizationTypeTo, params, 'out_result');
+    return rdo;
+}
+
 function updateInterlock(objInterlock, userId) {
     var params = {};
-    params.in_entity_id = objInterlock.ENTITY_ID;
-    params.in_organization_type_id = objInterlock.ORGANIZATION_TYPE_ID;
+    params.in_entity_id_to = objInterlock.ENTITY_ID_TO;
     params.in_requested_resource = objInterlock.REQUESTED_RESOURCE;
     params.in_requested_budget = objInterlock.REQUESTED_BUDGET;
     params.in_interlock_status_id = objInterlock.STATUS_ID;
@@ -138,29 +219,12 @@ function updateInterlock(objInterlock, userId) {
     params.in_modified_user_id = userId;
 
     params.in_entity_id_from = objInterlock.ENTITY_ID_FROM;
-    params.in_organization_type_id_from = objInterlock.ORGANIZATION_TYPE_ID_FROM;
-    params.in_comments = objInterlock.COMMENTS;
+    params.in_comments = objInterlock.COMMENTS || null;
 
     return db.executeScalarManual(spUpdateInterlock, params, 'out_result');
 }
 
-/**
- * @deprecated
- * @param parameters
- * @param userId
- * @returns {*}
- */
-function insertInterlockRoute(parameters, userId) {
-    var params = {};
-    params.in_organization_id = parameters.ORGANIZATION_ID;
-    params.in_interlock_request_id = parameters.INTERLOCK_REQUEST_ID;
-    params.in_created_user_id = userId;
-
-    var rdo = db.executeScalarManual(spInsertInterlockRoute, params, 'out_interlock_route_id');
-    return rdo;
-}
-
-function insertInterlockRequestInterlockOrganization(parameters, userId) {
+/*function insertInterlockRequestInterlockOrganization(parameters, userId) {
     var params = {};
     params.in_interlock_organization_id = parameters.ORGANIZATION_ID;
     params.in_interlock_organization_id_from = parameters.ORGANIZATION_ID_FROM;
@@ -190,7 +254,7 @@ function insertInterlockSubregion(parameters, userId) {
     params.in_organization_id_from = parameters.ORGANIZATION_ID_FROM;
     var rdo = db.executeScalarManual(spInsertInterlockSubregion, params, 'out_interlock_subregion_id');
     return rdo;
-}
+}*/
 
 function insertInterlockLogStatus(interlock_id, status_id, created_user_id, requesterEmail) {
     var params = {};
@@ -218,16 +282,14 @@ function insertInterlockContactData(interlockId, listContactData, user_id) {
     }
 }
 
-
-function insertInterlockMessage(interlockId, message, userId, senderId, origin) {
+function insertInterlockMessage(interlockId, message, userId, senderId) {
 
 
     return db.executeProcedureManual(spInsertInterlockRequestMessage, {
         "IN_INTERLOCK_REQUEST_ID": interlockId,
         "IN_MESSAGE": message,
         "IN_CREATED_USER_ID": userId,
-        "IN_SENDER_ID": senderId,
-        "IN_INTERLOCK_REQUEST_ORIGIN_ID": origin
+        "IN_SENDER_ID": senderId || userId
     });
 }
 
@@ -270,7 +332,15 @@ function deleteInterlockContactDataByInterlockId(interlockId, userId) {
     return rdo;
 }
 
-function deleteInterlockRouteByInterlockId(interlockId, userId) {
+function deleteHardInterlockContactDataByInterlockId(interlockId) {
+    var params = {};
+    params.in_interlock_request_id = interlockId;
+
+    var rdo = db.executeScalarManual(spDeleteHardInterlockContactDataById, params, 'out_result');
+    return rdo;
+}
+
+/*function deleteInterlockRouteByInterlockId(interlockId, userId) {
     var params = {};
     params.in_il_id = interlockId;
     params.in_user_id = userId;
@@ -279,12 +349,12 @@ function deleteInterlockRouteByInterlockId(interlockId, userId) {
     return rdo;
 }
 
-/**
+/!**
  * deprecated
  * @param interlockId
  * @param userId
  * @returns {*}
- */
+ *!/
 function deleteInterlockRouteByInterlockId(interlockId, userId) {
     var params = {};
     params.in_il_id = interlockId;
@@ -318,6 +388,24 @@ function deleteInterlockSubregionByInterlockId(interlockId, userId) {
     params.in_user_id = userId;
 
     var rdo = db.executeScalarManual(spDeleteInterlockSubregionByIlId, params, 'out_result');
+    return rdo;
+}*/
+
+function deleteInterlockOrganizationTypeFrom(interlockId, userId) {
+    var params = {};
+    params.in_il_id = interlockId;
+    params.in_user_id = userId;
+
+    var rdo = db.executeScalarManual(spDeleteInterlockOrganizationTypeFromByIlId, params, 'out_result');
+    return rdo;
+}
+
+function deleteInterlockOrganizationTypeTo(interlockId, userId) {
+    var params = {};
+    params.in_il_id = interlockId;
+    params.in_user_id = userId;
+
+    var rdo = db.executeScalarManual(spDeleteInterlockOrganizationTypeToByIlId, params, 'out_result');
     return rdo;
 }
 
@@ -359,17 +447,6 @@ function getInterlockContactDataByHash(hash) {
     var params = {};
     params.in_hash = hash;
     var result = db.executeProcedureManual(spGetInterlockContactDataByHash, params);
-    var list = db.extractArray(result.out_result);
-    if (list.length)
-        return list[0];
-    else
-        return {};
-}
-
-function getRequestedUser(email) {
-    var params = {};
-    params.in_email = email;
-    var result = db.executeProcedureManual(spGetInterlockCentralRegionContactByEmail, params);
     var list = db.extractArray(result.out_result);
     if (list.length)
         return list[0];
@@ -442,19 +519,100 @@ function updateContactData(interlockContactDataId, hash, modifiedUserId, autoCom
 
 function getDefaultInterlockConfiguration() {
     var result = db.executeProcedureManual(GET_DEFAULT_INTERLOCK_CONFIGURATION, {});
-    return db.extractArray(result.out_result);
+    return {
+        defaultConfiguration: db.extractArray(result.out_result)
+        , entityFrom: db.extractArray(result.out_entity_from)
+        , entityTo: db.extractArray(result.out_entity_to)
+        , organizationTypeFrom: db.extractArray(result.out_organization_from)
+        , organizationTypeTo: db.extractArray(result.out_organization_to)
+    };
 }
 
-function updInterlockDefaults(reqBody, userId) {
-    var params = {
-            in_interlock_default_configuration_id: reqBody.INTERLOCK_DEFAULT_CONFIGURATION_ID,
-            in_entity_id_from: reqBody.ENTITY_ID_FROM,
-            in_entity_id_to: reqBody.ENTITY_ID_TO,
-            in_organization_type_from: reqBody.ORGANIZATION_TYPE_FROM,
-            in_organization_type_to: reqBody.ORGANIZATION_TYPE_TO,
-            in_enabled: reqBody.ENABLED ? 1 : 0,
-            in_user_id: userId
-        }
-    ;
-    return db.executeScalarManual(UPD_DEFAULT_INTERLOCK_CONFIGURATION, params, 'out_result');
+function inssertInterlockDefaultEntityConfigurationFrom(data) {
+    return db.executeScalarManual(INS_INTERLOCK_DEFAULT_ENTITY_CONFIGURATION_FROM, data, 'out_result');
 }
+
+function inssertInterlockDefaultEntityConfigurationTo(data) {
+    return db.executeScalarManual(INS_INTERLOCK_DEFAULT_ENTITY_CONFIGURATION_TO, data, 'out_result');
+}
+
+function inssertInterlockDefaultOrganizationConfigurationFrom(data) {
+    return db.executeScalarManual(INS_INTERLOCK_DEFAULT_ORGANIZATION_TYPE_CONFIGURATION_FROM, data, 'out_result');
+}
+
+function inssertInterlockDefaultOrganizationConfigurationTo(data) {
+    return db.executeScalarManual(INS_INTERLOCK_DEFAULT_ORGANIZATION_TYPE_CONFIGURATION_TO, data, 'out_result');
+}
+
+function deleteInterlockDefaultEntityConfigurationFromByInterlockTypeId(interlockTypeId, userId) {
+    return db.executeScalarManual(DEL_INTERLOCK_DEFAULT_ENTITY_CONFIGURATION_FROM_BY_INTERLOCK_TYPE_ID, {
+        in_interlock_type_id: interlockTypeId,
+        in_user_id: userId
+    }, 'out_result');
+}
+
+function deleteInterlockDefaultEntityConfigurationToByInterlockTypeId(interlockTypeId, userId) {
+    return db.executeScalarManual(DEL_INTERLOCK_DEFAULT_ENTITY_CONFIGURATION_TO_BY_INTERLOCK_TYPE_ID, {
+        in_interlock_type_id: interlockTypeId,
+        in_user_id: userId
+    }, 'out_result');
+}
+
+function deleteInterlockDefaultOrganizationConfigurationFromByInterlockTypeId(interlockTypeId, userId) {
+    return db.executeScalarManual(DEL_INTERLOCK_DEFAULT_ORGANIZATION_TYPE_CONFIGURATION_FROM_BY_INTERLOCK_TYPE_ID, {
+        in_interlock_type_id: interlockTypeId,
+        in_user_id: userId
+    }, 'out_result');
+}
+
+function deleteInterlockDefaultOrganizationConfigurationToByInterlockTypeId(interlockTypeId, userId) {
+    return db.executeScalarManual(DEL_INTERLOCK_DEFAULT_ORGANIZATION_TYPE_CONFIGURATION_TO_BY_INTERLOCK_TYPE_ID, {
+        in_interlock_type_id: interlockTypeId,
+        in_user_id: userId
+    }, 'out_result');
+}
+
+function updInterlockDefaults(data) {
+    /*var params = {
+        in_interlock_default_configuration_id: reqBody.INTERLOCK_DEFAULT_CONFIGURATION_ID,
+        // in_entity_id_from: reqBody.ENTITY_ID_FROM,
+        // in_entity_id_to: reqBody.ENTITY_ID_TO,
+        // in_organization_type_from: reqBody.ORGANIZATION_TYPE_FROM,
+        // in_organization_type_to: reqBody.ORGANIZATION_TYPE_TO,
+        // in_enabled: reqBody.ENABLED ? 1 : 0,
+        in_enable_default_selection: reqBody.ENABLE_DEFAULT_SELECTION,
+        in_interlock_type_id: reqBody.INTERLOCK_TYPE_ID,
+        in_user_id: userId
+    };*/
+    return db.executeScalarManual(UPD_DEFAULT_INTERLOCK_CONFIGURATION, data, 'out_result');
+}
+
+/***********CONTACT DATA****************************/
+function getContactDataByOrgRelatedAndOrgId(organizationRelatedId, organizationId){
+    var rdo;
+    var params = {
+        in_organization_related_id : organizationRelatedId,
+        in_organization_id : organizationId
+    };
+    rdo = db.executeProcedure(spGET_CONTACT_DATA_BY_ORG_REL_AND_ORG_ID, params);
+    return {assigned: db.extractArray(rdo.out_result), availables: db.extractArray(rdo.out_result_availables)};
+}
+
+function insertContactData(organizationRelatedId, organizationId, contactDataId, userId){
+    var params ={
+        in_organization_related_id : organizationRelatedId,
+        in_organization_id : organizationId,
+        in_contact_data_id : contactDataId,
+        in_created_user_id : userId
+    }
+    return db.executeScalar(spINS_CONTACT_DATA_BY_ORG_REL_AND_ORG_ID, params, "out_result");
+}
+
+function deleteContactData(organizationRelatedId, organizationId){
+    var params ={
+        in_organization_related_id : organizationRelatedId,
+        in_organization_id : organizationId
+    }
+    return db.executeScalar(spDEL_CONTACT_DATA_BY_ORG_REL_AND_ORG_ID, params, "out_result");
+}
+/********************************************/

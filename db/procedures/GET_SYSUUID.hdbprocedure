@@ -5,7 +5,6 @@ OUT out_result TABLE (SYS_UNIQUE_NUMBER varchar(255)) )
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
 	READS SQL DATA AS
 BEGIN
-
 /***************************** 
 	Write your procedure logic 
  *****************************/

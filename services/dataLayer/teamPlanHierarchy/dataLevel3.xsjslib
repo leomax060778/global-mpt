@@ -25,53 +25,53 @@ var GET_HL3_VERSION_BY_ID = "GET_HL3_VERSION_BY_ID";
 var spGetHl3RemainingBudgetByHl3Id = "GET_HL3_REMAINING_BUDGET_BY_HL3_ID";
 
 // Insert a new hl3
-function insertHl3(objHl3, userId) {
+function insertHl3(acronym, hl2Id, shoppingCartApprover, costCenter, description, businessOwnerId, budget, inBudget, importId, imported, userId) {
 	var parameters = {};
-	parameters.in_acronym = objHl3.IN_ACRONYM;
-	parameters.in_hl2_id = objHl3.IN_HL2_ID;
-	parameters.in_shopping_cart_approver = objHl3.IN_SHOPPING_CART_APPROVER || null;
-	parameters.in_cost_center = objHl3.IN_COST_CENTER || null;
-	parameters.in_hl3_description = objHl3.IN_HL3_DESCRIPTION;
-	parameters.in_crm_id = null;
-	parameters.in_business_owner_id = objHl3.IN_BUSINESS_OWNER_ID;
-	parameters.in_hl3_fnc_budget_total = objHl3.IN_HL3_FNC_BUDGET_TOTAL;
-	parameters.in_in_budget = objHl3.IN_IN_BUDGET;
-	parameters.in_user_id = userId;
-	parameters.in_import_id = objHl3.in_import_id ? objHl3.in_import_id : null;
-	parameters.in_imported = objHl3.imported ? objHl3.imported : 0;
-	parameters.out_hl3_id = '?';
-	return db.executeScalarManual(INS_HL3, parameters, 'out_hl3_id');
+    parameters.in_acronym = acronym;
+    parameters.in_hl2_id = hl2Id;
+    parameters.in_shopping_cart_approver = shoppingCartApprover;
+    parameters.in_cost_center = costCenter;
+    parameters.in_hl3_description = description;
+    parameters.in_crm_id = null;
+    parameters.in_business_owner_id = businessOwnerId;
+    parameters.in_hl3_fnc_budget_total = budget;
+    parameters.in_in_budget = inBudget;
+    parameters.in_user_id = userId;
+    parameters.in_import_id = importId;
+    parameters.in_imported = imported;
+    return db.executeScalarManual(INS_HL3, parameters, 'out_hl3_id');
 }
 
 function insertHl3FromUpload(objHl3, userId){
-	var obj = {};
-	obj.IN_ACRONYM = objHl3.ACRONYM;
-	obj.IN_HL2_ID = objHl3.PARENT_ID;
-	obj.IN_HL3_DESCRIPTION = objHl3.HL3_DESCRIPTION;
-	obj.IN_BUSINESS_OWNER_ID = 0;
-	obj.IN_HL3_FNC_BUDGET_TOTAL = objHl3.HL3_FNC_BUDGET_TOTAL;
-	obj.IN_IN_BUDGET = null;
-	obj.in_import_id = objHl3.IMPORT_ID ? objHl3.IMPORT_ID : null;
-	obj.IN_SHOPPING_CART_APPROVER = objHl3.SHOPPING_CART_APPROVER;
-	obj.IN_COST_CENTER = objHl3.COST_CENTER;
-
-	return insertHl3(obj,userId);
+    return insertHl3(
+        objHl3.ACRONYM
+        , objHl3.PARENT_ID
+        , objHl3.SHOPPING_CART_APPROVER || null
+        , objHl3.COST_CENTER || null
+        , objHl3.HL3_DESCRIPTION
+        , objHl3.BUSINESS_OWNER_ID || 1
+        , objHl3.HL3_FNC_BUDGET_TOTAL
+        , null
+        , objHl3.IMPORT_ID || null
+        , 1
+        , userId
+    );
 }
 
 /* Execute query to update an HL3 */
-function updateLevel3(objHl3, userId) {
+function updateLevel3(hl3_id, acronym, description, business_owner_id, budget, in_budget, shopping_cart_approver, cost_center, version, userId) {
 	var parameters = {};
 	var result = {};
-	parameters.in_hl3_id = objHl3.IN_HL3_ID;
-	parameters.in_acronym = objHl3.IN_ACRONYM;
-	parameters.in_hl3_description = objHl3.IN_HL3_DESCRIPTION;
-	parameters.in_business_owner_id = objHl3.IN_BUSINESS_OWNER_ID;
-	parameters.in_hl3_fnc_budget_total = objHl3.IN_HL3_FNC_BUDGET_TOTAL;
-	parameters.in_in_budget = objHl3.IN_IN_BUDGET;
+	parameters.in_hl3_id = hl3_id;
+	parameters.in_acronym = acronym;
+	parameters.in_hl3_description = description;
+	parameters.in_business_owner_id = business_owner_id;
+	parameters.in_hl3_fnc_budget_total = budget;
+	parameters.in_in_budget = in_budget;
 	parameters.in_user_id = userId;
-	parameters.in_version = objHl3.VERSION;
-    parameters.in_shopping_cart_approver = objHl3.IN_SHOPPING_CART_APPROVER;
-    parameters.in_cost_center = objHl3.IN_COST_CENTER;
+	parameters.in_version = version;
+    parameters.in_shopping_cart_approver = shopping_cart_approver;
+    parameters.in_cost_center = cost_center;
 	var list = db.executeProcedureManual(UPD_HL3, parameters);
 	result.out_result_hl3 = list.out_result_hl3;
 	result.out_result_hl3_fnc = list.out_result_hl3_fnc;
@@ -91,6 +91,7 @@ function getAllLevel3(objHl2, userId, isSA) {
 	var list = db.executeProcedure(GET_HL3_BY_HL2_ID, parameters);
 	result.out_result = db.extractArray(list.out_result);
 	result.out_total_budget = list.out_total_budget;
+	result.out_total_allocated = list.out_total_allocated;
 	result.out_remaining_budget = list.out_remaining_budget;
 	return result;
 }
@@ -113,20 +114,20 @@ function getHl3KpiSummary(hl2Id, userId, isSA){
 function getHl3PathByUserId(userId, isSA, budgetYearId, regionId, subRegionId) {
     var parameters = {
         in_user_id: userId,
-    	in_is_super_Admin: isSA ? 1 : 0,
+        in_is_super_Admin: isSA ? 1 : 0,
         in_budget_year_id:  budgetYearId,
-		in_region_id:  regionId,
-		in_subregion_id:  subRegionId
-	};
+        in_region_id:  regionId,
+        in_subregion_id:  subRegionId
+    };
 
     var list = db.executeProcedureManual(GET_HL3_PATH_BY_USER_ID, parameters);
     return db.extractArray(list.out_result);
 }
 
 //Execute an SP to retrieve an HL3 by id
-function getLevel3ById(objHl3, userId) {
+function getLevel3ById(hl3Id, userId) {
 	var parameters = {};
-	parameters.in_hl3_id = objHl3.IN_HL3_ID;
+	parameters.in_hl3_id = hl3Id;
 	var result = db.executeProcedure(GET_HL3, parameters);
 	var list = db.extractArray(result.out_result);
 	if(list.length)
@@ -136,10 +137,10 @@ function getLevel3ById(objHl3, userId) {
 		return {};
 }
 
-function getLevel3ByAcronym(objHl3, userId) {
+function getLevel3ByAcronym(acronym, hl2Id, userId) {
 	var parameters = {};
-	parameters.in_acronym = objHl3.IN_ACRONYM.toUpperCase();
-	parameters.in_hl1_id = objHl3.IN_HL1_ID;
+	parameters.in_acronym = acronym.toUpperCase();
+	parameters.in_hl2_id = hl2Id;
 	var result = db.executeProcedureManual(GET_HL3_BY_ACRONYM, parameters);
 	var list = db.extractArray(result.out_result);
 	if(list.length)
@@ -191,10 +192,9 @@ function getLevel3ForSearch(userSessionID, isSA, budget_id, region_id, subregion
 }
 
 /* Execute query to update an HL3 */
-function deleteLevel3(objHl3, userId) {
+function deleteLevel3(hl3Id, userId) {
 	var parameters = {};
-	var result = {};
-	parameters.in_hl3_id = objHl3.IN_HL3_ID;
+	parameters.in_hl3_id = hl3Id;
 	parameters.in_user_id = userId;	
 	return db.executeScalarManual(DEL_HL3, parameters, 'out_result');
 }
@@ -212,24 +212,24 @@ function getAllHl3VersionByHl3Id(hl3_id){
 }
 
 function insertLevel3Version(hl3Id, version, acronym, description, budget, userId, business_owner_id, origin_plan_id, hl2_id, crm_id, hl3_hierarchy_id, hl3_status_detail_id, in_budget, shopping_cart_approver, cost_center){
-    var parameters = {};
-    parameters.in_hl3_id = hl3Id;
-    parameters.in_version = version;
-    parameters.in_acronym = acronym;
-    parameters.in_description = description;
-    parameters.in_budget = budget;
-    parameters.in_created_user_id = userId;
-    parameters.in_business_owner_id = business_owner_id;
-    parameters.in_origin_plan_id = origin_plan_id;
-    parameters.in_hl2_id = hl2_id;
-    parameters.in_crm_id = crm_id;
-    parameters.in_hl3_hierarchy_id = hl3_hierarchy_id;
-    parameters.in_hl3_status_detail_id = hl3_status_detail_id;
-    parameters.in_in_budget = in_budget;
-    parameters.in_shopping_cart_approver = shopping_cart_approver;
-    parameters.in_cost_center = cost_center;
+	var parameters = {};
+	parameters.in_hl3_id = hl3Id;
+	parameters.in_version = version;
+	parameters.in_acronym = acronym;
+	parameters.in_description = description;
+	parameters.in_budget = budget;
+	parameters.in_created_user_id = userId;
+	parameters.in_business_owner_id = business_owner_id;
+	parameters.in_origin_plan_id = origin_plan_id;
+	parameters.in_hl2_id = hl2_id;
+	parameters.in_crm_id = crm_id;
+	parameters.in_hl3_hierarchy_id = hl3_hierarchy_id;
+	parameters.in_hl3_status_detail_id = hl3_status_detail_id;
+	parameters.in_in_budget = in_budget;
+	parameters.in_shopping_cart_approver = shopping_cart_approver;
+	parameters.in_cost_center = cost_center;
 
-    return db.executeScalarManual(INS_HL3_VERSION,parameters,"out_result");
+	return db.executeScalarManual(INS_HL3_VERSION,parameters,"out_result");
 }
 
 function getLevel3VersionForFilter(hl2Id, userSessionID, isSA){

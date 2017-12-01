@@ -14,6 +14,9 @@ function getAllSubRegions(){
 
 function insertSubregion(subregion, createUser) {
 	if (validateSubregion(subregion)) {
+        var subregionEntity = dataSubRegion.getSubRegionByName(subregion.NAME, subregion.REGION_ID);
+        if (subregionEntity)
+            throw ErrorLib.getErrors().CustomError("","", "Market unit name already exist", subregion);
 		return dataSubRegion.insertSubregion(subregion, createUser);
 	}
 }
@@ -58,7 +61,7 @@ function validateSubregion(subregion) {
 }
 
 function CanDeleteSubRegion(subregionId){
-	var count = dataSubRegion.getCountHL1BySubRegionId(subregionId);
+	var count = dataSubRegion.getCountHL2BySubRegionId(subregionId);
 	if (count > 0) return false;
 	else return true;
 }

@@ -1,22 +1,25 @@
-PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_ALLOCATION_CATEGORY_BY_CAT_ID_LEVEL_ID"(
-		IN in_allocation_category_id BIGINT, 
-		IN in_hierarchy_level_id BIGINT, 
-		OUT out_result TABLE (
-			IN_PROCESSING_REPORT TINYINT,
-			SHOW_COPY_OPTION_TO_SEGMENTATION_CHECK_BOX TINYINT
-		)
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_ALLOCATION_CATEGORY_BY_CAT_ID_LEVEL_ID" (
+    IN in_allocation_category_id bigint,
+    IN in_hierarchy_level_id bigint,
+	OUT out_result TABLE (	
+	IN_PROCESSING_REPORT TINYINT
+	, SHOW_COPY_OPTION_TO_SEGMENTATION_CHECK_BOX TINYINT
+	, MAKE_CATEGORY_MANDATORY TINYINT
 	)
+ 	)
 	LANGUAGE SQLSCRIPT
 	SQL SECURITY INVOKER
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
-	READS SQL DATA
-AS
+	READS SQL DATA AS
 BEGIN
-	out_result = SELECT ACOL.IN_PROCESSING_REPORT, 
-				ACOL.SHOW_COPY_OPTION_TO_SEGMENTATION_CHECK_BOX
-			FROM ALLOCATION_CATEGORY_OPTION_LEVEL AS ACOL
-			WHERE ACOL.allocation_category_id = in_allocation_category_id
-				AND ACOL.hierarchy_level_id = in_hierarchy_level_id
-				AND DELETED = 0
-				AND ENABLED = 1;
+
+		out_result =
+		 SELECT ACOL.IN_PROCESSING_REPORT
+		 ,ACOL.SHOW_COPY_OPTION_TO_SEGMENTATION_CHECK_BOX
+		 ,ACOL.MAKE_CATEGORY_MANDATORY
+		 FROM ALLOCATION_CATEGORY_OPTION_LEVEL ACOL
+		 WHERE ACOL.allocation_category_id = in_allocation_category_id
+		 AND ACOL.hierarchy_level_id = in_hierarchy_level_id
+		 AND DELETED = 0 AND ENABLED = 1;
+
 END;

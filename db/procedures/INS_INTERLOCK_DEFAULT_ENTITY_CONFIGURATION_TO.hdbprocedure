@@ -1,0 +1,27 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_INTERLOCK_DEFAULT_ENTITY_CONFIGURATION_TO" (
+	IN entityConfiguration TABLE (
+    	    in_entity_id bigint
+         ,in_interlock_type_id bigint
+         ,in_created_user_id bigint
+         )
+	,OUT out_result bigint
+	)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL" AS
+BEGIN
+
+	INSERT INTO INTERLOCK_DEFAULT_ENTITY_CONFIGURATION_TO (
+     ENTITY_ID
+       , INTERLOCK_TYPE_ID
+       , CREATED_USER_ID
+    )
+    (
+     select in_entity_id
+       ,in_interlock_type_id
+       ,in_created_user_id
+       from :entityConfiguration
+    );
+
+	SELECT TOP 1 CURRENT_IDENTITY_VALUE() INTO out_result FROM INTERLOCK_DEFAULT_ENTITY_CONFIGURATION_TO;
+END;

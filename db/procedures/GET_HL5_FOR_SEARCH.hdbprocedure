@@ -23,7 +23,6 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL5_FOR_SEAR
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
 	AS
 BEGIN
-
     if in_isSA = 1 then
         va_subresult = SELECT DISTINCT HL5.hl5_id as id
         		, HL5.hl4_id as parent_id
@@ -32,20 +31,8 @@ BEGIN
         		, REPLACE(HL2.organization_acronym, 'N/A', '') AS organization_acronym
         		, REGION.region_name
         		, SUBREGION.subregion_name
-                ,CONCAT(
-                    CONCAT(
-                        CONCAT(
-                            CONCAT(
-                                CONCAT(
-                                    CONCAT(
-                                    HL1.ACRONYM, SUBSTRING(TO_NVARCHAR(BGY.BUDGET_YEAR), 3, 2)),
-                                '-'),
-                            HL3.ACRONYM),
-                        '-'),
-                    HL4.ACRONYM),
-                 HL5.ACRONYM)
-        		 AS path
-                        , HL1.REGION_ID
+                , "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BGY.BUDGET_YEAR, HL1.acronym, HL2.organization_acronym, HL3.acronym, hl4.acronym, hl5.ACRONYM, '') AS path
+                , HL1.REGION_ID
         	FROM HL5 hl5
         	INNER JOIN HL4 hl4 ON hl4.hl4_id=hl5.hl4_id AND hl4.enabled=1 AND hl4.deleted=0
         	INNER JOIN HL3 ON HL4.hl3_id = HL3.hl3_id AND hl3.enabled=1 AND hl3.deleted=0
@@ -54,7 +41,7 @@ BEGIN
             INNER JOIN HL1 ON HL2.hl1_id = HL1.hl1_id AND hl1.enabled=1 AND hl1.deleted=0
         	INNER JOIN BUDGET_YEAR BGY ON HL1.budget_year_id = BGY.budget_year_id
         	LEFT JOIN REGION ON HL1.region_id = REGION.region_id
-        	LEFT JOIN SUBREGION ON HL1.subregion_id = SUBREGION.subregion_id
+        	LEFT JOIN SUBREGION ON HL2.subregion_id = SUBREGION.subregion_id
         	WHERE hl5.deleted = 0
         	  AND hl5.enabled = 1
         	   AND (BGY.BUDGET_YEAR_ID = in_budget_year_id)
@@ -68,20 +55,8 @@ BEGIN
             		, REPLACE(HL2.organization_acronym, 'N/A', '') AS organization_acronym
             		, REGION.region_name
             		, SUBREGION.subregion_name
-                    ,CONCAT(
-                        CONCAT(
-                            CONCAT(
-                                CONCAT(
-                                    CONCAT(
-                                        CONCAT(
-                                        HL1.ACRONYM, SUBSTRING(TO_NVARCHAR(BGY.BUDGET_YEAR), 3, 2)),
-                                    '-'),
-                                HL3.ACRONYM),
-                            '-'),
-                        HL4.ACRONYM),
-                     HL5.ACRONYM)
-            		 AS path
-                            , HL1.REGION_ID
+                    , "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BGY.BUDGET_YEAR, HL1.acronym, HL2.organization_acronym, HL3.acronym, hl4.acronym, hl5.ACRONYM, '') AS path
+                    , HL1.REGION_ID
             	FROM HL5 hl5
             	INNER JOIN HL4 hl4 ON hl4.hl4_id=hl5.hl4_id AND hl4.enabled=1 AND hl4.deleted=0
             	INNER JOIN HL3 ON HL4.hl3_id = HL3.hl3_id AND hl3.enabled=1 AND hl3.deleted=0
@@ -90,7 +65,7 @@ BEGIN
                 INNER JOIN HL1 ON HL2.hl1_id = HL1.hl1_id AND hl1.enabled=1 AND hl1.deleted=0
             	INNER JOIN BUDGET_YEAR BGY ON HL1.budget_year_id = BGY.budget_year_id
             	LEFT JOIN REGION ON HL1.region_id = REGION.region_id
-            	LEFT JOIN SUBREGION ON HL1.subregion_id = SUBREGION.subregion_id
+            	LEFT JOIN SUBREGION ON HL2.subregion_id = SUBREGION.subregion_id
             	WHERE hl5.deleted = 0
             	  AND hl5.enabled = 1
             	   AND (BGY.BUDGET_YEAR_ID = in_budget_year_id)

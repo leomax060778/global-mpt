@@ -1,34 +1,31 @@
-PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_EXPECTED_OUTCOMES_DETAILS_EO_HL6_ID"(
-		IN in_hl6_expected_outcomes_id BIGINT, 
-		OUT out_expected_outcomes_details TABLE (
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_EXPECTED_OUTCOMES_DETAILS_EO_HL6_ID" (
+		IN in_hl6_expected_outcomes_id bigint,
+		OUT out_expected_outcomes_details TABLE(
 			euro_value DECIMAL(19, 6),
 			volume_value DECIMAL(19, 6),
 			outcomes_id BIGINT,
 			outcomes_name NVARCHAR(255),
 			outcomes_type_id BIGINT,
-			outcomes_type_name NVARCHAR(255)
+			outcomes_type_name  NVARCHAR(255)
 		)
-	)
+	) 
 	LANGUAGE SQLSCRIPT
-	SQL SECURITY INVOKER
+	SQL SECURITY INVOKER 
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
-	READS SQL DATA
-AS
+	READS SQL DATA AS
 BEGIN
-	out_expected_outcomes_details = SELECT heod.euro_value, 
-				heod.volume_value, 
-				outcomes.expected_outcome_option_id AS outcomes_id, 
-				outcomes.name AS outcomes_name, 
-				outcomes_type.expected_outcome_id AS outcomes_type_id, 
-				outcomes_type.name AS outcomes_type_name
-			FROM hl6_expected_outcomes_detail AS heod
-				INNER JOIN expected_outcome_level AS eol
-				ON heod.outcomes_id = eol.expected_outcome_level_id
-				INNER JOIN expected_outcome_option AS outcomes
-				ON outcomes.expected_outcome_option_id = eol.expected_outcome_option_id
-				INNER JOIN expected_outcome AS outcomes_type
-				ON outcomes_type.expected_outcome_id = eol.expected_outcome_id
-			WHERE heod.deleted = 0
-				AND heod.enabled = 1
-				AND heod.hl6_expected_outcomes_id = in_hl6_expected_outcomes_id;
+	out_expected_outcomes_details =
+
+     SELECT
+          	  heod.euro_value
+          	, heod.volume_value
+          	, outcomes.expected_outcome_option_id   AS outcomes_id
+          	, outcomes.name                         AS outcomes_name
+          	, outcomes_type.expected_outcome_id     AS outcomes_type_id
+          	, outcomes_type.name                    AS outcomes_type_name
+          	 from hl6_expected_outcomes_detail heod
+          	 inner join expected_outcome_level eol on heod.outcomes_id = eol.expected_outcome_level_id
+          	 inner join expected_outcome_option outcomes on outcomes.expected_outcome_option_id = eol.expected_outcome_option_id
+          	 inner join expected_outcome outcomes_type on outcomes_type.expected_outcome_id = eol.expected_outcome_id
+          	where heod.deleted = 0 and heod.enabled = 1 and heod.hl6_expected_outcomes_id = in_hl6_expected_outcomes_id;
 END;

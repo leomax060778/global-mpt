@@ -1,24 +1,27 @@
-PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL1_USER"(
-		IN in_hl1_id BIGINT, 
-		IN in_user_id BIGINT, 
-		OUT out_result TABLE (
-			hl1_id BIGINT,
-			user_id BIGINT,
-			created_date_tz TIMESTAMP,
-			created_user_id BIGINT
-		)
-	)
-	LANGUAGE SQLSCRIPT
-	SQL SECURITY INVOKER
-	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
-	READS SQL DATA
-AS
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL1_USER" (
+ IN in_hl1_id BIGINT,
+ IN in_user_id BIGINT,
+ OUT out_result TABLE (
+	hl1_id bigint,
+	user_id bigint,
+	created_date_tz timestamp,
+	created_user_id bigint)
+)
+ LANGUAGE SQLSCRIPT
+ SQL SECURITY INVOKER
+ DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+ READS SQL DATA AS
 BEGIN
-	out_result = SELECT hl1_id, 
-				user_id, 
-				created_date_tz, 
-				created_user_id
-			FROM HL1_USER
-			WHERE in_hl1_id = hl1_id
-				AND user_id = in_user_id;
+
+ out_result =
+
+ SELECT
+	hl1_id
+	,user_id
+	,created_date_tz
+	,created_user_id
+
+ FROM HL1_USER
+ WHERE in_hl1_id = hl1_id AND user_id = in_user_id;
+
 END;

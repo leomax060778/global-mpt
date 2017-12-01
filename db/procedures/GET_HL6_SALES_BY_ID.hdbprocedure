@@ -16,6 +16,7 @@ amount decimal(19, 6)
 	SQL SECURITY INVOKER
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL" AS
 BEGIN
+
 sub_out_result =
 	(select
 		hl6_sales.hl6_sales_id,

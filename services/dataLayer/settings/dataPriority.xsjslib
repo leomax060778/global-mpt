@@ -5,7 +5,6 @@ var db = mapper.getdbHelper();
 var ErrorLib = mapper.getErrors();
 /*************************************************/
 var GET_ALL_PRIORITY = "GET_ALL_PRIORITY";
-var GET_PRIORITY_BY_ID = "GET_PRIORITY_BY_ID";
 var INS_PRIORITY = "INS_PRIORITY";
 var UPD_PRIORITY = "UPD_PRIORITY";
 var DEL_PRIORITY = "DEL_PRIORITY";
@@ -16,15 +15,6 @@ var DEL_PRIORITY = "DEL_PRIORITY";
 function getAllPriority() {
     var rdo = db.executeProcedureManual(GET_ALL_PRIORITY, {}, "out_result");
     return db.extractArray(rdo.out_result);
-}
-
-function getPriorityById(id) {
-    if (id) {
-        var rdo = db.executeProcedureManual(GET_PRIORITY_BY_ID, {in_priority_id: id}, "out_result");
-        return db.extractArray(rdo.out_result);
-    }
-
-    return null;
 }
 
 function insertPriority(description, crmKey, userId) {

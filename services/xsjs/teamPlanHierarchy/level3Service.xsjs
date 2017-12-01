@@ -14,13 +14,13 @@ var categories = "HL2_CATEGORIES";
 
 // Main function
 function processRequest() {
-	return httpUtil.processRequest(handleGet, handlePost, handlePut, handleDelete,false, config.getResourceIdByName(config.level2()));
+	return httpUtil.processRequest(handleGet, handlePost, handlePut, handleDelete,false, "", true);
 }
 
 // function to manage an post request
 function handlePost(reqBody, userSessionID) {
     businessLavel3.checkPermission(userSessionID, null ,reqBody.IN_HL2_ID);
-	var rdo = businessLavel3.createHl3(reqBody, userSessionID);
+	var rdo = businessLavel3.insertHl3(reqBody, userSessionID);
 	return httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
 }
 
@@ -61,9 +61,6 @@ function handleGet(parameters, userSessionID) {
         } else if (parameters[0] && parameters[0].value == 'BY_USER'){
             rdo = businessLavel3.getHl3ByUserGroupByHl1(userSessionID, budgetYearId, regionId, subRegionId);
             httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
-		}else if(hl2_categories && in_hl2_id && hl2_categories == categories){
-			rdo = businessLavel3.getHl3Categories(in_hl2_id);
-			httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
 		}
 		else {
 			throw ErrorLib.getErrors().BadRequest(
@@ -76,18 +73,17 @@ function handleGet(parameters, userSessionID) {
 	httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
 }
 
-// function to manage an put request
 function handlePut(reqBody,userSessionID) {
-    businessLavel3.checkPermission(userSessionID);
-	var rdo = businessLavel3.updateHl3(reqBody, userSessionID);
-	httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
+    businessLavel3.checkPermission(userSessionID, null, reqBody.HL3_ID);
+    var rdo = businessLavel3.updateHl3(reqBody, userSessionID);
+    httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
 }
 
 // function to manage an del request
 function handleDelete(reqBody,userSessionID) {
-    businessLavel3.checkPermission(userSessionID);
-	var rdo = businessLavel3.deleteHl3(reqBody, userSessionID);
-	httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
+    businessLavel3.checkPermission(userSessionID, reqBody.HL3_ID);
+    var rdo = businessLavel3.deleteHl3(reqBody, userSessionID);
+    httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
 }
 
 // Call the main function

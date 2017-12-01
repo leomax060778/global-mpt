@@ -8,7 +8,7 @@ var ErrorLib = mapper.getErrors();
 var GET_ALL_HL6_DE_REPORT = "GET_HL6_DE_REPORT";
 var spGetL6ChangedFieldsByHl6Id = "GET_HL6_CHANGED_FIELDS_BY_HL6_ID";
 var GET_PROCESSING_REPORT_FOR_DOWNLOAD = "GET_PROCESSING_REPORT_FOR_DOWNLOAD";
-var spGetL6ChangedFieldsByHl6IdByField = "GET_HL6_CHANGED_FIELDS_BY_HL6_ID_BY_FIELD";
+var GET_ALL_HL6_CHANGED_FIELDS = "GET_ALL_HL6_CHANGED_FIELDS";
 var spDelL6ChangedFieldsByHl6Id = "DEL_HL6_CRM_BINDING";
 var GET_HL6_FOR_PROCESSING_REPORT = "GET_HL6_FOR_PROCESSING_REPORT";
 var UPD_PROCESSING_REPORT_EXPORT_DATA = "UPD_PROCESSING_REPORT_EXPORT_DATA";
@@ -16,18 +16,20 @@ var UPD_PROCESSING_REPORT_EXPORT_DATA = "UPD_PROCESSING_REPORT_EXPORT_DATA";
 /*********** END LIST OF PROCEDURES ***************/
 
 function getAllLevel6Report(userId) {
-	var parameters = {};
-	var result = db.executeProcedureManual(GET_ALL_HL6_DE_REPORT, {});
-	var list = result['out_result'];
-	var spResult = [];
-	Object.keys(list).forEach(function(key) {
-		spResult.push(list[key]);
-	});
-	return spResult;
+	var data = db.executeProcedureManual(GET_ALL_HL6_DE_REPORT, {});
+    return db.extractArray(data.out_result);
 }
-function getAllLevel6ReportForDownload() {
+function getAllL6CreateInCrmDEReportForDownload() {
     var data = db.executeProcedureManual(GET_PROCESSING_REPORT_FOR_DOWNLOAD, {in_object_type: 'CPT'});
     return db.extractArray(data.out_result);
+}
+function getAllHL6ChangedFields() {
+    var data = db.executeProcedureManual(GET_ALL_HL6_CHANGED_FIELDS, {});
+    return {
+        out_hl6_changed_fields: db.extractArray(data.out_hl6_changed_fields),
+        out_hl6: db.extractArray(data.out_hl6),
+        out_hl6_category_options: db.extractArray(data.out_hl6_category_options)
+    };
 }
 
 function updateLevel6ReportForDownload(HL6_ID) {
@@ -50,14 +52,6 @@ function getL6ChangedFieldsByHl6Id(id){
 	if(id){
 		var rdo = db.executeProcedureManual(spGetL6ChangedFieldsByHl6Id,{'in_hl6_id':id});
 		return db.extractArray(rdo.out_hl6_changed_fields);
-	}	
-	return null;
-}
-
-function getL6ChangedFieldsByHl6IdByField(id, fieldName){
-	if(id && fieldName){
-		var rdo = db.executeProcedureManual(spGetL6ChangedFieldsByHl6IdByField,{'in_hl6_id':id, 'in_column_name': fieldName});
-		return db.extractArray(rdo.out_result);
 	}	
 	return null;
 }

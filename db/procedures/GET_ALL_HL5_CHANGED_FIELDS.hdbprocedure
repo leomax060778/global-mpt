@@ -1,0 +1,130 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_ALL_HL5_CHANGED_FIELDS" (
+        OUT out_hl5_changed_fields TABLE (hl5_id bigint, column_name nvarchar(255), display_name nvarchar(255))
+	    ,OUT out_hl5 TABLE(
+
+            	HL5_ID BIGINT,
+            	EXTERNAL_ID nvarchar(255),
+            	DESCRIPTION NVARCHAR(100),
+            	OBJECTIVE NVARCHAR(100),
+            	TYPE NVARCHAR(100),
+            	SUB_TYPE NVARCHAR(100),
+            	PRIORITY NVARCHAR(100),
+            	DISTRIBUTION_RULE NVARCHAR(100),
+            	MKT_PROGRAM_ID NVARCHAR(100),
+            	MARKETING_ACTIVITYID NVARCHAR(100),
+            	BUSINESS_OWNER NVARCHAR(100),
+            	SHOW_CALENDAR NVARCHAR(100),
+            	CERTIFICATION_LEVEL NVARCHAR(100),
+            	ROUTE_TO_MARKET NVARCHAR(100),
+            	BUYING_CLASSIFICATION NVARCHAR(100),
+            	VENUE NVARCHAR(100),
+            	NO_OF_PARTICIPANTS NVARCHAR(100),
+            	PHONE_FOLLOWUP NVARCHAR(100),
+            	CITY NVARCHAR(3000),
+            	COUNTRY NVARCHAR(3000),
+            	EMPLOYEE NVARCHAR(100),
+            	COST_CENTER NVARCHAR(25),
+            	MARKETING_ORGANIZATION NVARCHAR(100)
+            	),
+            OUT out_hl5_category_options TABLE (
+                 HL5_ID BIGINT,
+                 OPTION_ID BIGINT,
+                 OPTION_NAME NVARCHAR(255),
+                 CATEGORY_OPTION_LEVEL_ID INTEGER,
+                 AMOUNT DECIMAL(19, 6),
+                 CATEGORY_NAME NVARCHAR(60),
+                 ALLOCATION_CATEGORY_ID BIGINT,
+                 PROCESSING_REPORT_EXPORT_KEY NVARCHAR(255)
+    	) )
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER 
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	READS SQL DATA AS
+BEGIN
+
+    var_hl5 =
+        SELECT HL5_ID
+        FROM HL5
+        WHERE
+        HL5.deleted = 0 and HL5.enabled = 1 and
+        HL5.HL5_STATUS_DETAIL_ID IN (SELECT HL5_STATUS_DETAIL_ID
+                    FROM HL5_STATUS_DETAIL
+                    WHERE DETAIL IN ('Update In CRM'));
+
+	out_hl5_changed_fields = SELECT hl5_id, column_name, display_name from HL5_CRM_BINDING
+							WHERE column_changed = 1
+							AND deleted = 0 and enabled = 1;
+
+    va_hl5_changed_fields = select distinct hl5_id from :out_hl5_changed_fields;
+
+        out_hl5_category_options =
+        SELECT
+         hl5CO.hl5_id
+         ,option.allocation_option_id as option_id
+         ,option.name as option_name
+         ,ACOL.allocation_category_option_level_id as category_option_level_id
+         ,hl5CO.amount
+         ,category.name as category_name
+         ,ACOL.allocation_category_id
+         ,category.processing_report_export_key
+        FROM hl5_category_option hl5CO
+        inner join allocation_category_option_level ACOL ON ACOL.allocation_category_option_level_id = hl5CO.allocation_category_option_level_id
+        inner join allocation_option option on ACOL.allocation_option_id = option.allocation_option_id
+        inner join allocation_category category on category.allocation_category_id = ACOL.allocation_category_id
+        inner join :var_hl5 T on T.hl5_id = hl5CO.hl5_id
+        where hl5CO.deleted = 0 and hl5CO.enabled = 1 and hl5CO.updated = 1;
+
+
+    out_hl5 = SELECT
+        HL5.HL5_ID
+        ,"MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BUDGET_YEAR.BUDGET_YEAR, HL1.ACRONYM, HL2.ORGANIZATION_ACRONYM, HL3.ACRONYM, HL4.ACRONYM, HL5.ACRONYM, '') AS EXTERNAL_ID
+        ,HL5.HL5_CRM_DESCRIPTION AS DESCRIPTION
+        ,OBJECTIVE.NAME AS OBJECTIVE
+        ,CAMPAIGN_TYPE.NAME as TYPE
+        ,CAMPAIGN_SUB_TYPE.NAME as SUB_TYPE
+        ,PRIORITY.NAME AS PRIORITY
+        ,DISTRIBUTION_CHANNEL.CRM_KEY AS DISTRIBUTION_RULE
+        , MARKETING_PROGRAM.NAME AS MKT_PROGRAM_ID
+        , "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_MARKETING_ACTIVITY"(MARKETING_ACTIVITY.HL5_ID) AS MARKETING_ACTIVITYID
+        , BUSINESS_OWNER.DESCRIPTION AS BUSINESS_OWNER
+        , HL5.show_on_dg_calendar AS SHOW_CALENDAR
+        ,'' AS CERTIFICATION_LEVEL
+        , ROUTE_TO_MARKET.CRM_KEY AS ROUTE_TO_MARKET
+        , "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_BUYING_CLASSIFICATION"(T.HL5_ID, 'HL5') AS BUYING_CLASSIFICATION
+        ,HL5.venue AS VENUE
+        ,HL5.number_of_participants AS NO_OF_PARTICIPANTS
+        ,'' AS PHONE_FOLLOWUP
+        ,HL5.city AS CITY
+        ,HL5.country AS COUNTRY
+        , HL5.EMPLOYEE_RESPONSIBLE_USER AS EMPLOYEE
+        ,HL4.COST_CENTER
+        ,SALE_ORGANIZATION.CRM_KEY AS MARKETING_ORGANIZATION
+        FROM HL5
+        INNER JOIN :var_hl5 T ON T.HL5_ID = HL5.hl5_id
+        INNER JOIN HL4 ON HL5.HL4_ID = HL4.HL4_ID
+        INNER JOIN HL3 ON HL3.HL3_ID = HL4.HL3_ID
+        INNER JOIN HL2 ON HL2.HL2_ID = HL3.HL2_ID
+        INNER JOIN HL1 ON HL1.HL1_ID = HL2.HL1_ID
+        INNER JOIN BUDGET_YEAR ON HL1.BUDGET_YEAR_ID = BUDGET_YEAR.BUDGET_YEAR_ID
+        LEFT JOIN DISTRIBUTION_CHANNEL ON HL5.DISTRIBUTION_CHANNEL_ID = DISTRIBUTION_CHANNEL.DISTRIBUTION_CHANNEL_ID
+        LEFT JOIN SALE_ORGANIZATION ON HL5.SALES_ORGANIZATION_ID = SALE_ORGANIZATION.SALES_ORGANIZATION_ID
+        LEFT JOIN OBJECTIVE ON OBJECTIVE.OBJECTIVE_ID = HL5.CAMPAIGN_OBJECTIVE_ID
+        LEFT JOIN CAMPAIGN_TYPE ON CAMPAIGN_TYPE.CAMPAIGN_TYPE_ID = HL5.CAMPAIGN_TYPE_ID
+        LEFT JOIN CAMPAIGN_SUB_TYPE ON CAMPAIGN_SUB_TYPE.CAMPAIGN_SUB_TYPE_ID = HL5.CAMPAIGN_SUBTYPE_ID
+        LEFT JOIN PRIORITY ON PRIORITY.PRIORITY_ID = HL5.PRIORITY_ID
+        LEFT JOIN MARKETING_PROGRAM ON MARKETING_PROGRAM.MARKETING_PROGRAM_ID = HL5.MARKETING_PROGRAM_ID
+        LEFT JOIN HL5 MARKETING_ACTIVITY ON MARKETING_ACTIVITY.HL5_ID = HL5.MARKETING_ACTIVITY_ID
+        LEFT JOIN BUSINESS_OWNER ON BUSINESS_OWNER.BUSINESS_OWNER_ID = HL5.BUSINESS_OWNER_ID
+        LEFT JOIN ROUTE_TO_MARKET ON ROUTE_TO_MARKET.ROUTE_TO_MARKET_ID = HL5.ROUTE_TO_MARKET_ID
+
+        WHERE HL5.HL5_ID IN (
+            SELECT T1.HL5_ID
+            FROM :va_hl5_changed_fields T1
+            UNION
+            select T2.hl5_id
+            from :out_hl5_category_options T2
+        );
+
+
+
+END;

@@ -7,26 +7,22 @@ var dataCategoryOptionLevel = mapper.getDataCategoryOptionLevel();
 var dataPath = mapper.getDataPath();
 var ErrorLib = mapper.getErrors();
 var util = mapper.getUtil();
+var utilReportLib = mapper.getUtilDEReport();
 
 /** ***********END INCLUDE LIBRARIES*************** */
 
 function getAllL4DEReport(userId) {
     var hl4List = dataL4DER.getAllLevel4Report(userId);
-    var allHl4 = [];
-    hl4List.forEach(function (hl4) {
-        var aux = {};
-        Object.keys(hl4).forEach(function (key) {
-            aux[key] = key != 'HL4_PATH' ? hl4[key]
-                : 'CRM-' + hl4[key];
-        });
-        allHl4.push(aux);
-    });
-
-    return allHl4;
+    return hl4List;
 }
 
-function getAllL4DEReportForDownload(userId) {
-    return dataL4DER.getAllLevel4ReportForDownload(userId);
+function getAllL4CreateInCrmDEReportForDownload(userId) {
+    return dataL4DER.getAllL4CreateInCrmDEReportForDownload(userId);
+}
+
+function getAllHL4ChangedFields(userId) {
+    var data = dataL4DER.getAllHL4ChangedFields(userId);
+    return utilReportLib.parseChangedFields("HL4", "HL4_ID", data.out_hl4_changed_fields, data.out_hl4_category_options, data.out_hl4);
 }
 
 function getL4CrmBindingFieldsByHl4Id(hl4Id) {
@@ -47,8 +43,7 @@ function getL4ChangedFieldsByHl4Id(hl4Id, userId) {
         var changedFields = dataL4DER.getL4ChangedFieldsByHl4Id(hl4Id);
         var hl4 = dataHl4.getHl4ById(hl4Id);
         var path = dataPath.getPathByLevelParent(4, hl4['HL3_ID'])[0];
-        var CRM_ACRONYM = "CRM";
-        var parentPath = CRM_ACRONYM + "-" + path.L1_ACRONYM + path.BUDGET_YEAR + "-" + path.L3_ACRONYM;
+        var parentPath = path.CRM_ID;
         var hl4Categories = dataCategoryOptionLevel.getAllocationCategory(hl4Id, 'hl4');
         var hl4Options = util.getAllocationOptionByCategoryAndLevelId('hl4', hl4Id);
 
@@ -79,7 +74,7 @@ function getL4ChangedFieldsByHl4Id(hl4Id, userId) {
 
                 switch (field) {
                     case 'ACRONYM':
-                        object.value = parentPath + "-" + hl4['ACRONYM'];
+                        object.value = hl4['CRM_ID'];//CRM_ACRONYM + "-" + path.L2_ACRONYM + path.BUDGET_YEAR + "-" + hl4['ACRONYM'];
                         break;
                     case 'PARENT_PATH':
                         object.value = parentPath;
@@ -88,26 +83,13 @@ function getL4ChangedFieldsByHl4Id(hl4Id, userId) {
                         object.value = hl4[field];
                         break;
                 }
-
-                /*if(field == "ACRONYM"){
-                 path = dataPath.getPathByLevelParent(4, hl4['HL3_ID']);
-                 if (path.length > 0) {
-                 object.value = CRM_ACRONYM + "-" + path[0].PATH_TPH + "-" + hl4['ACRONYM'];
-                 }
-                 }else if(field){
-                 path = dataPath.getPathByLevelParent(4, hl4['HL3_ID']);
-                 if (path.length > 0) {
-                 object.value = CRM_ACRONYM + "-" + path[0].PATH_TPH;
-                 }
-                 }else{
-                 object.value = hl4[field];
-                 }*/
-
                 object.changed = checkChangedField(changedFields, field);
                 data.hl4.push(object);
             }
             ;
         });
+        data.HL4_ID = hl4Id;
+        data.CREATED_USER_ID = hl4.CREATED_USER_ID;
         return data;
     } catch (e) {
         throw e;

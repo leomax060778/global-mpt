@@ -1,16 +1,18 @@
-PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL5_BY_IMPORT_ID"(
-		IN in_import_id BIGINT, 
-		OUT out_result TABLE (
-			hl5_id INTEGER
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL5_BY_IMPORT_ID" (
+	in in_import_id BIGINT
+	,out out_result TABLE (
+		hl5_id integer
 		)
-	)
+
+)
 	LANGUAGE SQLSCRIPT
 	SQL SECURITY INVOKER
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
-	READS SQL DATA
-AS
+	READS SQL DATA AS
 BEGIN
-	out_result = SELECT hl5_id
-			FROM hl5
-			WHERE import_id = in_import_id;
+out_result = select
+             hl5_id
+             from hl5
+             where import_id = in_import_id;
+
 END;

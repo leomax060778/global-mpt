@@ -7,6 +7,7 @@ var util = mapper.getUtil();
 var mail = mapper.getMail();
 var db = mapper.getdbHelper();
 var dbUserRole = mapper.getDataUserRole();
+var RoleLib = mapper.getRole();
 var config = mapper.getDataConfig();
 var businessLavel3 = mapper.getLevel3();
 var dataHl1User = mapper.getDataLevel1User();
@@ -73,13 +74,12 @@ function getUserByHl2Id(hl2Id) {
 
 }
 
-function getUserByHl3Id(hl3Id) {
+function getUserByHl3Id(hl3Id, hl2Id) {
     if (!hl3Id)
         throw ErrorLib.getErrors().BadRequest("The Parameter ID is not found",
             "userServices/handleGet/getUserByHl3Id", hl3Id);
 
-    var hl3 = businessLavel3.getLevel3ById(hl3Id, null);
-    return dbUser.getUserByHl3Id(hl3Id, hl3.HL2_ID);
+    return dbUser.getUserByHl3Id(hl3Id, hl2Id);
 
 }
 
@@ -181,7 +181,7 @@ function validate(data) {
             switch (user.LEVEL) {
                 case 3:
                     objLevel.IN_HL3_ID = user.LEVEL_ID;
-                    var hl3 = dataHl3.getLevel3ById(objLevel);
+                    var hl3 = dataHl3.getLevel3ById(objLevel.IN_HL3_ID);
                     var level2 = data.filter(function (permission) {
                         return permission.LEVEL_ID == hl3.HL2_ID;
                     });
@@ -191,7 +191,7 @@ function validate(data) {
                     level2Id = hl3.HL2_ID;
                 case 2:
                     objLevel.IN_HL2_ID = level2Id || user.LEVEL_ID;
-                    var hl2 = dataHl2.getLevel2ById(objLevel);
+                    var hl2 = dataHl2.getLevel2ById(objLevel.IN_HL2_ID);
 
                     var level1 = data.filter(function (permission) {
                         return permission.LEVEL_ID == hl2.HL1_ID;
@@ -511,7 +511,7 @@ function validateUser(user) {
         throw ErrorLib.getErrors().CustomError("",
             "userServices/handlePost/insertUser", "The EMAIL is invalid");
 
-    if (!util.validateLength(user.PHONE, 255, 0, "Phone"))
+    if (user.PHONE && user.PHONE.trim() && !util.validateLength(user.PHONE, 255, 0, "Phone"))
         throw ErrorLib.getErrors().CustomError("",
             "userServices/handlePost/insertUser", "The PHONE is invalid");
 
@@ -573,4 +573,49 @@ function validateHL2BudgetApproverByUserId(HL2Id, userId){
 	}
 		
 	return false;
+}
+
+/**
+ * Specific to Upload
+ * @param {string} user_name
+ * @returns {user}
+ */
+function getByName(user_name){
+    return this.getUserByUserName(user_name);
+}
+
+/**
+ * Specific to Upload
+ * @param entity
+ * @param userId
+ */
+function insertEntity(entity, userId){
+
+    var user = {};
+    user.USER_NAME = entity.IN_NAME;
+    user.FIRST_NAME = entity.IN_FIRST_NAME;
+    user.LAST_NAME = entity.IN_LAST_NAME;
+    user.EMAIL = entity.IN_EMAIL;
+    user.PHONE = entity.IN_PHONE;
+    user.USE_DEFAULT_PASSWORD = 1;
+    user.ROLE_ID =  RoleLib.getRoleByName(entity.IN_ROLE_NAME).ROLE_ID || "";
+    return insertUser(user, userId);
+}
+
+/**
+ * Specific to Upload
+ * @param entity
+ * @param userId
+ */
+function updateEntity(entity, userId){
+    var user = {};
+    user.USER_ID = getUserByUserName(entity.IN_NAME).USER_ID;
+    user.USER_NAME = entity.IN_NAME;
+    user.FIRST_NAME = entity.IN_FIRST_NAME;
+    user.LAST_NAME = entity.IN_LAST_NAME;
+    user.EMAIL = entity.IN_EMAIL;
+    user.PHONE = entity.IN_PHONE;
+    user.USE_DEFAULT_PASSWORD = 1;
+    user.ROLE_ID =  RoleLib.getRoleByName(entity.IN_ROLE_NAME).ROLE_ID || "";
+    return updateUser(user, userId);
 }

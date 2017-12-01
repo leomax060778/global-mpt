@@ -22,6 +22,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL6_FOR_SEAR
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
 	AS
 BEGIN
+
 IF in_isSA = 1 THEN
 	VAR_OUT_RESULT = SELECT DISTINCT HL6.hl6_id as id
 		, HL6.hl5_id as parent_id
@@ -44,7 +45,7 @@ IF in_isSA = 1 THEN
     INNER JOIN HL1 ON HL2.hl1_id = HL1.hl1_id AND hl1.enabled=1 AND hl1.deleted=0
 	INNER JOIN BUDGET_YEAR BGY ON HL1.budget_year_id = BGY.budget_year_id
 	LEFT JOIN REGION ON HL1.region_id = REGION.region_id
-	LEFT JOIN SUBREGION ON HL1.subregion_id = SUBREGION.subregion_id
+	LEFT JOIN SUBREGION ON HL2.subregion_id = SUBREGION.subregion_id
 	WHERE hl6.deleted = 0 AND hl6.enabled = 1
 	 AND (BGY.BUDGET_YEAR_ID = IN_BUDGET_YEAR_ID)
      AND (SUBREGION.SUBREGION_ID = IN_SUBREGION_ID OR IN_SUBREGION_ID = 0)
@@ -79,7 +80,7 @@ ELSE
     INNER JOIN HL1 ON HL2.hl1_id = HL1.hl1_id AND hl1.enabled=1 AND hl1.deleted=0
 	INNER JOIN BUDGET_YEAR BGY ON HL1.budget_year_id = BGY.budget_year_id
 	LEFT JOIN REGION ON HL1.region_id = REGION.region_id
-	LEFT JOIN SUBREGION ON HL1.subregion_id = SUBREGION.subregion_id
+	LEFT JOIN SUBREGION ON HL2.subregion_id = SUBREGION.subregion_id
 	WHERE hl6.deleted = 0 AND hl6.enabled = 1
 	AND (BGY.BUDGET_YEAR_ID = IN_BUDGET_YEAR_ID)
     AND (SUBREGION.SUBREGION_ID = IN_SUBREGION_ID OR IN_SUBREGION_ID = 0)
@@ -137,8 +138,9 @@ SELECT   id
 		, organization_acronym
 		, region_name
 		, subregion_name
-		, CONCAT(CONCAT(CONCAT(CONCAT(CONCAT(CONCAT(CONCAT(hl1_acronym, SUBSTRING(TO_NVARCHAR(BUDGET_YEAR), 3, 2)), '-')
-		    ,hl3_acronym),'-'), hl4_acronym), hl5_acronym),hl6_acronym) AS path
+--		, CONCAT(CONCAT(CONCAT(CONCAT(CONCAT(CONCAT(organization_acronym, SUBSTRING(TO_NVARCHAR(BUDGET_YEAR), 3, 2)), '-')
+--		    , hl4_acronym), '-'), hl5_acronym),hl6_acronym) AS path
+, "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BUDGET_YEAR, hl1_acronym, organization_acronym, hl3_acronym, hl4_acronym, hl5_acronym, hl6_acronym) AS path
 		    from :TEMP_OUT_RESULT;
 else
 out_result =
@@ -147,8 +149,9 @@ SELECT   id
 		, organization_acronym
 		, region_name
 		, subregion_name
-		, CONCAT(CONCAT(CONCAT(CONCAT(CONCAT(CONCAT(CONCAT(hl1_acronym, SUBSTRING(TO_NVARCHAR(BUDGET_YEAR), 3, 2)), '-')
-		    ,hl3_acronym),'-'), hl4_acronym), hl5_acronym),hl6_acronym) AS path
+--		, CONCAT(CONCAT(CONCAT(CONCAT(CONCAT(CONCAT(organization_acronym, SUBSTRING(TO_NVARCHAR(BUDGET_YEAR), 3, 2)), '-')
+--        		    , hl4_acronym), '-'), hl5_acronym),hl6_acronym) AS path
+, "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BUDGET_YEAR, hl1_acronym, organization_acronym, hl3_acronym, hl4_acronym, hl5_acronym, hl6_acronym) AS path
         from :TEMP_OUT_RESULT
         LIMIT :in_limit OFFSET :in_offset;
 end if;

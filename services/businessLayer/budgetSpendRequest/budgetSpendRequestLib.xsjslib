@@ -38,9 +38,19 @@ var BUDGET_SPEND_REQUEST_STATUS = {
     'REJECTED': 4
 };
 
+var PARTNER_TYPE = {
+    EXTERNAL_PARTNER: 1,
+    MDF: 2,
+    INTEL: 3
+};
+
 var L2_ID_MISSING = "Team ID was not found.";
+var L3_ID_MISSING = "Team ID was not found.";
 
 var DEFAULT_DELETE_MESSAGE = "Budget Spend Request deleted by user.";
+var INVALID_REQUEST_AMOUNT = "Budget Spend Request amount is invalid.";
+var INVALID_INTEL_PROJECT_ID = "Budget Spend Request Intel Project ID is invalid.";
+var INVALID_REQUEST_MESSAGE = "Budget Spend Request message is invalid.";
 
 function getBudgetSpendRequestsStatus() {
     return BUDGET_SPEND_REQUEST_STATUS;
@@ -55,8 +65,20 @@ function getL2BudgetApproverByL2Id(l2Id) {
                 "budgetSpendRequestServices/handleGet/getL2BudgetApproverByL2Id",
                 L2_ID_MISSING);
 
-    var hl2 = dataHl2.getLevel2ById({IN_HL2_ID: l2Id});
+    var hl2 = dataHl2.getLevel2ById(l2Id);
     return dataBudgetSpendRequest.getL2BudgetApproverByL2Id(l2Id, hl2.HL1_ID);
+}
+
+function getL3BudgetApproverByL3Id(l3Id) {
+    if (!l3Id || !Number(l3Id))
+        throw ErrorLib
+            .getErrors()
+            .CustomError(
+                "",
+                "",
+                L3_ID_MISSING);
+
+    return dataBudgetSpendRequest.getL3BudgetApproverByL3Id(l3Id);
 }
 
 function insertL2BudgetApprover(l2Id, budgetApproverIds, userId) {
@@ -70,6 +92,21 @@ function insertL2BudgetApprover(l2Id, budgetApproverIds, userId) {
         });
         return dataBudgetSpendRequest
             .insertL2BudgetApprover(l2BudgetApproverToInsert);
+    }
+    return true;
+}
+
+function insertL3BudgetApprover(l3Id, budgetApproverIds, userId) {
+    if (budgetApproverIds && budgetApproverIds.length) {
+        var l3BudgetApproverToInsert = budgetApproverIds.map(function (elem) {
+            return {
+                in_hl3_id: l3Id,
+                in_budget_approver_id: elem.USER_ID,
+                in_user_id: userId
+            };
+        });
+        return dataBudgetSpendRequest
+            .insertL3BudgetApprover(l3BudgetApproverToInsert);
     }
     return true;
 }
@@ -150,7 +187,7 @@ function insertSalesBudgetSpendRequest(sales, id, level, conversionValue, userId
                     var budgetApprover = dataBudgetSpendRequest.getOtherBudgetApproverByEmail(otherBudgetApprover.EMAIL);
 
                     var otherBudgetApproverId = 0;
-                    if(!budgetApprover || !budgetApprover.OTHER_BUDGET_APPROVER_ID)
+                    if (!budgetApprover || !budgetApprover.OTHER_BUDGET_APPROVER_ID)
                         otherBudgetApproverId = insertOtherBudgetApprover(otherBudgetApprover, userId);
                     else
                         otherBudgetApproverId = budgetApprover.OTHER_BUDGET_APPROVER_ID;
@@ -227,9 +264,9 @@ function updateSalesBudgetSpendRequest(sales, id, level, conversionValue, userId
                 }
 
                 var otherBudgetApprovers = [];
-                if(insertMessage){
+                if (insertMessage) {
                     sale.otherBudgetApprovers.forEach(function (otherBudgetApprover) {
-                        if(otherBudgetApprover.FULL_NAME && otherBudgetApprover.EMAIL) {
+                        if (otherBudgetApprover.FULL_NAME && otherBudgetApprover.EMAIL) {
 
                             var budgetApprover = dataBudgetSpendRequest.getOtherBudgetApproverByEmail(otherBudgetApprover.EMAIL);
 
@@ -262,13 +299,13 @@ function updateSalesBudgetSpendRequest(sales, id, level, conversionValue, userId
 
 
                     sale.otherBudgetApprovers.forEach(function (otherBudgetApprover) {
-                        if(otherBudgetApprover.FULL_NAME && otherBudgetApprover.EMAIL) {
+                        if (otherBudgetApprover.FULL_NAME && otherBudgetApprover.EMAIL) {
 
-                            var ba = otherBudgetApproversEmail.filter(function(elem){
+                            var ba = otherBudgetApproversEmail.filter(function (elem) {
                                 return elem.EMAIL == otherBudgetApprover.EMAIL;
                             });
 
-                            if(!ba.length){
+                            if (!ba.length) {
                                 var otherBudgetApproverId = insertOtherBudgetApprover(otherBudgetApprover, userId);
 
                                 arrBudgetSpendRequestOtherBudgetApprover
@@ -290,7 +327,7 @@ function updateSalesBudgetSpendRequest(sales, id, level, conversionValue, userId
                 }
 
 
-                if(otherBudgetApprovers.length)
+                if (otherBudgetApprovers.length)
                     dataBudgetSpendRequest.deleteBudgetSpendRequestOtherBudgetApprover(otherBudgetApprovers);
 
                 var message = {
@@ -335,16 +372,19 @@ function insertPartnerBudgetSpendRequest(value, message, id, level, conversionVa
         value / conversionValue, id, level, message,
         BUDGET_SPEND_REQUEST_TYPE['CO_FUNDING_EXTERNAL'],
         BUDGET_SPEND_REQUEST_STATUS['PENDING'], userId);
-    arrBudgetSpendRequestMessage
-        .push({
-            in_budget_spend_request_id: budgetSpendRequestId,
-            in_message: message,
-            in_budget_spend_request_origin_id: BUDGET_SPEND_REQUEST_ORIGIN.BUDGET_REQUESTOR,
-            in_user_id: userId
-        });
 
-    dataBudgetSpendRequest
-        .insertBudgetSpendRequestMessage(arrBudgetSpendRequestMessage);
+    if (message && message.trim()) {
+        arrBudgetSpendRequestMessage
+            .push({
+                in_budget_spend_request_id: budgetSpendRequestId,
+                in_message: message,
+                in_budget_spend_request_origin_id: BUDGET_SPEND_REQUEST_ORIGIN.BUDGET_REQUESTOR,
+                in_user_id: userId
+            });
+
+        dataBudgetSpendRequest
+            .insertBudgetSpendRequestMessage(arrBudgetSpendRequestMessage);
+    }
 
     return budgetSpendRequestId;
 }
@@ -353,8 +393,8 @@ function updateBudgetSpendRequest(budgetSpendRequest, userId, externalCall) {
 
     if (externalCall) {
         var arrBudgetSpendRequestMessageToUpdate = [];
-        budgetSpendRequest
-            .forEach(function (request) {
+        budgetSpendRequest.forEach(function (request) {
+            if (request.in_message && request.in_message.trim()) {
                 arrBudgetSpendRequestMessageToUpdate
                     .push({
                         in_budget_spend_request_id: request.in_budget_spend_request_id,
@@ -362,11 +402,11 @@ function updateBudgetSpendRequest(budgetSpendRequest, userId, externalCall) {
                         in_budget_spend_request_origin_id: BUDGET_SPEND_REQUEST_ORIGIN.BUDGET_REQUESTOR,
                         in_user_id: userId
                     });
-            });
+            }
+        });
 
         if (arrBudgetSpendRequestMessageToUpdate.length)
-            dataBudgetSpendRequest
-                .updateBudgetSpendRequestMessage(arrBudgetSpendRequestMessageToUpdate);
+            dataBudgetSpendRequest.updateBudgetSpendRequestMessage(arrBudgetSpendRequestMessageToUpdate);
     }
 
     return dataBudgetSpendRequest.updateBudgetSpendRequest(budgetSpendRequest);
@@ -410,6 +450,18 @@ function deleteL2BudgetApprover(l2Id, budgetApproverIds) {
 
     return dataBudgetSpendRequest.deleteL2BudgetApprover(l2Id,
         l2BudgetApproverToDelete);
+}
+
+function deleteL3BudgetApprover(l3Id, budgetApproverIds) {
+    var l3BudgetApproverToDelete = [];
+    budgetApproverIds.forEach(function (elem) {
+        l3BudgetApproverToDelete.push({
+            in_user_id: elem.USER_ID
+        });
+    });
+
+    return dataBudgetSpendRequest.deleteL3BudgetApprover(l3Id,
+        l3BudgetApproverToDelete);
 }
 
 function validateApprovers(listApprovers) {
@@ -524,7 +576,7 @@ function setBudgetSpendRequestStatusNoLongerRequested(hlId, level, userId) {
     return setBudgetSpendRequestStatus(hlId, level, userId, BUDGET_SPEND_REQUEST_STATUS.NO_LONGER_REQUESTED);
 }
 
-function disableCoFundedBudgetSpendRequests(hlId, level, userId){
+function disableCoFundedBudgetSpendRequests(hlId, level, userId) {
     return setBudgetSpendRequestStatus(hlId, level, userId, BUDGET_SPEND_REQUEST_STATUS.NO_LONGER_REQUESTED, true);
 }
 
@@ -542,7 +594,7 @@ function setBudgetSpendRequestStatus(hlId, level, userId, status, preserveOwnMon
     var arrBudgSpendStatusLog = [];
     var arrBudgetSpendRequestMessage = [];
 
-   // throw JSON.stringify(budgetSpendRequests);
+    // throw JSON.stringify(budgetSpendRequests);
     budgetSpendRequests.forEach(function (request) {
         arrBudgSpendStatus.push({
             in_budget_spend_request_id: request.BUDGET_SPEND_REQUEST_ID
@@ -560,10 +612,10 @@ function setBudgetSpendRequestStatus(hlId, level, userId, status, preserveOwnMon
             in_budget_spend_request_id: request.BUDGET_SPEND_REQUEST_ID
             , in_status_id: request.BUDGET_SPEND_REQUEST_STATUS_ID
             , in_created_user_id: userId
-            ,in_other_budget_approver_id : request.BUDGET_SPEND_REQUEST_OTHER_BUDGET_APPROVER || null
+            , in_other_budget_approver_id: request.BUDGET_SPEND_REQUEST_OTHER_BUDGET_APPROVER || null
         });
     });
-    
+
 
     if (arrBudgSpendStatus.length) {
         dataBudgetReport.insertBudgetSpendRequestStatusLog(arrBudgSpendStatusLog);
@@ -590,7 +642,11 @@ function getHlSalesByHlId(id, level) {
                 });
             } else {
                 result[request.BUDGET_SPEND_REQUEST_ID] = JSON.parse(JSON.stringify(request));
-                result[request.BUDGET_SPEND_REQUEST_ID].otherBudgetApprovers = [{full_name: request.FULL_NAME, email: request.EMAIL, other_budget_approver_id: request.OTHER_BUDGET_APPROVER_ID}];
+                result[request.BUDGET_SPEND_REQUEST_ID].otherBudgetApprovers = [{
+                    full_name: request.FULL_NAME,
+                    email: request.EMAIL,
+                    other_budget_approver_id: request.OTHER_BUDGET_APPROVER_ID
+                }];
             }
         } else {
             result[request.BUDGET_SPEND_REQUEST_ID] = request;
@@ -599,7 +655,7 @@ function getHlSalesByHlId(id, level) {
     return util.objectToArray(result);
 }
 
-function notifyOtherBudgetApprover(arrBudgetSpendRequestOtherBudgetApprover, userId){
+function notifyOtherBudgetApprover(arrBudgetSpendRequestOtherBudgetApprover, userId) {
     var appUrl = config.getAppUrl();
     arrBudgetSpendRequestOtherBudgetApprover.forEach(function (elem) {
         var link = '<p>A budget spend request has been created and needs your approval. Please follow the link: </p>';
@@ -608,12 +664,36 @@ function notifyOtherBudgetApprover(arrBudgetSpendRequestOtherBudgetApprover, use
         var budgetRequest = dataBudgetSpendRequest.getBudgetSpendRequestByBudgetSpendRequestId(elem.in_budget_spend_request_id);
         var mailObject = {
             BUDGET_SPEND_REQUEST_ID: elem.in_budget_spend_request_id
-            ,HL5_ID: budgetRequest.HIERARCHY_LEVEL_ID == HIERARCHY_LEVEL.HL5 ? budgetRequest.HL_ID : undefined
-            ,HL6_ID: budgetRequest.HIERARCHY_LEVEL_ID == HIERARCHY_LEVEL.HL6 ? budgetRequest.HL_ID : undefined
-            ,RECIPIENTS: [{address: budgetApprover.EMAIL}]
-            ,NOTE: link
+            , HL5_ID: budgetRequest.HIERARCHY_LEVEL_ID == HIERARCHY_LEVEL.HL5 ? budgetRequest.HL_ID : undefined
+            , HL6_ID: budgetRequest.HIERARCHY_LEVEL_ID == HIERARCHY_LEVEL.HL6 ? budgetRequest.HL_ID : undefined
+            , RECIPIENTS: [{address: budgetApprover.EMAIL}]
+            , NOTE: link
         };
 
         budgetReportLib.sendBudgetSpendRequestInformationByEmail(mailObject, userId);
     });
+}
+
+function validateExternalCofunding(data) {
+    data.forEach(function (partner) {
+        if (!partner.AMOUNT || !partner.AMOUNT.trim() || !Number(partner.AMOUNT.trim()))
+            throw ErrorLib.getErrors().CustomError("", "budgetSpendRequestServices/handlePost/validateExternalCoFunding", INVALID_REQUEST_AMOUNT);
+
+        if (PARTNER_TYPE.INTEL == partner.PARTNER_TYPE_ID && !partner.INTEL_PROJECT_ID.trim()) {
+            throw ErrorLib.getErrors().CustomError("", "budgetSpendRequestServices/handlePost/validateExternalCoFunding", INVALID_INTEL_PROJECT_ID);
+        }
+    });
+    return true;
+}
+
+function validateInternalCofunding(data) {
+    data.forEach(function (saleRequest) {
+        if (!saleRequest.AMOUNT || !saleRequest.AMOUNT.trim() || !Number(saleRequest.AMOUNT.trim()))
+            throw ErrorLib.getErrors().CustomError("", "budgetSpendRequestServices/handlePost/validateInternalCoFunding", INVALID_REQUEST_AMOUNT);
+
+        if (!saleRequest.MESSAGE.trim()) {
+            throw ErrorLib.getErrors().CustomError("", "budgetSpendRequestServices/handlePost/validateInternalCoFunding", INVALID_REQUEST_MESSAGE);
+        }
+    });
+    return true;
 }

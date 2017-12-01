@@ -16,13 +16,13 @@ function handleGet(){
 	var result = [];
 	var hierarchy_level_id = httpUtil.getUrlParameters().get("HIERARCHY_LEVEL_ID");
 	if(hierarchy_level_id)
-		result = AllocationCategory.getCategoryByHierarchyLevelId(hierarchy_level_id);
+		result = AllocationCategory.getCategoryOptionByHierarchyLevelId(hierarchy_level_id);
 	else
 		result = AllocationCategory.getAllocationCategory();
 	return httpUtil.handleResponse(result,httpUtil.OK,httpUtil.AppJson);
 }
 
-function handlePost(reqBody, userId){
+function handlePost(reqBody,userId){
 	var method = $.request.parameters.get("METHOD");
 	var result;
 	switch (method){

@@ -1,19 +1,16 @@
-PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_ALL_EXPECTED_OUTCOME"(
-		OUT out_result TABLE (
-			expected_outcome_id BIGINT,
-			name NVARCHAR(255)
-		)
-	)
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_ALL_EXPECTED_OUTCOME" (
+	out out_result table (
+	expected_outcome_id bigint,
+    name nvarchar(255)
+	))
 	LANGUAGE SQLSCRIPT
 	SQL SECURITY INVOKER
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
-	READS SQL DATA
-AS
+	READS SQL DATA AS
 BEGIN
-	out_result = SELECT expected_outcome_id, 
-				name
-			FROM EXPECTED_OUTCOME
-			WHERE deleted = 0
-				AND enabled = 1
-			ORDER BY upper(name) ASC;
+		out_result =
+		SELECT expected_outcome_id, name
+		from EXPECTED_OUTCOME 
+		where deleted = 0 and enabled = 1
+		order by upper(name);
 END;

@@ -1,0 +1,33 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_ALL_REQUEST_ACCESS" (
+	OUT out_result TABLE(
+	    REQUEST_ACCESS_ID bigint
+	    , USER_NAME nvarchar(255)
+	    , FIRST_NAME nvarchar(255)
+	    , LAST_NAME nvarchar(255)
+	    , EMAIL nvarchar(255)
+	    , PHONE nvarchar(255)
+	    , REQUEST_ACCESS_STATUS nvarchar(255)
+	    , REQUEST_ACCESS_STATUS_ID bigint
+	)
+)
+ 
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER 
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	READS SQL DATA AS
+BEGIN
+/***************************** 
+	Write your procedure logic 
+ *****************************/
+  out_result = SELECT REQUEST_ACCESS.REQUEST_ACCESS_ID
+                      , REQUEST_ACCESS.USER_NAME
+                      , REQUEST_ACCESS.FIRST_NAME
+                      , REQUEST_ACCESS.LAST_NAME
+                      , REQUEST_ACCESS.EMAIL
+                      , REQUEST_ACCESS.PHONE
+                      , REQUEST_ACCESS_STATUS.DISPLAY_NAME AS REQUEST_ACCESS_STATUS
+                      , REQUEST_ACCESS.REQUEST_ACCESS_STATUS_ID
+ 		FROM REQUEST_ACCESS
+ 		INNER JOIN REQUEST_ACCESS_STATUS ON REQUEST_ACCESS_STATUS.REQUEST_ACCESS_STATUS_ID = REQUEST_ACCESS.REQUEST_ACCESS_STATUS_ID
+ 		WHERE REQUEST_ACCESS.ENABLED = 1 AND REQUEST_ACCESS.DELETED = 0;
+END;

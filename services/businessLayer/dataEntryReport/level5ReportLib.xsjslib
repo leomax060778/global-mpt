@@ -18,24 +18,21 @@ var dataRouteToMarket = mapper.getDataRouteToMarket();
 var dataMarketingOrganization = mapper.getDataMarketingOrganization();
 var dataCategoryOptionLevel = mapper.getDataCategoryOptionLevel();
 var dataPriority = mapper.getDataPriority();
+var utilReportLib = mapper.getUtilDEReport();
 /** ***********END INCLUDE LIBRARIES*************** */
 
 function getAllL5DEReport(userId) {
     var hl5List = dataL5DER.getAllLevel5Report(userId);
-    var allHl5 = [];
-    hl5List.forEach(function (hl5) {
-        var aux = {};
-        Object.keys(hl5).forEach(function (key) {
-            aux[key] = key != 'HL5_PATH' ? hl5[key]
-                : 'CRM-' + hl5[key];
-        });
-        allHl5.push(aux);
-    });
-
-    return allHl5;
+    return hl5List;
 }
-function getAllL5DEReportForDownload(userId) {
-    return dataL5DER.getAllLevel5ReportForDownload(userId);
+
+function getAllL5CreateInCrmDEReportForDownload(userId) {
+    return dataL5DER.getAllL5CreateInCrmDEReportForDownload(userId);
+}
+function getAllHL5ChangedFields(userId) {
+    var data = dataL5DER.getAllHL5ChangedFields(userId);
+    return utilReportLib.parseChangedFields("HL5", "HL5_ID", data.out_hl5_changed_fields, data.out_hl5_category_options, data.out_hl5);
+
 }
 
 function getL5ChangedFieldsByHl5Id(hl5Id, userId) {
@@ -70,11 +67,9 @@ function getL5ChangedFieldsByHl5Id(hl5Id, userId) {
         } else {
             var object = {};
             object.display_name = l5ReportFields[field];
-            var CRM_ACRONYM = "CRM";
-            var parentPath = CRM_ACRONYM + "-" + hl5.L1_ACRONYM + hl5.BUDGET_YEAR + "-" + hl5.L3_ACRONYM + "-" + hl5.L4_ACRONYM;
             switch (field) {
                 case "ACRONYM":
-                    object.value = parentPath + hl5.ACRONYM;
+                    object.value = hl5.CRM_ID;
                     break;
                 case "CAMPAIGN_TYPE_ID":
                     object.value = hl5.CAMPAIGN_TYPE;
@@ -102,23 +97,14 @@ function getL5ChangedFieldsByHl5Id(hl5Id, userId) {
                 //TODO:
                 case "MARKETING_ACTIVITY_ID":
                     if (processingReportData.marketing_activity_id) {
-                        object.value = CRM_ACRONYM + '-'
-                            + processingReportData.marketing_activity_id.BUDGET_YEAR
-                            + processingReportData.marketing_activity_id.L1_ACRONYM
-                            + '-' + processingReportData.marketing_activity_id.L3_ACRONYM
-                            + '-' + processingReportData.marketing_activity_id.L4_ACRONYM
-                            + processingReportData.marketing_activity_id.L5_ACRONYM;
+                        object.value = processingReportData.marketing_activity_id.CRM_ID;
                     }
                     break;
-
                 case "SHOW_ON_DG_CALENDAR":
                     object.value = hl5.SHOW_ON_DG_CALENDAR ? "Yes" : "No";
                     break;
                 case "BUSINESS_OWNER_ID":
                     object.value = hl5.BUSINESS_OWNER;
-                    break;
-                case "EMPLOYEE_RESPONSIBLE_ID":
-                    object.value = hl5.EMPLOYEE_RESPONSIBLE;
                     break;
                 case "MARKETING_PROGRAM_ID":
                     object.value = hl5.MARKETING_PROGRAM;
@@ -133,19 +119,19 @@ function getL5ChangedFieldsByHl5Id(hl5Id, userId) {
                     object.value = hl5.DISTRIBUTION_CHANNEL;
                     break;
                 case "PLANNED_START_DATE":
-                    object.value = (new Date(hl5.PLANNED_START_DATE)).toLocaleDateString();
+                    object.value = hl5.PLANNED_START_DATE;
                     break;
                 case "PLANNED_END_DATE":
-                    object.value = (new Date(hl5.PLANNED_END_DATE)).toLocaleDateString();
+                    object.value = hl5.PLANNED_END_DATE;
                     break;
                 case "ACTUAL_START_DATE":
-                    object.value = (new Date(hl5.ACTUAL_START_DATE)).toLocaleDateString();
+                    object.value = hl5.ACTUAL_START_DATE;
                     break;
                 case "ACTUAL_END_DATE":
-                    object.value = (new Date(hl5.ACTUAL_END_DATE)).toLocaleDateString();
+                    object.value = hl5.ACTUAL_END_DATE;
                     break;
                 case "PARENT_PATH":
-                    object.value = parentPath;
+                    object.value =  hl5.PARENT_PATH;
                     break;
                 case "PRIORITY_ID":
                     object.value = hl5.PRIORITY;
@@ -154,6 +140,11 @@ function getL5ChangedFieldsByHl5Id(hl5Id, userId) {
                     object.value = hl5[field];
                     break;
             }
+            object.type = field == "PLANNED_START_DATE" ||
+            field == "PLANNED_END_DATE" ||
+            field == "ACTUAL_START_DATE" ||
+            field == "ACTUAL_END_DATE" ? "DATE" : undefined;
+
             var fieldToCheck = field == "DISTRIBUTION_CHANNEL_DESC" ? "DISTRIBUTION_CHANNEL_ID"
                 : field == "MARKETING_PROGRAM_DESC" ? "MARKETING_PROGRAM_ID"
                     : field == "MARKETING_ACTIVITY_DESC" ? "MARKETING_ACTIVITY_ID"
@@ -163,6 +154,8 @@ function getL5ChangedFieldsByHl5Id(hl5Id, userId) {
             data.hl5.push(object);
         }
     });
+    data.HL5_ID = hl5Id;
+    data.CREATED_USER_ID = hl5.CREATED_USER_ID;
     return data;
 }
 
@@ -201,7 +194,7 @@ function getProcessingReportFields(){
         , "DISTRIBUTION_CHANNEL_ID": "Distribution Channel"
         , "DISTRIBUTION_CHANNEL_DESC": "Distribution Channel Desc"
         , "COST_CENTER_ID": "Cost Center"
-        , "EMPLOYEE_RESPONSIBLE_ID": "Employee Responsible"
+        , "EMPLOYEE_RESPONSIBLE_USER": "Employee Responsible"
         , "BUSINESS_OWNER_ID": "Business Owner"
         , "ROUTE_TO_MARKET_ID": "Route to Market"
         , "BUDGET": "Budget"

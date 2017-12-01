@@ -5,9 +5,7 @@ var ErrorLib = mapper.getErrors();
 var httpUtil = mapper.getHttp();
 /***************END INCLUDE LIBRARIES*******************/
 
-var spGET_DICTIONARY_BY_PATH = "GET_DICTIONARY_BY_PATH";
 var spGET_DICTIONARY_PATH_BY_USER_ID = "GET_DICTIONARY_PATH_BY_USER_ID";
-var spDEL_DICTIONARY_L5_L6 = "DEL_DICTIONARY_L5_L6";
 var spINS_DICTIONARY = "INS_DICTIONARY_L5_L6";
 var spINS_DICTIONARY_KPI = "INS_DICTIONARY_KPI";
 var spGET_MAP_HL_EXCEL = "GET_MAP_HL_EXCEL";
@@ -25,6 +23,7 @@ var UPD_IMPORT_L5_L6 = "UPD_IMPORT_L5_L6";
 var DEL_DICTIONARY_L5_L6_BY_USER_ID = "DEL_DICTIONARY_L5_L6_BY_USER_ID";
 var INS_IMPORT_HL = "INS_IMPORT_HL";
 var UPD_IMPORT_HL = "UPD_IMPORT_HL";
+var GET_DEFAULT_CURRENCY_FOR_HL_AND_LEVEL = "GET_DEFAULT_CURRENCY_FOR_HL_AND_LEVEL";
 /******************************************************/
 var hierarchyLevel = {
     "hl1": 6,
@@ -54,6 +53,11 @@ function getLogByImport(importId){
     return db.extractArray(rdo.OUT_RESULT);
 }
 
+function getDefaultCurrencyForHlLevel(hl_id, hierarchy_level_id){
+    var rdo = db.executeProcedureManual(GET_DEFAULT_CURRENCY_FOR_HL_AND_LEVEL, {'hl_id':hl_id, 'hierarchy_level_id': hierarchy_level_id});
+    return db.extractArray(rdo.OUT_RESULT)[0];
+}
+
 function getImports(){
     var rdo = db.executeProcedure(GET_IMPORT, {});
     return db.extractArray(rdo.OUT_RESULT);
@@ -81,13 +85,14 @@ function insertLog(csvColumnName, columnName, state, comments, importId, userId)
     return rdo;
 }
 
-function insertDictionary(path, key, value, hl, userId){
+function insertDictionary(path, key, value, hl, userId, parent){
     var params = {
         'IN_PATH' : path,
         'IN_KEY': key,
         'IN_VALUE': value,
         'HIERARCHY_LEVEL_ID' :  hl ? hierarchyLevel[hl.toLowerCase()] : 0,
-        'IN_USER_ID' : userId
+        'IN_USER_ID' : userId,
+        'IN_PARENT': parent || null
     };
     var rdo = db.executeScalarManual(spINS_DICTIONARY, params, "OUT_RESULT");
     return rdo;
@@ -110,21 +115,16 @@ function getDictionaryL5L6PathByUser(userId){
     return db.extractArray(rdo.OUT_RESULT);
 }
 
-function getDictionaryL5L6ByPath(path, userId){
-    var rdo = db.executeProcedure(spGET_DICTIONARY_BY_PATH, {'IN_PATH':path,'IN_USER_ID':userId});
-    return db.extractArray(rdo.OUT_RESULT);
-}
-
-function deleteDictionaryL5L6(userId){
-    var rdo = db.executeScalarManual(spDEL_DICTIONARY_L5_L6, {'in_user_id':userId}, "OUT_RESULT");
-    return rdo;
-}
-
-function getParentIdByPath(path){
+function getParentIdByPath(path, hierarchyLevelId){
     var tablename = '"_SYS_BIC"."mktgplanningtool.db.data.views/CV_GET_LEVEL_PATH"';
     var columnreference = 'HL_ID';
     var columnFilter = 'PATH';
-    return getForeignId(tablename, columnreference, columnFilter, path);
+
+    var otherFilter = "";
+    if(hierarchyLevelId)
+        otherFilter = otherFilter + " and HIERARCHY_LEVEL_ID = " + hierarchyLevelId;
+
+    return getForeignId(tablename, columnreference, columnFilter, path, otherFilter);
 }
 
 function getForeignId(tableName, columnReference, columnFilter, findValue, otherFilter, operator){

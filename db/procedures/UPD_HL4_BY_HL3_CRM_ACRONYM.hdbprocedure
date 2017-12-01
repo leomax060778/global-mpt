@@ -1,0 +1,30 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::UPD_HL4_BY_HL3_CRM_ACRONYM" (
+IN myTable TABLE(
+    	    IN_HL4_CRM_ACRONYM_ID bigint,
+    	    IN_HL3_CRM_ACRONYM_ID bigint,
+    	    IN_USER_ID BIGINT
+    		),
+    	OUT out_result int
+    )
+    	LANGUAGE SQLSCRIPT
+    	SQL SECURITY INVOKER
+    	DEFAULT SCHEMA "MKTG_PLANNING_TOOL" AS
+    BEGIN
+            UPDATE HL4_CRM_ACRONYM SET
+                		HL3_CRM_ACRONYM_ID = NULL
+                		from HL4_CRM_ACRONYM, (
+                		    select IN_HL4_CRM_ACRONYM_ID, IN_HL3_CRM_ACRONYM_ID, IN_USER_ID from :myTable
+                		) T
+                		where HL3_CRM_ACRONYM_ID = T.IN_HL3_CRM_ACRONYM_ID;
+
+    		UPDATE HL4_CRM_ACRONYM SET
+    		HL3_CRM_ACRONYM_ID = T.IN_HL3_CRM_ACRONYM_ID,
+    		modified_user_id = T.IN_USER_ID,
+    		modified_date_tz = CURRENT_TIMESTAMP
+    		from HL4_CRM_ACRONYM, (
+    		    select IN_HL4_CRM_ACRONYM_ID, IN_HL3_CRM_ACRONYM_ID, IN_USER_ID from :myTable
+    		) T
+    		where HL4_CRM_ACRONYM_ID = T.IN_HL4_CRM_ACRONYM_ID;
+
+            SELECT ::ROWCOUNT INTO out_result FROM DUMMY;
+END;

@@ -42,18 +42,23 @@ function getAllCampaignSubTypeById(idCampaignSubType) {
 }
 function insertCampaignSubType(payload, userId) {
     validateCampaignType(payload);
-    return dataCampaignSubType.insertCampaignSubType(payload.IN_NAME, payload.IN_CRM_KEY, userId);
+    return dataCampaignSubType.insertCampaignSubType(
+        payload.IN_NAME.trim()
+        , payload.IN_CRM_KEY.trim()
+        , payload.IN_ROLLOVER_TEXT.trim() || null
+        , payload.IN_EXAMPLE.trim() || null
+        , userId);
 }
 
 function validateCampaignType(data) {
     if(!data)
-        throw ErrorLib.getErrors().CustomError("", "campaignSubTypeService/handlePost/validateCampaignType", CAMPAIGN_SUB_TYPE_DATA);
+        throw ErrorLib.getErrors().CustomError("", "campaignSubTypeService/handlePost/validateCampaignSubType", CAMPAIGN_SUB_TYPE_DATA);
 
-    if(!data.IN_NAME)
-        throw ErrorLib.getErrors().CustomError("", "campaignSubTypeService/handlePost/validateCampaignType", CAMPAIGN_SUB_TYPE_NAME);
+    if(!data.IN_NAME.trim())
+        throw ErrorLib.getErrors().CustomError("", "campaignSubTypeService/handlePost/validateCampaignSubType", CAMPAIGN_SUB_TYPE_NAME);
 
-    if(!data.IN_CRM_KEY)
-        throw ErrorLib.getErrors().CustomError("", "campaignSubTypeService/handlePost/validateCampaignType", CAMPAIGN_SUB_TYPE_CRM_KEY);
+    if(!data.IN_CRM_KEY.trim())
+        throw ErrorLib.getErrors().CustomError("", "campaignSubTypeService/handlePost/validateCampaignSubType", CAMPAIGN_SUB_TYPE_CRM_KEY);
 
     var campaignSubType = dataCampaignSubType.getCampaignSubTypeByName(data.IN_NAME);
     if(campaignSubType && Number(data.IN_CAMPAIGN_SUB_TYPE_ID) !== Number(campaignSubType.CAMPAIGN_SUB_TYPE_ID))
@@ -70,8 +75,10 @@ function updateCampaignSubType(campaignSubTypeData, userId) {
     validateCampaignType(campaignSubTypeData);
     return dataCampaignSubType.updateCampaignSubType(
         campaignSubTypeData.IN_CAMPAIGN_SUB_TYPE_ID
-        , campaignSubTypeData.IN_NAME
-        , campaignSubTypeData.IN_CRM_KEY
+        , campaignSubTypeData.IN_NAME.trim()
+        , campaignSubTypeData.IN_CRM_KEY.trim()
+        , campaignSubTypeData.IN_ROLLOVER_TEXT.trim() || null
+        , campaignSubTypeData.IN_EXAMPLE.trim() || null
         , userId);
 }
 
@@ -107,4 +114,16 @@ function deleteCampaignSubType(campaignSubTypeData, userId, confirm) {
             return dataCampaignSubType.deleteCampaignSubType(campaignSubTypeData.IN_CAMPAIGN_SUB_TYPE_ID, userId);
         }
     }
+}
+
+function getByName(name){
+    return dataCampaignSubType.getCampaignSubTypeByName(name);
+}
+
+function insertEntity(data, userId) {
+    return insertCampaignSubType(data, userId);
+}
+
+function updateEntity(data, userId) {
+    return updateCampaignSubType(data, userId);
 }

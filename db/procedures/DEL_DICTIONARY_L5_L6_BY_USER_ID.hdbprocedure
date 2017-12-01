@@ -1,15 +1,14 @@
-PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::DEL_DICTIONARY_L5_L6_BY_USER_ID"(
-		IN in_user_id BIGINT, 
-		OUT out_result INTEGER
-	)
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::DEL_DICTIONARY_L5_L6_BY_USER_ID" (
+	in in_user_id bigint,
+	out out_result integer
+)
 	LANGUAGE SQLSCRIPT
 	SQL SECURITY INVOKER
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
-AS
+	AS
 BEGIN
-	DELETE FROM UPLOAD_DICTIONARY
-	WHERE created_user_id = in_user_id;
-	SELECT ::ROWCOUNT
-		INTO out_result
-		FROM DUMMY;
+
+    delete from UPLOAD_DICTIONARY
+     WHERE created_user_id = in_user_id;
+	SELECT ::ROWCOUNT INTO out_result FROM DUMMY;
 END;

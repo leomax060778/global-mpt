@@ -3,6 +3,7 @@ $.import("mktgplanningtool.services.commonLib", "mapper");
 var mapper = $.mktgplanningtool.services.commonLib.mapper;
 var dataExpectedOutcome = mapper.getDataExpectedOutcome();
 var dataExpectedOutcomeLevel = mapper.getDataExpectedOutcomeLevel();
+var expectedOutcomesLevelLib = mapper.getExpectedOutcomesLevelLib();
 var ErrorLib = mapper.getErrors();
 var util = mapper.getUtil();
 /*************************************************/
@@ -15,6 +16,15 @@ var LEVEL_NOT_SUPPORTED = "Level is not supported.";
 var map = {
     'IN_EXPECTED_OUTCOME_ID': 'EXPECTED_OUTCOME_ID',
     'IN_NAME': 'EXPECTED_OUTCOME_NAME'
+};
+
+var HIERARCHY_LEVEL = {
+    HL1: 6,
+    HL2: 5,
+    HL3: 4,
+    HL4: 1,
+    HL5: 2,
+    HL6: 3
 };
 
 var getExpectedOutcomeByHlIdMap = {
@@ -134,71 +144,87 @@ function getExpectedOutcomesByParentIdLevel(parentId, level) {
 }
 
 function getExpectedOutcomesByHL1Id(hl1_id, fromGrid) {
-    var expectedOutcomes = dataExpectedOutcome.getExpectedOutcomeByHL1Id(hl1_id);
-    var result = [];
+    var result = {COMMENTS: '', KPIS: []};
+    var expectedOutcomes = dataExpectedOutcome.getHL1ExpectedOutcomeDetailById(hl1_id);
     if (expectedOutcomes && expectedOutcomes.length) {
-        expectedOutcomes.forEach(function (eo) {
-            var aux = util.extractObject(eo);
-            aux.detail = dataExpectedOutcome.getHL1ExpectedOutcomeDetailById(aux.HL1_EXPECTED_OUTCOMES_ID);
-            if (aux.detail.length) {
-                aux.detail = fromGrid ? addParentKpiDataToDetail(hl1_id, 'HL2', aux.detail, fromGrid) : aux.detail;
-            } else {
-                aux.detail = [];
+        expectedOutcomes.forEach(function (elem) {
+            result.COMMENTS = elem.COMMENTS;
+            if(elem.OUTCOMES_TYPE_ID){
+                result.KPIS.push({
+                    OUTCOMES_TYPE_NAME: elem.OUTCOMES_TYPE_NAME,
+                    OUTCOMES_TYPE_ID: elem.OUTCOMES_TYPE_ID,
+                    OUTCOMES_NAME: elem.OUTCOMES_NAME,
+                    OUTCOMES_ID: elem.OUTCOMES_ID,
+                    EURO_VALUE: elem.EURO_VALUE,
+                    VOLUME_VALUE: elem.VOLUME_VALUE,
+                    EXPECTED_OUTCOME_LEVEL_ID: elem.EXPECTED_OUTCOME_LEVEL_ID
+                })
             }
-            result.push(aux);
         });
-
-    } else {
-        result.push({COMMENT: '', detail: []});
+        if (result.KPIS.length/* && fromGrid*/) {
+            result.KPIS = addParentKpiDataToDetail(hl1_id, 'HL2', result.KPIS, fromGrid);
+        }
     }
 
-    return result[0];
+    return result;
 }
 
 function getExpectedOutcomesByHl2Id(hl2_id, hl1_id, fromGrid) {
-    var result = [];
-    var expectedOutcomes = dataExpectedOutcome.getExpectedOutcomeByHl2Id(hl2_id);
+    var result = {COMMENTS: '', KPIS: []};
+    var expectedOutcomes = dataExpectedOutcome.getHl2ExpectedOutcomeDetailById(hl2_id);
     if (expectedOutcomes && expectedOutcomes.length) {
-        expectedOutcomes.forEach(function (eo) {
-            var aux = util.extractObject(eo);
-            var detail = dataExpectedOutcome.getHl2ExpectedOutcomeDetailById(aux.HL2_EXPECTED_OUTCOMES_ID);
-
-            if (detail.length) {
-                aux.detail = fromGrid ? addParentKpiDataToDetail(hl2_id, 'HL3', detail, fromGrid) : addParentKpiDataToDetail(hl1_id, 'HL2', detail);
-            } else {
-                aux.detail = [];
-                aux.parentValues = getExpectedOutcomeTotalAvailableByHlIdLevelId(hl1_id, 'HL2');
+        expectedOutcomes.forEach(function (elem) {
+            result.COMMENTS = elem.COMMENTS;
+            if(elem.OUTCOMES_TYPE_ID){
+                result.KPIS.push({
+                    OUTCOMES_TYPE_NAME: elem.OUTCOMES_TYPE_NAME,
+                    OUTCOMES_TYPE_ID: elem.OUTCOMES_TYPE_ID,
+                    OUTCOMES_NAME: elem.OUTCOMES_NAME,
+                    OUTCOMES_ID: elem.OUTCOMES_ID,
+                    EURO_VALUE: elem.EURO_VALUE,
+                    VOLUME_VALUE: elem.VOLUME_VALUE,
+                    EXPECTED_OUTCOME_LEVEL_ID: elem.EXPECTED_OUTCOME_LEVEL_ID
+                })
             }
-            result.push(aux);
         });
 
-    } else {
-        result.push({COMMENT: '', detail: []});
+        if (result.KPIS.length) {
+            result.KPIS = fromGrid ? addParentKpiDataToDetail(hl2_id, 'HL3', result.KPIS, fromGrid) : addParentKpiDataToDetail(hl1_id, 'HL2', result.KPIS);
+        } else {
+            result.parentValues = getExpectedOutcomeTotalAvailableByHlIdLevelId(hl1_id, 'HL2');
+        }
     }
-    return result[0];
+
+    return result;
 }
 
 function getExpectedOutcomesByHl3Id(hl3_id, hl2_id, fromGrid) {
-    var expectedOutcomes = dataExpectedOutcome.getExpectedOutcomeByHl3Id(hl3_id);
-    var result = [];
+    var result = {COMMENTS: '', KPIS: []};
+    var expectedOutcomes = dataExpectedOutcome.getHl3ExpectedOutcomeDetailById(hl3_id);
     if (expectedOutcomes && expectedOutcomes.length) {
-        expectedOutcomes.forEach(function (eo) {
-            var aux = util.extractObject(eo);
-            var detail = dataExpectedOutcome.getHl3ExpectedOutcomeDetailById(aux.HL3_EXPECTED_OUTCOMES_ID);
-
-            if (detail.length) {
-                aux.detail = fromGrid ? addParentKpiDataToDetail(hl3_id, 'HL4', detail, fromGrid) : addParentKpiDataToDetail(hl2_id, 'HL3', detail);
-            } else {
-                aux.detail = [];
-                aux.parentValues = getExpectedOutcomeTotalAvailableByHlIdLevelId(hl2_id, 'HL3');
+        expectedOutcomes.forEach(function (elem) {
+            result.COMMENTS = elem.COMMENTS;
+            if(elem.OUTCOMES_TYPE_ID){
+                result.KPIS.push({
+                    OUTCOMES_TYPE_NAME: elem.OUTCOMES_TYPE_NAME,
+                    OUTCOMES_TYPE_ID: elem.OUTCOMES_TYPE_ID,
+                    OUTCOMES_NAME: elem.OUTCOMES_NAME,
+                    OUTCOMES_ID: elem.OUTCOMES_ID,
+                    EURO_VALUE: elem.EURO_VALUE,
+                    VOLUME_VALUE: elem.VOLUME_VALUE,
+                    EXPECTED_OUTCOME_LEVEL_ID: elem.EXPECTED_OUTCOME_LEVEL_ID
+                })
             }
-
-            result.push(aux);
         });
-    } else {
-        result.push({COMMENT: '', detail: []});
+
+        if (result.KPIS.length) {
+            result.KPIS = fromGrid ? addParentKpiDataToDetail(hl3_id, 'HL4', result.KPIS, fromGrid) : addParentKpiDataToDetail(hl2_id, 'HL3', result.KPIS);
+        } else {
+            result.parentValues = getExpectedOutcomeTotalAvailableByHlIdLevelId(hl2_id, 'HL3');
+        }
     }
-    return result[0];
+
+    return result;
 }
 
 function getExpectedOutcomesByHl4Id(hl4_id, hl3_id) {
@@ -323,4 +349,19 @@ function addTotalAvailable(detail, totalAvailable, fromGrid) {
     });
 
     return detail;
+}
+
+function filterKpiByLevel(kpis, level){
+    var mapEOL = expectedOutcomesLevelLib.getKpiTypeOptionMapByHlId(HIERARCHY_LEVEL[level]);
+    var result = {COMMENTS: '', KPIS: []};
+    result.COMMENTS = kpis.COMMENTS || '';
+    kpis.KPIS.forEach(function (kpi) {
+        if(mapEOL[kpi.OUTCOMES_TYPE_ID] && mapEOL[kpi.OUTCOMES_TYPE_ID][kpi.OUTCOMES_ID]) {
+            kpi.EURO_VALUE = 0;
+            kpi.VOLUME_VALUE = 0;
+            result.KPIS.push(kpi)
+        }
+    });
+
+    return result;
 }

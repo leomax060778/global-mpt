@@ -1,22 +1,22 @@
-PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::DEL_CONTACT_DATA_BY_CONTACT_TYPE_ID"(
-		IN in_contact_type INTEGER, 
-		IN in_contact_type_id BIGINT, 
-		IN in_user_id BIGINT, 
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::DEL_CONTACT_DATA_BY_CONTACT_TYPE_ID" ( 
+		IN in_contact_type INTEGER,
+		IN in_contact_type_id BIGINT,
+		IN in_user_id BIGINT,
 		OUT out_result BIGINT
-	)
+	) 
 	LANGUAGE SQLSCRIPT
-	SQL SECURITY INVOKER
+	SQL SECURITY INVOKER 
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
-AS
+	AS
 BEGIN
-	UPDATE INTERLOCK_CENTRAL_REGION_CONTACT_DATA
-SET enabled = 0, 
-		deleted = 1, 
-		modified_user_id = in_user_id, 
+
+	UPDATE INTERLOCK_CENTRAL_REGION_CONTACT_DATA SET 
+		enabled = 0,
+		deleted = 1,
+		modified_user_id = in_user_id,
 		modified_date_tz = CURRENT_TIMESTAMP
-WHERE contact_type = in_contact_type
+		where contact_type = in_contact_type
 		AND contact_type_id = in_contact_type_id;
-	SELECT ::ROWCOUNT
-		INTO out_result
-		FROM DUMMY;
+	
+	SELECT ::ROWCOUNT INTO out_result FROM DUMMY;
 END;

@@ -1,0 +1,16 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::DEL_HARD_INTERLOCK_CONTACT_DATA" (
+IN in_interlock_request_id bigint
+,OUT out_result bigint
+) 
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER 
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	AS
+BEGIN
+
+	DELETE FROM INTERLOCK_CONTACT_DATA
+    WHERE interlock_request_id = in_interlock_request_id;
+
+   SELECT ::ROWCOUNT INTO out_result FROM DUMMY;
+
+END;

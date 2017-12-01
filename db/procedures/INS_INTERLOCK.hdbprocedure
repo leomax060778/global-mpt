@@ -1,12 +1,11 @@
 PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_INTERLOCK" ( 
-	IN in_entity_id bigint,
-	IN in_organization_type_id bigint,
+	IN in_entity_id_to bigint,
 	IN in_requested_resource nvarchar(300),
 	IN in_requested_budget decimal(19, 6),
 	IN in_interlock_status_id bigint,
+	IN in_interlock_type_id bigint,
 	IN in_created_user_id bigint,
 	IN in_entity_id_from bigint,
-	IN in_organization_type_id_from bigint,
 	IN in_comments NVARCHAR(255),
 	OUT out_result BIGINT
 	) 
@@ -17,24 +16,22 @@ BEGIN
     DECLARE ID_INTERLOCK_REQUEST BIGINT;
     ID_INTERLOCK_REQUEST := 0;
 	INSERT INTO "MKTG_PLANNING_TOOL"."INTERLOCK_REQUEST" (
-															entity_id,
-															organization_type_id,
+															entity_id_to,
 															requested_resource,
 															requested_budget,
 															interlock_status_id,
+															interlock_type_id,
 															created_user_id,
 															entity_id_from,
-															organization_type_id_from,
 															comments
 															) 
-	VALUES (	in_entity_id,
-				in_organization_type_id,
+	VALUES (	in_entity_id_to,
 				in_requested_resource,
 				in_requested_budget,
 				in_interlock_status_id,
+				in_interlock_type_id,
 				in_created_user_id,
 				in_entity_id_from,
-				in_organization_type_id_from,
 				in_comments
 			);
 

@@ -12,8 +12,8 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_ALL_OBJECTIV
 AS
 BEGIN
 	out_result = SELECT OBJECTIVE_ID, 
-				NAME, 
-				CRM_KEY
+				NAME,
+                CRM_KEY
 			FROM OBJECTIVE
 			WHERE ENABLED = 1
 				AND DELETED = 0

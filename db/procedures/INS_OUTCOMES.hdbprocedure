@@ -12,5 +12,5 @@ BEGIN
 		INSERT INTO "MKTG_PLANNING_TOOL"."OUTCOMES" (outcomes_type_id,outcomes_name,created_user_id)
 		VALUES (in_outcomes_type_id,in_outcomes_name,in_user_id);
 		
-		SELECT TOP 1 CURRENT_IDENTITY_VALUE() INTO out_outcomes_id FROM "MKTG_PLANNING_TOOL"."OPTION";
+		SELECT TOP 1 CURRENT_IDENTITY_VALUE() INTO out_outcomes_id FROM "MKTG_PLANNING_TOOL"."OUTCOMES";
 END;

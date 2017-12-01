@@ -25,10 +25,10 @@ function validateBudget(value){
 	return value !== 0;
 }
 
-function validateIsSapEmail(value){
-	var emailParts = value.split('@sap.com');
-	return emailParts.length == 2 && !emailParts[1]; 
-};
+function validateIsSapEmail(email){
+	var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@sap.com$/;
+	return re.test(email);
+}
 
 /********************another options**********************************/
 //Minimum 8 characters at least 1 Alphabet, 1 Number and 1 Special Character://
@@ -215,6 +215,17 @@ function getHash() {
 
 function parseAssignedUsers(assignedUsers) {
     return assignedUsers.map(function (user) {
-        return user.USER_ID;
+        return user.USER_ID || user.IN_USER_ID;
     });
+}
+
+function getHierarchyLevelEnum() {
+    return {
+        HL1: 6,
+        HL2: 5,
+        HL3: 4,
+        HL4: 1,
+        HL5: 2,
+        HL6: 3
+    }
 }

@@ -78,11 +78,6 @@ function completeCRMPath(array, key, setDisplayName, parse, userId) {
     }
 
     array.forEach(function (data) {
-        if (data.PARENT_PATH) {
-            data.PARENT_PATH = path + data.PARENT_PATH;
-            data[key] = data.PARENT_PATH + data[acronymKey];
-        }
-
         if (data.BUDGET_SPEND_REQUEST_AMOUNT) {
             data.BUDGET_SPEND_REQUEST_AMOUNT_KEUR = (data.CURRENCY_ABBREVIATION !== "EUR") ? "( " + calculateBudgetInEuros(data) + " K EUR )" : "";
             data.BUDGET_SPEND_REQUEST_AMOUNT = "" + data.BUDGET_SPEND_REQUEST_AMOUNT + " K " + data.CURRENCY_ABBREVIATION;
@@ -107,7 +102,6 @@ function completeCRMPath(array, key, setDisplayName, parse, userId) {
             }
         }
     });
-    // throw JSON.stringify(util.objectToArray(result));
     return parse ? util.objectToArray(result) : array;
 }
 

@@ -3,10 +3,27 @@ var mapper = $.mktgplanningtool.services.commonLib.mapper;
 var dataRegion = mapper.getDataRegion();
 var dataSubRegion = mapper.getDataSubRegion();
 var ErrorLib = mapper.getErrors();
+var dataConfig = mapper.getDataConfig();
+var InterlockLib = mapper.getInterlock();
+
 /** ***********END INCLUDE LIBRARIES*************** */
 
-function getAllRegions() {
-	return dataRegion.getAllRegions();
+function getAllRegions(fromExecutionLevel) {
+	var regionlist = dataRegion.getAllRegions();
+    if(regionlist){
+    	regionlist = JSON.parse(JSON.stringify(regionlist));
+    	if(!fromExecutionLevel) {
+            regionlist.forEach(function (i) {
+                var contactData = InterlockLib.getContactDataByOrgRelatedAndOrgId(
+                    dataConfig.getOrganizationRelated("REGION")
+                    , i.REGION_ID);
+                i.ASSOCIATED_CONTACTS = contactData.assigned;
+                i.AVAILABLE_CONTACTS = contactData.availables;
+            });
+        }
+    }
+
+    return regionlist;
 }
 
 function getRegionSubregion(){
@@ -21,7 +38,15 @@ function getRegionSubregion(){
 }
 
 function getRegionById(regionId) {
-	return dataRegion.getRegionById(regionId);
+	var region = dataRegion.getRegionById(regionId);
+	region = JSON.parse(JSON.stringify(region));
+
+	var contacts = JSON.parse(JSON.stringify(InterlockLib.getContactDataByOrgRelatedAndOrgId(dataConfig.getOrganizationRelated("REGION"),
+        region.REGION_ID)));
+	region.ASSOCIATED_CONTACTS = contacts.ASSOCIATED_CONTACTS;
+	region.AVAILABLE_CONTACTS = contacts.AVAILABLE_CONTACTS;
+
+	return region;
 }
 
 function insertRegion(objRegion, userId) {
@@ -33,8 +58,11 @@ function insertRegion(objRegion, userId) {
 }
 
 function updateRegion(objRegion, userId) {
-	if (validateUpdateRegion(objRegion))
-		return dataRegion.updateRegion(objRegion, userId);
+	if (validateUpdateRegion(objRegion)){
+        dataRegion.updateRegion(objRegion, userId);
+        return InterlockLib.updateContactDataByOrgRelatedAndOrgId(objRegion, userId);
+	}
+
 }
 
 function deleteRegion(objRegion, userId) {

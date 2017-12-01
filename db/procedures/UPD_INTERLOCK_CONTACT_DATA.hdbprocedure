@@ -1,19 +1,17 @@
-PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::UPD_INTERLOCK_CONTACT_DATA"(
-		IN in_hash NVARCHAR(255), 
-		IN in_user_id BIGINT, 
-		OUT out_result BIGINT
-	)
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::UPD_INTERLOCK_CONTACT_DATA" ( 
+IN in_hash nvarchar(255),
+IN in_user_id bigint,
+out out_result bigint) 
 	LANGUAGE SQLSCRIPT
-	SQL SECURITY INVOKER
+	SQL SECURITY INVOKER 
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
-AS
+	AS
 BEGIN
-	UPDATE INTERLOCK_CONTACT_DATA
-SET sendemail = 1, 
-		modified_user_id = in_user_id, 
-		modified_date_tz = CURRENT_TIMESTAMP
-WHERE hash = in_hash;
-	SELECT ::ROWCOUNT
-		INTO out_result
-		FROM DUMMY;
+UPDATE INTERLOCK_CONTACT_DATA
+	SET sendemail = 1
+		,modified_user_id = in_user_id
+		,modified_date_tz = CURRENT_TIMESTAMP
+	WHERE hash = in_hash;
+		
+   SELECT ::ROWCOUNT INTO out_result FROM DUMMY;
 END;

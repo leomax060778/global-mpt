@@ -16,6 +16,7 @@
         <viewAttribute datatype="DECIMAL" id="TOTAL_VALUE_ALLOCATED" length="10" scale="2"/>
         <viewAttribute datatype="DECIMAL" id="TOTAL_VOLUME_ALLOCATED" length="10" scale="2"/>
         <viewAttribute datatype="NVARCHAR" id="L3_ACRONYM" length="255"/>
+        <viewAttribute datatype="NVARCHAR" id="HL3_DESCRIPTION" length="255"/>
         <viewAttribute datatype="BIGINT" id="HL3_ID"/>
         <viewAttribute datatype="BIGINT" id="HL2_ID"/>
         <viewAttribute datatype="TINYINT" id="IS_LOCKED"/>
@@ -32,6 +33,7 @@ BEGIN
                  , hl3.HL2_ID
                  , hl3.HL3_ID
                  , hl3.ACRONYM AS L3_ACRONYM
+                 , hl3.HL3_DESCRIPTION
                  , (CASE WHEN budgetYear.VERSIONED_END_DATE >= CURRENT_TIMESTAMP THEN 0 ELSE 1 END) AS IS_LOCKED
                  FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL3&quot; hl3
                  INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL2&quot; hl2
@@ -78,6 +80,7 @@ BEGIN
                  , hl4.TOTAL_VALUE_ALLOCATED AS TOTAL_VALUE_ALLOCATED
                  , hl4.TOTAL_VOLUME_ALLOCATED AS TOTAL_VOLUME_ALLOCATED
                  , hl3.L3_ACRONYM
+                 , hl3.HL3_DESCRIPTION
                  , hl3.HL3_ID 
                  , hl3.HL2_ID 
                  , hl3.IS_LOCKED
@@ -114,7 +117,11 @@ END /********* End Procedure Script ************/</definition>
         <descriptions/>
         <keyMapping columnObjectName="Script_View" columnName="L3_ACRONYM"/>
       </attribute>
-      <attribute id="HL3_ID" order="8">
+      <attribute id="HL3_DESCRIPTION" order="8">
+        <descriptions defaultDescription="HL3_DESCRIPTION"/>
+        <keyMapping columnObjectName="Script_View" columnName="HL3_DESCRIPTION"/>
+      </attribute>
+      <attribute id="HL3_ID" order="9">
         <descriptions/>
         <keyMapping columnObjectName="Script_View" columnName="HL3_ID"/>
       </attribute>
@@ -136,11 +143,11 @@ END /********* End Procedure Script ************/</definition>
         <descriptions/>
         <measureMapping columnObjectName="Script_View" columnName="TOTAL_VOLUME_ALLOCATED"/>
       </measure>
-      <measure id="HL2_ID" order="9" aggregationType="sum" measureType="simple">
+      <measure id="HL2_ID" order="10" aggregationType="sum" measureType="simple">
         <descriptions/>
         <measureMapping columnObjectName="Script_View" columnName="HL2_ID"/>
       </measure>
-      <measure id="IS_LOCKED" order="10" aggregationType="sum" measureType="simple">
+      <measure id="IS_LOCKED" order="11" aggregationType="sum" measureType="simple">
         <descriptions/>
         <measureMapping columnObjectName="Script_View" columnName="IS_LOCKED"/>
       </measure>

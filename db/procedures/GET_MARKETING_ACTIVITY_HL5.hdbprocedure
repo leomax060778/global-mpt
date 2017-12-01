@@ -23,17 +23,7 @@ out_hl5 =
 		   HL5.hl5_crm_description,
 		   HL5.hl5_status_detail_id,
 		   HL5.acronym as acronym,
-		   CONCAT('CRM-',
-		   CONCAT(
-		   CONCAT(
-                CONCAT(
-                    CONCAT(
-                        CONCAT(
-                            CONCAT(HL1.ACRONYM,SUBSTRING(TO_NVARCHAR(BGY.BUDGET_YEAR), 3, 2))
-                            ,'-')
-                        , hl3.acronym)
-                    ,'-')
-                ,hl4.acronym), HL5.ACRONYM))  AS path_tph
+"MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BGY.BUDGET_YEAR, HL1.ACRONYM, HL2.ORGANIZATION_ACRONYM, HL3.ACRONYM, HL4.ACRONYM, HL5.ACRONYM, '') AS path_tph
 	FROM HL5
 	INNER JOIN HL5_STATUS_DETAIL HSD ON HSD.HL5_STATUS_DETAIL_ID = 3 --IN CRM
 	INNER JOIN HL4 ON HL4.HL4_ID = HL5.HL4_ID

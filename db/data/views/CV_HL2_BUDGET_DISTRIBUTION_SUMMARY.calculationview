@@ -17,6 +17,7 @@
         <viewAttribute datatype="DECIMAL" id="L2_BUDGET_ALLOCATED" length="10" scale="2"/>
         <viewAttribute datatype="INTEGER" id="TOTAL_OF_PRIORITIES"/>
         <viewAttribute datatype="NVARCHAR" id="L2_ACRONYM" length="255"/>
+        <viewAttribute datatype="NVARCHAR" id="L2_ORGANIZATION_NAME" length="255"/>
         <viewAttribute datatype="TINYINT" id="IS_LOCKED"/>
         <viewAttribute datatype="NVARCHAR" id="CATEGORY_NAME" length="255"/>
         <viewAttribute datatype="NVARCHAR" id="OPTION_NAME" length="255"/>
@@ -26,6 +27,7 @@
         <viewAttribute datatype="INTEGER" id="VERSION"/>
         <viewAttribute datatype="DECIMAL" id="SUB_AMOUNT" length="19" scale="2"/>
         <viewAttribute datatype="BIGINT" id="ALLOCATION_OPTION_ID"/>
+        <viewAttribute datatype="NVARCHAR" id="SUBREGION_NAME" length="255"/>
       </viewAttributes>
       <calculatedViewAttributes/>
       <definition>/********* Begin Procedure Script ************/ 
@@ -69,6 +71,7 @@ var_out = select hl2.HL2_ID
 	) AS L2_BUDGET_ALLOCATED
 ,  COALESCE(K.HL2_TOTAL_PRIORITIES,0) AS TOTAL_OF_PRIORITIES
  , hl2.ORGANIZATION_ACRONYM AS L2_ACRONYM
+  , hl2.ORGANIZATION_NAME AS L2_ORGANIZATION_NAME
  , (CASE WHEN T.VERSIONED_END_DATE >= CURRENT_TIMESTAMP THEN 0 ELSE 1 END) AS IS_LOCKED
  , AC.NAME AS CATEGORY_NAME
  , AO.NAME AS OPTION_NAME
@@ -78,6 +81,7 @@ var_out = select hl2.HL2_ID
  , THL2.VERSION
  , G.SUB_AMOUNT AS SUB_AMOUNT
      , G.ALLOCATION_OPTION_ID
+     , IFNULL(subregion.SUBREGION_NAME,'') AS SUBREGION_NAME
 FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL2&quot; hl2
 INNER JOIN :va_hl1 T ON T.HL1_ID = hl2.HL1_ID
 LEFT JOIN :va_hl3 K ON K.HL2_ID = hl2.HL2_ID
@@ -89,6 +93,8 @@ LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_ALLOCATIO
 	ON AC.ALLOCATION_CATEGORY_ID = ACOL.ALLOCATION_CATEGORY_ID
 LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_ALLOCATION_OPTION&quot; AO
 	ON AO.ALLOCATION_OPTION_ID = ACOL.ALLOCATION_OPTION_ID
+LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_SUBREGION&quot; subregion
+	ON subregion.SUBREGION_ID = hl2.SUBREGION_ID
 JOIN &quot;MKTG_PLANNING_TOOL&quot;.&quot;HL2&quot; THL2 ON hl2.HL2_ID = THL2.HL2_ID
 LEFT JOIN :va_l3 G ON (G.HL2_ID = hl2.HL2_ID  AND G.ALLOCATION_OPTION_ID = AO.ALLOCATION_OPTION_ID)
 where hl2.DELETED = 0 AND hl2.ENABLED = 1 AND T.BUDGET &lt;>0
@@ -115,13 +121,21 @@ END /********* End Procedure Script ************/</definition>
         <descriptions/>
         <keyMapping columnObjectName="Script_View" columnName="L2_ACRONYM"/>
       </attribute>
-      <attribute id="CATEGORY_NAME" order="10">
+      <attribute id="L2_ORGANIZATION_NAME" order="9">
+        <descriptions defaultDescription="L2_ORGANIZATION_NAME"/>
+        <keyMapping columnObjectName="Script_View" columnName="L2_ORGANIZATION_NAME"/>
+      </attribute>
+      <attribute id="CATEGORY_NAME" order="11">
         <descriptions/>
         <keyMapping columnObjectName="Script_View" columnName="CATEGORY_NAME"/>
       </attribute>
-      <attribute id="OPTION_NAME" order="11">
+      <attribute id="OPTION_NAME" order="12">
         <descriptions/>
         <keyMapping columnObjectName="Script_View" columnName="OPTION_NAME"/>
+      </attribute>
+      <attribute id="SUBREGION_NAME" order="19">
+        <descriptions/>
+        <keyMapping columnObjectName="Script_View" columnName="SUBREGION_NAME"/>
       </attribute>
     </attributes>
     <calculatedAttributes/>
@@ -149,31 +163,31 @@ END /********* End Procedure Script ************/</definition>
         <descriptions/>
         <measureMapping columnObjectName="Script_View" columnName="TOTAL_OF_PRIORITIES"/>
       </measure>
-      <measure id="IS_LOCKED" order="9" aggregationType="sum" measureType="simple">
+      <measure id="IS_LOCKED" order="10" aggregationType="sum" measureType="simple">
         <descriptions/>
         <measureMapping columnObjectName="Script_View" columnName="IS_LOCKED"/>
       </measure>
-      <measure id="BUDGET_DISTRIBUTION_PERCENTAGE" order="12" aggregationType="sum" measureType="simple">
+      <measure id="BUDGET_DISTRIBUTION_PERCENTAGE" order="13" aggregationType="sum" measureType="simple">
         <descriptions/>
         <measureMapping columnObjectName="Script_View" columnName="BUDGET_DISTRIBUTION_PERCENTAGE"/>
       </measure>
-      <measure id="BUDGET_DISTRIBUTION_AMOUNT" order="13" aggregationType="sum" measureType="simple">
+      <measure id="BUDGET_DISTRIBUTION_AMOUNT" order="14" aggregationType="sum" measureType="simple">
         <descriptions/>
         <measureMapping columnObjectName="Script_View" columnName="BUDGET_DISTRIBUTION_AMOUNT"/>
       </measure>
-      <measure id="HL2_BUDGET_ALLOCATED" order="14" aggregationType="sum" measureType="simple">
+      <measure id="HL2_BUDGET_ALLOCATED" order="15" aggregationType="sum" measureType="simple">
         <descriptions defaultDescription="HL2_BUDGET_ALLOCATED"/>
         <measureMapping columnObjectName="Script_View" columnName="HL2_BUDGET_ALLOCATED"/>
       </measure>
-      <measure id="VERSION" order="15" aggregationType="sum" measureType="simple">
+      <measure id="VERSION" order="16" aggregationType="sum" measureType="simple">
         <descriptions defaultDescription="VERSION"/>
         <measureMapping columnObjectName="Script_View" columnName="VERSION"/>
       </measure>
-      <measure id="SUB_AMOUNT" order="16" aggregationType="sum" measureType="simple">
+      <measure id="SUB_AMOUNT" order="17" aggregationType="sum" measureType="simple">
         <descriptions defaultDescription="SUB_AMOUNT"/>
         <measureMapping columnObjectName="Script_View" columnName="SUB_AMOUNT"/>
       </measure>
-      <measure id="ALLOCATION_OPTION_ID" order="17" aggregationType="sum" measureType="simple">
+      <measure id="ALLOCATION_OPTION_ID" order="18" aggregationType="sum" measureType="simple">
         <descriptions defaultDescription="ALLOCATION_OPTION_ID"/>
         <measureMapping columnObjectName="Script_View" columnName="ALLOCATION_OPTION_ID"/>
       </measure>

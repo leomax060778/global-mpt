@@ -30,6 +30,6 @@ insert into "MKTG_PLANNING_TOOL"."INTERLOCK_DEFAULT_CONFIGURATION" values(2,2,1,
 
 -- Update schema version
 INSERT INTO "MKTG_PLANNING_TOOL"."SCHEMA_VERSION"(VERSION, DESCRIPTION, SCRIPT)
-VALUES('V5.0.0-76', 'Create INTERLOCK_DEFAULT_CONFIGURATION table', 'V201710191325__Create_interlock_default_configuration.sql');
+VALUES('V5.0.0-77', 'Create INTERLOCK_DEFAULT_CONFIGURATION table', 'V201710191325__Create_interlock_default_configuration.sql');
 
 COMMIT;

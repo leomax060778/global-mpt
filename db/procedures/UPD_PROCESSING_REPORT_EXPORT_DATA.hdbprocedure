@@ -7,7 +7,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::UPD_PROCESSING_R
 	SQL SECURITY INVOKER
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL" AS
 BEGIN
-
+--DECLARE VARIABLES
 	DECLARE VA_OBJECT_TYPE NVARCHAR(255);
 	DECLARE VA_DELETE_RESULT INTEGER;
 	DECLARE VA_HL_EXIST INTEGER;
@@ -19,6 +19,7 @@ BEGIN
 	        , L4_ACRONYM NVARCHAR(25)
 	        , L5_ACRONYM NVARCHAR(25)
 	        , GRANDPARENT_ID INTEGER
+	        , CRM_ID NVARCHAR(255)
 	    );
 	DECLARE VA_PATH NVARCHAR(255);
 	DECLARE VA_MA_PATH NVARCHAR(255);
@@ -73,7 +74,7 @@ BEGIN
         DECLARE EXIT HANDLER FOR SQL_ERROR_CODE 1299
         BEGIN
             --SEARCH AND DELETE RECORD
-                --DELETE FROM PROCESSING_REPORT_EXPORT_DATA WHERE HL_ID = IN_HL_ID AND OBJECT_TYPE = VA_OBJECT_TYPE;
+                DELETE FROM PROCESSING_REPORT_EXPORT_DATA WHERE HL_ID = IN_HL_ID AND OBJECT_TYPE = VA_OBJECT_TYPE;
                 --SELECT ::ROWCOUNT into VA_DELETE_RESULT FROM DUMMY;
             --*************************************************--
         END;
@@ -101,7 +102,7 @@ BEGIN
                     WHERE HL4.HL4_STATUS_DETAIL_ID
                             IN (SELECT HL4_STATUS_DETAIL_ID
                                 FROM "MKTG_PLANNING_TOOL".HL4_STATUS_DETAIL
-                                WHERE DETAIL IN ('Load Data Entry',  'Update In CRM')) AND HL4.ENABLED = 1 AND HL4.DELETED = 0
+                                WHERE DETAIL IN ('Create In CRM')) AND HL4.ENABLED = 1 AND HL4.DELETED = 0
                                 AND HL4.HL4_ID = IN_HL_ID;
                 ELSEIF IN_HIERARCHY_LEVEL = 'HL5'
                     THEN VA_OBJECT_TYPE := 'CPG';
@@ -110,7 +111,7 @@ BEGIN
                     WHERE HL5.HL5_STATUS_DETAIL_ID
                             IN (SELECT HL5_STATUS_DETAIL_ID
                                 FROM "MKTG_PLANNING_TOOL".HL5_STATUS_DETAIL
-                                WHERE DETAIL IN ('Load Data Entry',  'Update In CRM')) AND HL5.ENABLED = 1 AND HL5.DELETED = 0
+                                WHERE DETAIL IN ('Create In CRM')) AND HL5.ENABLED = 1 AND HL5.DELETED = 0
                                 AND HL5.HL5_ID = IN_HL_ID;
                 ELSEIF IN_HIERARCHY_LEVEL = 'HL6'
                     THEN VA_OBJECT_TYPE := 'CPT';
@@ -119,35 +120,25 @@ BEGIN
                     WHERE HL6.HL6_STATUS_DETAIL_ID
                             IN (SELECT HL6_STATUS_DETAIL_ID
                                 FROM "MKTG_PLANNING_TOOL".HL6_STATUS_DETAIL
-                                WHERE DETAIL IN ('Load Data Entry',  'Update In CRM')) AND HL6.ENABLED = 1 AND HL6.DELETED = 0
+                                WHERE DETAIL IN ('Create In CRM')) AND HL6.ENABLED = 1 AND HL6.DELETED = 0
                                 AND HL6.HL6_ID = IN_HL_ID;
             END IF;
 
             DELETE FROM PROCESSING_REPORT_EXPORT_DATA WHERE HL_ID = IN_HL_ID AND OBJECT_TYPE = VA_OBJECT_TYPE;
-	--**************************************************-
-
-	--SEARCH AND DELETE RECORD
-    --DELETE FROM PROCESSING_REPORT_EXPORT_DATA WHERE HL_ID = IN_HL_ID AND OBJECT_TYPE = VA_OBJECT_TYPE;
-    --SELECT ::ROWCOUNT into VA_DELETE_RESULT FROM DUMMY;
-    --*************************************************--
-
-    --IF (:VA_STATUS <> 0)
-    --THEN
         --COLLECT DATA
-        --IF VA_DELETE_RESULT = 0 THEN
             IF VA_OBJECT_TYPE = 'MPL' --HL4
                 THEN --GET FROM HL4
                  CALL "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_PATH_BY_LEVEL_PARENT"(4,VA_PARENT_ID,VA_PATH_TABLE); --GET ACRONYMS
                  CALL "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_TRANSPOSED_CATEGORY_OPTION_BY_HL"(IN_HL_ID, 'HL4', VA_CATEGORY_OPTION);
-                 SELECT TOP 1 CONCAT('CRM-',CONCAT(L1_ACRONYM,CONCAT(BUDGET_YEAR,CONCAT('-',CONCAT(L3_ACRONYM,'')))))
-                 INTO VA_PATH FROM :VA_PATH_TABLE; --BUILD PARENT ACRONYM
+                 --SELECT TOP 1 CONCAT('CRM-',CONCAT(L1_ACRONYM,CONCAT(BUDGET_YEAR,CONCAT('-',CONCAT(L3_ACRONYM,'')))))
+                 SELECT TOP 1 "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BUDGET_YEAR, L1_ACRONYM, L2_ACRONYM, L3_ACRONYM, '', '', '') INTO VA_PATH FROM :VA_PATH_TABLE; --BUILD PARENT ACRONYM
                  -- GET BUYING CLASSIFICATION CRM_KEY
                  CALL "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_PROCESSING_REPORT_BUYING_CLASSIFICATION"(IN_HL_ID, 'HL4', VA_BUYING_CLASSIFICATION);
 
                  VA_GET_HL = SELECT HL4_ID AS HL_ID,
                              :VA_PATH AS EXTERNAL_ID_PARENT,
                              :VA_OBJECT_TYPE AS OBJECT_TYPE,
-                             CONCAT(:VA_PATH,CONCAT('-',ACRONYM)) AS EXTERNAL_ID,
+                             (SELECT TOP 1 "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BUDGET_YEAR, L1_ACRONYM, L2_ACRONYM, L3_ACRONYM, ACRONYM, '', '') FROM :VA_PATH_TABLE) AS EXTERNAL_ID,
                              HL4_CRM_DESCRIPTION AS TEXT1,
                              SHOPPING_CART_APPROVER AS BNAME,
                              '' AS OBJECTIVE, -- HL4 doesn't have this field
@@ -218,7 +209,7 @@ BEGIN
                               '' AS PARTNER_NO
                              FROM HL4
                              JOIN :VA_CATEGORY_OPTION CO ON 1=1
-                             JOIN BUSINESS_OWNER BO ON UPPER(BO.DESCRIPTION) = 'MARKETING'
+                             LEFT JOIN BUSINESS_OWNER BO ON UPPER(BO.DESCRIPTION) = 'MARKETING'
                              LEFT JOIN PRIORITY PR ON UPPER(PR.NAME) = 'MEDIUM'
                              LEFT JOIN "DISTRIBUTION_CHANNEL" DC ON DIS_CHANNEL_ID = DC.DISTRIBUTION_CHANNEL_ID
                              LEFT JOIN "SALE_ORGANIZATION" SO ON MKT_ORG_ID = SO.SALES_ORGANIZATION_ID
@@ -228,9 +219,8 @@ BEGIN
                     THEN  --GET FROM HL5
                         CALL "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_PATH_BY_LEVEL_PARENT"(5,VA_PARENT_ID,VA_PATH_TABLE); --GET ACRONYMS
 
-                        SELECT TOP 1 CONCAT('CRM-',CONCAT(L1_ACRONYM,CONCAT(BUDGET_YEAR,CONCAT('-',CONCAT(L3_ACRONYM,CONCAT('-',CONCAT(L4_ACRONYM,'')))))))
-                        INTO VA_PATH FROM :VA_PATH_TABLE;--BUILD PARENT ACRONYM
-
+                        --SELECT TOP 1 CONCAT('CRM-',CONCAT(L1_ACRONYM,CONCAT(BUDGET_YEAR,CONCAT('-',CONCAT(L3_ACRONYM,CONCAT('-',CONCAT(L4_ACRONYM,'')))))))
+                        SELECT TOP 1 "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BUDGET_YEAR, L1_ACRONYM, L2_ACRONYM, L3_ACRONYM, L4_ACRONYM, '', '') INTO VA_PATH FROM :VA_PATH_TABLE; --BUILD PARENT ACRONYM
                         --GET MARKETING ACTIVITY FOR HL5
                         SELECT MARKETING_ACTIVITY_ID INTO VA_MA_HL FROM HL5 WHERE HL5_ID = IN_HL_ID;
                         IF(:VA_MA_HL <> 0) THEN
@@ -245,7 +235,7 @@ BEGIN
                         VA_GET_HL = SELECT HL5_ID AS HL_ID,
                                     :VA_PATH AS EXTERNAL_ID_PARENT,
                                     :VA_OBJECT_TYPE AS OBJECT_TYPE,
-                                    CONCAT(:VA_PATH,CONCAT('',ACRONYM)) AS EXTERNAL_ID,
+                                   (SELECT TOP 1 "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BUDGET_YEAR, L1_ACRONYM, L2_ACRONYM, L3_ACRONYM, L4_ACRONYM, ACRONYM, '') FROM :VA_PATH_TABLE) AS EXTERNAL_ID,
                                     HL5_CRM_DESCRIPTION AS TEXT1,
                                     'TBD' AS BNAME,
                                     OB.CRM_KEY AS OBJECTIVE,
@@ -330,9 +320,8 @@ BEGIN
                     ELSE --GET FROM HL6
                             CALL "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_PATH_BY_LEVEL_PARENT"(6,VA_PARENT_ID,VA_PATH_TABLE); --GET ACRONYMS
 
-                            SELECT TOP 1 CONCAT('CRM-',CONCAT(L1_ACRONYM,CONCAT(BUDGET_YEAR,CONCAT('-',CONCAT(L3_ACRONYM,CONCAT('-',CONCAT(L4_ACRONYM,CONCAT('',CONCAT(L5_ACRONYM,'')))))))))
-                            INTO VA_PATH FROM :VA_PATH_TABLE;--BUILD PARENT ACRONYM
-
+                            --SELECT TOP 1 CONCAT('CRM-',CONCAT(L1_ACRONYM,CONCAT(BUDGET_YEAR,CONCAT('-',CONCAT(L3_ACRONYM,CONCAT('-',CONCAT(L4_ACRONYM,CONCAT('',CONCAT(L5_ACRONYM,''))))))))) INTO VA_PATH FROM :VA_PATH_TABLE;--BUILD PARENT ACRONYM
+                            SELECT TOP 1 "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BUDGET_YEAR, L1_ACRONYM, L2_ACRONYM, L3_ACRONYM, L4_ACRONYM, L5_ACRONYM, '') INTO VA_PATH FROM :VA_PATH_TABLE; --BUILD PARENT ACRONYM
                             --GET MARKETING ACTIVITY FOR HL6
                             SELECT MARKETING_ACTIVITY_ID INTO VA_MA_HL FROM HL6 WHERE HL6_ID = IN_HL_ID;
                             IF(:VA_MA_HL <> 0) THEN
@@ -347,7 +336,7 @@ BEGIN
                             VA_GET_HL = SELECT HL6_ID AS HL_ID,
                                         :VA_PATH AS EXTERNAL_ID_PARENT,
                                         :VA_OBJECT_TYPE AS OBJECT_TYPE,
-                                        CONCAT(:VA_PATH,CONCAT('',ACRONYM)) AS EXTERNAL_ID,
+                                        (SELECT TOP 1 "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BUDGET_YEAR, L1_ACRONYM, L2_ACRONYM, L3_ACRONYM, L4_ACRONYM, L5_ACRONYM, ACRONYM) FROM :VA_PATH_TABLE) AS EXTERNAL_ID,
                                         HL6_CRM_DESCRIPTION AS TEXT1,
                                         'TBD' AS BNAME,
                                         OB.CRM_KEY AS OBJECTIVE,
@@ -430,13 +419,9 @@ BEGIN
                                         WHERE HL6_ID = IN_HL_ID;
             END IF;
 
-            --SELECT TOP 1 CASE WHEN (HL_ID = NULL) THEN 0 ELSE 1 END into VA_HL_EXIST FROM :VA_GET_HL;
-        --END IF;
         --**********************************************--
 
         --INSERT DATA
-        --IF(VA_DELETE_RESULT = 0 )-- AND VA_HL_EXIST = 1)
-        --THEN
         INSERT INTO PROCESSING_REPORT_EXPORT_DATA
         (HL_ID,
          EXTERNAL_ID_PARENT,
@@ -512,9 +497,7 @@ BEGIN
          PARTNER_NO,
          CREATED_USER_ID)
         SELECT *, 1 AS CREATED_USER_ID  FROM :VA_GET_HL;
-        --END IF;
         --************************************************--
-	--END IF; --END IF STATUS
-	
+
 	SELECT ::ROWCOUNT into out_result FROM DUMMY;
 END;

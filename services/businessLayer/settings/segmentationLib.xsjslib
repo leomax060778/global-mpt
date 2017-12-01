@@ -7,6 +7,7 @@ var AllocationCategory = mapper.getAllocationCategoryLib();
 var AllocationOptionLib = mapper.getAllocationOptionLib();
 var level4Lib = mapper.getLevel4();
 var dataHl1 = mapper.getDataLevel1();
+var dataHl2 = mapper.getDataLevel2();
 var blRegion = mapper.getRegion();
 var util = mapper.getUtil();
 var businessAttachment = mapper.getAttachment();
@@ -50,6 +51,7 @@ function getSegmentationMarketById(id){
 function getSegmentationFormData(hl4Id){
     var nonAdministrableFields = data.getSegmentationNonAdministrableFields();
     var hl1 = dataHl1.getHl1ByHl4Id(hl4Id);
+    var hl2 = dataHl2.getHl2ByHl4Id(hl4Id);
     var segmentationSale = getAllSegmentationSales();
     var segmentationFunction = getAllSegmentationFunction();
     var segmentationDepartment = getAllSegmentationDepartment();
@@ -72,7 +74,7 @@ function getSegmentationFormData(hl4Id){
         TARGET_SELECT_CRITERIA: nonAdministrableFields.TARGET_SELECT_CRITERIA,
         COMPETITOR: nonAdministrableFields.COMPETITOR,
         DEFAULT_REGION_ID: hl1.REGION_ID,
-        DEFAULT_MARKET_UNIT_ID: hl1.SUBREGION_ID,
+        DEFAULT_MARKET_UNIT_ID: hl2.SUBREGION_ID,
         REGION: blRegion.getRegionSubregion()
     };
 }
@@ -192,7 +194,7 @@ function insertSegmentationForm(segmentationFormInfo, userId) {
         segmentationFormInfo.NUMBER_OF_RECORD_NEED_MATCHING || null,
         segmentationFormInfo.TARGET_SELECT_CRITERIA_ID || null,
         segmentationFormInfo.SPECIAL_NOTE || null,
-        segmentationFormInfo.ATTACHMENT_ID = segmentationFormInfo.ATTACHMENTS.length ? segmentationFormInfo.ATTACHMENTS[0].ATTACHMENT_ID : null,
+        segmentationFormInfo.ATTACHMENT_ID = segmentationFormInfo.ATTACHMENTS && segmentationFormInfo.ATTACHMENTS.length ? segmentationFormInfo.ATTACHMENTS[0].ATTACHMENT_ID : null,
         segmentationFormInfo.REVENUE_RANGE_FROM || null,
         segmentationFormInfo.REVENUE_RANGE_TO || null,
         segmentationFormInfo.CURRENCY_ID || null,
@@ -249,7 +251,7 @@ function updateSegmentationForm(segmentationFormInfo, userId) {
         segmentationFormInfo.NUMBER_OF_RECORD_NEED_MATCHING || null,
         segmentationFormInfo.TARGET_SELECT_CRITERIA_ID || null,
         segmentationFormInfo.SPECIAL_NOTE || null,
-        segmentationFormInfo.ATTACHMENT_ID = segmentationFormInfo.ATTACHMENTS.length ? segmentationFormInfo.ATTACHMENTS[0].ATTACHMENT_ID : null,
+        segmentationFormInfo.ATTACHMENT_ID = segmentationFormInfo.ATTACHMENTS && segmentationFormInfo.ATTACHMENTS.length ? segmentationFormInfo.ATTACHMENTS[0].ATTACHMENT_ID : null,
         segmentationFormInfo.REVENUE_RANGE_FROM || null,
         segmentationFormInfo.REVENUE_RANGE_TO || null,
         segmentationFormInfo.CURRENCY_ID || null,
@@ -467,7 +469,6 @@ function validateSegmentationForm(segmentationFormInfo) {
                 case 'MATCH_CRITERIA_ID':
                 case 'NUMBER_OF_RECORD_NEED_MATCHING':
                 case 'TARGET_SELECT_CRITERIA_ID':
-                case 'ATTACHMENT_ID':
                 case 'COMPETITOR_ID':
                 case 'PARTNER_ID':
                 case 'UNQUALIFIED_ADDRESS_ID':
@@ -536,8 +537,6 @@ function updateSegmentationSales(reqbody, userId){
 }
 
 function deleteSegmentationSales(id, userId){
-    if (data.deleteSegmentationSales(id))
-        throw ErrorLib.getErrors().CustomError("", "segmentationLib/deleteSegmentationSales", MSG_SEGMENATION_SALES_CANT_DELETE);
     return data.deleteSegmentationSales(id, userId);
 }
 

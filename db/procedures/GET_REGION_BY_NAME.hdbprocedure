@@ -16,9 +16,7 @@ IN IN_REGION_NAME nvarchar(255)
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
 	READS SQL DATA AS
 BEGIN
-/***************************** 
-	Write your procedure logic 
- *****************************/
+
  out_result = 
 		
 	SELECT 
@@ -32,6 +30,6 @@ BEGIN
 	ENABLED,
 	DELETED
  FROM REGION
- WHERE ENABLED = 1 AND DELETED = 0 AND upper(REGION_NAME) = upper(IN_REGION_NAME);
+ WHERE ENABLED = 1 AND DELETED = 0 AND upper(trim(REGION_NAME)) = upper(trim(IN_REGION_NAME));
 	
 END;

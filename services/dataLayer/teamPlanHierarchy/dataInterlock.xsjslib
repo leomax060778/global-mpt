@@ -16,11 +16,9 @@ var spGetInterlockMessageByInterlockId = "GET_INTERLOCK_MESSAGE_BY_INTERLOCK_ID"
 var spGetInterlockByUserIdOriginId = "GET_INTERLOCK_BY_USER_ID_ORIGIN_ID";
 var spGetInterlockByHash = "GET_INTERLOCK_BY_HASH";
 var spGetInterlockContactDataByHash = "GET_INTERLOCK_CONTACT_DATA_BY_HASH";
-var spGetInterlockCentralRegionContactByEmail = "GET_INTERLOCK_CENTRAL_REGION_CONTACT_DATA_BY_EMAIL";
 
 var spInsertInterlock = "INS_INTERLOCK";
 var spInsertInterlockLogStatus = "INS_INTERLOCK_LOG_STATUS";
-var spInsertInterlockRoute = "INS_INTERLOCK_ROUTE"; 
 var spInsertInterlockRegion = "INS_INTERLOCK_REGION";
 var spInsertInterlockSubregion = "INS_INTERLOCK_SUBREGION";
 var spInsertInterlockContactData = "INS_INTERLOCK_CONTACT_DATA";
@@ -116,22 +114,6 @@ function insertInterlock(objInterlock, userId){
 		
 		var rdo = db.executeScalarManual(spInsertInterlock, params, 'out_result');
 		return rdo;
-}
-
-/**
- * @deprecated
- * @param parameters
- * @param userId
- * @returns {*}
- */
-function insertInterlockRoute(parameters, userId){
-	var params = {};
-	params.in_organization_id = parameters.ORGANIZATION_ID;
-	params.in_interlock_request_id = parameters.INTERLOCK_REQUEST_ID;
-	params.in_created_user_id = userId;
-	
-	var rdo = db.executeScalarManual(spInsertInterlockRoute, params, 'out_interlock_route_id');
-	return rdo;
 }
 
 //TODO: new method
@@ -331,17 +313,6 @@ function getInterlockContactDataByHash(hash){
 		return list[0];
 	else
 		return {};   
-}
-
-function getRequestedUser(email){
-	var params = {};
-    params.in_email = email;
-    var result = db.executeProcedureManual(spGetInterlockCentralRegionContactByEmail, params);
-    var list = db.extractArray(result.out_result); 
-    if(list.length)
-		return list[0];
-	else
-		return {};
 }
 
 function deactivateInterlockHash(ilRequestId, userId){

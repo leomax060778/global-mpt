@@ -1,20 +1,17 @@
-PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_COUNT_FORM_SEGMENTATION_TACTIC_BY_SEGMENTATION_TACTIC_ID"(
-		IN in_segmentation_tactic_id BIGINT, 
-		OUT out_result BIGINT
-	)
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_COUNT_FORM_SEGMENTATION_TACTIC_BY_SEGMENTATION_TACTIC_ID" (
+	IN in_segmentation_tactic_id BIGINT,
+	OUT out_result BIGINT
+)
 	LANGUAGE SQLSCRIPT
 	SQL SECURITY INVOKER
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
-	READS SQL DATA
-AS
+	READS SQL DATA AS
 BEGIN
-	SELECT coalesce(
-				COUNT(sfm.SEGMENTATION_FORM_SEGMENTATION_TACTIC_ID), 
-				0
-			)
-		INTO out_result
-		FROM SEGMENTATION_FORM_SEGMENTATION_TACTIC AS sfm
-		WHERE sfm.SEGMENTATION_TACTIC_ID = in_segmentation_tactic_id
-			AND sfm.deleted = 0
-			AND sfm.enabled = 1;
+
+select
+coalesce(COUNT(sfm.SEGMENTATION_FORM_SEGMENTATION_TACTIC_ID),0) INTO out_result
+from SEGMENTATION_FORM_SEGMENTATION_TACTIC sfm
+where sfm.SEGMENTATION_TACTIC_ID = in_segmentation_tactic_id
+ and sfm.deleted = 0 and sfm.enabled = 1;
+
 END;

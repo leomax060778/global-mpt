@@ -33,6 +33,8 @@ function handlePost(reqBody, userSessionID) {
         rdo = blUpload.insertDictionaryHL(reqBody, userSessionID);
     }else if (method == UPLOAD_HLKPI){
     	rdo = blUpload.insertDictionaryHlKPI(reqBody, userSessionID);
+    }else if (method != ""){
+        rdo = reqBody.check ? blUpload.checkUploadEntity(reqBody, method, userSessionID) : blUpload.uploadEntity(reqBody, method, userSessionID);
     }else{
         throw ErrorLib.getErrors().BadRequest("","uploadL5L6Service/handlePost","invalid parameter name (can be: UPLOADL5_L6 or UPLOADL5_L6_BUDGET)");
     }

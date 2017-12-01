@@ -16,7 +16,6 @@ var INS_HL2 = "INS_HL2";
 var UPD_HL2 = "UPD_HL2";
 var COUNT_HL3_BY_HL2_ID = "COUNT_HL3_BY_HL2_ID";
 var DEL_HL2 = "DEL_HL2";
-var GET_HL2_BY_ORGANIZATION_ACRONYM = "GET_HL2_BY_ORGANIZATION_ACRONYM";
 var GET_HL2_BY_ACRONYM_AND_ORGANIZATION_ACRONYM = "GET_HL2_BY_ACRONYM_AND_ORGANIZATION_ACRONYM";
 var GET_ALL_CENTRAL_TEAM = "GET_ALL_CENTRAL_TEAM";
 var spGetHl2AllocatedBudget = "GET_HL2_ALLOCATED_BUDGET";
@@ -25,6 +24,7 @@ var GET_ALL_HL2_VERSION_BY_HL2_ID = "GET_ALL_HL2_VERSION_BY_HL2_ID";
 var INS_HL2_VERSION = "INS_HL2_VERSION";
 var GET_HL2_VERSION_BY_FILTER = "GET_HL2_VERSION_BY_FILTER";
 var GET_HL2_VERSION_BY_ID = "GET_HL2_VERSION_BY_ID";
+var GET_HL2_BY_HL4_ID = "GET_HL2_BY_HL4_ID";
 
 function getLevel2ByUser(userId){
 	
@@ -37,10 +37,10 @@ function getLevel2ByUser(userId){
 	return result;
 }
 
-function getLevel2ById(objLevel2){
-	if(objLevel2.IN_HL2_ID > 0)
+function getLevel2ById(hl2Id){
+	if(hl2Id)
 	{
-		var parameters = {'in_hl2_id': objLevel2.IN_HL2_ID};
+		var parameters = {'in_hl2_id': hl2Id};
 		var result = db.executeProcedureManual(GET_HL2_BY_ID, parameters);
 		var list = db.extractArray(result.out_result);
 		if(list.length)
@@ -66,20 +66,6 @@ function getLevelByAcronymAndOrganizationAcronym(acronym, budgeth_year_id, org_a
 		return list[0];
 	else
 		return null;
-}
-
-function getLevelByOrganizationAcronym(acronym){
-	if(acronym !== "")
-	{
-		var parameters = {'in_acronym': acronym};	
-		var result = db.executeProcedureManual(GET_HL2_BY_ORGANIZATION_ACRONYM, parameters);	
-		var list = db.extractArray(result.out_result);
-		if(list.length)
-			return list[0];
-		else
-			return null;
-	}
-	return null;
 }
 
 function getAllLevel2(hl1Id){
@@ -144,49 +130,56 @@ function getHl2AllowAutomaticBudgetApprovalByHl5Id(l5Id){
 	return db.executeScalarManual(GET_HL2_ALLOW_AUTOMATIC_BUDGET_APPROVAL_BY_HL5_ID,parameters,"out_result");
 }
 
-function insertLevel2(objLevel2, userId){
+function getHl2ByHl4Id(hl4Id){
+    var result = db.executeProcedureManual(GET_HL2_BY_HL4_ID, {'in_hl4_id': hl4Id});
+    return db.extractArray(result.out_result)[0];
+}
+
+function insertLevel2(budget, acronym, organizationName, implementExecutionLevel, crtRelated, hl1Id, inBudget, allowAutomaticBudgetApproval, userId, subregionId, importId, imported){
 	var parameters = {};
-	var result = {};
-	parameters.in_user_id = userId;
-	parameters.in_hl2_budget_total = objLevel2.IN_HL2_BUDGET_TOTAL;
-	parameters.in_organization_acronym = objLevel2.IN_ORGANIZATION_ACRONYM;
-	parameters.in_organization_name = objLevel2.IN_ORGANIZATION_NAME;
-	parameters.in_implement_execution_level = objLevel2.IN_IMPLEMENT_EXECUTION_LEVEL;
-	parameters.in_crt_related = objLevel2.IN_CRT_RELATED ? objLevel2.IN_CRT_RELATED : 0;
-	parameters.in_hl1_id = objLevel2.IN_PLAN_ID;
-	parameters.in_in_budget = objLevel2.IN_IN_BUDGET;
-	parameters.in_allow_automatic_budget_approval = objLevel2.ALLOW_AUTOMATIC_BUDGET_APPROVAL || 0 ;
-	parameters.in_import_id = objLevel2.import_id ? objLevel2.import_id : null;
-	parameters.in_imported = objLevel2.imported ? objLevel2.imported : 0;
+    parameters.in_user_id = userId;
+    parameters.in_hl2_budget_total = budget;
+    parameters.in_organization_acronym = acronym;
+    parameters.in_organization_name = organizationName;
+    parameters.in_implement_execution_level = implementExecutionLevel;
+    parameters.in_crt_related = crtRelated || 0;
+    parameters.in_hl1_id = hl1Id;
+    parameters.in_in_budget = inBudget;
+    parameters.in_allow_automatic_budget_approval = allowAutomaticBudgetApproval || 0;
+    parameters.in_import_id = importId || null;
+    parameters.in_imported = imported || 0;
+    parameters.in_subRegion_id = subregionId;
+
 	return db.executeScalarManual(INS_HL2,parameters,"out_hl2_id");
 }
 
-function updateLevel2(objLevel2, userId){
+function updateLevel2(hl2Id, hl2BudgetTotal, organizationAcronym, organizationName, implementExecutionLevel, crtRelated, inBudget, allowAutomaticBudgetApproval, version, subregionId, userId){
 	var parameters = {};
-	parameters.in_hl2_id = objLevel2.IN_HL2_ID;
+	parameters.in_hl2_id = hl2Id;
 	parameters.in_modified_user_id = userId;
-	parameters.in_hl2_budget_total = objLevel2.IN_HL2_BUDGET_TOTAL;
-	parameters.in_organization_acronym = objLevel2.IN_ORGANIZATION_ACRONYM;
-	parameters.in_organization_name = objLevel2.IN_ORGANIZATION_NAME;
-	parameters.in_implement_execution_level = objLevel2.IN_IMPLEMENT_EXECUTION_LEVEL;
-	parameters.in_crt_related = objLevel2.IN_CRT_RELATED ? objLevel2.IN_CRT_RELATED : 0;
-	parameters.in_in_budget = objLevel2.IN_IN_BUDGET;
-	parameters.in_allow_automatic_budget_approval = objLevel2.ALLOW_AUTOMATIC_BUDGET_APPROVAL || 0 ;
-	parameters.in_version = objLevel2.VERSION;
+	parameters.in_hl2_budget_total = hl2BudgetTotal;
+	parameters.in_organization_acronym = organizationAcronym;
+	parameters.in_organization_name = organizationName;
+	parameters.in_implement_execution_level = implementExecutionLevel;
+	parameters.in_crt_related = crtRelated || 0;
+	parameters.in_in_budget = inBudget;
+	parameters.in_allow_automatic_budget_approval = allowAutomaticBudgetApproval || 0;
+	parameters.in_version = version;
+    parameters.in_subRegion_id = subregionId;
 	return db.executeScalarManual(UPD_HL2,parameters,"out_result");
 }
 
-function deleteHl2(objLevel2,modUser){
+function deleteHl2(hl2Id,modUser){
 	var param = {};
-	param.in_hl2_id = objLevel2.IN_HL2_ID;
+	param.in_hl2_id = hl2Id;
 	param.in_modified_user_id = modUser;
 	return db.executeScalar(DEL_HL2,param,"out_result");
 }
 
 //COUNT NUMBER OF HL3 RELATED TO HL2
-function countRelatedObjects(objLevel2){
+function countRelatedObjects(hl2Id){
 	var parameters = {};
-	parameters.in_hl2_id = objLevel2.IN_HL2_ID;
+	parameters.in_hl2_id = hl2Id;
 	return db.executeScalarManual(COUNT_HL3_BY_HL2_ID,parameters,"out_result");
 }
 
@@ -200,6 +193,7 @@ function getHl2ByHl1Id(hl1Id, userId, isSuperAdmin) {
 	result.out_result = db.extractArray(list.out_result);
 	result.out_total_budget = list.out_total_budget;
 	result.out_remaining_budget = list.out_remaining_budget;
+	result.out_total_allocated= list.out_total_allocated;
 	return result;
 }
 

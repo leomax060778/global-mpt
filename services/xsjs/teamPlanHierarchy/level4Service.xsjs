@@ -12,14 +12,12 @@ var method = "method";
 var id = "id";
 var setStatusInCRM = "SETINCRM";
 var changeStatus = "CHANGESTATUS";
-var sendInCrmNotificationMail = "SENDMAIL";
+// var sendInCrmNotificationMail = "SENDMAIL";
 
 /******************************************/
 
 function processRequest(){
-	
-		return httpUtil.processRequest(handleGet,handlePost,handlePut,handleDelete,false, config.getResourceIdByName(config.level3()));
-
+	return httpUtil.processRequest(handleGet, handlePost, handlePut, handleDelete,false, "", true);
 };
 
 /**
@@ -43,6 +41,8 @@ function handleGet(params, userId) {
 	if(in_hl3_id){
         businessLevel3.checkPermission(userId, null, in_hl3_id);
 		result = hl4.getHl4(in_hl3_id);
+	} else if (in_hl4_id && method && method == "CARRY_OVER"){
+    	result = hl4.getHL4CarryOverById(in_hl4_id, userId);
 	} else if (in_hl4_id) {
         hl4.checkPermission(userId, null, in_hl4_id);
 		result = hl4.getHl4ById(in_hl4_id);
@@ -71,9 +71,9 @@ function handlePut(reqBody, userId){
 		var hl4Id = !reqBody ? parameters.get('HL4_ID') : reqBody.hl4Ids;
 
 		switch (aCmd) {
-			case sendInCrmNotificationMail:
+			/*case sendInCrmNotificationMail:
 					hl4.sendProcessingReportEmail(hl4Id, userId);
-					//fallthrough
+					//fallthrough*/
 		    case setStatusInCRM: //set status In CRM
 				var rdo = hl4.setHl4StatusInCRM(hl4Id, userId);
 				return	httpUtil.handleResponse(rdo,httpUtil.OK,httpUtil.AppJson);
