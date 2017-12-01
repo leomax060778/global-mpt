@@ -7,6 +7,7 @@ var dataCategoryOptionLevel = mapper.getDataCategoryOptionLevel();
 var dataPath = mapper.getDataPath();
 var ErrorLib = mapper.getErrors();
 var util = mapper.getUtil();
+var utilReportLib = mapper.getUtilDEReport();
 
 /** ***********END INCLUDE LIBRARIES*************** */
 
@@ -15,8 +16,13 @@ function getAllL4DEReport(userId) {
     return hl4List;
 }
 
-function getAllL4DEReportForDownload(userId) {
-    return dataL4DER.getAllLevel4ReportForDownload(userId);
+function getAllL4CreateInCrmDEReportForDownload(userId) {
+    return dataL4DER.getAllL4CreateInCrmDEReportForDownload(userId);
+}
+
+function getAllHL4ChangedFields(userId) {
+    var data = dataL4DER.getAllHL4ChangedFields(userId);
+    return utilReportLib.parseChangedFields("HL4", "HL4_ID", data.out_hl4_changed_fields, data.out_hl4_category_options, data.out_hl4);
 }
 
 function getL4CrmBindingFieldsByHl4Id(hl4Id) {
@@ -82,6 +88,8 @@ function getL4ChangedFieldsByHl4Id(hl4Id, userId) {
             }
             ;
         });
+        data.HL4_ID = hl4Id;
+        data.CREATED_USER_ID = hl4.CREATED_USER_ID;
         return data;
     } catch (e) {
         throw e;

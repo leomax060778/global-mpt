@@ -14,6 +14,7 @@ var ErrorLib = mapper.getErrors();
 var util = mapper.getUtil();
 var dataPriority = mapper.getDataPriority();
 var dataCategoryOptionLevel = mapper.getDataCategoryOptionLevel();
+var utilReportLib = mapper.getUtilDEReport();
 
 /** ***********END INCLUDE LIBRARIES*************** */
 
@@ -22,13 +23,21 @@ function getAllL6DEReport(userId) {
     return hl6List;
 }
 
-function getAllL6DEReportForDownload(userId) {
-    return dataL6DER.getAllLevel6ReportForDownload(userId);
+function getAllL6CreateInCrmDEReportForDownload(userId) {
+    return dataL6DER.getAllL6CreateInCrmDEReportForDownload(userId);
+}
+
+function getAllHL6ChangedFields(userId) {
+    var data = dataL6DER.getAllHL6ChangedFields(userId);
+    return utilReportLib.parseChangedFields("HL6", "HL6_ID", data.out_hl6_changed_fields, data.out_hl6_category_options, data.out_hl6);
 }
 
 function getL6ChangedFieldsByHl6Id(hl6Id, userId) {
     var l6ReportFields = this.getProcessingReportFields();
-    var data = {"hl6": [], "category": []};
+    var data = {
+        "hl6": []
+        , "category": []
+    };
     var changedFields = dataL6DER.getL6ChangedFieldsByHl6Id(hl6Id);
     var hl6Categories = dataCategoryOptionLevel.getAllocationCategory(hl6Id, 'hl6');
 
@@ -96,9 +105,6 @@ function getL6ChangedFieldsByHl6Id(hl6Id, userId) {
                 case "BUSINESS_OWNER_ID":
                     object.value = hl6.BUSINESS_OWNER;
                     break;
-                case "EMPLOYEE_RESPONSIBLE_ID":
-                    object.value = hl6.EMPLOYEE_RESPONSIBLE;
-                    break;
                 case "MARKETING_PROGRAM_DESC":
                     object.value = hl6.MARKETING_PROGRAM_DESCRIPTION;
                     break;
@@ -115,16 +121,16 @@ function getL6ChangedFieldsByHl6Id(hl6Id, userId) {
                     }
                     break;
                 case "PLANNED_START_DATE":
-                    object.value = (new Date(hl6.PLANNED_START_DATE)).toLocaleDateString();
+                    object.value = hl6.PLANNED_START_DATE;
                     break;
                 case "PLANNED_END_DATE":
-                    object.value = (new Date(hl6.PLANNED_END_DATE)).toLocaleDateString();
+                    object.value = hl6.PLANNED_END_DATE;
                     break;
                 case "ACTUAL_START_DATE":
-                    object.value = (new Date(hl6.ACTUAL_START_DATE)).toLocaleDateString();
+                    object.value = hl6.ACTUAL_START_DATE;
                     break;
                 case "ACTUAL_END_DATE":
-                    object.value = (new Date(hl6.ACTUAL_END_DATE)).toLocaleDateString();
+                    object.value = hl6.ACTUAL_END_DATE;
                     break;
                 case "PARENT_PATH":
                     object.value = hl6.PARENT_PATH;
@@ -136,6 +142,11 @@ function getL6ChangedFieldsByHl6Id(hl6Id, userId) {
                     object.value = hl6[field];
                     break;
             }
+            object.type = field == "PLANNED_START_DATE" ||
+            field == "PLANNED_END_DATE" ||
+            field == "ACTUAL_START_DATE" ||
+            field == "ACTUAL_END_DATE" ? "DATE" : undefined;
+
             var fieldToCheck = field == "DISTRIBUTION_CHANNEL_DESC" ? "DISTRIBUTION_CHANNEL_ID"
                 : field == "MARKETING_PROGRAM_DESC" ? "MARKETING_PROGRAM_ID"
                     : field == "MARKETING_ACTIVITY_DESC" ? "MARKETING_ACTIVITY_ID"
@@ -145,6 +156,8 @@ function getL6ChangedFieldsByHl6Id(hl6Id, userId) {
             data.hl6.push(object);
         }
     });
+    data.HL6_ID = hl6Id;
+    data.CREATED_USER_ID = hl6.CREATED_USER_ID;
     return data;
 }
 
@@ -184,7 +197,7 @@ function getProcessingReportFields() {
         , "DISTRIBUTION_CHANNEL_ID": "Distribution Channel"
         , "DISTRIBUTION_CHANNEL_DESC": "Distribution Channel Desc"
         , "COST_CENTER_ID": "Cost Center"
-        , "EMPLOYEE_RESPONSIBLE_ID": "Employee Responsible"
+        , "EMPLOYEE_RESPONSIBLE_USER": "Employee Responsible"
         , "BUSINESS_OWNER_ID": "Business Owner"
         , "ROUTE_TO_MARKET_ID": "Route to Market"
         , "BUDGET": "Budget"

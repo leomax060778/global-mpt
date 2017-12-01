@@ -74,7 +74,7 @@ BEGIN
         DECLARE EXIT HANDLER FOR SQL_ERROR_CODE 1299
         BEGIN
             --SEARCH AND DELETE RECORD
-                --DELETE FROM PROCESSING_REPORT_EXPORT_DATA WHERE HL_ID = IN_HL_ID AND OBJECT_TYPE = VA_OBJECT_TYPE;
+                DELETE FROM PROCESSING_REPORT_EXPORT_DATA WHERE HL_ID = IN_HL_ID AND OBJECT_TYPE = VA_OBJECT_TYPE;
                 --SELECT ::ROWCOUNT into VA_DELETE_RESULT FROM DUMMY;
             --*************************************************--
         END;
@@ -102,7 +102,7 @@ BEGIN
                     WHERE HL4.HL4_STATUS_DETAIL_ID
                             IN (SELECT HL4_STATUS_DETAIL_ID
                                 FROM "MKTG_PLANNING_TOOL".HL4_STATUS_DETAIL
-                                WHERE DETAIL IN ('Create In CRM',  'Update In CRM')) AND HL4.ENABLED = 1 AND HL4.DELETED = 0
+                                WHERE DETAIL IN ('Create In CRM')) AND HL4.ENABLED = 1 AND HL4.DELETED = 0
                                 AND HL4.HL4_ID = IN_HL_ID;
                 ELSEIF IN_HIERARCHY_LEVEL = 'HL5'
                     THEN VA_OBJECT_TYPE := 'CPG';
@@ -111,7 +111,7 @@ BEGIN
                     WHERE HL5.HL5_STATUS_DETAIL_ID
                             IN (SELECT HL5_STATUS_DETAIL_ID
                                 FROM "MKTG_PLANNING_TOOL".HL5_STATUS_DETAIL
-                                WHERE DETAIL IN ('Create In CRM',  'Update In CRM')) AND HL5.ENABLED = 1 AND HL5.DELETED = 0
+                                WHERE DETAIL IN ('Create In CRM')) AND HL5.ENABLED = 1 AND HL5.DELETED = 0
                                 AND HL5.HL5_ID = IN_HL_ID;
                 ELSEIF IN_HIERARCHY_LEVEL = 'HL6'
                     THEN VA_OBJECT_TYPE := 'CPT';
@@ -120,22 +120,12 @@ BEGIN
                     WHERE HL6.HL6_STATUS_DETAIL_ID
                             IN (SELECT HL6_STATUS_DETAIL_ID
                                 FROM "MKTG_PLANNING_TOOL".HL6_STATUS_DETAIL
-                                WHERE DETAIL IN ('Create In CRM',  'Update In CRM')) AND HL6.ENABLED = 1 AND HL6.DELETED = 0
+                                WHERE DETAIL IN ('Create In CRM')) AND HL6.ENABLED = 1 AND HL6.DELETED = 0
                                 AND HL6.HL6_ID = IN_HL_ID;
             END IF;
 
             DELETE FROM PROCESSING_REPORT_EXPORT_DATA WHERE HL_ID = IN_HL_ID AND OBJECT_TYPE = VA_OBJECT_TYPE;
-	--**************************************************-
-
-	--SEARCH AND DELETE RECORD
-    --DELETE FROM PROCESSING_REPORT_EXPORT_DATA WHERE HL_ID = IN_HL_ID AND OBJECT_TYPE = VA_OBJECT_TYPE;
-    --SELECT ::ROWCOUNT into VA_DELETE_RESULT FROM DUMMY;
-    --*************************************************--
-
-    --IF (:VA_STATUS <> 0)
-    --THEN
         --COLLECT DATA
-        --IF VA_DELETE_RESULT = 0 THEN
             IF VA_OBJECT_TYPE = 'MPL' --HL4
                 THEN --GET FROM HL4
                  CALL "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_PATH_BY_LEVEL_PARENT"(4,VA_PARENT_ID,VA_PATH_TABLE); --GET ACRONYMS
@@ -148,7 +138,7 @@ BEGIN
                  VA_GET_HL = SELECT HL4_ID AS HL_ID,
                              :VA_PATH AS EXTERNAL_ID_PARENT,
                              :VA_OBJECT_TYPE AS OBJECT_TYPE,
-                             CONCAT(:VA_PATH,CONCAT('-',ACRONYM)) AS EXTERNAL_ID,
+                             (SELECT TOP 1 "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BUDGET_YEAR, L1_ACRONYM, L2_ACRONYM, L3_ACRONYM, ACRONYM, '', '') FROM :VA_PATH_TABLE) AS EXTERNAL_ID,
                              HL4_CRM_DESCRIPTION AS TEXT1,
                              SHOPPING_CART_APPROVER AS BNAME,
                              '' AS OBJECTIVE, -- HL4 doesn't have this field
@@ -245,7 +235,7 @@ BEGIN
                         VA_GET_HL = SELECT HL5_ID AS HL_ID,
                                     :VA_PATH AS EXTERNAL_ID_PARENT,
                                     :VA_OBJECT_TYPE AS OBJECT_TYPE,
-                                    CONCAT(:VA_PATH,CONCAT('',ACRONYM)) AS EXTERNAL_ID,
+                                   (SELECT TOP 1 "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BUDGET_YEAR, L1_ACRONYM, L2_ACRONYM, L3_ACRONYM, L4_ACRONYM, ACRONYM, '') FROM :VA_PATH_TABLE) AS EXTERNAL_ID,
                                     HL5_CRM_DESCRIPTION AS TEXT1,
                                     'TBD' AS BNAME,
                                     OB.CRM_KEY AS OBJECTIVE,
@@ -346,7 +336,7 @@ BEGIN
                             VA_GET_HL = SELECT HL6_ID AS HL_ID,
                                         :VA_PATH AS EXTERNAL_ID_PARENT,
                                         :VA_OBJECT_TYPE AS OBJECT_TYPE,
-                                        CONCAT(:VA_PATH,CONCAT('',ACRONYM)) AS EXTERNAL_ID,
+                                        (SELECT TOP 1 "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BUDGET_YEAR, L1_ACRONYM, L2_ACRONYM, L3_ACRONYM, L4_ACRONYM, L5_ACRONYM, ACRONYM) FROM :VA_PATH_TABLE) AS EXTERNAL_ID,
                                         HL6_CRM_DESCRIPTION AS TEXT1,
                                         'TBD' AS BNAME,
                                         OB.CRM_KEY AS OBJECTIVE,
@@ -429,13 +419,9 @@ BEGIN
                                         WHERE HL6_ID = IN_HL_ID;
             END IF;
 
-            --SELECT TOP 1 CASE WHEN (HL_ID = NULL) THEN 0 ELSE 1 END into VA_HL_EXIST FROM :VA_GET_HL;
-        --END IF;
         --**********************************************--
 
         --INSERT DATA
-        --IF(VA_DELETE_RESULT = 0 )-- AND VA_HL_EXIST = 1)
-        --THEN
         INSERT INTO PROCESSING_REPORT_EXPORT_DATA
         (HL_ID,
          EXTERNAL_ID_PARENT,
@@ -511,9 +497,7 @@ BEGIN
          PARTNER_NO,
          CREATED_USER_ID)
         SELECT *, 1 AS CREATED_USER_ID  FROM :VA_GET_HL;
-        --END IF;
         --************************************************--
-	--END IF; --END IF STATUS
-	
+
 	SELECT ::ROWCOUNT into out_result FROM DUMMY;
 END;

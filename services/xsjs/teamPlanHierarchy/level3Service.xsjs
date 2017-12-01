@@ -14,7 +14,7 @@ var categories = "HL2_CATEGORIES";
 
 // Main function
 function processRequest() {
-	return httpUtil.processRequest(handleGet, handlePost, handlePut, handleDelete,false, config.getResourceIdByName(config.level2()));
+	return httpUtil.processRequest(handleGet, handlePost, handlePut, handleDelete,false, "", true);
 }
 
 // function to manage an post request

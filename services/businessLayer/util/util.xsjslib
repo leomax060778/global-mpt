@@ -25,10 +25,10 @@ function validateBudget(value){
 	return value !== 0;
 }
 
-function validateIsSapEmail(value){
-	var emailParts = value.split('@sap.com');
-	return emailParts.length == 2 && !emailParts[1]; 
-};
+function validateIsSapEmail(email){
+	var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@sap.com$/;
+	return re.test(email);
+}
 
 /********************another options**********************************/
 //Minimum 8 characters at least 1 Alphabet, 1 Number and 1 Special Character://

@@ -9,6 +9,8 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_CATEGORY_OPT
         , in_processing_report tinyint
         , option_id integer
         , option_name nvarchar(60)
+        , make_category_mandatory TINYINT
+        , single_option_only TINYINT
         )
 	) 
 	LANGUAGE SQLSCRIPT
@@ -25,6 +27,8 @@ BEGIN
     ,ACOL.IN_PROCESSING_REPORT
     ,AO.ALLOCATION_OPTION_ID AS OPTION_ID
     ,AO.NAME AS OPTION_NAME
+    ,ACOL.make_category_mandatory
+    ,AC.SINGLE_OPTION_ONLY
     from allocation_category_option_level acol
     inner join allocation_category ac on acol.allocation_category_id = ac.allocation_category_id
     inner join allocation_option ao on acol.allocation_option_id = ao.allocation_option_id

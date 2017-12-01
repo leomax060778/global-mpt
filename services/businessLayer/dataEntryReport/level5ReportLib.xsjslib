@@ -18,6 +18,7 @@ var dataRouteToMarket = mapper.getDataRouteToMarket();
 var dataMarketingOrganization = mapper.getDataMarketingOrganization();
 var dataCategoryOptionLevel = mapper.getDataCategoryOptionLevel();
 var dataPriority = mapper.getDataPriority();
+var utilReportLib = mapper.getUtilDEReport();
 /** ***********END INCLUDE LIBRARIES*************** */
 
 function getAllL5DEReport(userId) {
@@ -25,8 +26,13 @@ function getAllL5DEReport(userId) {
     return hl5List;
 }
 
-function getAllL5DEReportForDownload(userId) {
-    return dataL5DER.getAllLevel5ReportForDownload(userId);
+function getAllL5CreateInCrmDEReportForDownload(userId) {
+    return dataL5DER.getAllL5CreateInCrmDEReportForDownload(userId);
+}
+function getAllHL5ChangedFields(userId) {
+    var data = dataL5DER.getAllHL5ChangedFields(userId);
+    return utilReportLib.parseChangedFields("HL5", "HL5_ID", data.out_hl5_changed_fields, data.out_hl5_category_options, data.out_hl5);
+
 }
 
 function getL5ChangedFieldsByHl5Id(hl5Id, userId) {
@@ -94,15 +100,11 @@ function getL5ChangedFieldsByHl5Id(hl5Id, userId) {
                         object.value = processingReportData.marketing_activity_id.CRM_ID;
                     }
                     break;
-
                 case "SHOW_ON_DG_CALENDAR":
                     object.value = hl5.SHOW_ON_DG_CALENDAR ? "Yes" : "No";
                     break;
                 case "BUSINESS_OWNER_ID":
                     object.value = hl5.BUSINESS_OWNER;
-                    break;
-                case "EMPLOYEE_RESPONSIBLE_ID":
-                    object.value = hl5.EMPLOYEE_RESPONSIBLE;
                     break;
                 case "MARKETING_PROGRAM_ID":
                     object.value = hl5.MARKETING_PROGRAM;
@@ -117,16 +119,16 @@ function getL5ChangedFieldsByHl5Id(hl5Id, userId) {
                     object.value = hl5.DISTRIBUTION_CHANNEL;
                     break;
                 case "PLANNED_START_DATE":
-                    object.value = (new Date(hl5.PLANNED_START_DATE)).toLocaleDateString();
+                    object.value = hl5.PLANNED_START_DATE;
                     break;
                 case "PLANNED_END_DATE":
-                    object.value = (new Date(hl5.PLANNED_END_DATE)).toLocaleDateString();
+                    object.value = hl5.PLANNED_END_DATE;
                     break;
                 case "ACTUAL_START_DATE":
-                    object.value = (new Date(hl5.ACTUAL_START_DATE)).toLocaleDateString();
+                    object.value = hl5.ACTUAL_START_DATE;
                     break;
                 case "ACTUAL_END_DATE":
-                    object.value = (new Date(hl5.ACTUAL_END_DATE)).toLocaleDateString();
+                    object.value = hl5.ACTUAL_END_DATE;
                     break;
                 case "PARENT_PATH":
                     object.value =  hl5.PARENT_PATH;
@@ -138,6 +140,11 @@ function getL5ChangedFieldsByHl5Id(hl5Id, userId) {
                     object.value = hl5[field];
                     break;
             }
+            object.type = field == "PLANNED_START_DATE" ||
+            field == "PLANNED_END_DATE" ||
+            field == "ACTUAL_START_DATE" ||
+            field == "ACTUAL_END_DATE" ? "DATE" : undefined;
+
             var fieldToCheck = field == "DISTRIBUTION_CHANNEL_DESC" ? "DISTRIBUTION_CHANNEL_ID"
                 : field == "MARKETING_PROGRAM_DESC" ? "MARKETING_PROGRAM_ID"
                     : field == "MARKETING_ACTIVITY_DESC" ? "MARKETING_ACTIVITY_ID"
@@ -147,6 +154,8 @@ function getL5ChangedFieldsByHl5Id(hl5Id, userId) {
             data.hl5.push(object);
         }
     });
+    data.HL5_ID = hl5Id;
+    data.CREATED_USER_ID = hl5.CREATED_USER_ID;
     return data;
 }
 
@@ -185,7 +194,7 @@ function getProcessingReportFields(){
         , "DISTRIBUTION_CHANNEL_ID": "Distribution Channel"
         , "DISTRIBUTION_CHANNEL_DESC": "Distribution Channel Desc"
         , "COST_CENTER_ID": "Cost Center"
-        , "EMPLOYEE_RESPONSIBLE_ID": "Employee Responsible"
+        , "EMPLOYEE_RESPONSIBLE_USER": "Employee Responsible"
         , "BUSINESS_OWNER_ID": "Business Owner"
         , "ROUTE_TO_MARKET_ID": "Route to Market"
         , "BUDGET": "Budget"

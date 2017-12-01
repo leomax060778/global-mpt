@@ -8,6 +8,7 @@ var ErrorLib = mapper.getErrors();
 var GET_ALL_HL5_DE_REPORT = "GET_HL5_DE_REPORT";
 var GET_HL5_FOR_PROCESSING_REPORT = "GET_HL5_FOR_PROCESSING_REPORT";
 var GET_PROCESSING_REPORT_FOR_DOWNLOAD = "GET_PROCESSING_REPORT_FOR_DOWNLOAD";
+var GET_ALL_HL5_CHANGED_FIELDS = "GET_ALL_HL5_CHANGED_FIELDS";
 var spGetL5ChangedFieldsByHl5Id = "GET_HL5_CHANGED_FIELDS_BY_HL5_ID";
 var spDelL5ChangedFieldsByHl5Id = "DEL_HL5_CRM_BINDING";
 var UPD_PROCESSING_REPORT_EXPORT_DATA = "UPD_PROCESSING_REPORT_EXPORT_DATA";
@@ -24,9 +25,17 @@ function getAllLevel5Report(userId) {
 	});
 	return spResult;
 }
-function getAllLevel5ReportForDownload() {
+function getAllL5CreateInCrmDEReportForDownload() {
     var data = db.executeProcedureManual(GET_PROCESSING_REPORT_FOR_DOWNLOAD, {in_object_type: 'CPG'});
     return db.extractArray(data.out_result);
+}
+function getAllHL5ChangedFields() {
+    var data = db.executeProcedureManual(GET_ALL_HL5_CHANGED_FIELDS, {});
+    return {
+        out_hl5_changed_fields: db.extractArray(data.out_hl5_changed_fields),
+        out_hl5: db.extractArray(data.out_hl5),
+        out_hl5_category_options: db.extractArray(data.out_hl5_category_options)
+    };
 }
 
 function updateLevel5ReportForDownload(HL5_ID) {

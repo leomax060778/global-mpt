@@ -58,11 +58,15 @@ function getCategoryOptionByHierarchyLevelId(hierarchy_level_id){
         if(!result[categoryOption.CATEGORY_NAME]){
             result[categoryOption.CATEGORY_NAME] = {
                 CATEGORY_NAME: categoryOption.CATEGORY_NAME,
-                CATEGORY_ID: categoryOption.CATEGORY_ID,
-                OPTIONS: [{
+                CATEGORY_ID: categoryOption.CATEGORY_ID
+                , MAKE_CATEGORY_MANDATORY: categoryOption.MAKE_CATEGORY_MANDATORY
+				, SINGLE_OPTION_ONLY: categoryOption.SINGLE_OPTION_ONLY
+                ,OPTIONS: [{
                     OPTION_ID: categoryOption.OPTION_ID
                     , OPTION_NAME: categoryOption.OPTION_NAME
                     , CATEGORY_ID: categoryOption.CATEGORY_ID
+                    , MAKE_CATEGORY_MANDATORY: categoryOption.MAKE_CATEGORY_MANDATORY
+                    , SINGLE_OPTION_ONLY: categoryOption.SINGLE_OPTION_ONLY
                 }]
             };
 		} else {
@@ -70,6 +74,8 @@ function getCategoryOptionByHierarchyLevelId(hierarchy_level_id){
                 OPTION_ID: categoryOption.OPTION_ID
                 , OPTION_NAME: categoryOption.OPTION_NAME
                 , CATEGORY_ID: categoryOption.CATEGORY_ID
+                , MAKE_CATEGORY_MANDATORY: categoryOption.MAKE_CATEGORY_MANDATORY
+                , SINGLE_OPTION_ONLY: categoryOption.SINGLE_OPTION_ONLY
             });
 		}
 	});

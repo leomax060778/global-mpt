@@ -2,7 +2,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL2_BY_HL4_I
 	IN in_hl4_id BIGINT
 	,OUT out_result TABLE (
 		hl2_id BIGINT
-        , subregion_id BIGINT
+        , subregion_id INTEGER
         , hl2_budget_total DECIMAL(19,6)
         , ORGANIZATION_ACRONYM NVARCHAR(255)
         , ORGANIZATION_NAME NVARCHAR(255)

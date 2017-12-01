@@ -8,6 +8,7 @@ var ErrorLib = mapper.getErrors();
 var GET_ALL_HL6_DE_REPORT = "GET_HL6_DE_REPORT";
 var spGetL6ChangedFieldsByHl6Id = "GET_HL6_CHANGED_FIELDS_BY_HL6_ID";
 var GET_PROCESSING_REPORT_FOR_DOWNLOAD = "GET_PROCESSING_REPORT_FOR_DOWNLOAD";
+var GET_ALL_HL6_CHANGED_FIELDS = "GET_ALL_HL6_CHANGED_FIELDS";
 var spDelL6ChangedFieldsByHl6Id = "DEL_HL6_CRM_BINDING";
 var GET_HL6_FOR_PROCESSING_REPORT = "GET_HL6_FOR_PROCESSING_REPORT";
 var UPD_PROCESSING_REPORT_EXPORT_DATA = "UPD_PROCESSING_REPORT_EXPORT_DATA";
@@ -18,9 +19,17 @@ function getAllLevel6Report(userId) {
 	var data = db.executeProcedureManual(GET_ALL_HL6_DE_REPORT, {});
     return db.extractArray(data.out_result);
 }
-function getAllLevel6ReportForDownload() {
+function getAllL6CreateInCrmDEReportForDownload() {
     var data = db.executeProcedureManual(GET_PROCESSING_REPORT_FOR_DOWNLOAD, {in_object_type: 'CPT'});
-
+    return db.extractArray(data.out_result);
+}
+function getAllHL6ChangedFields() {
+    var data = db.executeProcedureManual(GET_ALL_HL6_CHANGED_FIELDS, {});
+    return {
+        out_hl6_changed_fields: db.extractArray(data.out_hl6_changed_fields),
+        out_hl6: db.extractArray(data.out_hl6),
+        out_hl6_category_options: db.extractArray(data.out_hl6_category_options)
+    };
 }
 
 function updateLevel6ReportForDownload(HL6_ID) {

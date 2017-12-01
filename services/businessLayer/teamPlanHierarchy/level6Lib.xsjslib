@@ -42,7 +42,7 @@ var AllocationOptionLib = mapper.getAllocationOptionLib();
 /** ********************************************** */
 
 var levelCampaign = "Marketing Sub Tactic";
-var L6_MSG_INITIATIVE_NOT_FOUND = "The Marketing Sub Tactic can not be found.";
+var L6_MSG_INITIATIVE_NOT_FOUND = "The Marketing Sub Tactic ID can not be found.";
 var L6_MSG_ROUTE_TO_MARKET_NULL = "The Route to market is mandatory.";
 var L6_MSG_INITIATIVE_CRM_ACRONYM = "The Acronym has been used. The new Acronym is: ";
 var L6_MSG_INITIATIVE_CRM_ACRONYM_EXISTS = "The Acronym has been used.";
@@ -339,6 +339,7 @@ function insertHl6(data, userId) {
         throw error;
     }
 /*/
+
     data.hl6.HL6_STATUS_DETAIL_ID = validationResult.statusId;
 
     if (data.hl6.HL6_STATUS_DETAIL_ID > 0) {
@@ -1072,7 +1073,7 @@ function updatePartners(data, userId) {
                 budgetSpendRequestToUpdate.push({
                     in_budget_spend_request_id: partner.BUDGET_SPEND_REQUEST_ID
                     , in_amount: partner.AMOUNT / internalCoFundingCurrency
-                    , in_message: partner.MESSAGE
+                    , in_message: partner.MESSAGE ? partner.MESSAGE.trim() : ''
                     , in_user_id: userId
                 });
 
@@ -1226,7 +1227,7 @@ function isComplete(data) {
                             percentagePerOption = percentagePerOption + Number(option.AMOUNT);
                         });
 
-                        isComplete = isComplete && percentagePerOption === 100;
+                        isComplete = isComplete && percentagePerOption === 100 || (!hl6Category.in_make_category_mandatory && percentagePerOption === 0);
                         if (!isComplete)
                             break;
                     }
@@ -1236,19 +1237,21 @@ function isComplete(data) {
             case "BUDGET":
                 isComplete = !!(!data.hl6.ALLOW_BUDGET_ZERO && Number(data.hl6.BUDGET));
                 break;
-            case "MARKETING_PROGRAM_ID":
-                isComplete = !!data.hl6.MARKETING_PROGRAM;
+            /*case "MARKETING_PROGRAM_ID":
+                isComplete = !!data.hl6.MARKETING_PROGRAM_ID;
                 break;
             case "MARKETING_ACTIVITY_ID":
-                isComplete = !!data.hl6.MARKETING_ACTIVITY;
-                break;
+                isComplete = !!data.hl6.MARKETING_ACTIVITY_ID;
+                break;*/
             default:
                 if (notValidate.indexOf(crmBindingField) < 0)
                     isComplete = !!data.hl6[crmBindingField];
                 break;
         }
-        if (!isComplete)
+        if (!isComplete){
             break;
+        }
+
     }
     if (isComplete) {
         isComplete = (Number(data.hl6.BUDGET_SPEND_Q1) || 0)
@@ -1261,7 +1264,6 @@ function isComplete(data) {
     return isComplete;
 }
 
-
 function validateHl6(data, userId) {
     var existInCrm = 0;
     var statusId = HL6_STATUS.IN_PROGRESS;
@@ -1269,6 +1271,16 @@ function validateHl6(data, userId) {
     var crmBindingChangedFieldsUpdate = [];
     var myBudgetComplete = false;
     var categoryOptionComplete = false;
+
+    if (!Number(data.hl6.ALLOW_BUDGET_ZERO) && data.hl6.CO_FUNDED) {
+        if (data.partners && data.partners.length) {
+            budgetSpendRequest.validateExternalCofunding(data.partners);
+        }
+        if (data.saleRequests && data.saleRequests.length) {
+            budgetSpendRequest.validateInternalCofunding(data.saleRequests);
+        }
+    }
+
     var isHl6Complete = isComplete(data);
     if (isHl6Complete) {
         if (!data)
@@ -1327,7 +1339,7 @@ function validateHl6(data, userId) {
         if (!data.hl6.COST_CENTER_ID || data.hl6.COST_CENTER_ID < 0)
             throw ErrorLib.getErrors().CustomError("", "hl6Services/handlePost/insertHl6", L6_COST_CENTER_NOT_VALID);
 
-        if (!data.hl6.EMPLOYEE_RESPONSIBLE_ID || data.hl6.EMPLOYEE_RESPONSIBLE_ID < 0)
+        if (!data.hl6.EMPLOYEE_RESPONSIBLE_USER || !data.hl6.EMPLOYEE_RESPONSIBLE_USER.trim())
             throw ErrorLib.getErrors().CustomError("", "hl6Services/handlePost/insertHl6", L6_RESPONSIBLE_NOT_VALID);
 
         if (!data.hl6.PRIORITY_ID || data.hl6.PRIORITY_ID < 0)
@@ -1432,9 +1444,9 @@ function validateHl6(data, userId) {
 
             existInCrm = dataHl6.hl6ExistsInCrm(data.hl6.HL6_ID);
             var categoryHasChanged = categoryChanged(data, existInCrm);
-            statusId = !crmFieldsHasChanged && !categoryHasChanged && !Number(budgetSpendRequest.countPendingBudgetRequestByHl6Id(data.hl6.HL6_ID)) ? data.hl6.in_hl6_status_detail_id : HL6_STATUS.VALID_FOR_CRM;
+            statusId = !crmFieldsHasChanged && !categoryHasChanged && !Number(budgetSpendRequest.countPendingBudgetRequestByHl6Id(data.hl6.HL6_ID)) ? data.hl6.in_hl6_status_detail_id : HL6_STATUS.IN_PROGRESS;
         } else {
-            statusId = HL6_STATUS.VALID_FOR_CRM;
+            statusId = HL6_STATUS.IN_PROGRESS;
         }
     }
     return {
@@ -1600,7 +1612,10 @@ function isCategoryOptionComplete(data) {
 
             percentagePerOption = percentagePerOption + Number(option.AMOUNT);
         });
-        if (percentagePerOption > 100) {
+        if(!hl6Category.in_make_category_mandatory && percentagePerOption === 0 ){
+            categoryOptionComplete = true;
+            break;
+        }else if (percentagePerOption > 100) {
             throw ErrorLib.getErrors().CustomError("", "hl6Services/handlePost/insertHl6", L6_CATEGORY_TOTAL_PERCENTAGE);
         } else if (percentagePerOption < 100) {
             categoryOptionComplete = false;
@@ -1725,6 +1740,9 @@ function setHl6StatusInCRM(hl6_id, userId) {
     }
 
     for (var i = 0; i < hl6Ids.length; i++) {
+        if(!Number(hl6Ids[i]))
+            throw ErrorLib.getErrors().CustomError("", "", L6_MSG_INITIATIVE_NOT_FOUND);
+
     	result = null;
         result = setHl6Status(hl6Ids[i], HL6_STATUS.IN_CRM, userId);
         if(result){
@@ -1891,7 +1909,7 @@ function crmFieldsHaveChanged(data, isComplete, userId) {
     };
 }
 
-function sendProcessingReportEmail(hl6Id) {
+/*function sendProcessingReportEmail(hl6Id) {
     var appUrl = config.getAppUrl();
     var hl6 = dataHl6.getHl6ById(hl6Id);
     //var hl5 = dataHl5.getHl5ById(hl6.HL5_ID);
@@ -1906,7 +1924,7 @@ function sendProcessingReportEmail(hl6Id) {
     }], "Marketing Planning Tool - Interlock Process", body);
 
     mail.sendMail(mailObject, true);
-}
+}*/
 
 var map = {
     "in_acronym": "ACRONYM",

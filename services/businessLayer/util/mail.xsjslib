@@ -1,14 +1,16 @@
 /****** libs ************/
-$.import("mktgplanningtool.services.commonLib","mapper");
+$.import("mktgplanningtool.services.commonLib", "mapper");
 var mapper = $.mktgplanningtool.services.commonLib.mapper;
 var ErrorLib = mapper.getErrors();
 var config = mapper.getDataConfig();
 var dataMailTemplate = mapper.getDataMailTemplate();
 
 //For IN CRM mails
+var dataHl4 = mapper.getDataLevel4();
 var dataHl6 = mapper.getDataLevel6();
 var dataHl5 = mapper.getDataLevel5();
 
+var mailHL4 = mapper.getLevel4Mail();
 var mailHL6 = mapper.getLevel6Mail();
 var mailHL5 = mapper.getLevel5Mail();
 
@@ -16,9 +18,11 @@ var mailProcessingReport = mapper.getProcessingReportMailLib();
 var hl4ProcessingReport = mapper.getLevel4DEReport();
 var hl5ProcessingReport = mapper.getLevel5DEReport();
 var hl6ProcessingReport = mapper.getLevel6DEReport();
+var userMail = mapper.getUserMail();
 
 var pathLib = mapper.getPath();
 var userLib = mapper.getUser();
+var util = mapper.getUtil();
 //---
 /******************************************/
 /*
@@ -33,167 +37,170 @@ var userLib = mapper.getUser();
  * --OPTIONAL-- }
  */
 
-var sender = config.getSMTPAccount();
+var L6_COULDNT_SEND_EMAIL_IN_CRM = "The email could not be sent.";
+
+var sender = config.getMailEnvironment().indexOf('Dev') < 0 ? config.getSMTPAccount() : 'fsavat@folderit.net';
 var typeText = "TEXT";
 var typeInline = "INLINE";
 var typeAttachment = "ATTACHMENT";
 var currentMailTemplateId = 1;
 
 function validateEmail(email) {
-	  var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-	  return re.test(email);
+    var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    return re.test(email);
 }
 
-function validate(value){
-	
-		 var error = "";	
-			//validate FROM
-			if(value.FROM == null) error = error +"-the From value is null";
-			if(value.FROM == undefined)  error = error +"-the From value is undefined";
-			if(value.FROM.lenght <= 0)
-				error = error +"-the From value empty";
-            for (var i = 0; i < value.FROM.length; i++) {
-                if (!validateEmail(value.FROM[i].address))
-                    error = error + "-the From value is not a email address";
+function validate(value) {
+
+    var error = "";
+    //validate FROM
+    if (value.FROM == null) error = error + "-the From value is null";
+    if (value.FROM == undefined) error = error + "-the From value is undefined";
+    if (value.FROM.lenght <= 0)
+        error = error + "-the From value empty";
+    for (var i = 0; i < value.FROM.length; i++) {
+        if (!validateEmail(value.FROM[i].address))
+            error = error + "-the From value is not a email address";
+    }
+    //validate TO
+    if (value.TO == null) error = error + "-the TO value is null";
+    if (value.TO == undefined) error = error + "-the TO value is undefined";
+    if (value.TO.lenght <= 0) error = error + "-the TO value empty";
+    for (var i = 0; i < value.TO.length; i++) {
+        if (!validateEmail(value.TO[i].address))
+            error = error + "-the TO value is not a email address";
+    }
+
+    //validate CC
+    if (value.CC != null) {
+        if (value.CC != undefined) {
+            if (value.CC.length <= 0) {
+                for (var i = 0; i < value.CC.length; i++) {
+                    if (!validateEmail(value.CC[i].address)) error = error + "-the CC value is not a email address";
+                }
             }
-			//validate TO
-			if(value.TO == null) error = error +"-the TO value is null";
-			if(value.TO == undefined)  error = error +"-the TO value is undefined";
-			if(value.TO.lenght <= 0) error = error +"-the TO value empty";
-			for(var i = 0;i<value.TO.length;i++){
-				if(!validateEmail(value.TO[i].address))
-					error = error +"-the TO value is not a email address";
-			}
-			
-			//validate CC
-			if(value.CC != null) {
-				if(value.CC != undefined){
-					if(value.CC.length <= 0) {
-						for(var i = 0;i<value.CC.length;i++){
-							if(!validateEmail(value.CC[i].address)) error = error +"-the CC value is not a email address";		
-						}
-					}			
-				}
-			}
-			
-			//validate CC
-			if(value.BCC != null) {
-				if(value.BCC != undefined){
-					if(value.BCC.length <= 0) {
-						for(var i = 0;i<value.BCC.length;i++){
-							if(!validateEmail(value.BCC[i].address)) error = error +"-the BCC value is not a email address";		
-						}
-					}			
-				}
-			}	  
-			
-			
-			//validate SUBJECT
-			if(value.SUBJECT == null) error = error +"-the SUBJECT value is null";
-			if(value.SUBJECT == undefined) error = error +"-the SUBJECT value is undefined";
-			if(value.SUBJECT == "") error = error +"-the SUBJECT value empty";
-			
-			//validate BODY
-			if(value.BODY == null) error = error +"-the BODY value is null";
-			if(value.BODY == undefined)  error = error +"-the BODY value is undefined";
-			if(value.BODY == "") error = error +"-the BODY value empty";
-			
-			if(error != ""){
-				throw ErrorLib.getErrors().BadRequest("","",error);
-			}else{
-				return true;
-			}	
-	
-	
+        }
+    }
+
+    //validate CC
+    if (value.BCC != null) {
+        if (value.BCC != undefined) {
+            if (value.BCC.length <= 0) {
+                for (var i = 0; i < value.BCC.length; i++) {
+                    if (!validateEmail(value.BCC[i].address)) error = error + "-the BCC value is not a email address";
+                }
+            }
+        }
+    }
+
+
+    //validate SUBJECT
+    if (value.SUBJECT == null) error = error + "-the SUBJECT value is null";
+    if (value.SUBJECT == undefined) error = error + "-the SUBJECT value is undefined";
+    if (value.SUBJECT == "") error = error + "-the SUBJECT value empty";
+
+    //validate BODY
+    if (value.BODY == null) error = error + "-the BODY value is null";
+    if (value.BODY == undefined) error = error + "-the BODY value is undefined";
+    if (value.BODY == "") error = error + "-the BODY value empty";
+
+    if (error != "") {
+        throw ErrorLib.getErrors().BadRequest("", "", error);
+    } else {
+        return true;
+    }
+
+
 }
 
-function getJson(TO,SUBJECT,BODY,CC,BCC){
-	if(!TO) TO="";
-	if(!SUBJECT) SUBJECT="";
-	if(!BODY) BODY="";
-	if(!CC) CC="";
-	if(!BCC) BCC="";
-	var rdo = {};
-	rdo.FROM= [{address: sender}];
-	rdo.TO = TO;
-	rdo.SUBJECT = SUBJECT;
-	rdo.BODY = BODY;
-	rdo.CC = CC;
+function getJson(TO, SUBJECT, BODY, CC, BCC) {
+    if (!TO) TO = "";
+    if (!SUBJECT) SUBJECT = "";
+    if (!BODY) BODY = "";
+    if (!CC) CC = "";
+    if (!BCC) BCC = "";
+    var rdo = {};
+    rdo.FROM = [{address: sender}];
+    rdo.TO = TO;
+    rdo.SUBJECT = SUBJECT;
+    rdo.BODY = BODY;
+    rdo.CC = CC;
     rdo.BCC = BCC;
     return rdo;
 }
 
 
 //Not used *******************************
-function getParts(reqBody){
-	var rdo = new Array();	
-	if(reqBody){		
-		if(reqBody.PARTS){
-			
-			if(reqBody.PARTS.length > 0){
-				
-				for(var i = 0; i < reqBody.PARTS.length; i++){
-					var part = reqBody.PARTS[i];
-					
-					if(part.type == typeText){	
-						var a = getTextPart(part);
-						rdo.push(a);						
-					}else{
-						if(part.type == typeInline){
-							rdo.push(getInlinePart(part));
-						}else{
-							if(part.type == typeAttachment){
-								rdo.push(getAttachmentPart(part));
-							}
-						}
-					}					
-				}
-			}
-		}
-	}
-	return rdo;
+function getParts(reqBody) {
+    var rdo = new Array();
+    if (reqBody) {
+        if (reqBody.PARTS) {
+
+            if (reqBody.PARTS.length > 0) {
+
+                for (var i = 0; i < reqBody.PARTS.length; i++) {
+                    var part = reqBody.PARTS[i];
+
+                    if (part.type == typeText) {
+                        var a = getTextPart(part);
+                        rdo.push(a);
+                    } else {
+                        if (part.type == typeInline) {
+                            rdo.push(getInlinePart(part));
+                        } else {
+                            if (part.type == typeAttachment) {
+                                rdo.push(getAttachmentPart(part));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return rdo;
 }
 
 //Extract the Type_Text part from json
-function getTextPart(part){
-	var newPart = new $.net.Mail.Part();	
-	if(part){
-		newPart.type = $.net.Mail.Part.TYPE_TEXT;
-		newPart.text = part.text;
-		newPart.contentType = part.contentType;
-		newPart.alternative = part.alternative;
-		newPart.alternativeContentType = part.alternativeContentType;
-		newPart.encoding = part.encoding;		
-	}
-	return newPart;
+function getTextPart(part) {
+    var newPart = new $.net.Mail.Part();
+    if (part) {
+        newPart.type = $.net.Mail.Part.TYPE_TEXT;
+        newPart.text = part.text;
+        newPart.contentType = part.contentType;
+        newPart.alternative = part.alternative;
+        newPart.alternativeContentType = part.alternativeContentType;
+        newPart.encoding = part.encoding;
+    }
+    return newPart;
 }
 
 //Extract the Type_Inline part from json
-function getInlinePart(part){
-	var newPart = new $.net.Mail.Part();
-	if(part){
-		newPart.type = $.net.Mail.Part.TYPE_INLINE;
-		newPart.data = part.data;
-		newPart.contentType = part.contentType;
-		newPart.contentId  = part.contentId;
-		newPart.fileName  = part.fileName;
-		newPart.fileNameEncoding  = part.fileNameEncoding ;
-	}
-	return newPart;	
+function getInlinePart(part) {
+    var newPart = new $.net.Mail.Part();
+    if (part) {
+        newPart.type = $.net.Mail.Part.TYPE_INLINE;
+        newPart.data = part.data;
+        newPart.contentType = part.contentType;
+        newPart.contentId = part.contentId;
+        newPart.fileName = part.fileName;
+        newPart.fileNameEncoding = part.fileNameEncoding;
+    }
+    return newPart;
 }
 
 //Extract the Type_Attachment part from json
-function getAttachmentPart(part){
-	var newPart = new $.net.Mail.Part();
-	if(part){
-		newPart.type = $.net.Mail.Part.TYPE_ATTACHMENT;
-		newPart.data = part.data;
-		newPart.contentType = part.contentType;
-		newPart.fileName  = part.fileName;
-		newPart.fileNameEncoding  = part.fileNameEncoding ;
-	}
-	return newPart;	
+function getAttachmentPart(part) {
+    var newPart = new $.net.Mail.Part();
+    if (part) {
+        newPart.type = $.net.Mail.Part.TYPE_ATTACHMENT;
+        newPart.data = part.data;
+        newPart.contentType = part.contentType;
+        newPart.fileName = part.fileName;
+        newPart.fileNameEncoding = part.fileNameEncoding;
+    }
+    return newPart;
 }
+
 //******************************************
 
 function sendProcessingReportNightlyReport() {
@@ -255,32 +262,32 @@ function sendProcessingReportNightlyReport() {
     return true;
 }
 
-function getDefaultHeader(){
-	var newPart = new $.net.Mail.Part();
-	
-		newPart.type = $.net.Mail.Part.TYPE_INLINE;
-        newPart.data = ImageHeader;// get image;
-		newPart.contentType = "image/jpg";
-		newPart.contentId  = "IMAGE1_ID";
-		newPart.fileName  = "fileName1.jpg";
-		newPart.fileNameEncoding  = "UTF-8";
-				 
-	
-	return newPart;		
+function getDefaultHeader() {
+    var newPart = new $.net.Mail.Part();
+
+    newPart.type = $.net.Mail.Part.TYPE_INLINE;
+    newPart.data = ImageHeader;// get image;
+    newPart.contentType = "image/jpg";
+    newPart.contentId = "IMAGE1_ID";
+    newPart.fileName = "fileName1.jpg";
+    newPart.fileNameEncoding = "UTF-8";
+
+
+    return newPart;
 
 }
 
 function getMailTemplateById(mailTemplateId) {
-	var startPosition = 1;
-	var stringLength = 5000;
-	var templateContent = "";
-	var templateLength = dataMailTemplate.getMailTemplateById(mailTemplateId, startPosition, stringLength).MAIL_TEMPLATE_LENGTH;
-	var splitNumber = templateLength / stringLength;
-	for(var i = 0; i < splitNumber; i++) {
-		templateContent = templateContent + dataMailTemplate.getMailTemplateById(mailTemplateId, startPosition, stringLength).CONTENT;
-		startPosition = startPosition + stringLength;
-	}
-	return templateContent;
+    var startPosition = 1;
+    var stringLength = 5000;
+    var templateContent = "";
+    var templateLength = dataMailTemplate.getMailTemplateById(mailTemplateId, startPosition, stringLength).MAIL_TEMPLATE_LENGTH;
+    var splitNumber = templateLength / stringLength;
+    for (var i = 0; i < splitNumber; i++) {
+        templateContent = templateContent + dataMailTemplate.getMailTemplateById(mailTemplateId, startPosition, stringLength).CONTENT;
+        startPosition = startPosition + stringLength;
+    }
+    return templateContent;
 }
 
 /*function getDefaultTemplate(body){
@@ -290,152 +297,203 @@ function getMailTemplateById(mailTemplateId) {
     return textHtml;
 
 }*/
-	
+
 function getDefaultTemplate(body) {
-	//TODO: add variable mail template id as function parameter
-	var mailTemplateId = currentMailTemplateId;
-	var textHtmlBody = eval(getMailTemplateById(mailTemplateId));
-    var textHtml =	"<html><head><meta http-equiv='Content-Type' content='text/html; charset=iso-8859-1'></head>" + textHtmlBody + "</html>";
+    //TODO: add variable mail template id as function parameter
+    var mailTemplateId = currentMailTemplateId;
+    var textHtmlBody = eval(getMailTemplateById(mailTemplateId));
+    var textHtml = "<html><head><meta http-equiv='Content-Type' content='text/html; charset=iso-8859-1'></head>" + textHtmlBody + "</html>";
     var newPart = new $.net.Mail.Part();
-	
-		newPart.type = $.net.Mail.Part.TYPE_TEXT;
-		newPart.text = textHtml;		
-		newPart.contentType = "text/html";
-		newPart.alternative = "alternative text";
-		newPart.alternativeContentType = "text/plain";
-		newPart.encoding = "UTF-8";						 
-	
-	return newPart;	
-		 
+
+    newPart.type = $.net.Mail.Part.TYPE_TEXT;
+    newPart.text = textHtml;
+    newPart.contentType = "text/html";
+    newPart.alternative = "alternative text";
+    newPart.alternativeContentType = "text/plain";
+    newPart.encoding = "UTF-8";
+
+    return newPart;
+
 }
 
-function sendInCRMMail(hlId, hierarchyLevel){
-	var hlInformation = null;
-	var userData = null;
-	var mailObj = null;
-	var reqBody = {};
-	var env = config.getMailEnvironment();
-	
-	switch(hierarchyLevel){
-	case "hl5":
-		hlInformation = dataHl5.getHl5ById(hlId);
-		userData = userLib.getUserById(hlInformation.CREATED_USER_ID);
-		reqBody.REQUESTER_NAME = userData[0].FIRST_NAME+" "+userData[0].LAST_NAME;
-		reqBody.PATH = pathLib.getFullPathByLevelParent(hierarchyLevel, Number(hlInformation.HL4_ID)).PATH_TPH + hlInformation.ACRONYM;
-		
-		mailObj = mailHL5.parseInCRM(reqBody, {"ENVIRONMENT": env}, reqBody.REQUESTER_NAME);
-		break;
-	case "hl6":
-		hlInformation = dataHl6.getHl6ById(hlId);
-		userData = userLib.getUserById(hlInformation.CREATED_USER_ID);
-		reqBody.REQUESTER_NAME = userData[0].FIRST_NAME+" "+userData[0].LAST_NAME;
-		reqBody.PATH = pathLib.getFullPathByLevelParent(hierarchyLevel, Number(hlInformation.HL5_ID)).PATH_TPH + hlInformation.ACRONYM;
-		
-		mailObj = mailHL6.parseInCRM(reqBody, {"ENVIRONMENT": env}, reqBody.REQUESTER_NAME);
-		break;
-	}
-	if(hlInformation && userData && userData.length > 0 && mailObj){
-		var mailObject = getJson([{"address": userData[0].EMAIL}], mailObj.subject, mailObj.body);
-		//var mailObject = getJson([{"address": "iberon@folderit.net"}], mailObj.subject, mailObj.body);  //For testing only
-		
-		sendMail(mailObject,true);
-	} else{
-		 throw ErrorLib.getErrors().CustomError("", "hl6Services/handlePut/sendInCRMMail", L6_COULDNT_SEND_EMAIL_IN_CRM);
-	}
+function sendInCRMMail(hlId, hierarchyLevel) {
+    var hlInformation = null;
+    var userData = null;
+    var mailObj = null;
+    var reqBody = {};
+    var env = config.getMailEnvironment();
+
+
+
+    switch (hierarchyLevel) {
+        case "hl4":
+            hlInformation = dataHl4.getHl4ById(hlId);
+            userData = userLib.getUserById(hlInformation.CREATED_USER_ID);
+            reqBody.REQUESTER_NAME = userData[0].FIRST_NAME + " " + userData[0].LAST_NAME;
+            reqBody.PATH = pathLib.getFullPathByLevelParent(hierarchyLevel, Number(hlInformation.HL4_ID)).PATH_TPH + hlInformation.ACRONYM;
+
+            mailObj = mailHL4.parseInCRM(reqBody, {"ENVIRONMENT": env}, reqBody.REQUESTER_NAME);
+            break;
+        case "hl5":
+            hlInformation = dataHl5.getHl5ById(hlId);
+            userData = userLib.getUserById(hlInformation.CREATED_USER_ID);
+            reqBody.REQUESTER_NAME = userData[0].FIRST_NAME + " " + userData[0].LAST_NAME;
+            reqBody.PATH = pathLib.getFullPathByLevelParent(hierarchyLevel, Number(hlInformation.HL4_ID)).PATH_TPH + hlInformation.ACRONYM;
+
+            mailObj = mailHL5.parseInCRM(reqBody, {"ENVIRONMENT": env}, reqBody.REQUESTER_NAME);
+            break;
+        case "hl6":
+            hlInformation = dataHl6.getHl6ById(hlId);
+            userData = userLib.getUserById(hlInformation.CREATED_USER_ID);
+            reqBody.REQUESTER_NAME = userData[0].FIRST_NAME + " " + userData[0].LAST_NAME;
+            reqBody.PATH = pathLib.getFullPathByLevelParent(hierarchyLevel, Number(hlInformation.HL5_ID)).PATH_TPH + hlInformation.ACRONYM;
+
+            mailObj = mailHL6.parseInCRM(reqBody, {"ENVIRONMENT": env}, reqBody.REQUESTER_NAME);
+            break;
+    }
+    if (hlInformation && userData && userData.length > 0 && mailObj) {
+        var mailObject = getJson([{"address": userData[0].EMAIL}], mailObj.subject, mailObj.body);
+        //var mailObject = getJson([{"address": "iberon@folderit.net"}], mailObj.subject, mailObj.body);  //For testing only
+
+        sendMail(mailObject, true);
+    } else {
+        throw ErrorLib.getErrors().CustomError("", "hl6Services/handlePut/sendInCRMMail", L6_COULDNT_SEND_EMAIL_IN_CRM);
+    }
 }
 
-function sendEventMail(reqBody){
-	var mailTypeconfig = config.getSendMailType();
-	var result;
+function sendEventMail(reqBody) {
+    var mailTypeconfig = config.getSendMailType();
+    var result;
 
-	switch(mailTypeconfig){
-	case "servlet":
-		result = sendMailServlet(reqBody, true);
-		break;
-	case "smpt":
-		result = sendMail(reqBody, true, config.getSMTPAccount());
-		break;
-	}
+    switch (mailTypeconfig) {
+        case "servlet":
+            result = sendMailServlet(reqBody, true);
+            break;
+        case "smpt":
+            result = sendMail(reqBody, true, config.getSMTPAccount());
+            break;
+    }
 
-	return result;
+    return result;
 }
 
-function sendIncidentMail(reqBody){
-	var mailTypeconfig = config.getSendMailType();
-	var result;
+function sendIncidentMail(reqBody) {
+    var mailTypeconfig = config.getSendMailType();
+    var result;
 
-	switch(mailTypeconfig){
-	case "servlet":
-		result = sendMailServlet(reqBody, true);
-		break;
-	case "smpt":
-		result = sendMail(reqBody, true, config.getSupportAccount());
-		break;
-	}
+    switch (mailTypeconfig) {
+        case "servlet":
+            result = sendMailServlet(reqBody, true);
+            break;
+        case "smpt":
+            result = sendMail(reqBody, true, config.getSupportAccount());
+            break;
+    }
 
-	return result;
+    return result;
+}
+
+function sendProcessingReportRequesterMail(data, userId) {
+
+
+    if (!userId)
+        throw ErrorLib.getErrors().CustomError("", "mailServices/handlePost/sendProcessingReportRequesterMail"
+            , "Sender was not found.");
+
+    if (!data || !data.addresseeEmail)
+        throw ErrorLib.getErrors().CustomError("", "mailServices/handlePost/sendProcessingReportRequesterMail"
+            , "Addressee email was not found.");
+
+    var mailObj = null;
+    var env = config.getMailEnvironment();
+    var sender = userLib.getUserById(userId)[0];
+    var addressee = userLib.getUserByEmail(data.addresseeEmail);
+
+    if (!sender)
+        throw ErrorLib.getErrors().CustomError("", "mailServices/handlePost/sendProcessingReportRequesterMail"
+            , "Invalid sender.");
+
+    if (!addressee || !addressee.EMAIL || !addressee.FIRST_NAME || !addressee.LAST_NAME)
+        throw ErrorLib.getErrors().CustomError("", "mailServices/handlePost/sendProcessingReportRequesterMail"
+            , "Invalid addressee email.");
+
+    if(!util.validateIsSapEmail(addressee.EMAIL))
+        throw ErrorLib.getErrors().CustomError("", "mailServices/handlePost/sendProcessingReportRequesterMail"
+            , "Addressee email must be a SAP email account.");
+
+    data.SENDER_NAME = sender.FIRST_NAME + ' ' + sender.LAST_NAME;
+    data.SENDER_EMAIL = sender.EMAIL;
+    data.ADDRESSEE_NAME = addressee.FIRST_NAME + ' ' + addressee.LAST_NAME;
+    data.MESSAGE = data.message;
+
+    mailObj = userMail.parseGeneralMail(data, {"ENVIRONMENT": env});
+
+    var mailObject = getJson({address: data.addresseeEmail}, mailObj.subject, mailObj.body);
+    return sendMail(mailObject, true);
 }
 
 //Send a email
-function sendMail(reqBody, defaultBody, OptionalSender){
-	try{
-		if(validate(reqBody)){
-			
-			//create email from JS Object and send
-			var mail = new $.net.Mail();
+function sendMail(reqBody, defaultBody, OptionalSender) {
+    try {
+        if (validate(reqBody)) {
 
-			mail.sender = reqBody.FROM[0];
-			    if(OptionalSender && validateEmail(OptionalSender)){
-			    	mail.sender = OptionalSender;
-			    }
-			    mail.to = reqBody.TO;  
-			    mail.subject = reqBody.SUBJECT;
-			    
-			    if(reqBody.CC != null) {
-					if(reqBody.CC != undefined){
-						if(reqBody.CC.length > 0) {
-							mail.cc = reqBody.CC;
-						}			
-					}
-				}	
-			    
-			    if(reqBody.BCC != null) {
-					if(reqBody.BCC != undefined){
-						if(reqBody.BCC.length > 0) {
-							mail.bcc = reqBody.BCC;
-						}			
-					}
-				}	
-			    
-			    var body = "";
-			    if(reqBody.BODY != null){
-			    	if(reqBody.BODY != undefined){
-			    		body = reqBody.BODY;
-			    	}
-			    }
-			    
-			    if(defaultBody){
-			    	mail.parts.push(getDefaultTemplate(body));
-			    }else{
-			    	var newPart = new $net.Mail.Part();
-			    	newPart.type = $.net.Mail.Part.TYPE_TEXT;
-					newPart.text = body;
-					newPart.contentType = "text/html";
-					newPart.alternative = "The body-mail isn't displayed";
-					newPart.alternativeContentType = "text/plain";
-					newPart.encoding = "UTF-8";
-			    	mail.parts.push(newPart);
-			    }
-			   
-			var returnValue = mail.send();
-			var rdo = "MessageId = " + returnValue.messageId + ", final reply="+ returnValue.finalReply;
-			var code = returnValue.finalReply;
-			return "code: "+code + "result: " +rdo;
-		}		
-	}catch(e){
-		ErrorLib.getErrors().MailError("",e.toString(),"");
-	}
-	
+            //create email from JS Object and send
+            var mail = new $.net.Mail();
+
+            mail.sender = reqBody.FROM[0];
+
+            if (OptionalSender && validateEmail(OptionalSender)) {
+                mail.sender = OptionalSender;
+            }
+            mail.to = reqBody.TO;
+            mail.subject = reqBody.SUBJECT;
+
+            if (reqBody.CC != null) {
+                if (reqBody.CC != undefined) {
+                    if (reqBody.CC.length > 0) {
+                        mail.cc = reqBody.CC;
+                    }
+                }
+            }
+
+            if (reqBody.BCC != null) {
+                if (reqBody.BCC != undefined) {
+                    if (reqBody.BCC.length > 0) {
+                        mail.bcc = reqBody.BCC;
+                    }
+                }
+            }
+
+            var body = "";
+            if (reqBody.BODY != null) {
+                if (reqBody.BODY != undefined) {
+                    body = reqBody.BODY;
+                }
+            }
+
+            if (defaultBody) {
+                mail.parts.push(getDefaultTemplate(body));
+            } else {
+                var newPart = new $net.Mail.Part();
+                newPart.type = $.net.Mail.Part.TYPE_TEXT;
+                newPart.text = body;
+                newPart.contentType = "text/html";
+                newPart.alternative = "The body-mail isn't displayed";
+                newPart.alternativeContentType = "text/plain";
+                newPart.encoding = "UTF-8";
+                mail.parts.push(newPart);
+            }
+
+            var returnValue = mail.send();
+            var rdo = "MessageId = " + returnValue.messageId + ", final reply=" + returnValue.finalReply;
+            var code = returnValue.finalReply;
+            return "code: " + code + "result: " + rdo;
+        }
+    } catch (e) {
+        ErrorLib.getErrors().MailError("", e.toString(), "");
+    } finally {
+        return true;
+    }
 }
 
 

@@ -65,6 +65,11 @@ function refactorL5L6_getLevel5(){
     return $.mktgplanningtool.services.businessLayer.teamPlanHierarchy.refactorL5L6_level5Lib;
 }
 
+function getLevel4Mail(){
+    $.import("mktgplanningtool.services.mails","level4MailLib");
+    return $.mktgplanningtool.services.mails.level4MailLib;
+}
+
 function getLevel5Mail(){
     $.import("mktgplanningtool.services.mails","level5MailLib");
     return $.mktgplanningtool.services.mails.level5MailLib;
@@ -247,6 +252,11 @@ function getLevel5DEReport(){
 function getLevel6DEReport(){
     $.import("mktgplanningtool.services.businessLayer.dataEntryReport","level6ReportLib");
     return $.mktgplanningtool.services.businessLayer.dataEntryReport.level6ReportLib;
+}
+
+function getUtilDEReport(){
+    $.import("mktgplanningtool.services.businessLayer.dataEntryReport","utilReportLib");
+    return $.mktgplanningtool.services.businessLayer.dataEntryReport.utilReportLib;
 }
 
 function getRolePermission(){

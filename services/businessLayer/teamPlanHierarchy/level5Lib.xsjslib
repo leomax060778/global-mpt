@@ -41,7 +41,7 @@ var blSegmentation = mapper.getSegmentation();
 /*************************************************/
 
 var levelCampaign = "Marketing Tactic ";
-var L5_MSG_INITIATIVE_NOT_FOUND = "The Marketing Tactic can not be found.";
+var L5_MSG_INITIATIVE_NOT_FOUND = "The Marketing Tactic ID can not be found.";
 var L5_MSG_USER_NOT_FOUND = "The User can not be found.";
 var L5_MSG_NO_PRIVILEGE = "Not enough privilege to do this action.";
 var L5_MSG_CANNOT_DEL_STATUS = "Cannot delete this selected Marketing Tactic, because the status doesn´t allow it.";
@@ -973,7 +973,7 @@ function updateHl5(data1, userId) {
                     budgetSpendRequestToUpdate.push({
                         in_budget_spend_request_id: partner.BUDGET_SPEND_REQUEST_ID
                         , in_amount: partner.AMOUNT / internalCoFundingCurrency
-                        , in_message: partner.MESSAGE
+                        , in_message: partner.MESSAGE ? partner.MESSAGE.trim() : ''
                         , in_user_id: userId
                     });
 
@@ -1175,7 +1175,7 @@ function isComplete(data) {
                             percentagePerOption = percentagePerOption + Number(option.AMOUNT);
                         });
 
-                        isComplete = isComplete && percentagePerOption === 100;
+                        isComplete = isComplete && percentagePerOption === 100 || (!hl5Category.in_make_category_mandatory && percentagePerOption === 0);
                         if (!isComplete)
                             break;
                     }
@@ -1196,8 +1196,10 @@ function isComplete(data) {
                     isComplete = !!data.hl5[crmBindingField];
                 break;
         }
-        if (!isComplete)
+        if (!isComplete){
             break;
+        }
+
     }
     if (isComplete) {
         isComplete = (Number(data.hl5.BUDGET_SPEND_Q1) || 0)
@@ -1217,6 +1219,16 @@ function validateHl5(data, userId) {
     var crmBindingChangedFieldsUpdate = [];
     var myBudgetComplete = false;
     var categoryOptionComplete = false;
+
+    if (!Number(data.hl5.ALLOW_BUDGET_ZERO) && data.hl5.CO_FUNDED) {
+        if (data.partners && data.partners.length) {
+            budgetSpendRequest.validateExternalCofunding(data.partners);
+        }
+        if (data.saleRequests && data.saleRequests.length) {
+            budgetSpendRequest.validateInternalCofunding(data.saleRequests);
+        }
+    }
+
     var isHl5Complete = isComplete(data);
     if (isHl5Complete) {
         if (!data)
@@ -1256,21 +1268,20 @@ function validateHl5(data, userId) {
         if (!data.hl5.COST_CENTER_ID || data.hl5.COST_CENTER_ID < 0)
             throw ErrorLib.getErrors().CustomError("", "hl5Services/handlePost/insertHl5", L5_COST_CENTER_NOT_VALID);
 
-        if (!data.hl5.EMPLOYEE_RESPONSIBLE_ID || data.hl5.EMPLOYEE_RESPONSIBLE_ID < 0)
+        if (!data.hl5.EMPLOYEE_RESPONSIBLE_USER || !data.hl5.EMPLOYEE_RESPONSIBLE_USER.trim())
             throw ErrorLib.getErrors().CustomError("", "hl5Services/handlePost/insertHl5", L5_RESPONSIBLE_NOT_VALID);
 
         if (!data.hl5.PRIORITY_ID || data.hl5.PRIORITY_ID < 0)
             throw ErrorLib.getErrors().CustomError("", "hl5Services/handlePost/insertHl5", L5_PRIORITY_NOT_VALID);
 
-        if (!data.hl5.ACTUAL_START_DATE /*|| !isNaN((new Date(data.hl6.ACTUAL_START_DATE)).getDate())*/)
+        if (!data.hl5.ACTUAL_START_DATE)
             throw ErrorLib.getErrors().CustomError("", "hl6Services/handlePost/insertHl6", L5_MSG_INITIATIVE_ACTUAL_START_DATE);
 
-        if (!data.hl5.ACTUAL_END_DATE /*|| !isNaN((new Date(data.hl6.ACTUAL_END_DATE)).getDate())*/)
+        if (!data.hl5.ACTUAL_END_DATE)
             throw ErrorLib.getErrors().CustomError("", "hl6Services/handlePost/insertHl6", L5_MSG_INITIATIVE_ACTUAL_END_DATE);
 
         if (util.validateDateEndMayorStart((new Date(data.hl5.ACTUAL_START_DATE)), (new Date(data.hl5.ACTUAL_END_DATE))))
             throw ErrorLib.getErrors().CustomError("", "hl6Services/handlePost/insertHl6", L5_MSG_INITIATIVE_INVALID_DATE_RANGE);
-
 
         if (data.hl5.EURO_CONVERSION_ID < 0)
             throw ErrorLib.getErrors().CustomError("", "hl5Services/handlePost/insertHl5", L5_MSG_INITIATIVE_CURRENCY);
@@ -1351,7 +1362,7 @@ function validateHl5(data, userId) {
         crmBindingChangedFields = crmFieldsHasChangedResult.crmBindingChangedFields;
         crmBindingChangedFieldsUpdate = crmFieldsHasChangedResult.crmBindingChangedFieldsUpdate;
         if (data.hl5.HL5_ID) {
-            if (!data.hl5.ALLOW_BUDGET_ZERO && data.hl5.in_hl5_status_detail_id != HL5_STATUS.VALID_FOR_CRM && !myBudgetComplete)
+            if (!data.hl5.ALLOW_BUDGET_ZERO && data.hl5.in_hl5_status_detail_id != HL5_STATUS.IN_PROGRESS && !myBudgetComplete)
                 throw ErrorLib.getErrors().CustomError("", "hl4Services/handlePost/insertHl5", L5_MY_BUDGET_COMPLETE);
 
             existInCrm = dataHl5.hl5ExistsInCrm(data.hl5.HL5_ID);
@@ -1367,9 +1378,9 @@ function validateHl5(data, userId) {
             if (!crmFieldsHasChanged && !categoryHasChanged && !Number(budgetSpendRequest.countPendingBudgetRequestByHl5Id(data.hl5.HL5_ID)))
                 statusId = data.hl5.in_hl5_status_detail_id;
             else
-                statusId = HL5_STATUS.VALID_FOR_CRM;
+                statusId = HL5_STATUS.IN_PROGRESS;
         } else {
-            statusId = HL5_STATUS.VALID_FOR_CRM;
+            statusId = HL5_STATUS.IN_PROGRESS;
         }
     }
     return {
@@ -1509,7 +1520,11 @@ function isCategoryOptionComplete(data) {
 
             percentagePerOption = percentagePerOption + Number(option.AMOUNT);
         });
-        if (percentagePerOption > 100) {
+
+        if(!hl5Category.in_make_category_mandatory && percentagePerOption === 0 ){
+            categoryOptionComplete = true;
+            break;
+        } else if (percentagePerOption > 100) {
             throw ErrorLib.getErrors().CustomError("", "hl5Services/handlePost/insertHl5", L5_CATEGORY_TOTAL_PERCENTAGE);
         } else if (percentagePerOption < 100) {
             categoryOptionComplete = false;
@@ -1610,6 +1625,9 @@ function setHl5StatusInCRM(hl5_id, userId) {
     }
 
     for (var i = 0; i < hl5Ids.length; i++) {
+        if(!Number(hl5Ids[i]))
+            throw ErrorLib.getErrors().CustomError("", "", L5_MSG_INITIATIVE_NOT_FOUND);
+
         result = null;
         result = setHl5Status(hl5Ids[i], HL5_STATUS.IN_CRM, userId);
         if (result) {
@@ -1723,8 +1741,8 @@ function getServiceRequestCategoryOptionByHl5Id(hl5Id) {
                         SERVICE_REQUEST_CATEGORY_OPTION_LEVEL_ID: serviceRequestCategoryOptionList[i].SERVICE_REQUEST_CATEGORY_OPTION_LEVEL_ID,
                         IS_CHECKED: !!serviceRequestCategoryOptionList[i].IS_CHECKED,
                         ASSOCIATED_FORM: serviceRequestCategoryOptionList[i].OPTION_NAME == 'Segmentation Request' ? 'SegmentationForm' : null,
-                        FORM: segmentationForms[serviceRequestCategoryOptionList[i].SERVICE_REQUEST_CATEGORY_OPTION_LEVEL_ID],
-                        FORM_STATUS_DETAIL_ID: segmentationForms[serviceRequestCategoryOptionList[i].SERVICE_REQUEST_CATEGORY_OPTION_LEVEL_ID] ?
+                        FORM: !!serviceRequestCategoryOptionList[i].IS_CHECKED ? segmentationForms[serviceRequestCategoryOptionList[i].SERVICE_REQUEST_CATEGORY_OPTION_LEVEL_ID] : undefined,
+                        FORM_STATUS_DETAIL_ID: !!serviceRequestCategoryOptionList[i].IS_CHECKED && segmentationForms[serviceRequestCategoryOptionList[i].SERVICE_REQUEST_CATEGORY_OPTION_LEVEL_ID] ?
                             segmentationForms[serviceRequestCategoryOptionList[i].SERVICE_REQUEST_CATEGORY_OPTION_LEVEL_ID].FORM_STATUS_DETAIL_ID
                             : undefined
                     }]
@@ -1735,8 +1753,8 @@ function getServiceRequestCategoryOptionByHl5Id(hl5Id) {
                     SERVICE_REQUEST_CATEGORY_OPTION_LEVEL_ID: serviceRequestCategoryOptionList[i].SERVICE_REQUEST_CATEGORY_OPTION_LEVEL_ID,
                     IS_CHECKED: !!serviceRequestCategoryOptionList[i].IS_CHECKED,
                     ASSOCIATED_FORM: serviceRequestCategoryOptionList[i].OPTION_NAME == 'Segmentation Request' ? 'SegmentationForm' : null,
-                    FORM: segmentationForms[serviceRequestCategoryOptionList[i].SERVICE_REQUEST_CATEGORY_OPTION_LEVEL_ID],
-                    FORM_STATUS_DETAIL_ID: segmentationForms[serviceRequestCategoryOptionList[i].SERVICE_REQUEST_CATEGORY_OPTION_LEVEL_ID] ?
+                    FORM: !!serviceRequestCategoryOptionList[i].IS_CHECKED ? segmentationForms[serviceRequestCategoryOptionList[i].SERVICE_REQUEST_CATEGORY_OPTION_LEVEL_ID] : undefined,
+                    FORM_STATUS_DETAIL_ID: !!serviceRequestCategoryOptionList[i].IS_CHECKED && segmentationForms[serviceRequestCategoryOptionList[i].SERVICE_REQUEST_CATEGORY_OPTION_LEVEL_ID] ?
                         segmentationForms[serviceRequestCategoryOptionList[i].SERVICE_REQUEST_CATEGORY_OPTION_LEVEL_ID].FORM_STATUS_DETAIL_ID
                         : undefined
                 });
@@ -1848,13 +1866,13 @@ function notifyChangeByEmail(data, userId, event) {
 
 }
 
-function sendProcessingReportEmail(hl5Id) {
+/*function sendProcessingReportEmail(hl5Id) {
     var appUrl = config.getAppUrl();
     var hl5 = dataHl5.getHl5ById(hl5Id);
     //var hl5 = dataHl4.getHl4ById(hl5.HL4_ID);
     var hl5OwnerEmail = getUserById(hl5.CREATED_USER_ID).EMAIL;
 
-    /*TODO: change TO email for a real email account*/
+    /!*TODO: change TO email for a real email account*!/
     var body = '<p> Dear Colleague </p>';
     body += '<p>An initiative has been created in CRM.</p><br>';
     body += '<p>' + appUrl + '#/TeamPlanHierarchy/Level4/edit/' + hl5.HL4_ID + '/' + hl5Id + '</p>';
@@ -1866,7 +1884,7 @@ function sendProcessingReportEmail(hl5Id) {
     }], "Marketing Planning Tool - Interlock Process", body);
 
     mail.sendMail(mailObject, true);
-}
+}*/
 
 function insertAllHl5Category(categoryId, createdUserId, inProcessingReport) {
     return dataHl5.insertHl5Category(category.HL5_ID, category.CATEGORY_ID, category.CREATED_USER_ID, category.IN_PROCESSING_REPORT);

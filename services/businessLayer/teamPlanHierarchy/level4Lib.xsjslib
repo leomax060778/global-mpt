@@ -266,7 +266,7 @@ function insertHl4(data, userId) {
                         hl4Category.hl4_category_option.forEach(function (hl4CategoryOption) {
                             hl4CategoryOption.in_created_user_id = userId;
                             hl4CategoryOption.in_amount = hl4CategoryOption.in_amount || 0;
-                            hl4CategoryOption.in_updated = hl4Category.in_in_processing_report && hl4CategoryOption.in_amount ? 1 : 0;
+                            hl4CategoryOption.in_updated = hl4CategoryOption.in_amount ? 1 : 0;
                             hl4Category.categoryOptionLevelId = mapCOL[hl4Category.in_category_id][hl4CategoryOption.in_option_id];
                             categoryOptionBulk.push({
                                 in_id: hl4_id
@@ -742,7 +742,10 @@ function isCategoryOptionComplete(data) {
             percentagePerOption = percentagePerOption + Number(option.in_amount);
 
         });
-        if (percentagePerOption > 100) {
+        if(!hl4Category.in_make_category_mandatory && percentagePerOption === 0 ){
+            categoryOptionComplete = true;
+            break;
+        } else if (percentagePerOption > 100) {
             throw ErrorLib.getErrors().CustomError("", "hl4Services/handlePost/insertHl4", L3_CATEGORY_TOTAL_PERCENTAGE);
         } else if (percentagePerOption < 100) {
             categoryOptionComplete = false;
@@ -888,14 +891,22 @@ function resetHl4CategoryOptionUpdated(hl4Id, userId) {
 /* Set HL4 status to In CRM */
 function setHl4StatusInCRM(hl4_id, userId) {
     var hl4Ids = [];
+    var result;
     if(!(hl4_id.constructor === Array)){
         hl4Ids.push(hl4_id);
     } else {
         hl4Ids = hl4_id;
     }
     for(var i = 0; i < hl4Ids.length; i++){
-        setHl4Status(hl4Ids[i], HL4_STATUS.IN_CRM, userId);
+        if(!Number(hl5Ids[i]))
+            throw ErrorLib.getErrors().CustomError("", "", L5_MSG_INITIATIVE_NOT_FOUND);
+
+        result = setHl4Status(hl4Ids[i], HL4_STATUS.IN_CRM, userId);
+        if (result) {
+            mail.sendInCRMMail(hl4Ids[i], "hl4");
+        }
     }
+
     return 1;
 }
 
@@ -1139,7 +1150,7 @@ function notifyChangeByEmail(data, userId, event) {
 
 }
 
-function sendProcessingReportEmail(hl4Id) {
+/*function sendProcessingReportEmail(hl4Id) {
     var objHl3 = {};
     var appUrl = config.getLoginUrl();
 
@@ -1158,7 +1169,7 @@ function sendProcessingReportEmail(hl4Id) {
     }], "Marketing Planning Tool - Interlock Process", body);
 
     mail.sendMail(mailObject, true);
-}
+}*/
 
 function checkPermission(userSessionID, method, hl4Id) {
     if (((method && method == "GET_BY_HL3_ID") || !method) && !util.isSuperAdmin(userSessionID)) {

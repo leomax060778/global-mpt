@@ -815,7 +815,7 @@ function getInterlockDefaults() {
                         result[interlockType.INTERLOCK_TYPE].ENTITY_FROM[elem.INTERLOCK_ENTITY_ID] =
                             {
                                 INTERLOCK_ENTITY_ID: elem.INTERLOCK_ENTITY_ID,
-                                NAME: elem.NAME
+                                NAME: elem.NAME.trim()
                             };
                     }
                 });
@@ -826,7 +826,7 @@ function getInterlockDefaults() {
                         result[interlockType.INTERLOCK_TYPE].ENTITY_TO[elem.INTERLOCK_ENTITY_ID] =
                             {
                                 INTERLOCK_ENTITY_ID: elem.INTERLOCK_ENTITY_ID,
-                                NAME: elem.NAME
+                                NAME: elem.NAME.trim()
                             };
                     }
                 });
@@ -837,7 +837,7 @@ function getInterlockDefaults() {
                         result[interlockType.INTERLOCK_TYPE].ORGANIZATION_TYPE_FROM[elem.ORGANIZATION_TYPE_ID] =
                             {
                                 ORGANIZATION_TYPE_ID: elem.ORGANIZATION_TYPE_ID,
-                                NAME: elem.NAME,
+                                NAME: elem.NAME.trim(),
                                 ORGANIZATION_RELATED_ID: elem.ORGANIZATION_RELATED_ID
                             };
                     }
@@ -849,7 +849,7 @@ function getInterlockDefaults() {
                         result[interlockType.INTERLOCK_TYPE].ORGANIZATION_TYPE_TO[elem.ORGANIZATION_TYPE_ID] =
                             {
                                 ORGANIZATION_TYPE_ID: elem.ORGANIZATION_TYPE_ID,
-                                NAME: elem.NAME,
+                                NAME: elem.NAME.trim(),
                                 ORGANIZATION_RELATED_ID: elem.ORGANIZATION_RELATED_ID
                             };
                     }
@@ -860,21 +860,21 @@ function getInterlockDefaults() {
                         result[interlockType.INTERLOCK_TYPE].ENTITY_FROM[elem.INTERLOCK_ENTITY_ID] =
                             {
                                 INTERLOCK_ENTITY_ID: elem.INTERLOCK_ENTITY_ID,
-                                NAME: elem.NAME
+                                NAME: elem.NAME.trim()
                             };
             });
             interlockEntities.forEach(function (elem) {
                         result[interlockType.INTERLOCK_TYPE].ENTITY_TO[elem.INTERLOCK_ENTITY_ID] =
                             {
                                 INTERLOCK_ENTITY_ID: elem.INTERLOCK_ENTITY_ID,
-                                NAME: elem.NAME
+                                NAME: elem.NAME.trim()
                             };
             });
             organizationTypeList.forEach(function (elem) {
                         result[interlockType.INTERLOCK_TYPE].ORGANIZATION_TYPE_FROM[elem.ORGANIZATION_TYPE_ID] =
                             {
                                 ORGANIZATION_TYPE_ID: elem.ORGANIZATION_TYPE_ID,
-                                NAME: elem.NAME,
+                                NAME: elem.NAME.trim(),
                                 ORGANIZATION_RELATED_ID: elem.ORGANIZATION_RELATED_ID
                             };
             });
@@ -882,7 +882,7 @@ function getInterlockDefaults() {
                         result[interlockType.INTERLOCK_TYPE].ORGANIZATION_TYPE_TO[elem.ORGANIZATION_TYPE_ID] =
                             {
                                 ORGANIZATION_TYPE_ID: elem.ORGANIZATION_TYPE_ID,
-                                NAME: elem.NAME,
+                                NAME: elem.NAME.trim(),
                                 ORGANIZATION_RELATED_ID: elem.ORGANIZATION_RELATED_ID
                             };
             });

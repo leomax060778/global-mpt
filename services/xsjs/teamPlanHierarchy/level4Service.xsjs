@@ -12,14 +12,12 @@ var method = "method";
 var id = "id";
 var setStatusInCRM = "SETINCRM";
 var changeStatus = "CHANGESTATUS";
-var sendInCrmNotificationMail = "SENDMAIL";
+// var sendInCrmNotificationMail = "SENDMAIL";
 
 /******************************************/
 
 function processRequest(){
-	
-		return httpUtil.processRequest(handleGet,handlePost,handlePut,handleDelete,false, config.getResourceIdByName(config.level3()));
-
+	return httpUtil.processRequest(handleGet, handlePost, handlePut, handleDelete,false, "", true);
 };
 
 /**
@@ -73,9 +71,9 @@ function handlePut(reqBody, userId){
 		var hl4Id = !reqBody ? parameters.get('HL4_ID') : reqBody.hl4Ids;
 
 		switch (aCmd) {
-			case sendInCrmNotificationMail:
+			/*case sendInCrmNotificationMail:
 					hl4.sendProcessingReportEmail(hl4Id, userId);
-					//fallthrough
+					//fallthrough*/
 		    case setStatusInCRM: //set status In CRM
 				var rdo = hl4.setHl4StatusInCRM(hl4Id, userId);
 				return	httpUtil.handleResponse(rdo,httpUtil.OK,httpUtil.AppJson);

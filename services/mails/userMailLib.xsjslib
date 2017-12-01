@@ -25,3 +25,17 @@ function parseNotifyCreateRequestAccess(basicData, requestAccessData){
 
 	return mailObj;
 }
+
+function parseGeneralMail(data, basicData) {
+    var mailObj = {};
+    var subject = 'MPT - Processing Report Message';
+    mailObj.subject = basicData.ENVIRONMENT !== "Production" ? basicData.ENVIRONMENT + ' ' + subject : subject;
+
+    var body = '<p> Dear Collegue ' + data.ADDRESSEE_NAME + ',</p>';
+    body += '<p>' + data.SENDER_NAME + ' has sent you the following message:</p>';
+    body += '<p>' + data.MESSAGE + '</p>';
+    body += '<p>Please replay to <a href="mailto:' + data.SENDER_EMAIL + '?subject= RE: ' + mailObj.subject + '">' + data.SENDER_NAME + '</a></p>';
+    mailObj.body = body;
+
+    return mailObj;
+}

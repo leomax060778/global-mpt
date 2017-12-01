@@ -49,10 +49,12 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL6_FOR_PROC
                 , SALES_ORGANIZATION_ID INTEGER
                 , COST_CENTER_ID INTEGER
                 , EMPLOYEE_RESPONSIBLE_ID INTEGER
+                , EMPLOYEE_RESPONSIBLE_USER NVARCHAR(7)
                 , BUSINESS_OWNER_ID INTEGER
                 , ROUTE_TO_MARKET_ID INTEGER
                 , PARENT_PATH NVARCHAR(255)
                 , CRM_ID NVARCHAR(255)
+                , CREATED_USER_ID INTEGER
         		)
             ,OUT out_marketing_activity_id TABLE(
                 BUDGET_YEAR NVARCHAR(20)
@@ -118,10 +120,12 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL6_FOR_PROC
                         , HL6.sales_organization_id
                         , HL6.cost_center_id
                         , HL6.employee_responsible_id
+                        , HL6.EMPLOYEE_RESPONSIBLE_USER
                         , HL6.business_owner_id
                         , HL6.route_to_market_id
                         , "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BGY.BUDGET_YEAR, HL1.ACRONYM, HL2.ORGANIZATION_ACRONYM, HL3.ACRONYM, HL4.ACRONYM, HL5.ACRONYM, '') AS PARENT_PATH
                         , "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BGY.BUDGET_YEAR, HL1.ACRONYM, HL2.ORGANIZATION_ACRONYM, HL3.ACRONYM, HL4.ACRONYM, HL5.ACRONYM, HL6.ACRONYM) AS CRM_ID
+                        , HL6.CREATED_USER_ID
                          FROM HL6
                          INNER JOIN HL5 ON HL5.HL5_ID = HL6.HL5_ID
                          INNER JOIN HL4 ON HL4.HL4_ID = HL5.HL4_ID
