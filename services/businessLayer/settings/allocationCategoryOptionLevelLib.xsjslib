@@ -20,7 +20,7 @@ function updateCategoryOptionLevel(data, userId) {
     if(!data || !data.IN_CATEGORY_ID || !data.IN_LEVEL.length)
         throw ErrorLib.getErrors().BadRequest();
 
-    if(typeof data.IN_LEVEL == "string")
+    if(typeof data.IN_LEVEL === "string")
         data.IN_LEVEL= [data.IN_LEVEL];
 
 	data.IN_LEVEL.forEach(function(level){
@@ -36,7 +36,10 @@ function updateCategoryOptionLevel(data, userId) {
             });
             var optionToDelete = dataCategoryOptionLevel.getAllocationCategoryOptionLevelToDelete(data.IN_CATEGORY_ID, hierarchylevel, allocationOptions, userId);
 
-            var associationDeleteCount = dataCategoryOptionLevel.deleteAllocationCATEGORYOptionLevel(data.IN_CATEGORY_ID, hierarchylevel, allocationOptions, userId);
+            var associationDeleteCount = 0;
+            if (optionToDelete.length){
+                associationDeleteCount = dataCategoryOptionLevel.deleteAllocationCATEGORYOptionLevel(data.IN_CATEGORY_ID, hierarchylevel, allocationOptions, userId);
+            }
             if (associationDeleteCount !== optionToDelete.length){
                 message = "Some options could not be removed because they are in use";
             }
@@ -46,7 +49,7 @@ function updateCategoryOptionLevel(data, userId) {
 
                 var categoryOptionLevelInfo = dataCategoryOptionLevel.getAllocationCategoryOptionByOptionIdLevelId(level, data.IN_OPTION_LIST[i]);
 
-                if(categoryOptionLevelInfo && Number(categoryOptionLevelInfo.CATEGORY_ID) != Number(data.IN_CATEGORY_ID)){
+                if(categoryOptionLevelInfo && Number(categoryOptionLevelInfo.CATEGORY_ID) !== Number(data.IN_CATEGORY_ID)){
                     optionIds.push(data.IN_OPTION_LIST[i]);
                 }
 
@@ -101,7 +104,8 @@ function getHlCategoryOptionByLevelHlId(level, hlId) {
             result[categoryOption.CATEGORY_NAME] = {
                 CATEGORY_ID: categoryOption.CATEGORY_ID,
                 CATEGORY_NAME: categoryOption.CATEGORY_NAME,
-                MAKE_CATEGORY_MANDATORY: categoryOption.MAKE_CATEGORY_MANDATORY,
+                MAKE_CATEGORY_MANDATORY: categoryOption.MAKE_CATEGORY_MANDATORY || 0,
+                SINGLE_OPTION_ONLY: categoryOption.SINGLE_OPTION_ONLY || 0,
                 OPTIONS: [{
                     OPTION_ID: categoryOption.OPTION_ID,
                     OPTION_NAME: categoryOption.OPTION_NAME,

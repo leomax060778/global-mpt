@@ -49,7 +49,7 @@ function getUserByEmail(email) {
 
 function insertRequestAccess(data) {
     validateRequestAccess(data);
-    var requestAccessId = dataRequestAccess.insertRequestAccess(data.USER_NAME.trim(), data.FIRST_NAME.trim(), data.LAST_NAME.trim(), data.EMAIL, data.PHONE.trim() || null);
+    var requestAccessId = dataRequestAccess.insertRequestAccess(data.USER_NAME.trim(), data.FIRST_NAME.trim(), data.LAST_NAME.trim(), data.EMAIL, data.PHONE.trim() || null, REQUEST_ACCESS_STATUS.PENDING);
     notifyInsertByEmail(data);
     return requestAccessId;
 }

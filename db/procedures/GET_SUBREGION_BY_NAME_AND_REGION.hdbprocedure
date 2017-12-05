@@ -16,6 +16,7 @@ BEGIN
 	SELECT 
 	SUBREGION_NAME, REGION_ID
  FROM SUBREGION
- WHERE REGION_ID = IN_REGION_ID AND upper(trim(SUBREGION_NAME)) = upper(trim(IN_NAME));
+ WHERE REGION_ID = IN_REGION_ID AND upper(trim(SUBREGION_NAME)) = upper(trim(IN_NAME))
+ and enabled = 1 and deleted = 0;
 	
 END;

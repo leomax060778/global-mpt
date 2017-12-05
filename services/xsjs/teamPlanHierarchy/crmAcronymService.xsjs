@@ -24,7 +24,8 @@ var hl3 = "HL3";
 /****************************************/
 
 function processRequest(){
-	return http.processRequest(handleGet,handlePost,handlePut,handleDelete,false, config.getResourceIdByName(config.level3()));
+	return http.processRequest(handleGet, handlePost, handlePut, handleDelete,false, "", true);
+	//return http.processRequest(handleGet,handlePost,handlePut,handleDelete,false, config.getResourceIdByName(config.level3()));
 };
 
 function handleGet(parameters, user_id) {

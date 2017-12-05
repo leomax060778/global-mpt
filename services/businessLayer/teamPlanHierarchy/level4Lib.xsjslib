@@ -33,6 +33,7 @@ var mail = mapper.getMail();
 var businessError = mapper.getLogError();
 var pathBL = mapper.getPath();
 var config = mapper.getDataConfig();
+var AllocationCategory = mapper.getAllocationCategoryLib();
 /*************************************************/
 
 var levelCampaign = "Initiative/Campaign";
@@ -721,14 +722,19 @@ function isMyBudgetComplete(hl4_budget) {
 
 function isCategoryOptionComplete(data) {
     var categoryOptionComplete = false;
+    var categoryOption = AllocationCategory.getCategoryOptionByHierarchyLevelId(HIERARCHY_LEVEL.HL4);
     for (var i = 0; i < data.hl4_category.length; i++) {
         var hl4Category = data.hl4_category[i];
         var percentagePerOption = 0;
         if (!hl4Category.in_category_id || !Number(hl4Category.in_category_id))
             throw ErrorLib.getErrors().CustomError("", "hl4Services/handlePost/insertHl4", L3_CATEGORY_NOT_VALID);
 
-        if (!hl4Category.hl4_category_option.length)
-            percentagePerOption = 100;
+        /*if (!hl4Category.hl4_category_option.length)
+            percentagePerOption = 100;*/
+
+        if(!data.hl4.in_hl4_id && (!hl4Category.hl4_category_option || !hl4Category.hl4_category_option.length))
+            hl4Category.hl4_category_option = getOptionByCategoryId(categoryOption, hl4Category.in_category_id);
+
 
         if (!data.hl4.in_hl4_id && hl4Category.hl4_category_option.length !== dataOption.getAllocationOptionCountByCategoryIdLevelId(hl4Category.in_category_id, 'hl4'))
             throw ErrorLib.getErrors().CustomError("", "hl4Services/handlePost/insertHl4", L3_CATEGORY_OPTIONS_INCORRECT_NUMBER);
@@ -740,13 +746,13 @@ function isCategoryOptionComplete(data) {
                 throw ErrorLib.getErrors().CustomError("", "hl4Services/handlePost/insertHl4", "Option value is not valid (actual value " + option.in_amount + ")");
 
             percentagePerOption = percentagePerOption + Number(option.in_amount);
-
         });
-        if(!hl4Category.in_make_category_mandatory && percentagePerOption === 0 ){
-            categoryOptionComplete = true;
-            break;
-        } else if (percentagePerOption > 100) {
+
+        if (percentagePerOption > 100)
             throw ErrorLib.getErrors().CustomError("", "hl4Services/handlePost/insertHl4", L3_CATEGORY_TOTAL_PERCENTAGE);
+
+        if(!Number(hl4Category.in_make_category_mandatory) && (percentagePerOption === 0 || percentagePerOption === 100)){
+            categoryOptionComplete = true;
         } else if (percentagePerOption < 100) {
             categoryOptionComplete = false;
             break;
@@ -754,7 +760,23 @@ function isCategoryOptionComplete(data) {
             categoryOptionComplete = true;
         }
     }
+
     return categoryOptionComplete;
+}
+
+function getOptionByCategoryId(categories, categoryId) {
+    var options = [];
+    for(var i = 0; i < categories.length; i++) {
+        if(categories[i].CATEGORY_ID == categoryId && categories[i].OPTIONS && categories[i].OPTIONS.length){
+            options = categories[i].OPTIONS.map(function (option) {
+               return {
+                   in_option_id: option.OPTION_ID
+                   , in_amount: 0
+               }
+            });
+        }
+    }
+    return options;
 }
 
 function validateSaleOthers(others) {
@@ -898,8 +920,8 @@ function setHl4StatusInCRM(hl4_id, userId) {
         hl4Ids = hl4_id;
     }
     for(var i = 0; i < hl4Ids.length; i++){
-        if(!Number(hl5Ids[i]))
-            throw ErrorLib.getErrors().CustomError("", "", L5_MSG_INITIATIVE_NOT_FOUND);
+        if(!Number(hl4Ids[i]))
+            throw ErrorLib.getErrors().CustomError("", "", L3_MSG_INITIATIVE_NOT_FOUND);
 
         result = setHl4Status(hl4Ids[i], HL4_STATUS.IN_CRM, userId);
         if (result) {
@@ -1102,7 +1124,7 @@ function crmFieldsHaveChanged(data, isComplete, userId) {
                     } else {
                         crmBindingChangedFields.push(parameters);
                     }
-                    crmFieldsHaveChanged = true;
+                    crmFieldsHaveChanged = fieldChanged;
                 }
             });
         });

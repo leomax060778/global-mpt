@@ -39,12 +39,12 @@ function handleGet(params, userId) {
 	var result = {};
 
 	if(in_hl3_id){
-        businessLevel3.checkPermission(userId, null, in_hl3_id);
+        // businessLevel3.checkPermission(userId, null, in_hl3_id);
 		result = hl4.getHl4(in_hl3_id);
 	} else if (in_hl4_id && method && method == "CARRY_OVER"){
     	result = hl4.getHL4CarryOverById(in_hl4_id, userId);
 	} else if (in_hl4_id) {
-        hl4.checkPermission(userId, null, in_hl4_id);
+        // hl4.checkPermission(userId, null, in_hl4_id);
 		result = hl4.getHl4ById(in_hl4_id);
 	} else if (param_section && param_section == section){
         var budgetYearId = httpUtil.getUrlParameters().get("BUDGET_YEAR_ID") || null;
@@ -65,7 +65,7 @@ function handleGet(params, userId) {
 //Implementation of PUT call -- Update HL4
 function handlePut(reqBody, userId){
 	var parameters = httpUtil.getUrlParameters();
-    hl4.checkPermission(userId, null, parameters.get('HL4_ID') || reqBody.hl4.in_hl4_id);
+    // hl4.checkPermission(userId, null, parameters.get('HL4_ID') || reqBody.hl4.in_hl4_id);
 	if(parameters.length > 0){
 		var aCmd = parameters.get('method');
 		var hl4Id = !reqBody ? parameters.get('HL4_ID') : reqBody.hl4Ids;
@@ -93,14 +93,14 @@ function handlePut(reqBody, userId){
 
 //Implementation of DELETE call -- Delete HL4
 function handleDelete(reqBody, userId){
-    hl4.checkPermission(userId, null, reqBody.in_hl4_id);
+    // hl4.checkPermission(userId, null, reqBody.in_hl4_id);
 	var result =  hl4.deleteHl4(reqBody, userId);
 	return httpUtil.handleResponse(result,httpUtil.OK,httpUtil.AppJson);
 };
 
 //Implementation of POST call -- Insert HL4
 function handlePost(reqBody, userId) {
-    businessLevel3.checkPermission(userId, null, reqBody.hl4.in_hl3_id);
+    // businessLevel3.checkPermission(userId, null, reqBody.hl4.in_hl3_id);
 	var result = hl4.insertHl4(reqBody, userId); //return new L4 Id
 	return httpUtil.handleResponse(result,httpUtil.OK,httpUtil.AppJson);
 }

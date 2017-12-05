@@ -1830,7 +1830,7 @@ function getHl6Categories(hl5_id) {
 
 function extractElementByList(list, criterion, value) {
     for (var i = 0; i < list.length; i++) {
-        if (list[i][criterion].trim() == value.trim()) return list[i];
+        if (list[i][criterion] == value) return list[i];
     }
 
     return null;
@@ -2081,7 +2081,7 @@ function insertExternalCoFunding(data, userId) {
                     ,
                     in_claim_id: PARTNER_TYPE.INTEL == partner.PARTNER_TYPE_ID ? partner.CLAIM_ID : null
                     ,
-                    in_comments: PARTNER_TYPE.INTEL == partner.PARTNER_TYPE_ID ? partner.NOTES : null
+                    in_comments: PARTNER_TYPE.INTEL == partner.PARTNER_TYPE_ID ? partner.COMMENTS : null
                     ,
                     in_company_name: PARTNER_TYPE.EXTERNAL_PARTNER == partner.PARTNER_TYPE_ID ? partner.COMPANY_NAME : null
                     ,
@@ -2115,7 +2115,7 @@ function updateExternalCoFunding(data, userId) {
                     , in_currency_id: data.PARTNER_CURRENCY_ID
                     , in_intel_project_id: PARTNER_TYPE.INTEL == partner.PARTNER_TYPE_ID ? partner.INTEL_PROJECT_ID : null
                     , in_claim_id: PARTNER_TYPE.INTEL == partner.PARTNER_TYPE_ID ? partner.CLAIM_ID : null
-                    , in_comments: PARTNER_TYPE.INTEL == partner.PARTNER_TYPE_ID ? partner.NOTES : null
+                    , in_comments: PARTNER_TYPE.INTEL == partner.PARTNER_TYPE_ID ? partner.COMMENTS : null
                     , in_company_name: PARTNER_TYPE.EXTERNAL_PARTNER == partner.PARTNER_TYPE_ID ? partner.COMPANY_NAME : null
                     , in_company_address: PARTNER_TYPE.EXTERNAL_PARTNER == partner.PARTNER_TYPE_ID ? partner.COMPANY_ADDRESS : null
                     , in_invoice_number: PARTNER_TYPE.EXTERNAL_PARTNER == partner.PARTNER_TYPE_ID && partner.INVOICE_NUMBER ? partner.INVOICE_NUMBER : null
@@ -2139,7 +2139,7 @@ function updateExternalCoFunding(data, userId) {
                     , in_created_user_id: userId
                     , in_intel_project_id: PARTNER_TYPE.INTEL == partner.PARTNER_TYPE_ID ? partner.INTEL_PROJECT_ID : null
                     , in_claim_id: PARTNER_TYPE.INTEL == partner.PARTNER_TYPE_ID ? partner.CLAIM_ID : null
-                    , in_comments: PARTNER_TYPE.INTEL == partner.PARTNER_TYPE_ID ? partner.NOTES : null
+                    , in_comments: PARTNER_TYPE.INTEL == partner.PARTNER_TYPE_ID ? partner.COMMENTS : null
                     , in_company_name: PARTNER_TYPE.EXTERNAL_PARTNER == partner.PARTNER_TYPE_ID ? partner.COMPANY_NAME : null
                     , in_company_address: PARTNER_TYPE.EXTERNAL_PARTNER == partner.PARTNER_TYPE_ID ? partner.COMPANY_ADDRESS : null
                     , in_invoice_number: PARTNER_TYPE.EXTERNAL_PARTNER == partner.PARTNER_TYPE_ID && partner.INVOICE_NUMBER ? partner.INVOICE_NUMBER : null
@@ -2373,7 +2373,7 @@ function serverToUiParser(object) {
     });
     object.SALES.forEach(function (obj) {
         var aux = {};
-        aux.HL6_SALES_ID = obj.HL6_SALES_ID;
+        aux.SALES_ID = obj.HL6_SALES_ID;
         if (obj.ORGANIZATION_TYPE === 1) {
             aux.REGION_ID = obj.ORGANIZATION_ID;
             aux.AMOUNT = obj.AMOUNT;
@@ -2391,7 +2391,10 @@ function serverToUiParser(object) {
         }
         aux.MESSAGE = obj.MESSAGE;
     });
-
+    object.PARTNERS.forEach(function (obj) {
+        obj.MESSAGE = obj.DESCRIPTION;
+        obj.DESCRIPTION = undefined;
+    });
     object.SALES = SALE;
     object.BUDGET_DISTRIBUTION = BUDGET_DISTRIBUTION;
     object.CRM_DESCRIPTION = object.HL6_CRM_DESCRIPTION;

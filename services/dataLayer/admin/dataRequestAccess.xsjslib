@@ -32,7 +32,7 @@ function getRequestAccessByEmail(email){
     return db.extractArray(rdo.out_result)[0];
 }
 
-function insertRequestAccess(userName, firstName, lastName, email, phone) {
+function insertRequestAccess(userName, firstName, lastName, email, phone, statusId) {
     var param = {
         in_user_id: 1
     	, in_user_name: userName
@@ -40,6 +40,7 @@ function insertRequestAccess(userName, firstName, lastName, email, phone) {
     	, in_last_name: lastName
     	, in_email: email
     	, in_phone: phone
+    	, in_request_access_status_id: statusId
 	};
 
     return db.executeScalarManual(INS_REQUEST_ACCESS, param, "out_result");
