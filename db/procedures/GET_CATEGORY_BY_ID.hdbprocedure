@@ -17,5 +17,6 @@ BEGIN
     inner join allocation_category_option_level acol on acol.allocation_category_id = ac.allocation_category_id
     WHERE
     --ac.allocation_category_id = in_category_id and
-    acol.hierarchy_level_id = in_hierarchy_level_id;
+    acol.hierarchy_level_id = in_hierarchy_level_id
+    and acol.enabled = 1 and acol.deleted = 0;
 END;

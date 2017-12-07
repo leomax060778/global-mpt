@@ -12,6 +12,8 @@
         <viewAttribute datatype="INTEGER" id="HL_ID"/>
         <viewAttribute datatype="NVARCHAR" id="PATH" length="255"/>
         <viewAttribute datatype="INTEGER" id="HIERARCHY_LEVEL_ID"/>
+        <viewAttribute datatype="TINYINT" id="ENABLED"/>
+        <viewAttribute datatype="TINYINT" id="DELETED"/>
       </viewAttributes>
       <calculatedViewAttributes/>
       <definition> 
@@ -27,7 +29,7 @@
         --					,'-')
         	--			,hl4.acronym))
 &quot;MKTG_PLANNING_TOOL&quot;.&quot;mktgplanningtool.db.functions::GET_CRM_ID&quot;(BGY.BUDGET_YEAR, hl1.ACRONYM, HL2.ORGANIZATION_ACRONYM, hl3.ACRONYM, hl4.ACRONYM, '', '') AS PATH
-, 1 as HIERARCHY_LEVEL_ID
+, 1 as HIERARCHY_LEVEL_ID, hl4.enabled, hl4.deleted
 		FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL4&quot; hl4
 		INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL3&quot; hl3 ON hl4.HL3_ID = hl3.HL3_ID
 		INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL2&quot; hl2 ON hl3.HL2_ID = hl2.HL2_ID
@@ -51,7 +53,7 @@
 --       				    ,'-')
 --        				,hl5.acronym))
 &quot;MKTG_PLANNING_TOOL&quot;.&quot;mktgplanningtool.db.functions::GET_CRM_ID&quot;(BGY.BUDGET_YEAR, hl1.ACRONYM, HL2.ORGANIZATION_ACRONYM, hl3.ACRONYM, hl4.ACRONYM, hl5.acronym, '') AS PATH
-, 2 as HIERARCHY_LEVEL_ID
+, 2 as HIERARCHY_LEVEL_ID, hl5.enabled, hl5.deleted
 		FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL5&quot; hl5
 		INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL4&quot; hl4 ON hl5.HL4_ID = hl4.HL4_ID
 		INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL3&quot; hl3 ON hl4.HL3_ID = hl3.HL3_ID
@@ -74,7 +76,7 @@
 --        				)
 
 &quot;MKTG_PLANNING_TOOL&quot;.&quot;mktgplanningtool.db.functions::GET_CRM_ID&quot;(BGY.BUDGET_YEAR, hl1.ACRONYM, HL2.ORGANIZATION_ACRONYM, hl3.ACRONYM, '', '', '') AS PATH
-, 4 as HIERARCHY_LEVEL_ID
+, 4 as HIERARCHY_LEVEL_ID, hl3.enabled, hl3.deleted
 		FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL3&quot; hl3 
 		INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL2&quot; hl2 ON hl3.HL2_ID = hl2.HL2_ID
 		INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL1&quot; hl1 ON hl2.HL1_ID = hl1.HL1_ID
@@ -90,7 +92,7 @@
 --        	        			   		CONCAT(hl2.organization_acronym,SUBSTRING(TO_NVARCHAR(BGY.BUDGET_YEAR), 3, 2))
 --        				)
 &quot;MKTG_PLANNING_TOOL&quot;.&quot;mktgplanningtool.db.functions::GET_CRM_ID&quot;(BGY.BUDGET_YEAR, hl1.ACRONYM, HL2.ORGANIZATION_ACRONYM, '', '', '', '') AS PATH
-, 5 as HIERARCHY_LEVEL_ID
+, 5 as HIERARCHY_LEVEL_ID, hl2.enabled, hl2.deleted
 		FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL2&quot; hl2 
 		INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL1&quot; hl1 ON hl2.HL1_ID = hl1.HL1_ID
 		INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_BUDGET_YEAR&quot; BGY 
@@ -105,7 +107,7 @@
 -- 	        			   		CONCAT(HL1.ACRONYM,SUBSTRING(TO_NVARCHAR(BGY.BUDGET_YEAR), 3, 2))
 --      				)
 &quot;MKTG_PLANNING_TOOL&quot;.&quot;mktgplanningtool.db.functions::GET_CRM_ID&quot;(BGY.BUDGET_YEAR, hl1.ACRONYM, '', '', '', '', '') AS PATH
-, 6 as HIERARCHY_LEVEL_ID
+, 6 as HIERARCHY_LEVEL_ID, hl1.enabled, hl1.deleted
 		FROM  &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL1&quot; hl1 
 		INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_BUDGET_YEAR&quot; BGY 
 			ON BGY.BUDGET_YEAR_ID = hl1.BUDGET_YEAR_ID
@@ -140,6 +142,14 @@ END /********* End Procedure Script ************/</definition>
       <measure id="HIERARCHY_LEVEL_ID" order="3" aggregationType="sum" measureType="simple">
         <descriptions defaultDescription="HIERARCHY_LEVEL_ID"/>
         <measureMapping columnObjectName="Script_View" columnName="HIERARCHY_LEVEL_ID"/>
+      </measure>
+      <measure id="ENABLED" order="4" aggregationType="sum" measureType="simple">
+        <descriptions defaultDescription="ENABLED"/>
+        <measureMapping columnObjectName="Script_View" columnName="ENABLED"/>
+      </measure>
+      <measure id="DELETED" order="5" aggregationType="sum" measureType="simple">
+        <descriptions defaultDescription="DELETED"/>
+        <measureMapping columnObjectName="Script_View" columnName="DELETED"/>
       </measure>
     </baseMeasures>
     <calculatedMeasures/>

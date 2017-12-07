@@ -536,6 +536,12 @@ function updateOwnMoneyBudgetSpendRequestByHlIdLevel(hlId, level, amount, budget
             : BUDGET_SPEND_REQUEST_STATUS['PENDING'], userId);
 }
 
+function setOwnMoneyBudgetSpendRequestNoLongerNeededByHlIdLevel(hlId, level, amount, userId) {
+    return dataBudgetSpendRequest.updateBudgetSpendRequestByHlIdLevelType(hlId,
+        HIERARCHY_LEVEL[level], amount, BUDGET_SPEND_REQUEST_TYPE.OWN_MONEY
+        ,BUDGET_SPEND_REQUEST_STATUS['NO_LONGER_REQUESTED'], userId);
+}
+
 function countPendingBudgetRequestByHl5Id(hl5Id) {
     if (!hl5Id)
         throw ErrorLib

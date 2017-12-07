@@ -79,6 +79,12 @@ function getL4ChangedFieldsByHl4Id(hl4Id, userId) {
                     case 'PARENT_PATH':
                         object.value = parentPath;
                         break;
+                    case 'MKT_ORG_ID':
+                        object.value = hl4.MARKETING_ORGANIZATION;
+                        break;
+                    case 'DIS_CHANNEL_ID':
+                        object.value = hl4.DISTRIBUTION_CHANNEL;
+                        break;
                     default:
                         object.value = hl4[field];
                         break;
@@ -123,6 +129,8 @@ function getProcessingReportFields() {
             "HL4_BUSINESS_DETAILS": "Business Value",
             "HL4_FNC_BUDGET_TOTAL_MKT": "Budget",
             "PARENT_PATH": "Parent",
+            "MKT_ORG_ID": "Marketing Organization",
+            "DIS_CHANNEL_ID": "Distribution Channel",
             "CATEGORY": ""
         },
         crmBindingFields: {hl4: [], hl4_fnc: []}

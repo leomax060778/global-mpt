@@ -7,8 +7,10 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_ALLOCATION_O
 	SQL SECURITY INVOKER 
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL" AS
 BEGIN
-	SELECT COUNT(DISTINCT allocation_option_id) into out_result
-	FROM allocation_category_option_level
+	SELECT COUNT(DISTINCT acol.allocation_option_id) into out_result
+	FROM allocation_category_option_level acol
+	inner join allocation_option ao on ao.allocation_option_id = acol.allocation_option_id
 	where allocation_category_id = in_category_id AND hierarchy_level_id = in_hl_id
-	AND deleted = 0 and enabled = 1;
+	AND acol.deleted = 0 and acol.enabled = 1
+	and ao.deleted = 0 and ao.enabled = 1;
 END;

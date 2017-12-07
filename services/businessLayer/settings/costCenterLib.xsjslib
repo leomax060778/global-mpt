@@ -176,7 +176,10 @@ function existCostCentermarketingOrganizationTeams(marketingOrganizationId, team
 }
 
 function insCostCenterEmployeeResponsible(costCenterId, employeeResponsibleId, userId){
-	return dataCostCenter.insCostCenterEmployeeResponsible(costCenterId, employeeResponsibleId, userId);
+	if(costCenterId && employeeResponsibleId && userI){
+        return dataCostCenter.insCostCenterEmployeeResponsible(costCenterId, employeeResponsibleId, userId);
+	}else{return false}
+
 }
 
 function delCostCenterTeamsByCostCenterId(costCenterId, userId, type){
@@ -455,8 +458,12 @@ function checkCostCenter(data){
 	var costCenterList = data.check;
 	var costCenterToUpdate = 0;
 	var costCenterToInsert = 0;
+	var costCenterInDb = dataCostCenter.getAllCostCenter();
 	costCenterList.forEach(function(costCenter){
-		if(dataCostCenter.getCostCenterByCode(costCenter.in_code)){
+		var result = costCenterInDb.filter(function(cc){
+			if(cc.CODE == costCenter.in_code) return cc;
+		});
+		if(result){
 			costCenterToUpdate++;
 		} else {
 			costCenterToInsert++;

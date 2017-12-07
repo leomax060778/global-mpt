@@ -328,6 +328,8 @@ function insertPartnerBudgetSpendRequest(value, message, id, level, conversionVa
         value / conversionValue, id, level, message,
         BUDGET_SPEND_REQUEST_TYPE['CO_FUNDING_EXTERNAL'],
         BUDGET_SPEND_REQUEST_STATUS['PENDING'], userId);
+
+    if (message && message.trim()) {
     arrBudgetSpendRequestMessage
         .push({
             in_budget_spend_request_id: budgetSpendRequestId,
@@ -338,6 +340,7 @@ function insertPartnerBudgetSpendRequest(value, message, id, level, conversionVa
 
     dataBudgetSpendRequest
         .insertBudgetSpendRequestMessage(arrBudgetSpendRequestMessage);
+    }
 
     return budgetSpendRequestId;
 }
@@ -348,6 +351,7 @@ function updateBudgetSpendRequest(budgetSpendRequest, userId, externalCall) {
         var arrBudgetSpendRequestMessageToUpdate = [];
         budgetSpendRequest
             .forEach(function (request) {
+            if (request.in_message && request.in_message.trim()) {
                 arrBudgetSpendRequestMessageToUpdate
                     .push({
                         in_budget_spend_request_id: request.in_budget_spend_request_id,
@@ -355,6 +359,7 @@ function updateBudgetSpendRequest(budgetSpendRequest, userId, externalCall) {
                         in_budget_spend_request_origin_id: BUDGET_SPEND_REQUEST_ORIGIN.BUDGET_REQUESTOR,
                         in_user_id: userId
                     });
+            }
             });
 
         if (arrBudgetSpendRequestMessageToUpdate.length)
@@ -403,6 +408,18 @@ function deleteL2BudgetApprover(l2Id, budgetApproverIds) {
 
     return dataBudgetSpendRequest.deleteL2BudgetApprover(l2Id,
         l2BudgetApproverToDelete);
+}
+
+function deleteL3BudgetApprover(l3Id, budgetApproverIds) {
+    var l3BudgetApproverToDelete = [];
+    budgetApproverIds.forEach(function (elem) {
+        l3BudgetApproverToDelete.push({
+            in_user_id: elem.USER_ID
+        });
+    });
+
+    return dataBudgetSpendRequest.deleteL3BudgetApprover(l3Id,
+        l3BudgetApproverToDelete);
 }
 
 function validateApprovers(listApprovers) {
@@ -475,6 +492,12 @@ function updateOwnMoneyBudgetSpendRequestByHlIdLevel(hlId, level, amount, budget
         HIERARCHY_LEVEL[level], amount, BUDGET_SPEND_REQUEST_TYPE.OWN_MONEY,
         budgetRequestApproved ? BUDGET_SPEND_REQUEST_STATUS['APPROVED']
             : BUDGET_SPEND_REQUEST_STATUS['PENDING'], userId);
+}
+
+function setOwnMoneyBudgetSpendRequestNoLongerNeededByHlIdLevel(hlId, level, amount, userId) {
+    return dataBudgetSpendRequest.updateBudgetSpendRequestByHlIdLevelType(hlId,
+        HIERARCHY_LEVEL[level], amount, BUDGET_SPEND_REQUEST_TYPE.OWN_MONEY
+        ,BUDGET_SPEND_REQUEST_STATUS['NO_LONGER_REQUESTED'], userId);
 }
 
 function countPendingBudgetRequestByHl5Id(hl5Id) {
@@ -613,4 +636,28 @@ function notifyOtherBudgetApprover(arrBudgetSpendRequestOtherBudgetApprover, use
 
         budgetReportLib.sendBudgetSpendRequestInformationByEmail(mailObject, userId);
     });
+}
+
+function validateExternalCofunding(data) {
+    data.forEach(function (partner) {
+        if (!partner.AMOUNT || !partner.AMOUNT.trim() || !Number(partner.AMOUNT.trim()))
+            throw ErrorLib.getErrors().CustomError("", "budgetSpendRequestServices/handlePost/validateExternalCoFunding", INVALID_REQUEST_AMOUNT);
+
+        if (PARTNER_TYPE.INTEL == partner.PARTNER_TYPE_ID && !partner.INTEL_PROJECT_ID.trim()) {
+            throw ErrorLib.getErrors().CustomError("", "budgetSpendRequestServices/handlePost/validateExternalCoFunding", INVALID_INTEL_PROJECT_ID);
+        }
+    });
+    return true;
+}
+
+function validateInternalCofunding(data) {
+    data.forEach(function (saleRequest) {
+        if (!saleRequest.AMOUNT || !saleRequest.AMOUNT.trim() || !Number(saleRequest.AMOUNT.trim()))
+            throw ErrorLib.getErrors().CustomError("", "budgetSpendRequestServices/handlePost/validateInternalCoFunding", INVALID_REQUEST_AMOUNT);
+
+        if (!saleRequest.MESSAGE.trim()) {
+            throw ErrorLib.getErrors().CustomError("", "budgetSpendRequestServices/handlePost/validateInternalCoFunding", INVALID_REQUEST_MESSAGE);
+        }
+    });
+    return true;
 }

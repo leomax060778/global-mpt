@@ -6,6 +6,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL6_BY_ID"(
 			acronym NVARCHAR(25),
 			budget DECIMAL(19, 6),
 			hl5_id INTEGER,
+			hl4_id INTEGER,
 			route_to_market_id INTEGER,
 			campaign_objective_id INTEGER,
 			campaign_type_id INTEGER,
@@ -82,6 +83,7 @@ va_own_money_budget_request = SELECT TOP 1 BSRS.budget_spend_request_status_id
 				, HL6.ACRONYM
 				, HL6.BUDGET
 				, HL6.HL5_ID
+				, HL5.HL4_ID
 				, HL6.ROUTE_TO_MARKET_ID
 				, HL6.CAMPAIGN_OBJECTIVE_ID
 				, HL6.CAMPAIGN_TYPE_ID
@@ -135,6 +137,7 @@ va_own_money_budget_request = SELECT TOP 1 BSRS.budget_spend_request_status_id
                 , HL6.PERSON_RESPONSIBLE
                 , STATUS.DETAIL AS STATUS
 			FROM HL6
+			INNER JOIN HL5 ON HL5.HL5_ID = HL6.HL5_ID
 			LEFT JOIN :va_own_money_budget_request BSRS ON BSRS.HL6_ID = HL6.HL6_ID
             LEFT JOIN CAMPAIGN_TYPE C_TYPE ON C_TYPE.CAMPAIGN_TYPE_ID = HL6.CAMPAIGN_TYPE_ID
             LEFT JOIN HL6_STATUS_DETAIL STATUS ON HL6.HL6_STATUS_DETAIL_ID = STATUS.HL6_STATUS_DETAIL_ID

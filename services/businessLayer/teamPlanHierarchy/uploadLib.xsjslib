@@ -61,6 +61,12 @@ var mapCampaignObjetveLib = {
     , UPLOAD_USER : blUser
 };
 
+var mapFieldIdName = {
+    UPLOAD_OBJECTIVE: "OBJECTIVE_ID"
+    , UPLOAD_CAMPAIGN_SUB_TYPE: "CAMPAIGN_SUB_TYPE_ID"
+    , UPLOAD_CAMPAIGN_TYPE: "CAMPAIGN_TYPE_ID"
+};
+
 var mapCampaignObjetveGetList = {
     UPLOAD_OBJECTIVE: dataObjective.getAllObjectives
     , UPLOAD_CAMPAIGN_SUB_TYPE: dataCampaignSubType.getAllCampaignSubType
@@ -313,7 +319,7 @@ function insertDictionaryHL(data, userId) {
     var rtdo3 = level3Processor(userId, arrAcronymHl3, importId);
 
     rtdo1.success = (rtdo1.success || 0) + (rtdo2.success || 0) + (rtdo3.success || 0);
-    rtdo1.fail = (rtdo1.fail || 0) + (rtdo2.fail || 0) + (rtdo3.fail || 0);
+    rtdo1.fails = (rtdo1.fails || 0) + (rtdo2.fails || 0) + (rtdo3.fails || 0);
 
     Array.prototype.push.apply(rtdo1.messages, rtdo2.messages);
     Array.prototype.push.apply(rtdo1.messages, rtdo3.messages);
@@ -1504,6 +1510,7 @@ function uploadEntity(data, uploadType, userId) {
             entityId = businessLayer.insertEntity(entity, userId);
             entitiesCreated++;
         } else {
+            entity["IN_" + mapFieldIdName[uploadType.toUpperCase()]] = bdEntity[mapFieldIdName[uploadType.toUpperCase()]];
             entityId = businessLayer.updateEntity(entity, userId);
             entitiesUpdated++;
         }

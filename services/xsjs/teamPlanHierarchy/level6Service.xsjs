@@ -38,11 +38,11 @@ function handleGet(params, userId) {
 
 	}else
 	if(in_hl5_id && !hl5_categories && !hl5_expectedOutcomes && !param_section){
-        hl5.checkPermission(userId, null, in_hl5_id);
+        // hl5.checkPermission(userId, null, in_hl5_id);
 		result = hl6.getHl6ByHl5Id(in_hl5_id);
 	}else
 	if(in_hl6_id){
-        hl6.checkPermission(userId, null, in_hl6_id);
+        // hl6.checkPermission(userId, null, in_hl6_id);
 		result = hl6.getHl6ById(in_hl6_id);
 	}else
 	if (param_section && param_section == section){
@@ -67,7 +67,7 @@ function handleGet(params, userId) {
 //Implementation of PUT call -- Update HL6
 function handlePut(reqBody, userId){
 	var parameters = httpUtil.getUrlParameters();
-    hl6.checkPermission(userId, null, parameters.get('HL6_ID') || reqBody.hl6.in_hl6_id);
+    // hl6.checkPermission(userId, null, parameters.get('HL6_ID') || reqBody.hl6.in_hl6_id);
 	if(parameters.length > 0){
 		var aCmd = parameters.get('method');
 		var hl6Id = !reqBody ? parameters.get('HL6_ID') : reqBody.hl6Ids;
@@ -94,14 +94,14 @@ function handlePut(reqBody, userId){
 
 //Implementation of DELETE call -- Delete HL6
 function handleDelete(reqBody, userId){
-    hl6.checkPermission(userId, null, reqBody.in_hl6_id);
+    // hl6.checkPermission(userId, null, reqBody.in_hl6_id);
 	var result =  hl6.deleteHl6(reqBody, userId);
 	return httpUtil.handleResponse(result,httpUtil.OK,httpUtil.AppJson);
 }
 
 //Implementation of POST call -- Insert HL6
 function handlePost(reqBody, userId) {
-    hl5.checkPermission(userId, null, reqBody.hl6.in_hl5_id);
+    // hl5.checkPermission(userId, null, reqBody.hl6.in_hl5_id);
 	var result = hl6.insertHl6(reqBody, userId); //return new L6 Id
 	return httpUtil.handleResponse(result,httpUtil.OK,httpUtil.AppJson);
 }

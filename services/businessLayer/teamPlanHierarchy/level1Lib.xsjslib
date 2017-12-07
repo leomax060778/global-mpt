@@ -805,9 +805,11 @@ function validateCategoryOption(data) {
     if (!data.HL1_ID && data.CATEGORIES.length !== dataCategory.getAllocationCategoryCountByHlId("hl1"))
         throw ErrorLib.getErrors().CustomError("", "hl1Services/handlePost/validateCategoryOption", L1_CATEGORY_INCORRECT_NUMBER);
     var percentagePerOption = 0;
+    var thereIsMandatoryCategory = false;
     for (var i = 0; i < data.CATEGORIES.length; i++) {
+        var percentagePerCategory = 0;
         var hl1Category = data.CATEGORIES[i];
-
+        thereIsMandatoryCategory = thereIsMandatoryCategory || !!hl1Category.MAKE_CATEGORY_MANDATORY;
         if (!hl1Category.CATEGORY_ID || !Number(hl1Category.CATEGORY_ID))
             throw ErrorLib.getErrors().CustomError("", "hl1Services/handlePost/validateCategoryOption", L1_CATEGORY_NOT_VALID);
 
@@ -821,14 +823,21 @@ function validateCategoryOption(data) {
                 throw ErrorLib.getErrors().CustomError("", "hl1Services/handlePost/validateCategoryOption", "Option value is not valid (actual value " + option.AMOUNT + ")");
 
             percentagePerOption = percentagePerOption + Number(option.AMOUNT || 0);
+            percentagePerCategory += Number(option.AMOUNT || 0);
         });
-    }
-    if ((Number(data.BUDGET) == 0) && percentagePerOption != 0) {
-        throw ErrorLib.getErrors().CustomError("", "hl1Services/handlePost/validateCategoryOption", L1_BUDGET_ZERO_CATEGORY_TOTAL_PERCENTAGE_ZERO);
-    }
 
-    if ((Number(data.BUDGET) > 0) && percentagePerOption != 100) {
-        throw ErrorLib.getErrors().CustomError("", "hl1Services/handlePost/validateCategoryOption", L1_CATEGORY_TOTAL_PERCENTAGE);
+        if((Number(data.BUDGET) > 0) && hl1Category.MAKE_CATEGORY_MANDATORY && percentagePerCategory <= 0){
+            throw ErrorLib.getErrors().CustomError("", "hl1Services/handlePost/validateCategoryOption", L1_BUDGET_ZERO_CATEGORY_TOTAL_PERCENTAGE_ZERO);
+        }
+    }
+    if(thereIsMandatoryCategory) {
+        if ((Number(data.BUDGET) == 0) && percentagePerOption != 0) {
+            throw ErrorLib.getErrors().CustomError("", "hl1Services/handlePost/validateCategoryOption", L1_BUDGET_ZERO_CATEGORY_TOTAL_PERCENTAGE_ZERO);
+        }
+
+        if ((Number(data.BUDGET) > 0) && percentagePerOption != 100) {
+            throw ErrorLib.getErrors().CustomError("", "hl1Services/handlePost/validateCategoryOption", L1_CATEGORY_TOTAL_PERCENTAGE);
+        }
     }
 
     return true;

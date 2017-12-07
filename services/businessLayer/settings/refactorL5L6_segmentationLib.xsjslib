@@ -75,6 +75,10 @@ function getSegmentationFormData(hl4Id) {
         COMPETITOR: nonAdministrableFields.COMPETITOR,
         DEFAULT_REGION_ID: hl1.REGION_ID,
         DEFAULT_MARKET_UNIT_ID: hl2.SUBREGION_ID,
+        DEFAULT: {
+        		REGION_ID: hl1.REGION_ID
+                , MARKET_UNIT_ID: hl2.SUBREGION_ID
+            },
         REGION: blRegion.getRegionSubregion()
     };
 }
@@ -118,6 +122,10 @@ function getSegmentationFormByHl5Id(hl5Id) {
         segmentationForm.APPLY_SALE_PLAY_FOR_TARGET = !!segmentationForm.APPLY_SALE_PLAY_FOR_TARGET;
         segmentationForm.APPLY_PREDICTIVE_ANALYTICS_FOR_TARGET = !!segmentationForm.APPLY_PREDICTIVE_ANALYTICS_FOR_TARGET;
         segmentationForm.MATCHING_REQUIRED = !!segmentationForm.APPLY_PREDICTIVE_ANALYTICS_FOR_TARGET;
+        segmentationForm.DEFAULT = {
+            REGION_ID: segmentationForm.REGION_ID
+            , SUBREGION_ID: segmentationForm.SUBREGION_ID
+        };
         result[segmentationForm.SERVICE_REQUEST_CATEGORY_OPTION_LEVEL_ID] = segmentationForm;
     });
     return result;
@@ -194,7 +202,7 @@ function insertSegmentationForm(segmentationFormInfo, userId) {
         segmentationFormInfo.NUMBER_OF_RECORD_NEED_MATCHING || null,
         segmentationFormInfo.TARGET_SELECT_CRITERIA_ID || null,
         segmentationFormInfo.SPECIAL_NOTE || null,
-        segmentationFormInfo.ATTACHMENT_ID = segmentationFormInfo.ATTACHMENTS.length ? segmentationFormInfo.ATTACHMENTS[0].ATTACHMENT_ID : null,
+        segmentationFormInfo.ATTACHMENT_ID = segmentationFormInfo.ATTACHMENTS && segmentationFormInfo.ATTACHMENTS.length ? segmentationFormInfo.ATTACHMENTS[0].ATTACHMENT_ID : null,
         segmentationFormInfo.REVENUE_RANGE_FROM || null,
         segmentationFormInfo.REVENUE_RANGE_TO || null,
         segmentationFormInfo.CURRENCY_ID || null,
@@ -251,7 +259,7 @@ function updateSegmentationForm(segmentationFormInfo, userId) {
         segmentationFormInfo.NUMBER_OF_RECORD_NEED_MATCHING || null,
         segmentationFormInfo.TARGET_SELECT_CRITERIA_ID || null,
         segmentationFormInfo.SPECIAL_NOTE || null,
-        segmentationFormInfo.ATTACHMENT_ID = segmentationFormInfo.ATTACHMENTS.length ? segmentationFormInfo.ATTACHMENTS[0].ATTACHMENT_ID : null,
+        segmentationFormInfo.ATTACHMENT_ID = segmentationFormInfo.ATTACHMENTS && segmentationFormInfo.ATTACHMENTS.length ? segmentationFormInfo.ATTACHMENTS[0].ATTACHMENT_ID : null,
         segmentationFormInfo.REVENUE_RANGE_FROM || null,
         segmentationFormInfo.REVENUE_RANGE_TO || null,
         segmentationFormInfo.CURRENCY_ID || null,

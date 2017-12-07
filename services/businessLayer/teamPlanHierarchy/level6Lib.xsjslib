@@ -902,10 +902,15 @@ function updateHl6(data, userId) {
             budgetSpendRequest.insertOwnMoneyBudgetSpendRequest(data.hl6.BUDGET, data.hl6.HL6_ID, 'HL6', userId, automaticBudgetApproval);
         } else {
             if (objHL6.BUDGET != data.hl6.BUDGET) {
-                if (ownMoneyBudgetSpendRequestStatus && ownMoneyBudgetSpendRequestStatus == budgetSpendRequestStatus.APPROVED)
-                    throw ErrorLib.getErrors().CustomError("", "hl6Services/handlePut/updateHl6", "Cannot update Marketing SubTactic Budget because Own money budget spend request is already Approved.");
+                if (objHL6.EURO_CONVERSION_ID == data.hl6.EURO_CONVERSION_ID) {
+                    if (ownMoneyBudgetSpendRequestStatus && ownMoneyBudgetSpendRequestStatus == budgetSpendRequestStatus.APPROVED)
+                        throw ErrorLib.getErrors().CustomError("", "hl6Services/handlePut/updateHl6", "Cannot update Marketing SubTactic Budget because Own money budget spend request is already Approved.");
 
-                budgetSpendRequest.updateOwnMoneyBudgetSpendRequestByHlIdLevel(data.hl6.HL6_ID, 'HL6', data.hl6.BUDGET, automaticBudgetApproval, userId);
+                    budgetSpendRequest.updateOwnMoneyBudgetSpendRequestByHlIdLevel(data.hl6.HL6_ID, 'HL6', data.hl6.BUDGET, automaticBudgetApproval, userId);
+                }else {
+                    budgetSpendRequest.setOwnMoneyBudgetSpendRequestNoLongerNeededByHlIdLevel(hl6_id, 'HL6', objHL6.BUDGET, userId);
+                    budgetSpendRequest.insertOwnMoneyBudgetSpendRequest(data.hl6.BUDGET, hl6_id, 'HL6', userId, automaticBudgetApproval);
+                }
             }
         }
 
@@ -1856,6 +1861,7 @@ function crmFieldsHaveChanged(data, isComplete, userId) {
 
         Object.keys(crmBindingFields).forEach(function (object) {
             crmBindingFields[object].forEach(function (field) {
+                var fieldChanged = false;
                 var oldParentPath = '';
                 var parentPath = '';
                 if (field === "PARENT_PATH") {
@@ -1872,9 +1878,14 @@ function crmFieldsHaveChanged(data, isComplete, userId) {
 
 
                 if (field.indexOf('_DATE') <= 0) {
-                    var fieldChanged = field === 'BUDGET' ?
-                        Number(oldHl6[field]) !== Number(data[object][field]) :
-                        oldHl6[field] != data[object][field];
+
+                    if (field == 'BUDGET') {
+                        var oldCurrencyValue = Number(dataCurrency.getCurrencyValueId(oldHl6.EURO_CONVERSION_ID));
+                        var newCurrencyValue = Number(dataCurrency.getCurrencyValueId(data[object].EURO_CONVERSION_ID));
+                        fieldChanged = Number(oldHl6[field]) / oldCurrencyValue != Number(data[object][field]) / newCurrencyValue;
+                    } else {
+                        fieldChanged = oldHl6[field] != data[object][field];
+                    }
 
                 } else {
                     fieldChanged = new Date(oldHl6[field]).valueOf() !== new Date(data[object][field]).valueOf();

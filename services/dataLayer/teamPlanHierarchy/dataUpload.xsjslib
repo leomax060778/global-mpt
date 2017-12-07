@@ -135,10 +135,11 @@ function getForeignId(tableName, columnReference, columnFilter, findValue, other
 
     operator = operator || " = ";
 
-    if (otherFilter)
-        query = "SELECT " + columnReference + " FROM " + tableName + " WHERE upper(" + columnFilter + ")" + operator + "  upper('" + condition + "') " + otherFilter + ";";
-    else
-        query = "SELECT " + columnReference + " FROM " + tableName + " WHERE upper(" + columnFilter + ")" + operator + "  upper('" + condition + "');";
+    if (otherFilter) {
+        query = "SELECT " + columnReference + " FROM " + tableName + " WHERE enabled = 1 and deleted = 0 and upper(" + columnFilter + ")" + operator + "  upper('" + condition + "') " + otherFilter + ";";
+    }else {
+        query = "SELECT " + columnReference + " FROM " + tableName + " WHERE enabled = 1 and deleted = 0 and upper(" + columnFilter + ")" + operator + "  upper('" + condition + "');";
+    }
 
     var rdo = db.executeQuery(query);
     var arr = db.extractArray(rdo);
