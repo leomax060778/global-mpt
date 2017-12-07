@@ -259,7 +259,7 @@ function updateSegmentationForm(segmentationFormInfo, userId) {
         segmentationFormInfo.NUMBER_OF_RECORD_NEED_MATCHING || null,
         segmentationFormInfo.TARGET_SELECT_CRITERIA_ID || null,
         segmentationFormInfo.SPECIAL_NOTE || null,
-        segmentationFormInfo.ATTACHMENT_ID = segmentationFormInfo.ATTACHMENTS.length ? segmentationFormInfo.ATTACHMENTS[0].ATTACHMENT_ID : null,
+        segmentationFormInfo.ATTACHMENT_ID = segmentationFormInfo.ATTACHMENTS && segmentationFormInfo.ATTACHMENTS.length ? segmentationFormInfo.ATTACHMENTS[0].ATTACHMENT_ID : null,
         segmentationFormInfo.REVENUE_RANGE_FROM || null,
         segmentationFormInfo.REVENUE_RANGE_TO || null,
         segmentationFormInfo.CURRENCY_ID || null,

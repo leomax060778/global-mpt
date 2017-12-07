@@ -973,7 +973,7 @@ function validateCategoryOption(data) {
     for (var i = 0; i < data.CATEGORIES.length; i++) {
         var percentagePerCategory = 0;
         var hl2Category = data.CATEGORIES[i];
-        thereIsMandatoryCategory = thereIsMandatoryCategory || !!hl1Category.MAKE_CATEGORY_MANDATORY;
+        thereIsMandatoryCategory = thereIsMandatoryCategory || !!hl2Category.MAKE_CATEGORY_MANDATORY;
         if (!hl2Category.CATEGORY_ID || !Number(hl2Category.CATEGORY_ID))
             throw ErrorLib.getErrors().CustomError("", "hl3Services/handlePost/validateCategoryOption", L3_CATEGORY_NOT_VALID);
 
