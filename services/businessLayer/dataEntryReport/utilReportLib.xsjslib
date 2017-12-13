@@ -117,7 +117,8 @@ function parseChangedFields(HL, hlId, changedFields, changedOptions, hlList) {
             obj[categoryProcessingReportExportKey] = obj[categoryProcessingReportExportKey] || [];
             obj[categoryProcessingReportExportKey].push({
                 PERCENTAGE: elem.AMOUNT,
-                NAME: elem.OPTION_NAME
+                NAME: elem.OPTION_NAME,
+                CRM_KEY: elem.CRM_KEY
             });
         }
         return accumulator;
@@ -161,7 +162,7 @@ function parseChangedFields(HL, hlId, changedFields, changedOptions, hlList) {
                     } else {
                         includeRecordOnFinalData = true;
                         var suffix = index ? index : '';
-                        obj[categoryExportKey + "_NEW" + suffix] = option.NAME;
+                        obj[categoryExportKey + "_NEW" + suffix] = option.CRM_KEY;
                         obj[categoryExportKey + "_PER" + suffix] = option.PERCENTAGE;
                     }
                 });

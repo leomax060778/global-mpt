@@ -58,14 +58,14 @@ BEGIN
    It starts by getting all category options and joining them, creating a
    2 ( + 1 row number to use as a pivot) x 20 matrix
 
-                +-------------+-------------------+------------+
-                | option_name | option_percentage | row_number |
-                +-------------+-------------------+------------+
-                | option1     |                50 |          1 |
-                | option2     |                25 |          2 |
-                | ...         |               ... |        ... |
-                | option20    |                30 |         20 |
-                +-------------+-------------------+------------+
+                +-------------+--------------------+-------------------+------------+
+                | option_name (CRM_KEY for Option) | option_percentage | row_number |
+                +-------------+--------------------+-------------------+------------+
+                | option1                          |                50 |          1 |
+                | option2                          |                25 |          2 |
+                | ...                              |               ... |        ... |
+                | option20                         |                30 |         20 |
+                +-------------+--------------------+-------------------+------------+
 , then transforming that matrix
    into a 'diagonal' or 'identity' matrix
 
@@ -82,11 +82,11 @@ BEGIN
 
 , later collapsing it into a single row of 40 columns.
 
-+--------------+-------------------+----------------------+-----+----------------------+
-|     imp1     | zzimp1_percentage | imp2 imp2_percentage | ... | solution5_percentage |
-+--------------+-------------------+----------------------+-----+----------------------+
-| option1_name |                50 | option_name2         | ... |                   30 |
-+--------------+-------------------+----------------------+-----+----------------------+
++-----------------------------------+-------------------+----------------------+-----+----------------------+
+|     imp1                          | zzimp1_percentage | imp2 imp2_percentage | ... | solution5_percentage |
++-----------------------------------+-------------------+----------------------+-----+----------------------+
+| option1_name (CRM_KEY for Option) |                50 | option_name2 (crm_CRM_KEY) | ... |                   30 |
++-----------------------------------+-------------------+----------------------+-----+----------------------+
 
 The size of the matrix is not dynamic, in order to add a new category to the T` matrix, code changes need to be done.
 
@@ -99,7 +99,7 @@ IF(IN_LEVEL = 'HL4') THEN
     VA_HL_IMP_OPTIONS = SELECT TOP 5 option_name,
                                      option_percentage,
                                      Row_number() OVER(ORDER BY option_percentage DESC) AS ROWNUM
-                        FROM   (SELECT TOP 5 O.NAME     AS OPTION_NAME,
+                        FROM   (SELECT TOP 5 O.CRM_KEY     AS OPTION_NAME,
                                        HCP.amount AS OPTION_PERCENTAGE
                                 FROM   hl4_category_option HCP
                                        RIGHT JOIN allocation_category_option_level ACOL
@@ -140,7 +140,7 @@ IF(IN_LEVEL = 'HL4') THEN
     VA_HL_MKTSEG_OPTIONS = SELECT TOP 5 option_name,
                                         option_percentage,
                                         Row_number() OVER(ORDER BY option_percentage DESC) + 5 AS ROWNUM
-                           FROM   (SELECT TOP 5 O.NAME     AS OPTION_NAME,
+                           FROM   (SELECT TOP 5 O.CRM_KEY     AS OPTION_NAME,
                                           HCP.amount AS OPTION_PERCENTAGE
                                    FROM   hl4_category_option HCP
                                           RIGHT JOIN allocation_category_option_level ACOL
@@ -181,7 +181,7 @@ IF(IN_LEVEL = 'HL4') THEN
     VA_HL_INDUSTRY_OPTIONS = SELECT TOP 5 option_name,
                                          option_percentage,
                                          Row_number() OVER(ORDER BY option_percentage DESC) + 10 AS ROWNUM
-                            FROM   (SELECT TOP 5 O.NAME     AS OPTION_NAME,
+                            FROM   (SELECT TOP 5 O.CRM_KEY     AS OPTION_NAME,
                                            HCP.amount AS OPTION_PERCENTAGE
                                     FROM   hl4_category_option HCP
                                            RIGHT JOIN allocation_category_option_level ACOL
@@ -222,7 +222,7 @@ IF(IN_LEVEL = 'HL4') THEN
     VA_HL_SOLUTION_OPTIONS = SELECT TOP 5 option_name,
                                           option_percentage,
                                           Row_number() OVER(ORDER BY option_percentage DESC) + 15 AS ROWNUM
-                             FROM   (SELECT TOP 5 O.NAME     AS OPTION_NAME,
+                             FROM   (SELECT TOP 5 O.CRM_KEY     AS OPTION_NAME,
                                             HCP.amount AS OPTION_PERCENTAGE
                                      FROM   hl4_category_option HCP
                                             RIGHT JOIN allocation_category_option_level ACOL
@@ -267,7 +267,7 @@ ELSEIF(IN_LEVEL = 'HL5') THEN
 VA_HL_IMP_OPTIONS = SELECT TOP 5 option_name,
                                      option_percentage,
                                      Row_number() OVER(ORDER BY option_percentage DESC) AS ROWNUM
-                        FROM   (SELECT TOP 5 O.NAME     AS OPTION_NAME,
+                        FROM   (SELECT TOP 5 O.CRM_KEY     AS OPTION_NAME,
                                        HCP.amount AS OPTION_PERCENTAGE
                                 FROM   hl5_category_option HCP
                                        RIGHT JOIN allocation_category_option_level ACOL
@@ -308,7 +308,7 @@ VA_HL_IMP_OPTIONS = SELECT TOP 5 option_name,
     VA_HL_MKTSEG_OPTIONS = SELECT TOP 5 option_name,
                                         option_percentage,
                                         Row_number() OVER(ORDER BY option_percentage DESC) + 5 AS ROWNUM
-                           FROM   (SELECT TOP 5 O.NAME     AS OPTION_NAME,
+                           FROM   (SELECT TOP 5 O.CRM_KEY     AS OPTION_NAME,
                                           HCP.amount AS OPTION_PERCENTAGE
                                    FROM   hl5_category_option HCP
                                           RIGHT JOIN allocation_category_option_level ACOL
@@ -350,7 +350,7 @@ VA_HL_IMP_OPTIONS = SELECT TOP 5 option_name,
     VA_HL_INDUSTRY_OPTIONS = SELECT TOP 5 option_name,
                                          option_percentage,
                                          Row_number() OVER(ORDER BY option_percentage DESC) + 10 AS ROWNUM
-                            FROM   (SELECT TOP 5 O.NAME     AS OPTION_NAME,
+                            FROM   (SELECT TOP 5 O.CRM_KEY     AS OPTION_NAME,
                                            HCP.amount AS OPTION_PERCENTAGE
                                     FROM   hl5_category_option HCP
                                            RIGHT JOIN allocation_category_option_level ACOL
@@ -391,7 +391,7 @@ VA_HL_IMP_OPTIONS = SELECT TOP 5 option_name,
     VA_HL_SOLUTION_OPTIONS = SELECT TOP 5 option_name,
                                           option_percentage,
                                           Row_number() OVER(ORDER BY option_percentage DESC) + 15 AS ROWNUM
-                             FROM   (SELECT TOP 5 O.NAME     AS OPTION_NAME,
+                             FROM   (SELECT TOP 5 O.CRM_KEY     AS OPTION_NAME,
                                             HCP.amount AS OPTION_PERCENTAGE
                                      FROM   hl5_category_option HCP
                                             RIGHT JOIN allocation_category_option_level ACOL
@@ -434,7 +434,7 @@ ELSEIF(IN_LEVEL = 'HL6') THEN
 VA_HL_IMP_OPTIONS = SELECT TOP 5 option_name,
                                  option_percentage,
                                  Row_number() OVER(ORDER BY option_percentage DESC)  AS ROWNUM
-                    FROM   (SELECT TOP 5 O.NAME     AS OPTION_NAME,
+                    FROM   (SELECT TOP 5 O.CRM_KEY     AS OPTION_NAME,
                                    HCP.amount AS OPTION_PERCENTAGE
                             FROM   hl6_category_option HCP
                                    RIGHT JOIN allocation_category_option_level ACOL
@@ -475,7 +475,7 @@ VA_HL_IMP_OPTIONS = SELECT TOP 5 option_name,
 VA_HL_MKTSEG_OPTIONS = SELECT TOP 5 option_name,
                                     option_percentage,
                                     Row_number() OVER(ORDER BY option_percentage DESC) + 5 AS ROWNUM
-                       FROM   (SELECT TOP 5 O.NAME     AS OPTION_NAME,
+                       FROM   (SELECT TOP 5 O.CRM_KEY     AS OPTION_NAME,
                                       HCP.amount AS OPTION_PERCENTAGE
                                FROM   hl6_category_option HCP
                                       RIGHT JOIN allocation_category_option_level ACOL
@@ -516,7 +516,7 @@ VA_HL_MKTSEG_OPTIONS = SELECT TOP 5 option_name,
 VA_HL_INDUSTRY_OPTIONS = SELECT TOP 5 option_name,
                                      option_percentage,
                                      Row_number() OVER(ORDER BY option_percentage DESC) + 10 AS ROWNUM
-                        FROM   (SELECT TOP 5 O.NAME     AS OPTION_NAME,
+                        FROM   (SELECT TOP 5 O.CRM_KEY     AS OPTION_NAME,
                                        HCP.amount AS OPTION_PERCENTAGE
                                 FROM   hl6_category_option HCP
                                        RIGHT JOIN allocation_category_option_level ACOL
@@ -557,7 +557,7 @@ VA_HL_INDUSTRY_OPTIONS = SELECT TOP 5 option_name,
 VA_HL_SOLUTION_OPTIONS = SELECT TOP 5 option_name,
                                       option_percentage,
                                       Row_number() OVER(ORDER BY option_percentage DESC) + 15 AS ROWNUM
-                         FROM   (SELECT TOP 5 O.NAME     AS OPTION_NAME,
+                         FROM   (SELECT TOP 5 O.CRM_KEY     AS OPTION_NAME,
                                         HCP.amount AS OPTION_PERCENTAGE
                                  FROM   hl6_category_option HCP
                                         RIGHT JOIN allocation_category_option_level ACOL

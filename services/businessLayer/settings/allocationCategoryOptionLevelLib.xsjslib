@@ -4,6 +4,10 @@ var mapper = $.mktgplanningtool.services.commonLib.mapper;
 var ErrorLib = mapper.getErrors();
 var dataCategoryOptionLevel = mapper.getDataCategoryOptionLevel();
 var blSegmentation = mapper.getSegmentation();
+var AllocationOptionLib = mapper.getAllocationOptionLib();
+var allocationCategory = mapper.getAllocationCategoryLib();
+var dataCategory = mapper.getDataCategory();
+var dataOption = mapper.getDataOption();
 var util = mapper.getUtil();
 /*************************************************/
 var HIERARCHY_LEVEL = {
@@ -15,13 +19,39 @@ var HIERARCHY_LEVEL = {
 	HL6: 3
 };
 
+var ALLOCATION_CATEGORY_NOT_EXIST = "The Allocation category does not exist.";
+var ALLOCATION_OPTION_NOT_EXIST = "The Allocation option does not exist.";
+
+function existAllocationCategory(categoryId){
+    return Object.keys(dataCategory.getAllocationCategoryById(categoryId)).length;
+}
+
+function existAllocationOption(optionId){
+    return Object.keys(dataOption.getAllocationOptionById(optionId)).length;
+}
+
 function updateCategoryOptionLevel(data, userId) {
     var message;
-    if(!data || !data.IN_CATEGORY_ID || !data.IN_LEVEL.length)
-        throw ErrorLib.getErrors().BadRequest();
+    if(!data || !data.IN_CATEGORY_ID || !data.IN_LEVEL.length){
+    	throw ErrorLib.getErrors().BadRequest();
+    }
 
-    if(typeof data.IN_LEVEL === "string")
-        data.IN_LEVEL= [data.IN_LEVEL];
+    if(!existAllocationCategory(data.IN_CATEGORY_ID)){
+        throw ErrorLib.getErrors().CustomError("", "allocationCategoryOptionLevelService/handlePut/updateCategoryOptionLevel", ALLOCATION_CATEGORY_NOT_EXIST);
+    }
+    
+    if(typeof data.IN_LEVEL === "string"){
+    	data.IN_LEVEL= [data.IN_LEVEL];
+    }
+    
+    if(data.IN_OPTION_LIST.length){
+    	for(var i = 0; i < data.IN_OPTION_LIST.length; i++){
+    		if(!existAllocationOption(Number(data.IN_OPTION_LIST[i]))){
+		        throw ErrorLib.getErrors().CustomError("", "allocationCategoryOptionLevelService/handlePut/updateCategoryOptionLevel", ALLOCATION_OPTION_NOT_EXIST);
+		        break;
+		    }
+    	}
+    }
 
 	data.IN_LEVEL.forEach(function(level){
 
@@ -29,6 +59,7 @@ function updateCategoryOptionLevel(data, userId) {
 
         if(hierarchylevel){
             var optionIds = [];
+            var categoryOptionToMessage = [];
             var countInsert = 0;
             var totalOptions = data.IN_OPTION_LIST.length;
             var allocationOptions = data.IN_OPTION_LIST.map(function (optionId) {
@@ -51,6 +82,9 @@ function updateCategoryOptionLevel(data, userId) {
 
                 if(categoryOptionLevelInfo && Number(categoryOptionLevelInfo.CATEGORY_ID) !== Number(data.IN_CATEGORY_ID)){
                     optionIds.push(data.IN_OPTION_LIST[i]);
+                    categoryOptionToMessage.push({
+                        CATEGORY_ID: categoryOptionLevelInfo.CATEGORY_ID
+                        , OPTION_ID: data.IN_OPTION_LIST[i]})
                 }
 
                 if(categoryOptionLevel && categoryOptionLevel.ALLOCATION_CATEGORY_OPTION_LEVEL_ID){
@@ -82,7 +116,27 @@ function updateCategoryOptionLevel(data, userId) {
                     "Could not complete the process.");
 
             if(optionIds.length){
-                var error = ErrorLib.getErrors().AcronymError("", "", 'Allocation Option assignment error.');
+                var stringMessage = "Selected options are already associated in the current level as follows: \n";
+                if(categoryOptionToMessage){
+                    var allCategory = allocationCategory.getCategoryByHierarchyLevelId(hierarchylevel).results;
+                    var allOptions = AllocationOptionLib.getAllocationOption();
+                    categoryOptionToMessage.forEach(function(level){
+
+                        var category = allCategory.filter(function (elem) {
+                            return Number(elem.CATEGORY_ID) === Number(level.CATEGORY_ID);
+                        });
+
+                        var option = allOptions.filter(function (elem) {
+                            return Number(elem.ALLOCATION_OPTION_ID === level.OPTION_ID);
+                        });
+
+                        if(category.length && option.length) {
+                            stringMessage = stringMessage + category[0].NAME + " / " + option[0].NAME + "\n";
+                        }
+                    });
+                }
+
+                var error = ErrorLib.getErrors().AcronymError("", "", stringMessage);
                 error.data = optionIds;
                 error.message = 'Allocation Option assignment error.';
                 error.name = 'Allocation Option assignment error.';

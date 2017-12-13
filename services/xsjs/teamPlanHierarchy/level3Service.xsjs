@@ -29,10 +29,12 @@ function handleGet(parameters, userSessionID) {
 	var rdo = {};
 	var hl2_categories = httpUtil.getUrlParameters().get("HL2_CATEGORIES");
 	var in_hl2_id = httpUtil.getUrlParameters().get("HL2_ID");
+    var in_hl3_id = httpUtil.getUrlParameters().get("HL3_ID");
+    var method = httpUtil.getUrlParameters().get("METHOD");
 	if (parameters.length > 0) {
-        var budgetYearId = parameters[1] && parameters[1].name == "BUDGET_YEAR_ID" ? parameters[1].value : null;
-        var regionId = parameters[2] && parameters[2].name == "REGION_ID" ? parameters[2].value : null;
-        var subRegionId = parameters[3] && parameters[3].name == "SUBREGION_ID" ? parameters[3].value : null;
+        var budgetYearId = parameters[1] && parameters[1].name === "BUDGET_YEAR_ID" ? parameters[1].value : null;
+        var regionId = parameters[2] && parameters[2].name === "REGION_ID" ? parameters[2].value : null;
+        var subRegionId = parameters[3] && parameters[3].name === "SUBREGION_ID" ? parameters[3].value : null;
         businessLavel3.checkPermission(userSessionID, parameters[0].name, parameters[0].value);
 		if (parameters[0].name === GET_ALL_HL3) {
 			// get by hl2 and userid
@@ -40,25 +42,29 @@ function handleGet(parameters, userSessionID) {
 					userSessionID);
 			httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
 		} else if (parameters[0].name === GET_BY_HL3_ID) {
-			// get by hl3 and userid
-			rdo = businessLavel3.getLevel3ById(parameters[0].value,
-					userSessionID);
+            if (in_hl3_id && method && method === "CARRY_OVER"){
+                rdo = businessLavel3.getLevel3CarryOverById(in_hl3_id, userSessionID);
+            } else {
+				// get by hl3 and userid
+				rdo = businessLavel3.getLevel3ById(parameters[0].value,
+						userSessionID);
+            }
 			httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
 		} else if (parameters[0].name === GET_DATA_KPI) {
 			rdo = businessLavel3.getLevel3Kpi(httpUtil.getUrlParameters().get("HL2_ID"), userSessionID);
 			httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
-		} else if (parameters[0].value == section){
-			var budgetYearId = httpUtil.getUrlParameters().get("BUDGET_YEAR_ID") || null;
-			var regionId = httpUtil.getUrlParameters().get("REGION_ID") || null;
-			var subRegionId = httpUtil.getUrlParameters().get("SUBREGION_ID") || null;
+		} else if (parameters[0].value === section){
+			budgetYearId = httpUtil.getUrlParameters().get("BUDGET_YEAR_ID") || null;
+			regionId = httpUtil.getUrlParameters().get("REGION_ID") || null;
+			subRegionId = httpUtil.getUrlParameters().get("SUBREGION_ID") || null;
 			var limit = httpUtil.getUrlParameters().get("LIMIT") || null;
 			var offset = httpUtil.getUrlParameters().get("OFFSET") || null;
 			rdo = businessLavel3.getLevel3ForSearch(userSessionID,budgetYearId,regionId,subRegionId,offset,limit);
 			httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
-		} else if (parameters[0] && parameters[0].value == 'ALL'){
+		} else if (parameters[0] && parameters[0].value === 'ALL'){
             rdo = businessLavel3.getAllHl3GroupByHl1(budgetYearId, regionId, subRegionId);
             httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
-        } else if (parameters[0] && parameters[0].value == 'BY_USER'){
+        } else if (parameters[0] && parameters[0].value === 'BY_USER'){
             rdo = businessLavel3.getHl3ByUserGroupByHl1(userSessionID, budgetYearId, regionId, subRegionId);
             httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
 		}

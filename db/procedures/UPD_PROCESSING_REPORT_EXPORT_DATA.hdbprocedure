@@ -207,6 +207,7 @@ BEGIN
                               :VA_BUYING_CLASSIFICATION AS BUYING_CLASSIFICATION,
                               'ZMMKTKR' AS PARTNER_FCT,
                               '' AS PARTNER_NO
+                              , '' AS MKT_PROGRAM_ID
                              FROM HL4
                              JOIN :VA_CATEGORY_OPTION CO ON 1=1
                              LEFT JOIN BUSINESS_OWNER BO ON UPPER(BO.DESCRIPTION) = 'MARKETING'
@@ -249,7 +250,7 @@ BEGIN
                                     HL5.PLANNED_END_DATE AS PLANFINISH,
                                     HL5.ACTUAL_START_DATE AS ACTUALSTART,
                                     HL5.ACTUAL_END_DATE AS ACTUALFINISH,
-                                    HL5.SHOW_ON_DG_CALENDAR AS SHOW_CALENDAR,
+                                    case when HL5.SHOW_ON_DG_CALENDAR = 1 then 'X' else '' end AS SHOW_CALENDAR,
                                     SO.CRM_KEY AS MKT_ORG,
                                     DC.CRM_KEY AS DIS_CHANNEL,
                                     RTM.CRM_KEY AS ROUTE_TO_MARKET,
@@ -303,7 +304,8 @@ BEGIN
                                     HL5.COUNTRY AS COUNTRY,
                                     :VA_BUYING_CLASSIFICATION AS BUYING_CLASSIFICATION,
                                     'ZMMKTKR' AS PARTNER_FCT,
-                                    '' AS PARTNER_NO
+                                    '' AS PARTNER_NO,
+                                    MARKETING_PROGRAM.NAME AS MKT_PROGRAM_ID
                                     FROM HL5
                                     LEFT JOIN OBJECTIVE OB ON OB.OBJECTIVE_ID = HL5.CAMPAIGN_OBJECTIVE_ID
                                     LEFT JOIN CAMPAIGN_TYPE CT ON CT.CAMPAIGN_TYPE_ID = HL5.CAMPAIGN_TYPE_ID
@@ -314,6 +316,7 @@ BEGIN
                                     LEFT JOIN DISTRIBUTION_CHANNEL DC ON DC.DISTRIBUTION_CHANNEL_ID = HL5.DISTRIBUTION_CHANNEL_ID
                                     LEFT JOIN ROUTE_TO_MARKET RTM ON RTM.ROUTE_TO_MARKET_ID = HL5.ROUTE_TO_MARKET_ID
                                     LEFT JOIN COST_CENTER CC ON CC.COST_CENTER_ID = HL5.COST_CENTER_ID
+                                    LEFT JOIN MARKETING_PROGRAM ON MARKETING_PROGRAM.MARKETING_PROGRAM_ID = HL5.MARKETING_PROGRAM_ID
                                     LEFT JOIN :VA_CATEGORY_OPTION CO ON 1=1
                                     WHERE HL5_ID = IN_HL_ID;
 
@@ -350,7 +353,7 @@ BEGIN
                                         HL6.PLANNED_END_DATE AS PLANFINISH,
                                         HL6.ACTUAL_START_DATE AS ACTUALSTART,
                                         HL6.ACTUAL_END_DATE AS ACTUALFINISH,
-                                        HL6.SHOW_ON_DG_CALENDAR AS SHOW_CALENDAR,
+                                        case when HL6.SHOW_ON_DG_CALENDAR = 1 then 'X' else '' end AS SHOW_CALENDAR,
                                         SO.CRM_KEY AS MKT_ORG,
                                         DC.CRM_KEY AS DIS_CHANNEL,
                                         RTM.CRM_KEY AS ROUTE_TO_MARKET,
@@ -405,6 +408,7 @@ BEGIN
                                         :VA_BUYING_CLASSIFICATION AS BUYING_CLASSIFICATION,
                                         'ZMMKTKR' AS PARTNER_FCT,
                                         '' AS PARTNER_NO
+                                        , MARKETING_PROGRAM.NAME AS MKT_PROGRAM_ID
                                         FROM HL6
                                         LEFT JOIN OBJECTIVE OB ON OB.OBJECTIVE_ID = HL6.CAMPAIGN_OBJECTIVE_ID
                                         LEFT JOIN CAMPAIGN_TYPE CT ON CT.CAMPAIGN_TYPE_ID = HL6.CAMPAIGN_TYPE_ID
@@ -415,6 +419,7 @@ BEGIN
                                         LEFT JOIN DISTRIBUTION_CHANNEL DC ON DC.DISTRIBUTION_CHANNEL_ID = HL6.DISTRIBUTION_CHANNEL_ID
                                         LEFT JOIN ROUTE_TO_MARKET RTM ON RTM.ROUTE_TO_MARKET_ID = HL6.ROUTE_TO_MARKET_ID
                                         LEFT JOIN COST_CENTER CC ON CC.COST_CENTER_ID = HL6.COST_CENTER_ID
+                                        LEFT JOIN MARKETING_PROGRAM ON MARKETING_PROGRAM.MARKETING_PROGRAM_ID = HL6.MARKETING_PROGRAM_ID
                                         LEFT JOIN :VA_CATEGORY_OPTION CO ON 1=1
                                         WHERE HL6_ID = IN_HL_ID;
             END IF;
@@ -495,6 +500,7 @@ BEGIN
          BUYING_CLASSIFICATION,
          PARTNER_FCT,
          PARTNER_NO,
+         MKT_PROGRAM_ID,
          CREATED_USER_ID)
         SELECT *, 1 AS CREATED_USER_ID  FROM :VA_GET_HL;
         --************************************************--

@@ -149,6 +149,10 @@ function getHl3ByUserGroupByHl1(userId, budgetYearId, regionId, subRegionId) {
     return collection;
 }
 
+function getLevel3CarryOverById(hl3Id, userId) {
+    return data.getLevel3CarryOverById(hl3Id, userId);
+}
+
 // Get an Level 3 data by id
 function getLevel3ById(hl3Id, userId) {
     var hl3 = JSON.parse(JSON.stringify(data.getLevel3ById(hl3Id, userId)));

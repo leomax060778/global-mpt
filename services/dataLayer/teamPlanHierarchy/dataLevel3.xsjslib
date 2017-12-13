@@ -14,6 +14,7 @@ var spGetHl3AllocatedBudget = "GET_HL3_ALLOCATED_BUDGET";
 var spGetHl3ForSerach = "GET_HL3_FOR_SEARCH";
 var UPD_HL3 = "UPD_HL3";
 var GET_HL3 = "GET_HL3";
+var GET_HL3_CARRY_OVER_BY_ID = "GET_HL3_CARRY_OVER_BY_ID";
 var GET_GLOBAL_TEAM = "GET_GLOBAL_TEAM";
 var GET_HL3_BY_ACRONYM = "GET_HL3_BY_ACRONYM";
 var DEL_HL3 = "DEL_HL3";
@@ -137,6 +138,18 @@ function getLevel3ById(hl3Id, userId) {
 		return {};
 }
 
+function getLevel3CarryOverById(hl3Id, userId) {
+	var parameters = {};
+	parameters.in_hl3_id = hl3Id;
+	var result = db.executeProcedure(GET_HL3_CARRY_OVER_BY_ID, parameters);
+	var list = db.extractArray(result.out_result);
+    if (list.length) {
+        return list[0];
+    } else {
+        return {};
+    }
+}
+
 function getLevel3ByAcronym(acronym, hl2Id, userId) {
 	var parameters = {};
 	parameters.in_acronym = acronym.toUpperCase();
@@ -250,12 +263,14 @@ function getLevel3VersionById(hl3Id, version) {
 		parameters.in_version = version;
 		var result = db.executeProcedure(GET_HL3_VERSION_BY_ID, parameters);
 		var list = db.extractArray(result.out_result);
-		if (list.length)
-			return list[0];
-
-		else
-			return {};
-	}
-	else
-		return {};
+        if (list.length) {
+            return list[0];
+        }
+        else {
+            return {};
+        }
+    }
+    else {
+        return {};
+    }
 }

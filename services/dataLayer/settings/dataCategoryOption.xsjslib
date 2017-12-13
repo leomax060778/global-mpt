@@ -58,7 +58,12 @@ function getAllocationOptionById(optionId){
 		'in_option_id' : optionId
 	};
 	var result = db.executeProcedureManual(GET_ALLOCATION_OPTION_BY_ID, params);
-	return db.extractArray(result.out_result)[0];
+	var list = db.extractArray(result.out_result);
+	if(list.length){
+		return list[0];
+	} else {
+		return {};
+	}
 }
 
 function getAllocationOptionByName(name){

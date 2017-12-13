@@ -4,6 +4,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL5_BY_HL4_I
               HL5_ID BIGINT
             , CRM_ID NVARCHAR(25)
             , STATUS_DETAIL NVARCHAR(255)
+            , STATUS_ID INTEGER
             , CREATED_BY NVARCHAR(255)
             , HL5_BUDGET DECIMAL(19,2)
             , TOTAL_HL6 INT
@@ -30,6 +31,7 @@ va_intermidate = SELECT
     ,HL5.IMPORTED as IMPORTED
     ,HL5.ACRONYM
     ,HL5_CRM_DESCRIPTION
+    ,HL5.HL5_STATUS_DETAIL_ID
     FROM HL5 Hl5
     INNER JOIN HL4 hl4 ON hl4.hl4_id=hl5.hl4_id AND hl4.enabled=1 AND hl4.deleted=0
     INNER JOIN HL3 hl3 ON hl3.hl3_id=hl4.hl3_id AND hl3.enabled=1 AND hl3.deleted=0
@@ -45,6 +47,7 @@ aux_out_result = SELECT
         va_hl5.HL5_ID
 		,va_hl5.CRM_ID
 		,va_hl5.STATUS_DETAIL
+		,va_hl5.HL5_STATUS_DETAIL_ID
 		,va_hl5.CREATED_BY
 		,va_hl5.HL5_BUDGET
 		, COUNT(DISTINCT HL6.HL6_ID) AS TOTAL_HL6
@@ -66,6 +69,7 @@ aux_out_result = SELECT
 	va_hl5.HL5_ID
     ,va_hl5.CRM_ID
     ,va_hl5.STATUS_DETAIL
+    ,va_hl5.HL5_STATUS_DETAIL_ID
     ,va_hl5.CREATED_BY
     ,va_hl5.HL5_BUDGET
     --,BSR.AMOUNT
@@ -78,6 +82,7 @@ select
  T.HL5_ID
 ,T.CRM_ID
 ,T.STATUS_DETAIL
+,T.HL5_STATUS_DETAIL_ID AS STATUS_ID
 ,T.CREATED_BY
 ,T.HL5_BUDGET
 
@@ -93,6 +98,7 @@ GROUP BY
 T.HL5_ID
 ,T.CRM_ID
 ,T.STATUS_DETAIL
+,T.HL5_STATUS_DETAIL_ID
 ,T.CREATED_BY
 ,T.HL5_BUDGET
 ,T.IMPORTED

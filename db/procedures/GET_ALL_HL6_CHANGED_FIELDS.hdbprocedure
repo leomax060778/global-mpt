@@ -35,6 +35,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_ALL_HL6_CHAN
                      CATEGORY_NAME NVARCHAR(60),
                      ALLOCATION_CATEGORY_ID BIGINT,
                      PROCESSING_REPORT_EXPORT_KEY NVARCHAR(255)
+                     ,CRM_KEY NVARCHAR(255)
         	) )
 	LANGUAGE SQLSCRIPT
 	SQL SECURITY INVOKER 
@@ -68,6 +69,7 @@ var_hl6 =
      ,category.name as category_name
      ,ACOL.allocation_category_id
      ,category.processing_report_export_key
+     ,option.crm_key
     FROM hl6_category_option hl6CO
     inner join allocation_category_option_level ACOL ON ACOL.allocation_category_option_level_id = hl6CO.allocation_category_option_level_id
     inner join allocation_option option on ACOL.allocation_option_id = option.allocation_option_id
@@ -87,7 +89,7 @@ var_hl6 =
             , MARKETING_PROGRAM.NAME AS MKT_PROGRAM_ID
             , "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_MARKETING_ACTIVITY"(MARKETING_ACTIVITY.HL5_ID) AS MARKETING_ACTIVITYID
             , BUSINESS_OWNER.DESCRIPTION AS BUSINESS_OWNER
-            , HL6.show_on_dg_calendar AS SHOW_CALENDAR
+            , case when HL6.show_on_dg_calendar = 1 then 'X' else '' end AS SHOW_CALENDAR
             ,'' AS CERTIFICATION_LEVEL
             , ROUTE_TO_MARKET.CRM_KEY AS ROUTE_TO_MARKET
             , "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_BUYING_CLASSIFICATION"(T.HL6_ID, 'HL6') AS BUYING_CLASSIFICATION

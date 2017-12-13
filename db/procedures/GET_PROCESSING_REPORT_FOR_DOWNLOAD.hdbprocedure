@@ -11,6 +11,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_PROCESSING_R
 		CAMP_TYPE NVARCHAR(255),
 		SUB_TYPE NVARCHAR(255),
 		MKT_PROG_TYPE NVARCHAR(255),
+		MKT_PROGRAM_ID NVARCHAR(255),
 		MARKETING_ACTIVITYID NVARCHAR(255),
 		BUSINESS_OWNER NVARCHAR(255),
 		PRIORITY NVARCHAR(255),
@@ -79,7 +80,9 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_PROCESSING_R
         MAINPARTNER1 NVARCHAR(255),
         PARTNER_FCT2 NVARCHAR(255),
         PARTNER_NO2 NVARCHAR(255),
-        MAINPARTNER2 NVARCHAR(255)
+        MAINPARTNER2 NVARCHAR(255),
+        START_TIME NVARCHAR(255),
+        END_TIME NVARCHAR(255)
 	 )
 	)
 	LANGUAGE SQLSCRIPT
@@ -87,6 +90,43 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_PROCESSING_R
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
 	READS SQL DATA AS
 BEGIN
+
+-- The lines commented are the definitive lines. please when the history of the GLOBAL region is done, uncomment them and eliminate the lines with notations /*'please delete this line'*/
+ va_intermedate = SELECT
+                    CASE WHEN HL1.REGION_ID = 0 THEN '140000' ELSE REGION.START_TIME END AS START_TIME, --'please delete this line'
+                    CASE WHEN HL1.REGION_ID = 0 THEN '230000' ELSE REGION.END_TIME END AS END_TIME, --'please delete this line'
+                    CASE WHEN HL1.REGION_ID = 0 THEN '-4' ELSE REGION.TIME_ZONE_OFFSET END AS TIME_ZONE_OFFSET, --'please delete this line'
+                    --REGION.START_TIME,
+                    --REGION.END_TIME,
+                    --REGION.TIME_ZONE_OFFSET,
+                    HL4_ID AS HL_ID
+                    FROM HL1
+                    INNER JOIN HL2 ON HL1.HL1_ID = HL2.HL1_ID
+                    INNER JOIN HL3 ON HL2.HL2_ID = HL3.HL2_ID
+                    INNER JOIN HL4 ON HL3.HL3_ID = HL4.HL3_ID
+                    LEFT JOIN REGION ON HL1.REGION_ID = REGION.REGION_ID; --'please delete this line'
+                    --INNER JOIN REGION ON HL1.REGION_ID = REGION.REGION_ID;
+
+                    IF in_object_type = 'CPG' THEN
+                        va_intermedate = SELECT
+                                            T.START_TIME,
+                                            T.END_TIME,
+                                            T.TIME_ZONE_OFFSET,
+                                            HL5_ID AS HL_ID
+                                            FROM :va_intermedate T
+                                            INNER JOIN HL5 ON T.HL_ID = HL5.HL4_ID;
+                    ELSEIF in_object_type = 'CPT' THEN
+                        va_intermedate = SELECT
+                                            T.START_TIME,
+                                            T.END_TIME,
+                                            T.TIME_ZONE_OFFSET,
+                                            HL6_ID AS HL_ID
+                                            FROM :va_intermedate T
+                                            INNER JOIN HL5 ON T.HL_ID = HL5.HL4_ID
+                                            INNER JOIN HL6 ON HL5.HL5_ID = HL6.HL5_ID;
+                    END IF;
+
+
  out_result =  SELECT
                 EXTERNAL_ID_PARENT,
                 OBJECT_TYPE,
@@ -97,6 +137,7 @@ BEGIN
                 CAMP_TYPE,
                 SUB_TYPE,
                 MKT_PROG_TYPE,
+                MKT_PROGRAM_ID,
                 MARKETING_ACTIVITYID,
                 BUSINESS_OWNER,
                 PRIORITY,
@@ -165,7 +206,11 @@ BEGIN
                 MAINPARTNER1 ,
                 PARTNER_FCT2 ,
                 PARTNER_NO2 ,
-                MAINPARTNER2 FROM
-                PROCESSING_REPORT_EXPORT_DATA WHERE OBJECT_TYPE = in_object_type;
+                MAINPARTNER2,
+                T.START_TIME,
+                T.END_TIME
+                FROM PROCESSING_REPORT_EXPORT_DATA
+                INNER JOIN :va_intermedate T ON T.HL_ID = PROCESSING_REPORT_EXPORT_DATA.HL_ID
+                WHERE OBJECT_TYPE = in_object_type;
 		
 END;

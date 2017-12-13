@@ -45,8 +45,8 @@ function insertCampaignSubType(payload, userId) {
     return dataCampaignSubType.insertCampaignSubType(
         payload.IN_NAME.trim()
         , payload.IN_CRM_KEY.trim()
-        , payload.IN_ROLLOVER_TEXT.trim() || null
-        , payload.IN_EXAMPLE.trim() || null
+        , payload.IN_ROLLOVER_TEXT ? payload.IN_ROLLOVER_TEXT.trim() : null
+        , payload.IN_EXAMPLE ? payload.IN_EXAMPLE.trim() : null
         , userId);
 }
 
@@ -77,8 +77,8 @@ function updateCampaignSubType(campaignSubTypeData, userId) {
         campaignSubTypeData.IN_CAMPAIGN_SUB_TYPE_ID
         , campaignSubTypeData.IN_NAME.trim()
         , campaignSubTypeData.IN_CRM_KEY.trim()
-        , campaignSubTypeData.IN_ROLLOVER_TEXT.trim() || null
-        , campaignSubTypeData.IN_EXAMPLE.trim() || null
+        , campaignSubTypeData.IN_ROLLOVER_TEXT ? campaignSubTypeData.IN_ROLLOVER_TEXT.trim() : null
+        , campaignSubTypeData.IN_EXAMPLE ? campaignSubTypeData.IN_EXAMPLE.trim() : null
         , userId);
 }
 

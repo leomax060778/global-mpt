@@ -28,8 +28,8 @@ function insertCampaignType(payload, userId) {
         payload.IN_NAME.trim()
         , payload.IN_SHOW_ADDITIONAL_FIELDS
         , payload.IN_CRM_KEY.trim()
-        , payload.IN_ROLLOVER_TEXT.trim() || null
-        , payload.IN_EXAMPLE.trim() || null
+        , payload.IN_ROLLOVER_TEXT ? payload.IN_ROLLOVER_TEXT.trim(): null
+        , payload.IN_EXAMPLE ? payload.IN_EXAMPLE.trim() : null
         , userId
     );
 }
@@ -61,8 +61,8 @@ function updateCampaignType(campaignTypeData, userId){
         , campaignTypeData.IN_NAME.trim()
         , campaignTypeData.IN_SHOW_ADDITIONAL_FIELDS
         , campaignTypeData.IN_CRM_KEY.trim()
-        , campaignTypeData.IN_ROLLOVER_TEXT.trim() || null
-        , campaignTypeData.IN_EXAMPLE.trim() || null
+        , campaignTypeData.IN_ROLLOVER_TEXT ? campaignTypeData.IN_ROLLOVER_TEXT.trim(): null
+        , campaignTypeData.IN_EXAMPLE ? campaignTypeData.IN_EXAMPLE.trim() : null
         , userId
     );
 }
