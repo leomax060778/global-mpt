@@ -31,11 +31,18 @@ function handleGet(parameters, userSessionID) {
 	var in_hl2_id = httpUtil.getUrlParameters().get("HL2_ID");
     var in_hl3_id = httpUtil.getUrlParameters().get("HL3_ID");
     var method = httpUtil.getUrlParameters().get("METHOD");
+    
+    if(!in_hl3_id && parameters[0].name === "GET_BY_HL3_ID"){
+    	in_hl3_id = parameters[0].value;
+    }
+    
 	if (parameters.length > 0) {
+		
         var budgetYearId = parameters[1] && parameters[1].name === "BUDGET_YEAR_ID" ? parameters[1].value : null;
         var regionId = parameters[2] && parameters[2].name === "REGION_ID" ? parameters[2].value : null;
         var subRegionId = parameters[3] && parameters[3].name === "SUBREGION_ID" ? parameters[3].value : null;
-        businessLavel3.checkPermission(userSessionID, parameters[0].name, parameters[0].value);
+        businessLavel3.checkPermission(userSessionID, parameters[0].name, in_hl3_id);
+        
 		if (parameters[0].name === GET_ALL_HL3) {
 			// get by hl2 and userid
 			rdo = businessLavel3.getAllLevel3(parameters[0].value,

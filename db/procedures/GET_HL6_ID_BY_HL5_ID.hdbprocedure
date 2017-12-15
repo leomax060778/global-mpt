@@ -1,0 +1,21 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL6_ID_BY_HL5_ID"
+(
+	IN in_hl5_id BIGINT,
+	OUT out_result TABLE(
+	hl6_id BIGINT
+	) 
+) 
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER 
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	READS SQL DATA AS
+BEGIN
+
+out_result = 
+	SELECT HL6.hl6_id
+	FROM HL6
+	WHERE HL6.hl5_id = in_hl5_id
+	  AND HL6.deleted = 0
+	  AND HL6.enabled = 1;
+
+END;

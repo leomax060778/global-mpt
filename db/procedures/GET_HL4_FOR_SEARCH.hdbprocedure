@@ -9,6 +9,8 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL4_FOR_SEAR
         , OUT total_rows INTEGER
 		, OUT out_result TABLE (
 			id bigint,
+            HL4_STATUS_DETAIL_ID bigint,
+            STATUS_DETAIL nvarchar(20),
 			parent_id bigint,
 			BUDGET_YEAR BIGINT,
 			acronym NVARCHAR(25),
@@ -25,6 +27,8 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL4_FOR_SEAR
 BEGIN
     if in_isSA = 1 then
         va_subresult = SELECT DISTINCT HL4.hl4_id as id
+                , HL4.HL4_STATUS_DETAIL_ID
+                , STATUS.DETAIL AS STATUS_DETAIL
         		, HL4.hl3_id as parent_id
         		, BGY.BUDGET_YEAR
         		, HL1.acronym
@@ -38,6 +42,7 @@ BEGIN
         	INNER JOIN HL2 ON HL3.hl2_id = HL2.hl2_id AND hl2.enabled=1 AND hl2.deleted=0
         	INNER JOIN HL1 ON HL2.hl1_id = HL1.hl1_id AND hl1.enabled=1 AND hl1.deleted=0
         	INNER JOIN BUDGET_YEAR BGY ON HL1.budget_year_id = BGY.budget_year_id
+			INNER JOIN HL4_STATUS_DETAIL STATUS ON hl4.HL4_STATUS_DETAIL_ID = STATUS.HL4_STATUS_DETAIL_ID
         	LEFT JOIN REGION ON HL1.region_id = REGION.region_id
         	LEFT JOIN SUBREGION ON HL2.subregion_id = SUBREGION.subregion_id
         	WHERE hl4.deleted = 0
@@ -47,6 +52,8 @@ BEGIN
         	  ORDER BY path, organization_acronym;
     else
         va_subresult = SELECT DISTINCT HL4.hl4_id as id
+                , HL4.HL4_STATUS_DETAIL_ID
+                , STATUS.DETAIL AS STATUS_DETAIL
         		, HL4.hl3_id as parent_id
         		, BGY.BUDGET_YEAR
         		, HL1.acronym
@@ -61,6 +68,7 @@ BEGIN
         	INNER JOIN HL2 ON HL3.hl2_id = HL2.hl2_id AND hl2.enabled=1 AND hl2.deleted=0
         	INNER JOIN HL1 ON HL2.hl1_id = HL1.hl1_id AND hl1.enabled=1 AND hl1.deleted=0
         	INNER JOIN BUDGET_YEAR BGY ON HL1.budget_year_id = BGY.budget_year_id AND (BGY.BUDGET_YEAR_ID = in_budget_year_id)
+			INNER JOIN HL4_STATUS_DETAIL STATUS ON hl4.HL4_STATUS_DETAIL_ID = STATUS.HL4_STATUS_DETAIL_ID
         	LEFT JOIN REGION ON HL1.region_id = REGION.region_id
         	LEFT JOIN SUBREGION ON HL2.subregion_id = SUBREGION.subregion_id
         	WHERE hl4.deleted = 0
@@ -73,6 +81,8 @@ BEGIN
 
     if in_region_id = -1 then
             va_subresult = SELECT T.ID
+                                  , T.HL4_STATUS_DETAIL_ID
+                    			  , T.STATUS_DETAIL
                                   ,T.PARENT_ID
                                   ,T.BUDGET_YEAR
                                   ,T.ACRONYM
@@ -85,6 +95,8 @@ BEGIN
                         where T.REGION_ID = 0;
         else
             va_subresult = SELECT T.ID
+                           , T.HL4_STATUS_DETAIL_ID
+                    	   , T.STATUS_DETAIL
                            ,T.PARENT_ID
                            ,T.BUDGET_YEAR
                            ,T.ACRONYM
@@ -101,6 +113,8 @@ BEGIN
 
 if(in_limit = -1) then 
 out_result = SELECT T.ID
+                            , T.HL4_STATUS_DETAIL_ID
+                    	    , T.STATUS_DETAIL
                             ,T.PARENT_ID
                             ,T.BUDGET_YEAR
                             ,T.ACRONYM
@@ -111,6 +125,8 @@ out_result = SELECT T.ID
                            from :va_subresult T;
 else                         
         out_result = SELECT T.ID
+                            , T.HL4_STATUS_DETAIL_ID
+                    		, T.STATUS_DETAIL
                             ,T.PARENT_ID
                             ,T.BUDGET_YEAR
                             ,T.ACRONYM

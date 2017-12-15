@@ -273,6 +273,10 @@ function getUserById(id) {
 
 function getLevel6ForSearch(userSessionID, budget_year_id, region_id, subregion_id, limit, offset) {
     var list = dataHl6.getHl6ForSearch(userSessionID, util.isSuperAdmin(userSessionID) ? 1 : 0, budget_year_id, region_id || 0, subregion_id || 0, limit, offset || 0);
+    list = JSON.parse(JSON.stringify(list));
+    list.result.forEach(function (elem) {
+        elem.ENABLE_EDIT = (Number(elem.HL6_STATUS_DETAIL_ID) !== HL6_STATUS.CREATE_IN_CRM) && (Number(elem.HL6_STATUS_DETAIL_ID) !== HL6_STATUS.IN_CRM) && (Number(elem.HL6_STATUS_DETAIL_ID) !== HL6_STATUS.UPDATE_IN_CRM);
+    });
     return list;
 }
 
@@ -1155,6 +1159,15 @@ function updatePartners(data, userId) {
     }
 }
 
+function deleteHl6ByHl5(hl5Id, userId) {
+    var hl6ToDelete = getHl6ByHl5Id(hl5Id).results;
+    var objHL6 = {};
+    hl6ToDelete.forEach(function (elem) {
+        objHL6.in_hl6_id = elem.HL6_ID;
+        deleteHl6(objHL6, userId);
+    });
+}
+
 function deleteHl6(hl6, userId, rollBack) {
     hl6.HL6_ID = hl6.in_hl6_id;
     if (!hl6.HL6_ID && !rollBack) {
@@ -1251,7 +1264,7 @@ function isComplete(data) {
 
                 break;
             case "BUDGET":
-                isComplete = !!(!data.hl6.ALLOW_BUDGET_ZERO && Number(data.hl6.BUDGET));
+                isComplete = !!Number(data.hl6.ALLOW_BUDGET_ZERO) || !!Number(data.hl6.BUDGET);
                 break;
             /*case "MARKETING_PROGRAM_ID":
                 isComplete = !!data.hl6.MARKETING_PROGRAM_ID;
@@ -1373,10 +1386,6 @@ function validateHl6(data, userId) {
         if (!data.hl6.BUDGET_SPEND_Q1 && !data.hl6.BUDGET_SPEND_Q2 && !data.hl6.BUDGET_SPEND_Q3 && !data.hl6.BUDGET_SPEND_Q4)
             throw ErrorLib.getErrors().CustomError("", "hl6Services/handlePost/insertHl6", L6_MSG_INITIATIVE_BUDGET_SPEND);
 
-        if (!data.hl6_expected_outcomes.RESULTS_CAMPAIGN_Q1 && !data.hl6_expected_outcomes.RESULTS_CAMPAIGN_Q2 && !data.hl6_expected_outcomes.RESULTS_CAMPAIGN_Q3
-            && !data.hl6_expected_outcomes.RESULTS_CAMPAIGN_Q4)
-            throw ErrorLib.getErrors().CustomError("", "hl6Services/handlePost/insertHl6", L6_MSG_RESULTS_CAMPAIGN);
-
         var q1 = Number(data.hl6.BUDGET_SPEND_Q1) || 0;
         var q2 = Number(data.hl6.BUDGET_SPEND_Q2) || 0;
         var q3 = Number(data.hl6.BUDGET_SPEND_Q3) || 0;
@@ -1393,16 +1402,35 @@ function validateHl6(data, userId) {
 
         myBudgetComplete = isMyBudgetComplete(data.hl6_budget);
 
-        //RESULTS CAMPAIGN validations
-        var rq1 = Number(data.hl6_expected_outcomes.RESULTS_CAMPAIGN_Q1) || 0;
-        var rq2 = Number(data.hl6_expected_outcomes.RESULTS_CAMPAIGN_Q2) || 0;
-        var rq3 = Number(data.hl6_expected_outcomes.RESULTS_CAMPAIGN_Q3) || 0;
-        var rq4 = Number(data.hl6_expected_outcomes.RESULTS_CAMPAIGN_Q4) || 0;
+        if(Number(data.hl6.MULTI_TACTIC || data.hl6_expected_outcomes.MultiTactic)) {
+            if (!data.hl6_expected_outcomes.RESULTS_CAMPAIGN_Q1 && !data.hl6_expected_outcomes.RESULTS_CAMPAIGN_Q2 && !data.hl6_expected_outcomes.RESULTS_CAMPAIGN_Q3
+                && !data.hl6_expected_outcomes.RESULTS_CAMPAIGN_Q4)
+                throw ErrorLib.getErrors().CustomError("", "hl6Services/handlePost/insertHl6", L6_MSG_RESULTS_CAMPAIGN);
+            //RESULTS CAMPAIGN validations
+            var rq1 = Number(data.hl6_expected_outcomes.RESULTS_CAMPAIGN_Q1) || 0;
+            var rq2 = Number(data.hl6_expected_outcomes.RESULTS_CAMPAIGN_Q2) || 0;
+            var rq3 = Number(data.hl6_expected_outcomes.RESULTS_CAMPAIGN_Q3) || 0;
+            var rq4 = Number(data.hl6_expected_outcomes.RESULTS_CAMPAIGN_Q4) || 0;
 
-        var resultsCampaign = rq1 + rq2 + rq3 + rq4;
+            var resultsCampaign = rq1 + rq2 + rq3 + rq4;
 
-        if (resultsCampaign < 100)
-            throw ErrorLib.getErrors().CustomError("", "hl6Services/handlePost/insertHl6", L6_MSG_RESULTS_CAMPAIGN_PERCENT);
+            if (resultsCampaign < 100)
+                throw ErrorLib.getErrors().CustomError("", "hl6Services/handlePost/insertHl6", L6_MSG_RESULTS_CAMPAIGN_PERCENT);
+
+            if (data.hl6_expected_outcomes) {
+                if (!data.hl6_expected_outcomes.hl6_expected_outcomes_detail.length && !data.hl6_expected_outcomes.COMMENTS)
+                    throw ErrorLib.getErrors().CustomError("", "hl6Services/handlePost/insertHl6", L6_CAMPAIGN_FORECASTING_KPIS_COMMENT);
+
+                data.hl6_expected_outcomes.hl6_expected_outcomes_detail.forEach(function (hl6ExpectedOutcomesDetail) {
+                    if (hl6ExpectedOutcomesDetail.VOLUME_VALUE != 0 && !Number(hl6ExpectedOutcomesDetail.VOLUME_VALUE))
+                        throw ErrorLib.getErrors().CustomError("", "hl6Services/handlePost/insertHl6", L6_CAMPAIGN_FORECASTING_KPIS_DETAILS);
+                    if (!hl6ExpectedOutcomesDetail.EURO_VALUE || !Number(hl6ExpectedOutcomesDetail.EURO_VALUE))
+                        throw ErrorLib.getErrors().CustomError("", "hl6Services/handlePost/insertHl6", L6_CAMPAIGN_FORECASTING_KPIS_DETAILS_EURO);
+                    if (!hl6ExpectedOutcomesDetail.OUTCOMES_ID || !Number(hl6ExpectedOutcomesDetail.OUTCOMES_ID))
+                        throw ErrorLib.getErrors().CustomError("", "hl6Services/handlePost/insertHl6", L6_CAMPAIGN_FORECASTING_KPIS_NOT_VALID);
+                });
+            }
+        }
 
         if (data.hl6_sale) {
             data.hl6_sale.forEach(function (sale) {
@@ -1419,20 +1447,6 @@ function validateHl6(data, userId) {
             });
         }
 
-        if (data.hl6_expected_outcomes) {
-            if (!data.hl6_expected_outcomes.hl6_expected_outcomes_detail.length && !data.hl6_expected_outcomes.COMMENTS)
-                throw ErrorLib.getErrors().CustomError("", "hl6Services/handlePost/insertHl6", L6_CAMPAIGN_FORECASTING_KPIS_COMMENT);
-
-            data.hl6_expected_outcomes.hl6_expected_outcomes_detail.forEach(function (hl6ExpectedOutcomesDetail) {
-                if (hl6ExpectedOutcomesDetail.VOLUME_VALUE != 0 && !Number(hl6ExpectedOutcomesDetail.VOLUME_VALUE))
-                    throw ErrorLib.getErrors().CustomError("", "hl6Services/handlePost/insertHl6", L6_CAMPAIGN_FORECASTING_KPIS_DETAILS);
-                if (!hl6ExpectedOutcomesDetail.EURO_VALUE || !Number(hl6ExpectedOutcomesDetail.EURO_VALUE))
-                    throw ErrorLib.getErrors().CustomError("", "hl6Services/handlePost/insertHl6", L6_CAMPAIGN_FORECASTING_KPIS_DETAILS_EURO);
-                if (!hl6ExpectedOutcomesDetail.OUTCOMES_ID || !Number(hl6ExpectedOutcomesDetail.OUTCOMES_ID))
-                    throw ErrorLib.getErrors().CustomError("", "hl6Services/handlePost/insertHl6", L6_CAMPAIGN_FORECASTING_KPIS_NOT_VALID);
-            });
-        }
-
         if (data.partners && data.partners.length) {
             data.partners.forEach(function (partner) {
                 if (!partner.PARTNER_TYPE_ID || !Number(partner.PARTNER_TYPE_ID))
@@ -1441,7 +1455,7 @@ function validateHl6(data, userId) {
                 if (!partner.AMOUNT || !Number(partner.AMOUNT))
                     throw ErrorLib.getErrors().CustomError("", "hl6Services/handlePost/insertHl6", L6_PARTNER_AMOUNT_NOT_VALID);
 
-                if (PARTNER_TYPE.INTEL == partner.PARTNER_TYPE_ID && (!partner.INTEL_PROJECT_ID || !partner.CLAIM_ID || !partner.COMMENTS))
+                if (PARTNER_TYPE.INTEL == partner.PARTNER_TYPE_ID && !partner.INTEL_PROJECT_ID)
                     throw ErrorLib.getErrors().CustomError("", "hl6Services/handlePost/insertHl6", L6_PARTNER_INCOMPLETE_INTEL);
 
                 if (PARTNER_TYPE.EXTERNAL_PARTNER == partner.PARTNER_TYPE_ID && (!partner.COMPANY_NAME || !partner.COMPANY_ADDRESS))
@@ -1463,7 +1477,11 @@ function validateHl6(data, userId) {
 
             existInCrm = dataHl6.hl6ExistsInCrm(data.hl6.HL6_ID);
             var categoryHasChanged = categoryChanged(data, existInCrm);
-            statusId = !crmFieldsHasChanged && !categoryHasChanged && !Number(budgetSpendRequest.countPendingBudgetRequestByHl6Id(data.hl6.HL6_ID)) ? data.hl6.in_hl6_status_detail_id : HL6_STATUS.IN_PROGRESS;
+
+            statusId = !crmFieldsHasChanged && !categoryHasChanged
+            && !Number(budgetSpendRequest.countPendingBudgetRequestByHl6Id(data.hl6.HL6_ID))
+                ? data.hl6.in_hl6_status_detail_id == HL6_STATUS.IN_PROGRESS ? HL6_STATUS.VALID_FOR_CRM : data.hl6.in_hl6_status_detail_id
+                : HL6_STATUS.VALID_FOR_CRM;
         } else {
             statusId = HL6_STATUS.IN_PROGRESS;
         }
@@ -1710,15 +1728,20 @@ function setHl6Status(hl6_id, status_id, userId) {
     return updateOK;
 }
 
-function changeHl6StatusOnDemand(hl6_id, userId) {
+function changeHl6StatusOnDemand(hl6_id, userId, cancelConfirmation) {
     var hl6 = dataHl6.getHl6ById(hl6_id);
     var existInCrm = dataHl6.hl6ExistsInCrm(hl6_id);
     var statusId = null;
-
-    if(hl6.HL6_STATUS_DETAIL_ID == HL6_STATUS.IN_PROGRESS){
-        statusId = existInCrm ? HL6_STATUS.UPDATE_IN_CRM : HL6_STATUS.CREATE_IN_CRM;
+    if(!cancelConfirmation) {
+        if (hl6.HL6_STATUS_DETAIL_ID == HL6_STATUS.VALID_FOR_CRM) {
+            statusId = existInCrm ? HL6_STATUS.UPDATE_IN_CRM : HL6_STATUS.CREATE_IN_CRM;
+        } else if (hl6.HL6_STATUS_DETAIL_ID == HL6_STATUS.IN_PROGRESS) {
+            statusId = HL6_STATUS.VALID_FOR_CRM;
+        } else {
+            statusId = hl6.HL6_STATUS_DETAIL_ID;
+        }
     } else {
-        statusId = hl6.HL6_STATUS_DETAIL_ID;
+        statusId = HL6_STATUS.VALID_FOR_CRM;
     }
 
     if (!hl6.ALLOW_BUDGET_ZERO) {
@@ -2180,6 +2203,7 @@ function extractElementByList(list, criterion, value) {
 }
 
 function getHl6ExpectedOutcomesOptions(hl5_id) {
+    var MultiTactic = level5Lib.getMultiTacticById(hl5_id)[0].MULTI_TACTIC;
     var expectedOutcomesL5 = expectedOutcomesLib.getExpectedOutcomesByHl5Id(hl5_id);
     var expectedOutcomesL6 = {};
     var expectedOutcomesDetailL6 = [];
@@ -2197,6 +2221,7 @@ function getHl6ExpectedOutcomesOptions(hl5_id) {
         expectedOutcomesL6.COMMENTS = expectedOutcomesL5.COMMENTS;
     }
     expectedOutcomesL6.detail = expectedOutcomesDetailL6;
+    expectedOutcomesL6.MultiTactic = MultiTactic;
     return expectedOutcomesL6;
 }
 

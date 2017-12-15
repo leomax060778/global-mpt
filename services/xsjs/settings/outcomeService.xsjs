@@ -32,12 +32,16 @@ function handleGet(params, userId) {
 	var method = $.request.parameters.get("method");
 	var result = [];
 	if(hl){
+
 		result = outcomesLib.getAllOutcomes(hl);
 	} else if(in_outcome_type_id){
+
 		result = outcomesLib.getOutcomesByOtId(in_outcome_type_id);
 	} else if(method == 'GET_WIZARD_QUESTIONS'){
+
         result = outcomesLib.getWizardQuestions();
 	} else if(method == 'KPI_CARRY_OVER'){
+
 		var parentId = $.request.parameters.get("PARENT_ID");
 		var level = $.request.parameters.get("LEVEL");
 		result = expectedOutcomesLib.getExpectedOutcomesByParentIdLevel(parentId, level);

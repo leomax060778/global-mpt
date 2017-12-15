@@ -47,6 +47,8 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::UPD_HL5" (
     , IN in_employee_responsible_user nvarchar(7)
     , IN in_person_responsible nvarchar(7)
     , IN in_is_complete TINYINT
+    , IN in_multi_tactic TINYINT
+    
 	,OUT out_result int
 )
    LANGUAGE SQLSCRIPT
@@ -100,6 +102,7 @@ BEGIN
     , EMPLOYEE_RESPONSIBLE_USER = in_employee_responsible_user
     , PERSON_RESPONSIBLE = in_person_responsible
     , IS_COMPLETE = in_is_complete
+    , multi_tactic = in_multi_tactic
 
     where hl5_id = in_hl5_id;
 

@@ -1,0 +1,22 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_ALLOCATION_OPTION_BY_NAME_AND_CRM_KEY" (
+    IN in_name NVARCHAR(255),
+    IN in_crm_key NVARCHAR(50),
+	OUT out_result TABLE (
+	allocation_option_id BIGINT
+	, name NVARCHAR(60)
+	, crm_key NVARCHAR(50)
+ 	)
+ 	)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	READS SQL DATA AS
+BEGIN
+
+		out_result = SELECT allocation_option_id, name, crm_key FROM ALLOCATION_OPTION
+		WHERE upper(trim(NAME)) = upper(trim(in_name))
+		AND upper(trim(CRM_KEY)) = upper(trim(in_crm_key))
+		AND enabled = 1 AND deleted = 0
+		ORDER BY name;
+
+END;

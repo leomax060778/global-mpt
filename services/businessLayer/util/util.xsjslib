@@ -109,6 +109,11 @@ function validateDateEndMayorStart(dateStart,dateEnd)
 	return false;
 }
 
+function isAdmin(userId){
+	var isA = userbl.isAdmin(userId);
+	return isA;
+}
+
 function isSuperAdmin(userId){
     var isSA = false;
     if (config.getApplySuperAdminToAllInitiatives()) {

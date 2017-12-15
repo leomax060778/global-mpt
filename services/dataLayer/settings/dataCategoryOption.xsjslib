@@ -9,6 +9,7 @@ var INS_ALLOCATION_OPTION = "INS_ALLOCATION_OPTION";
 var GET_ALLOCATION_OPTION = "GET_ALLOCATION_OPTION";
 var GET_ALLOCATION_OPTION_BY_ID = "GET_ALLOCATION_OPTION_BY_ID";
 var GET_ALLOCATION_OPTION_BY_NAME = "GET_ALLOCATION_OPTION_BY_NAME";
+var GET_ALLOCATION_OPTION_BY_NAME_AND_CRM_KEY =  "GET_ALLOCATION_OPTION_BY_NAME_AND_CRM_KEY";
 var GET_ALLOCATION_OPTION_IN_USE_BY_OPTION_ID = "GET_ALLOCATION_OPTION_IN_USE_BY_OPTION_ID";
 var GET_ALLOCATION_OPTION_COUNT_BY_CATEGORY_ID_HL_ID = "GET_ALLOCATION_OPTION_COUNT_BY_CATEGORY_ID_HL_ID";
 var UPD_ALLOCATION_OPTION = "UPD_ALLOCATION_OPTION";
@@ -16,6 +17,7 @@ var DEL_ALLOCATION_OPTION = "DEL_ALLOCATION_OPTION";
 var GET_AVAILABLE_OPTION_BY_CATEGORY_ID_BY_LEVEL_ID = "GET_AVAILABLE_OPTION_BY_CATEGORY_ID_BY_LEVEL_ID";
 var GET_ASSIGNED_OPTION_BY_CATEGORY_ID_BY_LEVEL_ID = "GET_ASSIGNED_OPTION_BY_CATEGORY_ID_BY_LEVEL_ID";
 var GET_ALLOCATION_OPTION_BY_LEVEL_BY_CATEGORY = "GET_ALLOCATION_OPTION_BY_LEVEL_BY_CATEGORY";
+var GET_ALLOCATION_OPTION_RELATIONS_BY_OPTION_ID = "GET_ALLOCATION_OPTION_RELATIONS_BY_OPTION_ID";
 /******************************************************/
 
 var hierarchyLevel = {
@@ -74,6 +76,15 @@ function getAllocationOptionByName(name){
 	return db.extractArray(result.out_result)[0];
 }
 
+function getAllocationOptionByNameAndCrmKey(name, crm_key){
+    var params = {
+        'in_name' : name,
+		'in_crm_key': crm_key
+    };
+    var result = db.executeProcedureManual(GET_ALLOCATION_OPTION_BY_NAME_AND_CRM_KEY, params);
+    return db.extractArray(result.out_result)[0];
+}
+
 function getOptionInUseByOptionId(categoryId){
 	var params = {
 		'in_option_id': categoryId
@@ -109,6 +120,14 @@ function getAllocationOptionCountByCategoryIdLevelId(categoryId, level){
 		return db.executeScalarManual(GET_ALLOCATION_OPTION_COUNT_BY_CATEGORY_ID_HL_ID, params, "out_result");
 	}
 	return null;
+}
+
+function getAllocationOptionRelationsByOptionId(optionId){
+	var params = {};
+	params.in_option_id = optionId;
+
+	var result = db.executeProcedureManual(GET_ALLOCATION_OPTION_RELATIONS_BY_OPTION_ID, params, "out_result");
+	return db.extractArray(result.out_result);
 }
 
 function updateAllocationOption(optionId,name,crm_key, userId, autoCommit) {

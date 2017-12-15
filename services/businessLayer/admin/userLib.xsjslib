@@ -29,6 +29,13 @@ var NOT_PERMISSION_PARENT_LEVEL = "User should have permission for parent level.
 
 var defaultPassword = config.getDefaultPassword();
 
+var roleMap = {
+    SuperAdmin: 1,
+    Admin: 2,
+    DataEntry: 3,
+    CampaignManager: 4
+};
+
 function getAll() {
     return dbUser.getAllUser();
 }
@@ -554,7 +561,13 @@ function notifyInsertByEmail(TO, username, password) {
 function isSuperAdmin(userId) {
     var rol = dbUserRole.getUserRoleByUserId(userId);
 
-    return (rol && rol.length > 0 && rol[0].ROLE_ID == 1);
+    return (rol && rol.length > 0 && rol[0].ROLE_ID == roleMap.SuperAdmin);
+}
+
+function isAdmin(userId) {
+    var rol = dbUserRole.getUserRoleByUserId(userId);
+
+    return (rol && rol.length > 0 && rol[0].ROLE_ID == roleMap.Admin);
 }
 
 function getPermissionForLevelByUser(level, levelId, userId) {

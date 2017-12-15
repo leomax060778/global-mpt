@@ -17,6 +17,7 @@ function handleGet(parameters, userSessionID) {
     if(parameters.length > 0){
         switch(parameters[0].name){
             case BY_ID:
+
                 rdo = blExpectedOutcomes.getExpectedOutcomeById(parameters[0].value);
                 break;
             default:

@@ -3,7 +3,8 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_ALL_MARKETIN
             MARKETING_PROGRAM_ID BIGINT
             , NAME NVARCHAR(100)
             , DESCRIPTION NVARCHAR(255)
-            , VALIDATE TINYINT
+            , SHOW_VALIDATION_WIZARD TINYINT
+--            , VALIDATE TINYINT
         )
     )
 	LANGUAGE SQLSCRIPT
@@ -14,22 +15,13 @@ BEGIN
 /***************************** 
 	Write your procedure logic 
  *****************************/
-	output_result = (SELECT MARKETING_PROGRAM_ID
+	output_result = SELECT MARKETING_PROGRAM_ID
                     						, upper(NAME) as NAME
                     						, DESCRIPTION
-                    						, 1 as VALIDATE
+                    						, SHOW_VALIDATION_WIZARD
                     				 FROM MARKETING_PROGRAM
                     				 WHERE deleted = 0
                     				 AND enabled = 1
-                    				 AND upper(NAME) LIKE '%GLOBAL%')
-                    				  UNION
-	(SELECT MARKETING_PROGRAM_ID
-						, NAME
-						, DESCRIPTION
-						, 0 as VALIDATE
-				 FROM MARKETING_PROGRAM
-				 WHERE deleted = 0
-				 AND enabled = 1
-				 AND upper(NAME) NOT LIKE '%GLOBAL%'
-				 ORDER BY upper(NAME));
+                    				 ORDER BY SHOW_VALIDATION_WIZARD DESC,
+                    				 upper(NAME) ASC;
 END;

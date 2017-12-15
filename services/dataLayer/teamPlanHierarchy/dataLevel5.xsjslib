@@ -9,6 +9,7 @@ var spGetHl5ByHl4Id = "GET_HL5_BY_HL4_ID";
 var spGetHl5ById = "GET_HL5_BY_ID";
 var spGetHl5ByAcronym = "GET_HL5_BY_ACRONYM";
 var spGetCountHl6ByHl5Id = "GET_COUNT_HL6_BY_HL5_ID";
+var spGetCountHl6InCRMByHl5Id = "GET_COUNT_HL6_IN_CRM_BY_HL5_ID";
 var spGetHl5StatusByHl5Id = "GET_HL5_STATUS_BY_HL5_ID";
 var spGetHl5ForSearch = "GET_HL5_FOR_SEARCH";
 var spGetHl5TotalBudgetByHl4Id = "GET_ALL_HL5_TOTAL_BUDGET";
@@ -24,6 +25,7 @@ var spGET_ALL_BUSINESS_OWNER = "GET_ALL_BUSINESS_OWNER";
 var spGET_COST_CENTER_BY_HL4_ID_SALE_ORGANIZATION_ID = "GET_COST_CENTER_BY_HL4_ID_SALE_ORGANIZATION_ID";
 var spGET_MARKETING_ACTIVITY_HL5 = "GET_MARKETING_ACTIVITY_HL5";
 var GET_HL5_BY_USER_ID = 'GET_HL5_BY_USER_ID';
+var GET_HL5_BY_USER_ID_ROLE_FILTER = 'GET_HL5_BY_USER_ID_ROLE_FILTER';
 
 /****INSERT*********************/
 var spInsHl5Category = "INS_HL5_CATEGORY";
@@ -59,6 +61,7 @@ var DEL_HL5_HARD_BY_ID = "DEL_HL5_HARD_BY_ID";
 var DEL_HL5_CATEGORY_OPTION_HARD = "DEL_HL5_CATEGORY_OPTION_HARD";
 /******************************************************/
 var spDelHl5Sales = "DEL_HL5_SALES"
+var GET_MULTI_TACTIC_BY_HL5_ID = "GET_MULTI_TACTIC_BY_HL5_ID";
 
 function getMarketingActivityHl5(budgetYearId,currentHl5Id){
 	var params = {
@@ -167,6 +170,13 @@ function getCountHl5Childrens(id){
 
 }
 
+function getCountHl5ChildrenInCRM(id) {
+    var params = {
+        'in_hl5_id': id
+    };
+    return db.executeScalarManual(spGetCountHl6InCRMByHl5Id, params, 'out_total_hl6');
+}
+
 function getHl5CategoryByHl5CategoryId(categoryId){
 	if(categoryId != ""){
 		var params = {
@@ -210,6 +220,12 @@ function getAllHl5(){
 function getHl5ByUserId(userId, isSA){
     var params = {'in_user_id': userId, 'in_issa': isSA};
     var rdo = db.executeProcedureManual(GET_HL5_BY_USER_ID,params);
+    return db.extractArray(rdo.out_result);
+}
+
+function getHl5ByUserIdRoleFilter(userId){
+    var params = {'in_user_id': userId};
+    var rdo = db.executeProcedureManual(GET_HL5_BY_USER_ID_ROLE_FILTER,params);
     return db.extractArray(rdo.out_result);
 }
 
@@ -323,7 +339,7 @@ function insertHl5(hl5CrmDescription,acronym,distributionChannelId,budget,hl4Id
 	, region
 	, event_owner
 	, number_of_participants
-	, priority_id,co_funded,allow_budget_zero, is_power_user,emploreeResponsible, person_responsible, is_complete, autoCommit, imported, import_id
+	, priority_id,co_funded,allow_budget_zero, is_power_user,emploreeResponsible, person_responsible, is_complete, multiTactic, autoCommit, imported, import_id
 	){
 	var params = {
 		'in_hl5_crm_description' : hl5CrmDescription,
@@ -376,6 +392,7 @@ function insertHl5(hl5CrmDescription,acronym,distributionChannelId,budget,hl4Id
 		, 'in_employee_responsible_user': emploreeResponsible || null
 		, 'in_person_responsible' : person_responsible || null
 		, 'in_is_complete': is_complete
+		, 'in_multi_tactic': multiTactic ? 1:0
 	};
 
 	var rdo;
@@ -449,7 +466,7 @@ function updateHl5(hl5Id,hl5CrmDescription,inAcronym,distributionChannelId,budge
 	, event_owner
 	, number_of_participants
 	, priority_id,co_funded, allow_budget_zero, is_power_user,employee_responsible_user,person_responsible, is_complete
-				   ,autoCommit){
+				   ,multiTactic,autoCommit){
 	var params = {
 		'in_hl5_id' : hl5Id,
 		'in_hl5_crm_description' : hl5CrmDescription,
@@ -498,6 +515,7 @@ function updateHl5(hl5Id,hl5CrmDescription,inAcronym,distributionChannelId,budge
 		 , 'in_employee_responsible_user' : employee_responsible_user
 		, 'in_person_responsible' : person_responsible
         , 'in_is_complete': is_complete
+		, 'in_multi_tactic': multiTactic ? 1:0
 
 	};
 
@@ -690,4 +708,12 @@ function delHl5CategoryOptionHl5Hard(hl5Id, autoCommit){
 		rdo = db.executeScalarManual(DEL_HL5_CATEGORY_OPTION_HARD,params,'out_result');
 	}
 	return rdo;
+}
+
+function getMultiTacticById(hl5_id){
+    var params = {
+        'in_hl5_id': hl5_id
+    };
+    var rdo = db.executeProcedureManual(GET_MULTI_TACTIC_BY_HL5_ID,params);
+    return db.extractArray(rdo.out_result);
 }

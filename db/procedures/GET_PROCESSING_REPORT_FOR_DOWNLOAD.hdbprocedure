@@ -91,21 +91,16 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_PROCESSING_R
 	READS SQL DATA AS
 BEGIN
 
--- The lines commented are the definitive lines. please when the history of the GLOBAL region is done, uncomment them and eliminate the lines with notations /*'please delete this line'*/
  va_intermedate = SELECT
-                    CASE WHEN HL1.REGION_ID = 0 THEN '140000' ELSE REGION.START_TIME END AS START_TIME, --'please delete this line'
-                    CASE WHEN HL1.REGION_ID = 0 THEN '230000' ELSE REGION.END_TIME END AS END_TIME, --'please delete this line'
-                    CASE WHEN HL1.REGION_ID = 0 THEN '-4' ELSE REGION.TIME_ZONE_OFFSET END AS TIME_ZONE_OFFSET, --'please delete this line'
-                    --REGION.START_TIME,
-                    --REGION.END_TIME,
-                    --REGION.TIME_ZONE_OFFSET,
+                    REGION.START_TIME,
+                    REGION.END_TIME,
+                    REGION.TIME_ZONE_OFFSET,
                     HL4_ID AS HL_ID
                     FROM HL1
                     INNER JOIN HL2 ON HL1.HL1_ID = HL2.HL1_ID
                     INNER JOIN HL3 ON HL2.HL2_ID = HL3.HL2_ID
                     INNER JOIN HL4 ON HL3.HL3_ID = HL4.HL3_ID
-                    LEFT JOIN REGION ON HL1.REGION_ID = REGION.REGION_ID; --'please delete this line'
-                    --INNER JOIN REGION ON HL1.REGION_ID = REGION.REGION_ID;
+                    INNER JOIN REGION ON HL1.REGION_ID = REGION.REGION_ID;
 
                     IF in_object_type = 'CPG' THEN
                         va_intermedate = SELECT

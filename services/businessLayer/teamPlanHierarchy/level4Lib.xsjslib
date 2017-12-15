@@ -87,7 +87,8 @@ var HL4_STATUS = {
     IN_CRM: 3,
     UPDATE_IN_CRM: 4,
     EXCEED_BUDGET: 5,
-    COMPLETE: 6
+    COMPLETE: 6,
+    VALID_FOR_CRM: 7
 };
 
 var HIERARCHY_LEVEL = {
@@ -132,7 +133,7 @@ function getHl4(id) {
 
 function getHL4CarryOverById(hl4Id, userId){
     if (!hl4Id){
-        throw ErrorLib.getErrors().BadRequest("The HL4 ID could not be found.", "hl4Services/handleGet/getHl5", L4_ID_NOT_FOUND);
+        throw ErrorLib.getErrors().BadRequest("The HL4 ID could not be found.", "", L4_ID_NOT_FOUND);
     }
 
     return dataHl4.getHL4CarryOverById(hl4Id);
@@ -144,14 +145,14 @@ function getParentRemainingBudgetByParentId(hl3Id) {
 
 function getImplementExecutionLevel(hl4Id) {
     if (!dataHl4.getImplementExecutionLevel(hl4Id))
-        throw ErrorLib.getErrors().BadRequest("PROGRAMS/CAMPAIGNS does not implement execution level.", "hl4Services/handleGet/getHl5", L3_NOT_IMPLEMENT_EXECUTION_LEVEL);
+        throw ErrorLib.getErrors().BadRequest("PROGRAMS/CAMPAIGNS does not implement execution level.", "", L3_NOT_IMPLEMENT_EXECUTION_LEVEL);
 
     return 1;
 }
 
 function getHl4ById(id) {
     if (!id)
-        throw ErrorLib.getErrors().BadRequest("The Parameter ID is not found", "hl4Services/handleGet/getHl4ById", L3_MSG_INITIATIVE_NOT_FOUND);
+        throw ErrorLib.getErrors().BadRequest("The Parameter ID is not found", "", L3_MSG_INITIATIVE_NOT_FOUND);
 
     var objHl4 = parseObject(dataHl4.getHl4ById(id));
     var hl4 = {
@@ -165,7 +166,7 @@ function getHl4ById(id) {
 
 function getUserById(id) {
     if (!id) {
-        throw ErrorLib.getErrors().BadRequest("The Parameter ID is not found", "userServices/handleGet/getUserById", L3_MSG_USER_NOT_FOUND);
+        throw ErrorLib.getErrors().BadRequest("The Parameter ID is not found", "", L3_MSG_USER_NOT_FOUND);
     }
     return dbUser.getUserById(id);
 
@@ -174,6 +175,10 @@ function getUserById(id) {
 function getLevel4ForSearch(budgetYearId, regionId, subRegionId, limit, offset, userSessionID) {
     var defaultBudgetYear = budgetYear.getDefaultBudgetYear();
     var results = dataHl4.getLevel4ForSearch(budgetYearId || defaultBudgetYear.BUDGET_YEAR_ID, regionId || 0, subRegionId || 0, limit || -1, offset || 0, userSessionID, util.isSuperAdmin(userSessionID) ? 1 : 0);
+    results = JSON.parse(JSON.stringify(results));
+    results.result.forEach(function (elem) {
+        elem.ENABLE_EDIT = (Number(elem.HL4_STATUS_DETAIL_ID) !== HL4_STATUS.CREATE_IN_CRM) && (Number(elem.HL4_STATUS_DETAIL_ID) !== HL4_STATUS.IN_CRM) && (Number(elem.HL4_STATUS_DETAIL_ID) !== HL4_STATUS.UPDATE_IN_CRM);
+    });
     return results;
 }
 
@@ -194,7 +199,6 @@ function insertHl4(data, userId) {
         data.hl4.in_hl4_status_detail_id = validationResult.statusId;
 
         if (data.hl4.in_hl4_status_detail_id > 0) {
-
             data.hl4.in_created_user_id = userId;
             data.hl4.in_is_send_mail = 0;
             data.hl4.in_read_only = 0;
@@ -481,21 +485,27 @@ function deleteHl4(hl4, userId, rollBack) {
         throw ErrorLib.getErrors().CustomError("", "", L3_MSG_CANNOT_DEL_STATUS);
     }
 
-    if (!rollBack && dataHl4.getCountHl4Childrens(hl4.in_hl4_id) > 0) {
-        throw ErrorLib.getErrors().CustomError("", "", L3_MSG_INITIATIVE_CANT_DEL_CHILD);
+    var childrenInCRM = dataHl4.getCountHl4ChildrenInCRM(hl4.in_hl4_id);
+    if (!rollBack && (Number(childrenInCRM.HL5_IN_CRM) > 0 || Number(childrenInCRM.HL6_IN_CRM) > 0)) {
+        throw ErrorLib.getErrors().CustomError("", "", "Cannot delete the Marketing Program/Campaign " + hl4.ACRONYM + " because a related child is \"IN CRM\" status");
     }
 
     try {
+        if(!rollBack) {
+            level5Lib.deleteHl5ByHl4(hl4.in_hl4_id, userId);
+        }
+
         hl4.in_user_id = userId;
+        var hl4ToDelete = {in_hl4_id: hl4.in_hl4_id, in_user_id: userId};
         var transactionOk = true;
         var hl4_id = hl4.in_hl4_id;
-        dataExOut.deleteHl4ExpectedOutcomesDetail(hl4);
-        dataExOut.deleteHl4ExpectedOutcomes(hl4);
+        dataExOut.deleteHl4ExpectedOutcomesDetail(hl4ToDelete);
+        dataExOut.deleteHl4ExpectedOutcomes(hl4ToDelete);
 
         level4DER.deleteL4ChangedFieldsByHl4Id(hl4_id);
 
         dataCategoryOptionLevel.deleteCategoryOption(hl4_id, userId, 'HL4');
-        dataHl4.deleteHl4(hl4);
+        dataHl4.deleteHl4(hl4ToDelete);
         dataPath.delParentPath('hl4', hl4_id);
         dataL4Report.updateLevel4ReportForDownload(hl4_id); //Update Processing Report Export Data
         db.commit();
@@ -610,10 +620,10 @@ function validateHl4(data, userId) {
         if (!crmFieldsHasChanged && !categoryHasChanged){
             statusId = data.hl4.in_hl4_status_detail_id;
         } else{
-            statusId = HL4_STATUS.IN_PROGRESS;
+            statusId = HL4_STATUS.VALID_FOR_CRM;
         }
     } else {
-        statusId = HL4_STATUS.IN_PROGRESS;
+        statusId = HL4_STATUS.VALID_FOR_CRM;
     }
     return {
         statusId: statusId
@@ -962,7 +972,7 @@ function setHl4StatusInCRM(hl4_id, userId) {
 
 function changeHl4StatusOnDemand(hl4_id, userId) {
     if(!dataL4DER.getL4ChangedFieldsByHl4Id(hl4_id) || !dataL4DER.getL4ChangedFieldsByHl4Id(hl4_id).length)
-        throw ErrorLib.getErrors().CustomError("", "hl4Services/handlePut/changeHl4Status", L3_MSG_INITIATIVE_COULDNT_CHAGE_STATUS);
+        throw ErrorLib.getErrors().CustomError("", "", L3_MSG_INITIATIVE_COULDNT_CHAGE_STATUS);
 
     // var hl4_category = getHl4CategoryOption(hl4_id);
     //
@@ -1233,7 +1243,7 @@ function checkPermission(userSessionID, method, hl4Id) {
             return user.USER_ID == userSessionID
         });
         if (!users) {
-            throw ErrorLib.getErrors().CustomError("", "level3/handlePermission", "User hasn´t permission for this resource.");
+            throw ErrorLib.getErrors().CustomError("", "", "User hasn´t permission for this resource.");
         }
     }
 }

@@ -80,7 +80,8 @@ function handlePut(reqBody, userId){
 				return	httpUtil.handleResponse(rdo,httpUtil.OK,httpUtil.AppJson);
 		        break;
 			case changeStatus:
-				var rdo = hl6.changeHl6StatusOnDemand(hl6Id, userId);
+                var CANCEL_CONFIRMATION = parameters.get('CANCEL_CONFIRMATION');
+				var rdo = hl6.changeHl6StatusOnDemand(hl6Id, userId, CANCEL_CONFIRMATION);
 				return	httpUtil.handleResponse(rdo,httpUtil.OK,httpUtil.AppJson);
 				break;
 		    default:

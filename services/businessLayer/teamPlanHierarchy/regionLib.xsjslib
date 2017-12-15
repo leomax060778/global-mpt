@@ -51,15 +51,23 @@ function getRegionById(regionId) {
 
 function insertRegion(objRegion, userId) {
 	var region = dataRegion.existRegion(objRegion);
-	if (region)
-		throw ErrorLib.getErrors().CustomError("","", "Region name already exist", objRegion);
-	else
-		return dataRegion.insertRegion(objRegion, userId);
+	if (region){
+        throw ErrorLib.getErrors().CustomError("","", "Region name already exist", objRegion);
+	} else {
+        if(Number(objRegion.IS_GLOBAL_REGION)){
+            dataRegion.updateGlobalRegionFlag(0,userId);
+        }
+        return dataRegion.insertRegion(objRegion, userId);
+	}
 }
 
 function updateRegion(objRegion, userId) {
 	if (validateUpdateRegion(objRegion)){
+        if(Number(objRegion.IS_GLOBAL_REGION)){
+            dataRegion.updateGlobalRegionFlag(0,userId);
+        }
         dataRegion.updateRegion(objRegion, userId);
+
         return InterlockLib.updateContactDataByOrgRelatedAndOrgId(objRegion, userId);
 	}
 

@@ -1,0 +1,18 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_COUNT_HL6_IN_CRM_BY_HL5_ID" (
+	IN in_hl5_id bigint,
+		OUT out_total_hl6 bigint
+	) 
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER 
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL" AS
+BEGIN
+	SELECT COUNT(DISTINCT HL6.HL6_ID) INTO out_total_hl6 FROM HL6
+	WHERE HL6.HL5_ID = in_hl5_id 
+		AND hl6.enabled = 1 
+		AND hl6.deleted = 0
+		--STATUS_ID = 2: Create in CRM, STATUS_ID = 3: In CRM, STATUS_ID = 4: Update in CRM
+		AND (HL6.HL6_STATUS_DETAIL_ID = 2
+		     OR HL6.HL6_STATUS_DETAIL_ID = 3
+			 OR HL6.HL6_STATUS_DETAIL_ID = 4
+			 );
+END;

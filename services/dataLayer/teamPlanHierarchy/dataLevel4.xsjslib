@@ -13,6 +13,7 @@ var spGetHl4StatusByHl4Id = "GET_HL4_STATUS_BY_HL4_ID";
 var spGetHl4ForSerach = "GET_HL4_FOR_SEARCH";
 var spGetAllHl4 = "GET_ALL_HL4";
 var spGET_COUNT_HL5_BY_HL4_ID = "GET_COUNT_HL5_BY_HL4_ID";
+var spGET_COUNT_HL5_HL6_IN_CRM_BY_HL4_ID = "GET_COUNT_HL5_HL6_IN_CRM_BY_HL4_ID";
 var GET_IMPLEMENT_EXECUTION_LEVEL_BY_HL4_ID = "GET_IMPLEMENT_EXECUTION_LEVEL_BY_HL4_ID";
 var GET_HL4_BY_BUDGET_YEAR = "GET_HL4_BY_BUDGET_YEAR";
 
@@ -97,6 +98,16 @@ function getHl4StatusByHl4Id(hl4_id){
 
 function getCountHl4Childrens(hl4_id){
 		return db.executeScalarManual(spGET_COUNT_HL5_BY_HL4_ID,{'in_hl4_id':hl4_id},'out_total_hl5');
+}
+
+function getCountHl4ChildrenInCRM(hl4_id){
+	var result = db.executeProcedure(spGET_COUNT_HL5_HL6_IN_CRM_BY_HL4_ID,{'in_hl4_id':hl4_id});
+	var list = db.extractArray(result.out_result);
+    if(list.length){
+ 	   return list[0];
+    } else {
+ 	   	return {};
+    }
 }
 
 function getLevel4ForSearch(budgetYearId, regionId, subRegionId, limit, offset, userSessionID, isSA){

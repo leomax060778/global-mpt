@@ -56,6 +56,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL5_BY_ID" (
         , CURRENCY_VALUE DECIMAL(19,6)
         , STATUS NVARCHAR(25)
         , IS_COMPLETE TINYINT
+        , MULTI_TACTIC TINYINT
 		)
 		
 ) 
@@ -130,6 +131,7 @@ out_result = select
                 , CURRENCY.CURRENCY_VALUE
                 , STATUS.DETAIL AS STATUS
                 , HL5.IS_COMPLETE
+                , HL5.MULTI_TACTIC
                  FROM HL5
                  LEFT JOIN :va_own_money_budget_request BSRS ON BSRS.HL5_ID = HL5.HL5_ID
                  LEFT JOIN CAMPAIGN_TYPE C_TYPE ON C_TYPE.CAMPAIGN_TYPE_ID = HL5.CAMPAIGN_TYPE_ID

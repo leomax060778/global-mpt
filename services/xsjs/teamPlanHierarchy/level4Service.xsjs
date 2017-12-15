@@ -18,8 +18,7 @@ var changeStatus = "CHANGESTATUS";
 
 function processRequest(){
 	return httpUtil.processRequest(handleGet, handlePost, handlePut, handleDelete,false, "", true);
-};
-
+}
 /**
  * 
  * @param {bigInt} $.request.parameters.HL3_ID - Team ID
@@ -41,26 +40,26 @@ function handleGet(params, userId) {
 	if(in_hl3_id){
         // businessLevel3.checkPermission(userId, null, in_hl3_id);
 		result = hl4.getHl4(in_hl3_id);
-	} else if (in_hl4_id && method && method == "CARRY_OVER"){
+	} else if (in_hl4_id && method && method === "CARRY_OVER"){
     	result = hl4.getHL4CarryOverById(in_hl4_id, userId);
 	} else if (in_hl4_id) {
         // hl4.checkPermission(userId, null, in_hl4_id);
 		result = hl4.getHl4ById(in_hl4_id);
-	} else if (param_section && param_section == section){
+	} else if (param_section && param_section === section){
         var budgetYearId = httpUtil.getUrlParameters().get("BUDGET_YEAR_ID") || null;
         var regionId = httpUtil.getUrlParameters().get("REGION_ID") || null;
         var subRegionId = httpUtil.getUrlParameters().get("SUBREGION_ID") || null;
         var limit = httpUtil.getUrlParameters().get("LIMIT") || null;
         var offset = httpUtil.getUrlParameters().get("OFFSET") || null;
 		result = hl4.getLevel4ForSearch(budgetYearId, regionId, subRegionId, limit, offset, userId);
-	} else if (parentId && method && method == "GET_PARENT_REMAINING_BUDGET"){
+	} else if (parentId && method && method === "GET_PARENT_REMAINING_BUDGET"){
         result = hl4.getParentRemainingBudgetByParentId(parentId);
     } else{
-		throw ErrorLib.getErrors().BadRequest("","level4Services/handleGet","invalid parameter name (can be: HL3_ID, HL4_ID or section)");
+		throw ErrorLib.getErrors().BadRequest("","","invalid parameter name (can be: HL3_ID, HL4_ID or section)");
 	}
 	
 	return httpUtil.handleResponse(result,httpUtil.OK,httpUtil.AppJson);
-};
+}
 
 //Implementation of PUT call -- Update HL4
 function handlePut(reqBody, userId){
@@ -69,34 +68,33 @@ function handlePut(reqBody, userId){
 	if(parameters.length > 0){
 		var aCmd = parameters.get('method');
 		var hl4Id = !reqBody ? parameters.get('HL4_ID') : reqBody.hl4Ids;
-
+		var rdo;
 		switch (aCmd) {
 			/*case sendInCrmNotificationMail:
 					hl4.sendProcessingReportEmail(hl4Id, userId);
 					//fallthrough*/
 		    case setStatusInCRM: //set status In CRM
-				var rdo = hl4.setHl4StatusInCRM(hl4Id, userId);
-				return	httpUtil.handleResponse(rdo,httpUtil.OK,httpUtil.AppJson);
+				rdo = hl4.setHl4StatusInCRM(hl4Id, userId);
 		        break;
 			case changeStatus:
-				var rdo = hl4.changeHl4StatusOnDemand(hl4Id, userId);
-				return	httpUtil.handleResponse(rdo,httpUtil.OK,httpUtil.AppJson);
+				rdo = hl4.changeHl4StatusOnDemand(hl4Id, userId);
 				break;
 		    default:
-		    	throw ErrorLib.getErrors().BadRequest("","level4Services/handlePut","insufficient parameters");
-		}	
+		    	throw ErrorLib.getErrors().BadRequest("","","insufficient parameters");
+		}
+        return	httpUtil.handleResponse(rdo,httpUtil.OK,httpUtil.AppJson);
 	}else{
 		var result =  hl4.updateHl4(reqBody, userId);
 		return httpUtil.handleResponse(result,httpUtil.OK,httpUtil.AppJson);
 	}
-};
+}
 
 //Implementation of DELETE call -- Delete HL4
 function handleDelete(reqBody, userId){
     // hl4.checkPermission(userId, null, reqBody.in_hl4_id);
 	var result =  hl4.deleteHl4(reqBody, userId);
 	return httpUtil.handleResponse(result,httpUtil.OK,httpUtil.AppJson);
-};
+}
 
 //Implementation of POST call -- Insert HL4
 function handlePost(reqBody, userId) {

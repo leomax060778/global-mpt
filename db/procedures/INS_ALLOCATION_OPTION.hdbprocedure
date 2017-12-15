@@ -9,7 +9,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_ALLOCATION_O
 	AS
 BEGIN
 		INSERT INTO "MKTG_PLANNING_TOOL"."ALLOCATION_OPTION"(name,crm_key, created_user_id)
-		VALUES(in_name,in_crm_id, in_user_id);
+		VALUES(trim(in_name),trim(in_crm_id), in_user_id);
 		
 		SELECT TOP 1 CURRENT_IDENTITY_VALUE() INTO out_option_id FROM "MKTG_PLANNING_TOOL"."ALLOCATION_OPTION";
 END;
