@@ -177,7 +177,7 @@ function getLevel4ForSearch(budgetYearId, regionId, subRegionId, limit, offset, 
     var results = dataHl4.getLevel4ForSearch(budgetYearId || defaultBudgetYear.BUDGET_YEAR_ID, regionId || 0, subRegionId || 0, limit || -1, offset || 0, userSessionID, util.isSuperAdmin(userSessionID) ? 1 : 0);
     results = JSON.parse(JSON.stringify(results));
     results.result.forEach(function (elem) {
-        elem.ENABLE_EDIT = (Number(elem.HL4_STATUS_DETAIL_ID) !== HL4_STATUS.CREATE_IN_CRM) && (Number(elem.HL4_STATUS_DETAIL_ID) !== HL4_STATUS.IN_CRM) && (Number(elem.HL4_STATUS_DETAIL_ID) !== HL4_STATUS.UPDATE_IN_CRM);
+        elem.ENABLE_EDIT = (Number(elem.HL4_STATUS_DETAIL_ID) !== HL4_STATUS.CREATE_IN_CRM) && (Number(elem.HL4_STATUS_DETAIL_ID) !== HL4_STATUS.UPDATE_IN_CRM);
     });
     return results;
 }

@@ -3,7 +3,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL5_BY_USER_
         OUT out_result TABLE(
              HL4_ID BIGINT
             , HL4_PATH NVARCHAR(255)
-            , HL5_ID BIGINT
+            , HL5_ID INTEGER
             , HL5_ACRONYM NVARCHAR(255)
             , STATUS_DETAIL NVARCHAR(255)
             , STATUS_DETAIL_ID integer

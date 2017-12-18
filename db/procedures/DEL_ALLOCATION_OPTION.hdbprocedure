@@ -11,7 +11,8 @@ BEGIN
 		SET deleted = 1,
 		    enabled = 0,
 			modified_user_id = in_user_id,
-			modified_date_tz = CURRENT_TIMESTAMP
+			modified_date_tz = CURRENT_TIMESTAMP,
+            DELETED_TOKEN = (SELECT CAST(SYSUUID AS VARCHAR) AS "SYS_UNIQUE_NUMBER" FROM DUMMY)
 		WHERE ALLOCATION_OPTION_ID = in_option_id;
 		
 		SELECT ::ROWCOUNT INTO out_result FROM DUMMY;

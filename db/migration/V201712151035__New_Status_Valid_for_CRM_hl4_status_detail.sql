@@ -1,4 +1,5 @@
 INSERT INTO "MKTG_PLANNING_TOOL"."HL4_STATUS_DETAIL"(HL4_STATUS_DETAIL_ID, DETAIL) values (7, 'Valid for CRM');
+ALTER TABLE HL5 ADD (MULTI_TACTIC TINYINT NOT NULL DEFAULT 0);
 
 -- *************************************************************************************
 -- Update schema version

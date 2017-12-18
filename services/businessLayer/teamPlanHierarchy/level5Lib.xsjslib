@@ -1,6 +1,7 @@
 /***************Import Library*******************/
 $.import("mktgplanningtool.services.commonLib", "mapper");
 var mapper = $.mktgplanningtool.services.commonLib.mapper;
+var dataL5DER = mapper.getDataLevel5Report();
 var dataHl3 = mapper.getDataLevel3();
 var dataHl4 = mapper.getDataLevel4();
 var dataHl5 = mapper.getDataLevel5();
@@ -297,7 +298,7 @@ function getLevel5ForSearch(budgetYearId, regionId, subRegionId, limit, offset, 
     var results = dataHl5.getHl5ForSearch(budgetYearId, regionId || 0, subRegionId || 0, limit, offset || 0, userSessionID, util.isSuperAdmin(userSessionID) ? 1 : 0);
     results = JSON.parse(JSON.stringify(results));
     results.result.forEach(function (elem) {
-        elem.ENABLE_EDIT = (Number(elem.HL5_STATUS_DETAIL_ID) !== HL5_STATUS.CREATE_IN_CRM) && (Number(elem.HL5_STATUS_DETAIL_ID) !== HL5_STATUS.IN_CRM) && (Number(elem.HL5_STATUS_DETAIL_ID) !== HL5_STATUS.UPDATE_IN_CRM);
+        elem.ENABLE_EDIT = (Number(elem.HL5_STATUS_DETAIL_ID) !== HL5_STATUS.CREATE_IN_CRM) && (Number(elem.HL5_STATUS_DETAIL_ID) !== HL5_STATUS.UPDATE_IN_CRM);
     });
     return results;
 }
@@ -1477,14 +1478,25 @@ function validateHl5(data, userId) {
 
             var categoryHasChanged = categoryChanged(data, existInCrm);
 
-
-            if (!crmFieldsHasChanged && !categoryHasChanged && !Number(budgetSpendRequest.countPendingBudgetRequestByHl5Id(data.hl5.HL5_ID))) {
-                statusId = data.hl5.in_hl5_status_detail_id;
+            if(!crmFieldsHasChanged && !categoryHasChanged
+                && !Number(budgetSpendRequest.countPendingBudgetRequestByHl5Id(data.hl5.HL5_ID))){
+                if(data.hl5.in_hl5_status_detail_id == HL5_STATUS.IN_PROGRESS){
+                    statusId = HL5_STATUS.VALID_FOR_CRM;
+                } else {
+                    statusId = data.hl5.in_hl5_status_detail_id;
+                }
             } else {
                 statusId = HL5_STATUS.VALID_FOR_CRM;
             }
+            /*statusId = !crmFieldsHasChanged && !categoryHasChanged
+            && !Number(budgetSpendRequest.countPendingBudgetRequestByHl5Id(data.hl5.HL5_ID))
+                ? data.hl5.in_hl5_status_detail_id == HL5_STATUS.IN_PROGRESS
+                    ? HL5_STATUS.VALID_FOR_CRM
+                    : data.hl5.in_hl5_status_detail_id
+                : HL5_STATUS.VALID_FOR_CRM;*/
+
         } else {
-            statusId = HL5_STATUS.VALID_FOR_CRM;
+            statusId = HL5_STATUS.IN_PROGRESS;
         }
     }
     return {
@@ -1739,41 +1751,44 @@ function setHl5StatusInCRM(hl5_id, userId, cancelConfirmation) {
     return 1;
 }
 
-function changeHl5StatusOnDemand(hl5_id, userId) {
+function changeHl5StatusOnDemand(hl5_id, userId, cancelConfirmation) {
     var hl5 = dataHl5.getHl5ById(hl5_id);
     var existInCrm = dataHl5.hl5ExistsInCrm(hl5_id);
     var statusId = null;
-    if(!cancelConfirmation) {
-        if (hl5.HL5_STATUS_DETAIL_ID == HL5_STATUS.VALID_FOR_CRM) {
-            statusId = existInCrm ? HL5_STATUS.UPDATE_IN_CRM : HL5_STATUS.CREATE_IN_CRM;
-        } else if (hl5.HL5_STATUS_DETAIL_ID == HL5_STATUS.IN_PROGRESS) {
-            statusId = HL5_STATUS.VALID_FOR_CRM;
+    if(hl5.HL5_STATUS_DETAIL_ID != HL5_STATUS.IN_CRM) {
+        if (!cancelConfirmation) {
+            if (hl5.HL5_STATUS_DETAIL_ID == HL5_STATUS.VALID_FOR_CRM) {
+                statusId = existInCrm ? HL5_STATUS.UPDATE_IN_CRM : HL5_STATUS.CREATE_IN_CRM;
+            } else if (hl5.HL5_STATUS_DETAIL_ID == HL5_STATUS.IN_PROGRESS) {
+                statusId = HL5_STATUS.VALID_FOR_CRM;
+            } else {
+                statusId = hl5.HL5_STATUS_DETAIL_ID;
+            }
         } else {
-            statusId = hl5.HL5_STATUS_DETAIL_ID;
+            var changedFields = dataL5DER.getL5ChangedFieldsByHl5Id(hl5_id);
+            statusId = Number(hl5.IS_COMPLETE) && changedFields && changedFields.length ? HL5_STATUS.VALID_FOR_CRM : hl5.HL5_STATUS_DETAIL_ID;
         }
-    } else {
-        statusId = HL6_STATUS.VALID_FOR_CRM;
+
+        if (!hl5.ALLOW_BUDGET_ZERO) {
+            if (!Number(hl5.IS_COMPLETE)) {
+                throw ErrorLib.getErrors().CustomError("", "", L5_MSG_COULDNT_CHANGE_STATUS);
+            }
+
+            var budgetSpendRequestStatus = budgetSpendRequest.getBudgetSpendRequestsStatus();
+            var hasBudgetRequestPending = budgetSpendRequest.countPendingBudgetRequestByHl5Id(hl5_id) > 0;
+
+            if (hasBudgetRequestPending) {
+                throw ErrorLib.getErrors().CustomError("", "", L5_MSG_COULDNT_CHANGE_STATUS_DUE_PENDING_BUDGET_SPEND_REQUEST);
+            }
+
+            var ownMoneyBudgetSpendRequestStatus = budgetSpendRequest.getOwnMoneyBudgetSpendRequestStatusByHlIdLevel(hl5_id, 'HL5');
+            if (ownMoneyBudgetSpendRequestStatus && ownMoneyBudgetSpendRequestStatus != budgetSpendRequestStatus.APPROVED) {
+                throw ErrorLib.getErrors().CustomError("", "", L5_MSG_COULDNT_CHANGE_STATUS_DUE_OWN_MONEY_BUDGET_SPEND_REQUEST_STATUS);
+            }
+        }
+        return setHl5Status(hl5_id, statusId, userId);
     }
-
-    if (!hl5.ALLOW_BUDGET_ZERO) {
-        if (!Number(hl5.IS_COMPLETE)) {
-            throw ErrorLib.getErrors().CustomError("", "", L5_MSG_COULDNT_CHANGE_STATUS);
-        }
-
-        var budgetSpendRequestStatus = budgetSpendRequest.getBudgetSpendRequestsStatus();
-        var hasBudgetRequestPending = budgetSpendRequest.countPendingBudgetRequestByHl5Id(hl5_id) > 0;
-
-        if (hasBudgetRequestPending) {
-            throw ErrorLib.getErrors().CustomError("", "", L5_MSG_COULDNT_CHANGE_STATUS_DUE_PENDING_BUDGET_SPEND_REQUEST);
-        }
-
-        var ownMoneyBudgetSpendRequestStatus = budgetSpendRequest.getOwnMoneyBudgetSpendRequestStatusByHlIdLevel(hl5_id, 'HL5');
-        if (ownMoneyBudgetSpendRequestStatus && ownMoneyBudgetSpendRequestStatus != budgetSpendRequestStatus.APPROVED) {
-            throw ErrorLib.getErrors().CustomError("", "", L5_MSG_COULDNT_CHANGE_STATUS_DUE_OWN_MONEY_BUDGET_SPEND_REQUEST_STATUS);
-        }
-    }
-
-    return setHl5Status(hl5_id, statusId, userId);
+    return true;
 }
 
 function getSYSUUID() {

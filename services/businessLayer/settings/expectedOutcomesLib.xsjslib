@@ -131,8 +131,17 @@ function getExpectedOutcomesByParentIdLevel(parentId, level) {
     if (expectedOutcomes && expectedOutcomes.length) {
         expectedOutcomes.forEach(function (eo) {
             var aux = util.extractObject(eo);
+            aux.detail = [];
             var detail = getExpectedOutcomeDetailByIdMap[level.toUpperCase()](parentId);
-            aux.detail = addParentKpiDataToDetail(parentId, level, detail);
+            detail = detail.filter(function (expectedOutcomeDetail) {
+                return expectedOutcomeDetail.EURO_VALUE
+                && expectedOutcomeDetail.VOLUME_VALUE
+                && expectedOutcomeDetail.OUTCOMES_NAME
+                && expectedOutcomeDetail.OUTCOMES_TYPE_NAME;
+            });
+            if(detail.length) {
+                aux.detail = addParentKpiDataToDetail(parentId, level, detail);
+            }
             result.push(aux);
         });
 

@@ -635,7 +635,7 @@ function checkBudgetStatus(hl2Id, userId, hl3Id, newHl3Budget) {
 }
 
 function checkPermission(userSessionID, method, hl3Id) {
-    if (((method && method == "GET_BY_HL3_ID") || !method) && !util.isSuperAdmin(userSessionID)) {
+    if (((method && method == "GET_BY_HL3_ID")) && !util.isSuperAdmin(userSessionID)) {
         var l3 = data.getLevel3ById(hl3Id, userSessionID);
         if(!l3)
             throw ErrorLib.getErrors().CustomError("", "level3/getLevel3ById", "HL3 does not existn.");
