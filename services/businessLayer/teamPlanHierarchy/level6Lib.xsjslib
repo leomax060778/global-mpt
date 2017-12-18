@@ -1436,6 +1436,19 @@ function validateHl6(data, userId) {
         myBudgetComplete = isMyBudgetComplete(data.hl6_budget);
 
         if (Number(data.hl6.MULTI_TACTIC || data.hl6_expected_outcomes.MultiTactic)) {
+            if (!data.hl6_expected_outcomes.RESULTS_CAMPAIGN_Q1 && !data.hl6_expected_outcomes.RESULTS_CAMPAIGN_Q2 && !data.hl6_expected_outcomes.RESULTS_CAMPAIGN_Q3
+                && !data.hl6_expected_outcomes.RESULTS_CAMPAIGN_Q4)
+                throw ErrorLib.getErrors().CustomError("", "hl6Services/handlePost/insertHl6", L6_MSG_RESULTS_CAMPAIGN);
+            //RESULTS CAMPAIGN validations
+            var rq1 = Number(data.hl6_expected_outcomes.RESULTS_CAMPAIGN_Q1) || 0;
+            var rq2 = Number(data.hl6_expected_outcomes.RESULTS_CAMPAIGN_Q2) || 0;
+            var rq3 = Number(data.hl6_expected_outcomes.RESULTS_CAMPAIGN_Q3) || 0;
+            var rq4 = Number(data.hl6_expected_outcomes.RESULTS_CAMPAIGN_Q4) || 0;
+
+            var resultsCampaign = rq1 + rq2 + rq3 + rq4;
+
+            if (resultsCampaign < 100)
+                throw ErrorLib.getErrors().CustomError("", "hl6Services/handlePost/insertHl6", L6_MSG_RESULTS_CAMPAIGN_PERCENT);
 
             if (data.hl6_expected_outcomes) {
                 if (!data.hl6_expected_outcomes.hl6_expected_outcomes_detail.length && !data.hl6_expected_outcomes.COMMENTS)
@@ -1505,7 +1518,11 @@ function validateHl6(data, userId) {
                 } else {
                     statusId = data.hl6.in_hl6_status_detail_id;
                 }
+            } else {
+                statusId = HL6_STATUS.VALID_FOR_CRM;
             }
+        } else {
+            statusId = HL6_STATUS.IN_PROGRESS;
         }
     }
     return {
@@ -1756,8 +1773,10 @@ function changeHl6StatusOnDemand(hl6_id, userId, cancelConfirmation) {
     var statusId = null;
     if (hl6.HL6_STATUS_DETAIL_ID != HL6_STATUS.IN_CRM) {
         if (!cancelConfirmation) {
-            if (hl6.HL6_STATUS_DETAIL_ID == HL6_STATUS.VALID_FOR_CRM || hl6.HL6_STATUS_DETAIL_ID == HL6_STATUS.IN_PROGRESS) {
+            if (hl6.HL6_STATUS_DETAIL_ID == HL6_STATUS.VALID_FOR_CRM) {
                 statusId = existInCrm ? HL6_STATUS.UPDATE_IN_CRM : HL6_STATUS.CREATE_IN_CRM;
+            } else if (hl6.HL6_STATUS_DETAIL_ID == HL6_STATUS.IN_PROGRESS) {
+                statusId = HL6_STATUS.VALID_FOR_CRM;
             } else {
                 statusId = hl6.HL6_STATUS_DETAIL_ID;
             }

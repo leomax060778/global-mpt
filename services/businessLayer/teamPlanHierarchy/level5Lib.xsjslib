@@ -1485,7 +1485,18 @@ function validateHl5(data, userId) {
                 } else {
                     statusId = data.hl5.in_hl5_status_detail_id;
                 }
+            } else {
+                statusId = HL5_STATUS.VALID_FOR_CRM;
             }
+            /*statusId = !crmFieldsHasChanged && !categoryHasChanged
+            && !Number(budgetSpendRequest.countPendingBudgetRequestByHl5Id(data.hl5.HL5_ID))
+                ? data.hl5.in_hl5_status_detail_id == HL5_STATUS.IN_PROGRESS
+                    ? HL5_STATUS.VALID_FOR_CRM
+                    : data.hl5.in_hl5_status_detail_id
+                : HL5_STATUS.VALID_FOR_CRM;*/
+
+        } else {
+            statusId = HL5_STATUS.IN_PROGRESS;
         }
     }
     return {
@@ -1746,8 +1757,10 @@ function changeHl5StatusOnDemand(hl5_id, userId, cancelConfirmation) {
     var statusId = null;
     if(hl5.HL5_STATUS_DETAIL_ID != HL5_STATUS.IN_CRM) {
         if (!cancelConfirmation) {
-            if (hl5.HL5_STATUS_DETAIL_ID == HL5_STATUS.VALID_FOR_CRM || hl5.HL5_STATUS_DETAIL_ID == HL5_STATUS.IN_PROGRESS) {
+            if (hl5.HL5_STATUS_DETAIL_ID == HL5_STATUS.VALID_FOR_CRM) {
                 statusId = existInCrm ? HL5_STATUS.UPDATE_IN_CRM : HL5_STATUS.CREATE_IN_CRM;
+            } else if (hl5.HL5_STATUS_DETAIL_ID == HL5_STATUS.IN_PROGRESS) {
+                statusId = HL5_STATUS.VALID_FOR_CRM;
             } else {
                 statusId = hl5.HL5_STATUS_DETAIL_ID;
             }
