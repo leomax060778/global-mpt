@@ -1,0 +1,20 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_CATEGORY_BY_HL5_ID" (
+	IN in_hl_id bigint,
+	OUT out_result TABLE (category_id integer, in_processing_report TINYINT)
+) 
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER 
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	READS SQL DATA AS
+BEGIN
+
+	out_result =
+	SELECT distinct
+      ac.allocation_category_id as category_id
+    , acol.in_processing_report
+    FROM allocation_category ac
+    inner join allocation_category_option_level acol on acol.allocation_category_id = ac.allocation_category_id
+    inner join hl5_category_option hl5_co on acol.allocation_category_option_level_id = hl5_co.allocation_category_option_level_id
+    WHERE hl5_co.hl5_id = in_hl_id
+    and hl5_co.enabled = 1 and hl5_co.deleted = 0;
+END;

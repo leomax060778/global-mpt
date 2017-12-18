@@ -17,10 +17,12 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL4_BY_HL3_I
             , TOTAL_HL5 INT
             , QUANTITY_HL5_OUT_BUDGET INT
             , ALLOCATED DECIMAL
-            , REMAINING DECIMAL 
+            , REMAINING DECIMAL
+            , IN_CRM_CHILD_HL5 INTEGER
+            , IN_CRM_CHILD_HL6 INTEGER
         ),
-		OUT out_total_budget	DECIMAL(19, 2),
-		OUT out_remaining_budget	DECIMAL(19, 2),
+		OUT out_total_budget DECIMAL(19, 2),
+		OUT out_remaining_budget DECIMAL(19, 2),
         OUT out_total_allocated DECIMAL(19, 2)
 )
 LANGUAGE SQLSCRIPT
@@ -32,7 +34,7 @@ BEGIN
 	DECLARE va_remaining_budget DECIMAL(19, 2);
 	va_total_budget := 0;
 	va_remaining_budget := 0;
-	
+
 va_intermidate = SELECT
         hl4.hl4_ID AS HL4_ID
         ,hl4.hl4_crm_description AS HL4_CRM_DESCRIPTION
@@ -47,7 +49,7 @@ va_intermidate = SELECT
         ,hl4.IS_SEND_MAIL AS IS_SEND_MAIL
         ,hl4.HL4_FNC_BUDGET_TOTAL_MKT AS HL4_BUDGET
         ,HL2.IMPLEMENT_EXECUTION_LEVEL
-        
+
         FROM HL4 hl4
     INNER JOIN HL3 hl3 ON hl3.hl3_id=hl4.hl3_id AND hl3.enabled=1 AND hl3.deleted=0
     INNER JOIN HL2 hl2 ON hl2.hl2_id = hl3.hl2_id AND hl2.enabled=1 AND hl2.deleted=0
@@ -57,6 +59,12 @@ va_intermidate = SELECT
     INNER JOIN "MKTG_PLANNING_TOOL"."USER" userTable ON userTable.USER_ID = hl4.created_user_id
     WHERE hl4.enabled=1 AND hl4.deleted=0
 	AND hl3.hl3_id = in_hl3_id;
+
+va_hl6 = SELECT HL6.HL6_ID, HL6.HL5_ID
+            FROM HL6
+            WHERE HL6.HL6_STATUS_DETAIL_ID = 2
+                OR HL6.HL6_STATUS_DETAIL_ID = 3
+                OR HL6.HL6_STATUS_DETAIL_ID = 4;
 
 out_result = SELECT
         va_hl4.HL4_ID
@@ -72,15 +80,18 @@ out_result = SELECT
 		,va_hl4.IS_SEND_MAIL
 		,va_hl4.HL4_BUDGET
 		,va_hl4.IMPLEMENT_EXECUTION_LEVEL
-		
+
 		, COUNT(DISTINCT HL5.HL5_ID) AS TOTAL_HL5
 		, SUM(CASE WHEN  HL5.IN_BUDGET IS NULL THEN 0 WHEN HL5.IN_BUDGET = 0 THEN 1 ELSE 0 END) QUANTITY_HL5_OUT_BUDGET --# of L5 out off budget
 		, COALESCE(SUM(HL5.budget),0) AS ALLOCATED
 		, COALESCE((va_hl4.HL4_BUDGET - SUM(HL5.budget)), va_hl4.HL4_BUDGET) AS REMAINING
-		
+		, SUM(CASE WHEN (hl5.HL5_STATUS_DETAIL_ID = 2 OR hl5.HL5_STATUS_DETAIL_ID = 3 OR hl5.HL5_STATUS_DETAIL_ID = 4) THEN 1 ELSE 0 END) AS IN_CRM_CHILD_HL5
+		, SUM(CASE WHEN va_hl6.HL6_ID > 0 THEN 1 ELSE 0 END) AS IN_CRM_CHILD_HL6
+
     FROM :va_intermidate va_hl4
-    LEFT JOIN HL5 hl5 ON hl5.HL4_ID = va_hl4.hl4_id AND hl5.enabled=1 AND hl5.deleted=0
-    
+        LEFT JOIN HL5 hl5 ON hl5.HL4_ID = va_hl4.hl4_id AND hl5.enabled = 1 AND hl5.deleted = 0
+        LEFT JOIN :va_hl6 va_hl6 ON hl5.HL5_ID = va_hl6.HL5_ID
+
 
 	GROUP BY 
 	va_hl4.HL4_ID,va_hl4.HL4_CRM_DESCRIPTION,va_hl4.HL4_ACRONYM,va_hl4.CRM_ID,va_hl4.IN_BUDGET,va_hl4.READ_ONLY,va_hl4.STATUS_ID,

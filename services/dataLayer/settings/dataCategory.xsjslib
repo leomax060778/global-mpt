@@ -49,6 +49,15 @@ function getCategoryById(hl){
 	return db.extractArray(result.out_result);
 }
 
+function getCategoryByLevelHlId(level, hlId){
+	var params = {
+		'in_hl_id' : hlId
+	};
+	var sp = 'GET_CATEGORY_BY_' + level.toUpperCase() + '_ID';
+	var result =db.executeProcedure(sp, params);
+	return db.extractArray(result.out_result);
+}
+
 
 function getCategoryOptionByHierarchyLevelId(hierarchy_level_id){
 	var params = {
@@ -191,7 +200,12 @@ function getAllocationCategoryById(id){
 		'in_category_id' : id
 	};
 	var result = db.executeProcedureManual(GET_ALLOCATION_CATEGORY_BY_ID, params);
-	return db.extractArray(result.out_result)[0];
+	var list = db.extractArray(result.out_result);
+	if(list.length){
+		return list[0];
+	} else {
+		return {};
+	}
 }
 
 function getAllocationCategoryByName(name){

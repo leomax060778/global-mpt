@@ -131,9 +131,17 @@ function getExpectedOutcomesByParentIdLevel(parentId, level) {
     if (expectedOutcomes && expectedOutcomes.length) {
         expectedOutcomes.forEach(function (eo) {
             var aux = util.extractObject(eo);
-            var expectedOutcomesId = aux[hlExpectedOutcomesIdMap[level.toUpperCase()]];
-            var detail = getExpectedOutcomeDetailByIdMap[level.toUpperCase()](expectedOutcomesId);
-            aux.detail = addParentKpiDataToDetail(parentId, level, detail);
+            aux.detail = [];
+            var detail = getExpectedOutcomeDetailByIdMap[level.toUpperCase()](parentId);
+            detail = detail.filter(function (expectedOutcomeDetail) {
+                return expectedOutcomeDetail.EURO_VALUE
+                && expectedOutcomeDetail.VOLUME_VALUE
+                && expectedOutcomeDetail.OUTCOMES_NAME
+                && expectedOutcomeDetail.OUTCOMES_TYPE_NAME;
+            });
+            if(detail.length) {
+                aux.detail = addParentKpiDataToDetail(parentId, level, detail);
+            }
             result.push(aux);
         });
 
@@ -248,7 +256,7 @@ function getExpectedOutcomesByHl4Id(hl4_id, hl3_id) {
     return result[0];
 }
 
-function getExpectedOutcomesByHl5Id(hl5_id, hl4_id) {
+function getExpectedOutcomesByHl5Id(hl5_id, hl4_id ) {
     var expectedOutcomes = dataExpectedOutcome.getExpectedOutcomeByHl5Id(hl5_id);
     var result = [];
     if (expectedOutcomes && expectedOutcomes.length) {
@@ -270,6 +278,54 @@ function getExpectedOutcomesByHl5Id(hl5_id, hl4_id) {
     } else {
         result.push({COMMENT: '', detail: []});
     }
+
+    //************************************************
+        //Get EO from children
+        var ChildrenId = dataExpectedOutcome.getHl6Id_byHl5Id(hl5_id);
+        var resultHl6 = [];
+        ChildrenId.forEach(function(Hl6){
+            resultHl6.push(getExpectedOutcomesByHl6Id(Hl6.HL6_ID,hl5_id));
+        });
+
+        //take the details from children
+        var detailHl6 = [];
+        resultHl6.forEach(function(eo_hl6){
+            if(eo_hl6.detail && eo_hl6.detail.length){
+                detailHl6.push.apply(detailHl6,eo_hl6.detail);
+            }
+        });
+
+        //SUM each detail that is repeted
+        var detailSum = {};
+        detailHl6.forEach(function(currentDetail){
+            if(!(detailSum[currentDetail.OUTCOMES_TYPE_ID] &&
+                    detailSum[currentDetail.OUTCOMES_TYPE_ID][currentDetail.OUTCOMES_ID])){
+                detailSum[currentDetail.OUTCOMES_TYPE_ID] = detailSum[currentDetail.OUTCOMES_TYPE_ID] || {};
+                detailSum[currentDetail.OUTCOMES_TYPE_ID][currentDetail.OUTCOMES_ID] = {
+                    EURO_VALUE: Number(currentDetail.EURO_VALUE),
+                    VOLUME_VALUE: Number(currentDetail.VOLUME_VALUE),
+                    OUTCOMES_NAME: currentDetail.OUTCOMES_NAME,
+                    OUTCOMES_TYPE_NAME: currentDetail.OUTCOMES_TYPE_NAME,
+                    OUTCOMES_ID: currentDetail.OUTCOMES_ID,
+                    OUTCOMES_TYPE_ID: currentDetail.OUTCOMES_TYPE_ID
+                }
+            }else{
+                detailSum[currentDetail.OUTCOMES_TYPE_ID][currentDetail.OUTCOMES_ID].EURO_VALUE += Number(currentDetail.EURO_VALUE);
+                detailSum[currentDetail.OUTCOMES_TYPE_ID][currentDetail.OUTCOMES_ID].VOLUME_VALUE += Number(currentDetail.VOLUME_VALUE);
+            }
+        });
+        var auxDetail = [];
+
+        //convert in a array
+        Object.keys(detailSum).forEach(function(kSum){
+            Object.keys(detailSum[kSum]).forEach(function(kDetail){
+                auxDetail.push(detailSum[kSum][kDetail]);
+            });
+        });
+        result[0].detailChildren = auxDetail;
+
+    //************************************************
+
     return result[0];
 }
 

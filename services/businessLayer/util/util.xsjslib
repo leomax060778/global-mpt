@@ -109,6 +109,11 @@ function validateDateEndMayorStart(dateStart,dateEnd)
 	return false;
 }
 
+function isAdmin(userId){
+	var isA = userbl.isAdmin(userId);
+	return isA;
+}
+
 function isSuperAdmin(userId){
     var isSA = false;
     if (config.getApplySuperAdminToAllInitiatives()) {
@@ -192,9 +197,9 @@ function getMapHl5ChangedFieldsByHl5Id(hl5_id){
 	return mapFields;
 }
 
-function getCategoryById(level){
+function getCategoryById(level, hlId){
 	var mapFields = {};
-	var sp_result = dataCategory.getCategoryById(level);
+	var sp_result = !hlId ? dataCategory.getCategoryById(level) : dataCategory.getCategoryByLevelHlId(level, hlId);
 	
 	for (var i = 0; i < sp_result.length; i++) {
 		var obj = sp_result[i];

@@ -16,7 +16,11 @@ function insertMarketingProgram(payload, userId) {
         throw ErrorLib.getErrors().BadRequest("", "marketingProgramService/handlePost/insertMarketingProgram", MARKETING_PROGRAM_EXISTS);
     }
 
-    return dataMarketingProgram.insertMarketingProgram(payload.IN_NAME, payload.IN_DESCRIPTION || payload.IN_NAME, userId);
+    return dataMarketingProgram.insertMarketingProgram(
+        payload.IN_NAME
+        , payload.IN_DESCRIPTION || payload.IN_NAME
+        , Number(payload.SHOW_VALIDATION_WIZARD)
+        , userId);
 }
 
 function insertMarketingProgramForUpload(name, description, userId){
@@ -29,12 +33,17 @@ function existMarketingProgramByName(payload) {
 
 }
 
-function updateMarketingProgram(campaignSubTypeData, userId) {
-    if (existMarketingProgramByName(campaignSubTypeData)) {
+function updateMarketingProgram(payload, userId) {
+    if (existMarketingProgramByName(payload)) {
         throw ErrorLib.getErrors().BadRequest("", "marketingProgramService/handlePost/insertMarketingProgram", MARKETING_PROGRAM_EXISTS);
     }
 
-    return dataMarketingProgram.updateMarketingProgram(campaignSubTypeData.IN_MARKETING_PROGRAM_ID, campaignSubTypeData.IN_NAME, campaignSubTypeData.IN_DESCRIPTION || campaignSubTypeData.IN_NAME, userId);
+    return dataMarketingProgram.updateMarketingProgram(
+        payload.IN_MARKETING_PROGRAM_ID
+        , payload.IN_NAME
+        , payload.IN_DESCRIPTION || payload.IN_NAME
+        , Number(payload.SHOW_VALIDATION_WIZARD)
+        , userId);
 }
 
 function deleteMarketingProgram(marketingProgram, userId, confirm) {

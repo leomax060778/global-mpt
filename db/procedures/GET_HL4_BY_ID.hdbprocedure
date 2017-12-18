@@ -7,6 +7,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL4_BY_ID" (
 	hl4_details NVARCHAR(3000),
 	hl4_business_details NVARCHAR(3000),
 	hl4_status_detail_id bigint,
+	STATUS NVARCHAR(25),
 	acronym NVARCHAR(25),
 	is_annual_plan TINYINT
 	,euro_conversion_id integer
@@ -39,6 +40,7 @@ out_hl4 =
 		   HL4.hl4_details,
 		   HL4.hl4_business_details,
 		   HL4.hl4_status_detail_id,
+		   STATUS.DETAIL as STATUS,
 		   HL4.acronym,
 		   HL4.is_annual_plan
 		 --new refactor 04112016
@@ -61,6 +63,7 @@ out_hl4 =
 	INNER JOIN HL3 ON HL3.HL3_ID = HL4.HL3_ID
 	INNER JOIN HL2 ON HL2.HL2_ID = HL3.HL2_ID
 	INNER JOIN HL1 ON HL1.HL1_ID = HL2.HL1_ID
+	INNER JOIN HL4_STATUS_DETAIL STATUS ON HL4.hl4_status_detail_id = STATUS.hl4_status_detail_id
 	INNER JOIN BUDGET_YEAR BGY ON HL1.BUDGET_YEAR_ID = BGY.BUDGET_YEAR_ID
 	LEFT JOIN DISTRIBUTION_CHANNEL ON DISTRIBUTION_CHANNEL.DISTRIBUTION_CHANNEL_ID = HL4.DIS_CHANNEL_ID
 	LEFT JOIN SALE_ORGANIZATION ON SALE_ORGANIZATION.SALES_ORGANIZATION_ID = HL4.MKT_ORG_ID

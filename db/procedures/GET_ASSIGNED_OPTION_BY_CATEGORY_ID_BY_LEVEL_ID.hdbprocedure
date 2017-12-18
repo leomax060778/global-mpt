@@ -7,6 +7,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_ASSIGNED_OPT
 	, name NVARCHAR(60)
 	, make_category_mandatory TINYINT
 	, single_option_only TINYINT
+	, crm_key NVARCHAR(255)
  	)
  	)
 	LANGUAGE SQLSCRIPT
@@ -16,7 +17,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_ASSIGNED_OPT
 BEGIN
 
 		out_result =
-		SELECT distinct ACOL.allocation_category_id, AO.allocation_option_id, AO.name, ACOL.make_category_mandatory, AC.SINGLE_OPTION_ONLY
+		SELECT distinct ACOL.allocation_category_id, AO.allocation_option_id, AO.name, ACOL.make_category_mandatory, AC.SINGLE_OPTION_ONLY, AO.crm_key
 		FROM ALLOCATION_OPTION AO
 		INNER JOIN ALLOCATION_CATEGORY_OPTION_LEVEL ACOL ON AO.allocation_option_id = ACOL.allocation_option_id
 		INNER JOIN ALLOCATION_CATEGORY AC ON AC.allocation_category_id = ACOL.allocation_category_id

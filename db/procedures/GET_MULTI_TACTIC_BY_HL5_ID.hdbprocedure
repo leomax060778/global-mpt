@@ -1,0 +1,18 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_MULTI_TACTIC_BY_HL5_ID" (
+	in in_hl5_id BIGINT
+	,out out_result TABLE (
+		MULTI_TACTIC TINYINT
+		)
+
+)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	READS SQL DATA AS
+BEGIN
+out_result = select
+             MULTI_TACTIC
+             from hl5
+             where hl5_id = in_hl5_id;
+
+END;

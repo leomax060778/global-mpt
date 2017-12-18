@@ -46,7 +46,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::UPD_HL6"
     ,IN in_is_power_user tinyint
     , IN in_employee_responsible_user nvarchar(7)
     , IN in_person_responsible nvarchar(7)
-
+    , IN in_is_complete TINYINT
 	,OUT out_result decimal(19, 6)
 	) 
 	LANGUAGE SQLSCRIPT
@@ -102,6 +102,7 @@ BEGIN
     , is_power_user = in_is_power_user
     , EMPLOYEE_RESPONSIBLE_USER = in_employee_responsible_user
     , PERSON_RESPONSIBLE = in_person_responsible
+    , IS_COMPLETE = in_is_complete
 	where hl6_id = in_hl6_id;
 	
 	SELECT ::ROWCOUNT INTO out_result FROM DUMMY;

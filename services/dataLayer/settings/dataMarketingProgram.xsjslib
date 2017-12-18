@@ -29,19 +29,21 @@ function getMarketingProgramByName(name) {
     return null;
 }
 
-function insertMarketingProgram(name, description,userId) {
+function insertMarketingProgram(name, description,showValidationWizard,userId) {
     var parameters = {};
     parameters.IN_NAME = name;
     parameters.IN_DESCRIPTION = description;
+    parameters.IN_SHOW_VALIDATION_WIZARD = showValidationWizard;
     parameters.IN_CREATED_USER_ID = userId;
     return db.executeScalarManual(INS_MARKETING_PROGRAM, parameters, "out_result");
 }
 
-function updateMarketingProgram(marketingProgramId, name, description,userId) {
+function updateMarketingProgram(marketingProgramId, name, description,showValidationWizard,userId) {
     var parameters = {};
     parameters.IN_MARKETING_PROGRAM_ID = marketingProgramId;
     parameters.IN_NAME = name;
     parameters.IN_DESCRIPTION = description;
+    parameters.IN_SHOW_VALIDATION_WIZARD = showValidationWizard;
     parameters.IN_MODIFIED_USER_ID = userId;
     return db.executeScalarManual(UPD_MARKETING_PROGRAM, parameters, "out_result");
 }

@@ -9,6 +9,8 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL6_FOR_SEAR
         , IN in_offset integer
 		, OUT out_result TABLE (
 			id bigint,
+            HL6_STATUS_DETAIL_ID bigint,
+            STATUS_DETAIL nvarchar(20),
 			parent_id bigint,
 			organization_acronym NVARCHAR(25),
 			region_name NVARCHAR(255),
@@ -25,6 +27,8 @@ BEGIN
 
 IF in_isSA = 1 THEN
 	VAR_OUT_RESULT = SELECT DISTINCT HL6.hl6_id as id
+        , HL6.HL6_STATUS_DETAIL_ID
+        , STATUS.DETAIL AS STATUS_DETAIL
 		, HL6.hl5_id as parent_id
 		, HL2.organization_acronym
 		, REGION.region_name
@@ -44,6 +48,7 @@ IF in_isSA = 1 THEN
     INNER JOIN HL2 ON HL3.hl2_id = HL2.hl2_id AND hl2.enabled=1 AND hl2.deleted=0
     INNER JOIN HL1 ON HL2.hl1_id = HL1.hl1_id AND hl1.enabled=1 AND hl1.deleted=0
 	INNER JOIN BUDGET_YEAR BGY ON HL1.budget_year_id = BGY.budget_year_id
+	INNER JOIN HL6_STATUS_DETAIL STATUS ON hl6.HL6_STATUS_DETAIL_ID = STATUS.HL6_STATUS_DETAIL_ID
 	LEFT JOIN REGION ON HL1.region_id = REGION.region_id
 	LEFT JOIN SUBREGION ON HL2.subregion_id = SUBREGION.subregion_id
 	WHERE hl6.deleted = 0 AND hl6.enabled = 1
@@ -59,6 +64,8 @@ IF in_isSA = 1 THEN
             , organization_acronym;
 ELSE
     VAR_OUT_RESULT = SELECT DISTINCT HL6.hl6_id as id
+        , HL6.HL6_STATUS_DETAIL_ID
+        , STATUS.DETAIL AS STATUS_DETAIL
 		, HL6.hl5_id as parent_id
 		, HL2.organization_acronym
 		, REGION.region_name
@@ -79,6 +86,7 @@ ELSE
     INNER JOIN HL2 ON HL3.hl2_id = HL2.hl2_id AND hl2.enabled=1 AND hl2.deleted=0
     INNER JOIN HL1 ON HL2.hl1_id = HL1.hl1_id AND hl1.enabled=1 AND hl1.deleted=0
 	INNER JOIN BUDGET_YEAR BGY ON HL1.budget_year_id = BGY.budget_year_id
+	INNER JOIN HL4_STATUS_DETAIL STATUS ON hl4.HL4_STATUS_DETAIL_ID = STATUS.DETAIL
 	LEFT JOIN REGION ON HL1.region_id = REGION.region_id
 	LEFT JOIN SUBREGION ON HL2.subregion_id = SUBREGION.subregion_id
 	WHERE hl6.deleted = 0 AND hl6.enabled = 1
@@ -98,6 +106,8 @@ END IF;
     if in_region_id = -1 then
         TEMP_OUT_RESULT = SELECT
                           T.id
+                        , T.HL6_STATUS_DETAIL_ID
+                        , T.STATUS_DETAIL
                         , T.parent_id
                         , T.organization_acronym
                         , T.region_name
@@ -114,6 +124,8 @@ END IF;
     else
         TEMP_OUT_RESULT = SELECT
                           T.id
+                          , T.HL6_STATUS_DETAIL_ID
+                          , T.STATUS_DETAIL
                           , T.parent_id
                           , T.organization_acronym
                           , T.region_name
@@ -134,6 +146,8 @@ END IF;
 if(in_limit = -1) then
 out_result =
 SELECT   id
+        , HL6_STATUS_DETAIL_ID
+        , STATUS_DETAIL
 		, parent_id
 		, organization_acronym
 		, region_name
@@ -145,6 +159,8 @@ SELECT   id
 else
 out_result =
 SELECT   id
+        , HL6_STATUS_DETAIL_ID
+        , STATUS_DETAIL
 		, parent_id
 		, organization_acronym
 		, region_name

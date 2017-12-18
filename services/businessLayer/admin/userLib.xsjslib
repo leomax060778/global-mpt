@@ -29,6 +29,13 @@ var NOT_PERMISSION_PARENT_LEVEL = "User should have permission for parent level.
 
 var defaultPassword = config.getDefaultPassword();
 
+var roleMap = {
+    SuperAdmin: 1,
+    Admin: 2,
+    DataEntry: 3,
+    CampaignManager: 4
+};
+
 function getAll() {
     return dbUser.getAllUser();
 }
@@ -209,7 +216,6 @@ function validate(data) {
 }
 
 function insertUser(user, createUser) {
-
     if (!user.PASSWORD && !user.USE_DEFAULT_PASSWORD)
         throw ErrorLib.getErrors().CustomError("",
             "userServices/handlePost/insertUser",
@@ -229,6 +235,14 @@ function insertUser(user, createUser) {
         var transactionDone = false;
         var userPassHashed = null;
         var userPassword = null;
+
+        user.USER_NAME = user.USER_NAME.trim();
+        user.FIRST_NAME = user.FIRST_NAME.trim();
+        user.LAST_NAME = user.LAST_NAME.trim();
+        user.EMAIL = user.EMAIL.trim();
+        user.PHONE = user.PHONE.trim();
+        user.PASSWORD = user.PASSWORD ? user.PASSWORD.trim(): '';
+        user.CONFIRM_PASSWORD = user.CONFIRM_PASSWORD ? user.CONFIRM_PASSWORD.trim(): '';
 
         // validate user
         if (validateUser(user)) {
@@ -288,6 +302,12 @@ function insertUser(user, createUser) {
 }
 
 function updateUser(user, updateUser) {
+
+    user.USER_NAME =  user.USER_NAME ? user.USER_NAME.trim() : null;
+    user.FIRST_NAME =  user.FIRST_NAME ? user.FIRST_NAME.trim() : null;
+    user.LAST_NAME =  user.LAST_NAME ? user.LAST_NAME.trim() : null;
+    user.EMAIL =  user.EMAIL ? user.EMAIL.trim() : null;
+    user.PHONE =  user.PHONE ? user.PHONE.trim() : null;
 
     if (!user.USER_ID)
         throw ErrorLib.getErrors().CustomError("",
@@ -541,7 +561,13 @@ function notifyInsertByEmail(TO, username, password) {
 function isSuperAdmin(userId) {
     var rol = dbUserRole.getUserRoleByUserId(userId);
 
-    return (rol && rol.length > 0 && rol[0].ROLE_ID == 1);
+    return (rol && rol.length > 0 && rol[0].ROLE_ID == roleMap.SuperAdmin);
+}
+
+function isAdmin(userId) {
+    var rol = dbUserRole.getUserRoleByUserId(userId);
+
+    return (rol && rol.length > 0 && rol[0].ROLE_ID == roleMap.Admin);
 }
 
 function getPermissionForLevelByUser(level, levelId, userId) {
@@ -609,7 +635,7 @@ function insertEntity(entity, userId){
  */
 function updateEntity(entity, userId){
     var user = {};
-    user.USER_ID = getUserByUserName(entity.IN_NAME).USER_ID;
+    user.USER_ID = getUserByUserName(entity.IN_NAME.trim()).USER_ID;
     user.USER_NAME = entity.IN_NAME;
     user.FIRST_NAME = entity.IN_FIRST_NAME;
     user.LAST_NAME = entity.IN_LAST_NAME;

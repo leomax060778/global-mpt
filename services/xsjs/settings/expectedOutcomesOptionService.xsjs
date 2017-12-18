@@ -17,9 +17,11 @@ function handleGet(parameters, userSessionID) {
     if (parameters.length > 0) {
         switch (parameters[0].name) {
             case GET_BY_ID:
+
                 rdo = blOption.getOptionById(parameters[0].value);
                 break;
             case EXPECTED_OUTCOME_ID:
+
                 rdo = blOption.getOptionByExpectedOutcomeAndLevelId(parameters[0].value, parameters[1].value);
                 break;
             default:

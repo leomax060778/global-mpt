@@ -1504,7 +1504,7 @@ function uploadEntity(data, uploadType, userId) {
     var entityId;
 
     entityList.forEach(function(entity){
-        var bdEntity = businessLayer.getByName(entity.IN_NAME);
+        var bdEntity = businessLayer.getByName(entity.IN_NAME.trim());
 
         if(!bdEntity){
             entityId = businessLayer.insertEntity(entity, userId);

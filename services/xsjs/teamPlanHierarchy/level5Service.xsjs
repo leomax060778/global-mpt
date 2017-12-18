@@ -32,6 +32,7 @@ function handleGet(params, userId) {
 	var in_sale_organization = httpUtil.getUrlParameters().get("SALE_ORGANIZATION_ID");
 	var budgetYearId = httpUtil.getUrlParameters().get("BUDGET_YEAR");
 	var currentHl5Id = httpUtil.getUrlParameters().get("CURRENT_HL5");
+	var isMarketingTacticView = (httpUtil.getUrlParameters().get("IS_MARKETING_TACTIC_VIEW"))? 1: 0;
 	var result = {};
 	if(newSerial)
 	{
@@ -58,7 +59,7 @@ function handleGet(params, userId) {
 	} else if (dataType && dataType == "COST_CENTER"){
 		result = hl5.getCostCenterByHl4IdMarketingOrganizationId(in_hl4_id,in_sale_organization);
 	} else if(param_section && param_section == getHl5ByUserId){
-		result = hl5.getHl5ByUserId(userId);
+		result = hl5.getHl5ByUserId(userId, isMarketingTacticView);
 	} else{
 		throw ErrorLib.getErrors().BadRequest("","level5Service/handleGet","invalid parameter name (can be: HL4_ID, HL5_ID or section)");
 	}
@@ -82,7 +83,8 @@ function handlePut(reqBody, userId){
 				return	httpUtil.handleResponse(rdo,httpUtil.OK,httpUtil.AppJson);
 		        break;
 			case changeStatus:
-				var rdo = hl5.changeHl5StatusOnDemand(hl5Id, userId);
+                var CANCEL_CONFIRMATION = parameters.get('CANCEL_CONFIRMATION');
+				var rdo = hl5.changeHl5StatusOnDemand(hl5Id, userId, CANCEL_CONFIRMATION);
 				return	httpUtil.handleResponse(rdo,httpUtil.OK,httpUtil.AppJson);
 				break;
 		    default:

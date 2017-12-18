@@ -149,6 +149,10 @@ function getHl3ByUserGroupByHl1(userId, budgetYearId, regionId, subRegionId) {
     return collection;
 }
 
+function getLevel3CarryOverById(hl3Id, userId) {
+    return data.getLevel3CarryOverById(hl3Id, userId);
+}
+
 // Get an Level 3 data by id
 function getLevel3ById(hl3Id, userId) {
     var hl3 = JSON.parse(JSON.stringify(data.getLevel3ById(hl3Id, userId)));
@@ -631,7 +635,7 @@ function checkBudgetStatus(hl2Id, userId, hl3Id, newHl3Budget) {
 }
 
 function checkPermission(userSessionID, method, hl3Id) {
-    if (((method && method == "GET_BY_HL3_ID") || !method) && !util.isSuperAdmin(userSessionID)) {
+    if (((method && method == "GET_BY_HL3_ID")) && !util.isSuperAdmin(userSessionID)) {
         var l3 = data.getLevel3ById(hl3Id, userSessionID);
         if(!l3)
             throw ErrorLib.getErrors().CustomError("", "level3/getLevel3ById", "HL3 does not existn.");

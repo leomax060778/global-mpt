@@ -3,7 +3,8 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_AVAILABLE_OP
     IN in_level_id BIGINT,
 	OUT out_result TABLE (
 	allocation_option_id BIGINT
-	, name NVARCHAR(60)	)
+	, name NVARCHAR(60)
+    , crm_key NVARCHAR(255))
  	)
  	
 	LANGUAGE SQLSCRIPT
@@ -13,7 +14,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_AVAILABLE_OP
 BEGIN
 
 		out_result =
-		SELECT AO.allocation_option_id, AO.name
+		SELECT AO.allocation_option_id, AO.name, AO.crm_key
 		FROM ALLOCATION_OPTION AO
 		WHERE AO.enabled = 1 AND AO.deleted = 0
 		AND AO.allocation_option_id NOT IN (

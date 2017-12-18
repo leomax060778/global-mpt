@@ -59,6 +59,8 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL6_BY_ID"(
             , EMPLOYEE_RESPONSIBLE_USER nvarchar(7)
             , PERSON_RESPONSIBLE NVARCHAR(7)
             , STATUS NVARCHAR(25)
+            , IS_COMPLETE TINYINT
+            , MULTI_TACTIC TINYINT
 		)
 	)
 	LANGUAGE SQLSCRIPT
@@ -136,6 +138,8 @@ va_own_money_budget_request = SELECT TOP 1 BSRS.budget_spend_request_status_id
                 , HL6.EMPLOYEE_RESPONSIBLE_USER
                 , HL6.PERSON_RESPONSIBLE
                 , STATUS.DETAIL AS STATUS
+                , HL6.IS_COMPLETE
+                , HL5.MULTI_TACTIC
 			FROM HL6
 			INNER JOIN HL5 ON HL5.HL5_ID = HL6.HL5_ID
 			LEFT JOIN :va_own_money_budget_request BSRS ON BSRS.HL6_ID = HL6.HL6_ID

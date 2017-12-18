@@ -35,6 +35,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_ALL_HL4_CHAN
              ,CATEGORY_NAME NVARCHAR(60)
              ,ALLOCATION_CATEGORY_ID BIGINT
              ,PROCESSING_REPORT_EXPORT_KEY NVARCHAR(255)
+             ,CRM_KEY NVARCHAR(255)
 	) )
 	LANGUAGE SQLSCRIPT
 	SQL SECURITY INVOKER 
@@ -67,7 +68,7 @@ out_hl4_category_options =
      ,category.name as category_name
      ,ACOL.allocation_category_id
      ,category.processing_report_export_key
-
+     ,option.crm_key
     FROM hl4_category_option hl4CO
     inner join allocation_category_option_level ACOL ON ACOL.allocation_category_option_level_id = hl4CO.allocation_category_option_level_id
     inner join allocation_option option on ACOL.allocation_option_id = option.allocation_option_id
