@@ -13,6 +13,7 @@ BEGIN
 	-- Update current status in HL5
 		UPDATE HL5
 		SET hl5_status_detail_id = in_status_id,
+            is_complete = 1,
 			modified_user_id = in_user_id,
 			modified_date_tz = CURRENT_TIMESTAMP
 		WHERE hl5_id = in_hl5_id;

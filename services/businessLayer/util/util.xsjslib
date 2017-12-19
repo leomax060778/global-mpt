@@ -234,3 +234,15 @@ function getHierarchyLevelEnum() {
         HL6: 3
     }
 }
+
+/**
+ *
+ * @param statusId - status id (current level 4 status, level 5 status, level 6 status)
+ * @param statusLevel - array with all the status by level
+ * @param userId
+ * @returns {isSuperAdmin|boolean} - true if the user is super admin or if the status is different from Create in CRM or Update in CRM
+ */
+function getEnableEdit(statusId, statusLevel, userId) {
+	//TODO: Super admin validation added because of SAP new requirements, refactor this
+	return (isSuperAdmin(userId) || (Number(statusId) !== statusLevel.CREATE_IN_CRM && Number(statusId) !== statusLevel.UPDATE_IN_CRM));
+}

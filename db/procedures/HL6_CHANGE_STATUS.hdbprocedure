@@ -14,6 +14,7 @@ BEGIN
 		UPDATE HL6
 		SET hl6_status_detail_id = in_status_id,
 			modified_user_id = in_user_id,
+            is_complete = 1,
 			modified_date_tz = CURRENT_TIMESTAMP
 		WHERE hl6_id = in_hl6_id;
 			

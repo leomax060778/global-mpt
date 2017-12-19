@@ -39,7 +39,7 @@ function handleGet(params, userId) {
 
 	if(in_hl3_id){
         // businessLevel3.checkPermission(userId, null, in_hl3_id);
-		result = hl4.getHl4(in_hl3_id);
+		result = hl4.getHl4(in_hl3_id, userId);
 	} else if (in_hl4_id && method && method === "CARRY_OVER"){
     	result = hl4.getHL4CarryOverById(in_hl4_id, userId);
 	} else if (in_hl4_id) {

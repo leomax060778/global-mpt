@@ -131,7 +131,7 @@ var HIERARCHY_LEVEL = {
 
 /** ****************END CONSTANTS***************** */
 
-function getHl6ByHl5Id(hl5Id) {
+function getHl6ByHl5Id(hl5Id, userId) {
     var hl6List = dataHl6.getHl6ByHl5Id(hl5Id, true);
     var totalBudget = 0;
     var totalAllocated = 0;
@@ -155,7 +155,7 @@ function getHl6ByHl5Id(hl5Id) {
             });
             aux.ENABLE_DELETION = Number(hl6.STATUS_ID) !== HL6_STATUS.CREATE_IN_CRM && Number(hl6.STATUS_ID) !== HL6_STATUS.IN_CRM && Number(hl6.STATUS_ID) !== HL6_STATUS.UPDATE_IN_CRM;
             aux.ENABLE_CHANGE_STATUS = Number(hl6.STATUS_ID) !== HL6_STATUS.CREATE_IN_CRM && Number(hl6.STATUS_ID) !== HL6_STATUS.IN_CRM && Number(hl6.STATUS_ID) !== HL6_STATUS.UPDATE_IN_CRM;
-            aux.ENABLE_EDIT = Number(hl6.STATUS_ID) !== HL6_STATUS.CREATE_IN_CRM && Number(hl6.STATUS_ID) !== HL6_STATUS.UPDATE_IN_CRM;
+            aux.ENABLE_EDIT = util.getEnableEdit(hl6.STATUS_ID, HL6_STATUS, userId);
             allHl6.push(aux);
         });
 
@@ -276,7 +276,7 @@ function getLevel6ForSearch(userSessionID, budget_year_id, region_id, subregion_
     var list = dataHl6.getHl6ForSearch(userSessionID, util.isSuperAdmin(userSessionID) ? 1 : 0, budget_year_id, region_id || 0, subregion_id || 0, limit, offset || 0);
     list = JSON.parse(JSON.stringify(list));
     list.result.forEach(function (elem) {
-        elem.ENABLE_EDIT = (Number(elem.HL6_STATUS_DETAIL_ID) !== HL6_STATUS.CREATE_IN_CRM) && (Number(elem.HL6_STATUS_DETAIL_ID) !== HL6_STATUS.UPDATE_IN_CRM);
+        elem.ENABLE_EDIT = util.getEnableEdit(elem.HL6_STATUS_DETAIL_ID, HL6_STATUS, userSessionID);
     });
     return list;
 }
@@ -321,7 +321,7 @@ function getHl6ByHl5IdUserId(hl5Id, userId) {
                         ,
                         ENABLE_DELETION: Number(hl6List[i].STATUS_ID) !== HL6_STATUS.CREATE_IN_CRM && Number(hl6List[i].STATUS_ID) !== HL6_STATUS.IN_CRM && Number(hl6List[i].STATUS_ID) !== HL6_STATUS.UPDATE_IN_CRM
                         ,
-                        ENABLE_EDIT: Number(hl6List[i].STATUS_ID) !== HL6_STATUS.CREATE_IN_CRM && Number(hl6List[i].STATUS_ID) !== HL6_STATUS.UPDATE_IN_CRM
+                        ENABLE_EDIT: util.getEnableEdit(hl6List[i].STATUS_ID, HL6_STATUS, userId)
                         ,
                         ENABLE_CHANGE_STATUS: Number(hl6List[i].STATUS_ID) !== HL6_STATUS.CREATE_IN_CRM && Number(hl6List[i].STATUS_ID) !== HL6_STATUS.IN_CRM && Number(hl6List[i].STATUS_ID) !== HL6_STATUS.UPDATE_IN_CRM
                     })
@@ -354,7 +354,7 @@ function getHl6ByHl5IdUserId(hl5Id, userId) {
                     ,
                     ENABLE_CHANGE_STATUS: Number(hl6List[i].STATUS_ID) !== HL6_STATUS.CREATE_IN_CRM && Number(hl6List[i].STATUS_ID) !== HL6_STATUS.IN_CRM && Number(hl6List[i].STATUS_ID) !== HL6_STATUS.UPDATE_IN_CRM
                     ,
-                    ENABLE_EDIT: Number(hl6List[i].STATUS_ID) !== HL6_STATUS.CREATE_IN_CRM && Number(hl6List[i].STATUS_ID) !== HL6_STATUS.UPDATE_IN_CRM
+                    ENABLE_EDIT: util.getEnableEdit(hl6List[i].STATUS_ID, HL6_STATUS, userId)
                 })
             }
         }
@@ -480,7 +480,7 @@ function insertHl6(data, userId) {
             pathBL.insParentPath('hl6', hl6_id, data.hl6.HL5_ID, userId);
 
 
-            setHl6Status(hl6_id, data.hl6.HL6_STATUS_DETAIL_ID, userId);
+            // setHl6Status(hl6_id, data.hl6.HL6_STATUS_DETAIL_ID, userId);
 
             //insert Budget
             insertBudget(data);
@@ -857,8 +857,11 @@ function updateHl6(data, userId) {
         throw ErrorLib.getErrors().CustomError("", "", L6_MSG_INITIATIVE_NOT_FOUND);
     }
 
-    if (hl6StatusId === HL6_STATUS.CREATE_IN_CRM || hl6StatusId === HL6_STATUS.UPDATE_IN_CRM) {
-        throw ErrorLib.getErrors().CustomError("", "", "Cannot update this selected Initiative/Campaign, because the status doesn´t allow it.");
+    //TODO: Super admin validation added because of SAP new requirements, refactor this
+    if (!util.isSuperAdmin(userId)) {
+        if (hl6StatusId === HL6_STATUS.CREATE_IN_CRM || hl6StatusId === HL6_STATUS.UPDATE_IN_CRM) {
+            throw ErrorLib.getErrors().CustomError("", "", "Cannot update this selected Initiative/Campaign, because the status doesn´t allow it.");
+        }
     }
 
     if (!userId) {
@@ -991,7 +994,7 @@ function updateHl6(data, userId) {
     }
 }
 
-function updateCategoryOptions(data, userId) {
+function updateCategoryOptions(data, userId, fromChangeHl6StatusOnDemand) {
     var mapCOL = util.getMapCategoryOption('hl6');
     var categoryOptionBulk = [];
     data.hl6_category.forEach(function (hl6Category) {
@@ -1004,11 +1007,11 @@ function updateCategoryOptions(data, userId) {
                     in_category_option_level_id: hl6Category.CATEGORY_OPTION_LEVEL_ID
                     , in_amount: hl6CategoryOption.AMOUNT
                     , in_user_id: userId
-                    , in_updated: hl6CategoryOption.UPDATED || 0
+                    , in_updated: fromChangeHl6StatusOnDemand && !!Number(hl6CategoryOption.AMOUNT)? 1 : (hl6CategoryOption.UPDATED || 0)
                     , in_hl6_id: data.hl6.HL6_ID
                 });
             });
-        } else {
+        } else if (!fromChangeHl6StatusOnDemand) {
             var allocationOptions = AllocationOptionLib.getAssignedOptionByCategoryIdByLevelId(hl6Category.CATEGORY_ID, HIERARCHY_LEVEL.HL6, true);
             allocationOptions.forEach(function (option) {
                 hl6Category.categoryOptionLevelId = mapCOL[hl6Category.CATEGORY_ID][option.OPTION_ID];
@@ -1193,7 +1196,7 @@ function updatePartners(data, userId) {
 }
 
 function deleteHl6ByHl5(hl5Id, userId) {
-    var hl6ToDelete = getHl6ByHl5Id(hl5Id).results;
+    var hl6ToDelete = getHl6ByHl5Id(hl5Id, userId).results;
     var objHL6 = {};
     hl6ToDelete.forEach(function (elem) {
         objHL6.in_hl6_id = elem.HL6_ID;
@@ -1754,6 +1757,7 @@ function changeHl6StatusOnDemand(hl6_id, userId, cancelConfirmation) {
     var hl6 = dataHl6.getHl6ById(hl6_id);
     var existInCrm = dataHl6.hl6ExistsInCrm(hl6_id);
     var statusId = null;
+    var isDataComplete = Number(hl6.IS_COMPLETE);
     if (hl6.HL6_STATUS_DETAIL_ID != HL6_STATUS.IN_CRM) {
         if (!cancelConfirmation) {
             if (hl6.HL6_STATUS_DETAIL_ID == HL6_STATUS.VALID_FOR_CRM || hl6.HL6_STATUS_DETAIL_ID == HL6_STATUS.IN_PROGRESS) {
@@ -1763,11 +1767,30 @@ function changeHl6StatusOnDemand(hl6_id, userId, cancelConfirmation) {
             }
         } else {
             var changedFields = dataL6DER.getL6ChangedFieldsByHl6Id(hl6_id);
-            statusId = Number(hl6.IS_COMPLETE) && changedFields && changedFields.length ? HL6_STATUS.VALID_FOR_CRM : hl6.HL6_STATUS_DETAIL_ID;
+            statusId = isDataComplete && changedFields && changedFields.length ? HL6_STATUS.VALID_FOR_CRM : hl6.HL6_STATUS_DETAIL_ID;
+        }
+
+        if(statusId == HL6_STATUS.CREATE_IN_CRM){
+            level6DER.deleteL6ChangedFieldsByHl6Id(hl6_id);
+            var hl6_expected_outcomes = getExpectedOutcomesByHl6Id(hl6_id, hl6.HL4_ID);
+            hl6_expected_outcomes.hl6_expected_outcomes_detail = hl6_expected_outcomes.detail;
+            var hl6_category = getHl6CategoryOption(hl6_id);
+            var data = {
+                hl6: hl6,
+                hl6_expected_outcomes: hl6_expected_outcomes,
+                hl6_category: hl6_category
+            };
+            isDataComplete = isComplete(data);
+
+            if(isDataComplete) {
+                updateCategoryOptions(data, hl6_id, userId, true);
+                var aux = crmFieldsHaveChanged(data, 1, userId, true);
+                insertInCrmBinding(aux.crmBindingChangedFields, [], hl6_id);
+            }
         }
 
         if (!hl6.ALLOW_BUDGET_ZERO) {
-            if (!Number(hl6.IS_COMPLETE)) {
+            if (!isDataComplete) {
                 throw ErrorLib.getErrors().CustomError("", "hl6Services/handlePut/changeHl6Status", L6_MSG_COULDNT_CHAGE_STATUS);
             }
 
@@ -1817,7 +1840,7 @@ function setHl6StatusInCRM(hl6_id, userId) {
     return 1;
 }
 
-function crmFieldsHaveChanged(data, isComplete, userId) {
+function crmFieldsHaveChanged(data, isComplete, userId, isNew) {
     var crmFieldsHaveChanged = false;
     var crmBindingChangedFields = [];
     var crmBindingChangedFieldsUpdate = [];
@@ -1949,6 +1972,9 @@ function crmFieldsHaveChanged(data, isComplete, userId) {
 
                 } else {
                     fieldChanged = new Date(oldHl6[field]).valueOf() !== new Date(data[object][field]).valueOf();
+                }
+                if(isNew){
+                    fieldChanged = true;
                 }
                 if (fieldChanged || oldParentPath != parentPath) {
 
