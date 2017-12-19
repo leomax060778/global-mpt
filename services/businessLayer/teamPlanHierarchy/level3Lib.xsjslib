@@ -235,7 +235,7 @@ function deleteHl3(objHl3, userId) {
         throw ErrorLib.getErrors().CustomError("", "hl3Services/handlePost/deleteHl3", L2_MSG_NO_PRIVILEGE);
 
     var result = 0;
-    if (!hl3HasChilds(objHl3)) {
+    if (!hl3HasChilds(objHl3, userId)) {
 
         dataExOut.deleteHl3ExpectedOutcomesDetail(objHl3.HL3_ID, userId);
         dataExOut.deleteHl3ExpectedOutcomes(objHl3.HL3_ID, userId);

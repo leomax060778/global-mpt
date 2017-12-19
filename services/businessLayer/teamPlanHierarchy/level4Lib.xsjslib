@@ -102,7 +102,7 @@ var HIERARCHY_LEVEL = {
 
 /** ****************END CONSTANTS***************** */
 
-function getHl4(id) {
+function getHl4(id, userId) {
     var spResult = dataHl4.getHl4(id);
     var result = [];
     spResult.out_result.forEach(function (hl4) {
@@ -116,7 +116,7 @@ function getHl4(id) {
         aux.REMAINING = hl4.REMAINING;
         aux.ENABLE_DELETION = Number(hl4.STATUS_ID) !== HL4_STATUS.CREATE_IN_CRM && Number(hl4.STATUS_ID) !== HL4_STATUS.IN_CRM && Number(hl4.STATUS_ID) !== HL4_STATUS.UPDATE_IN_CRM;
         aux.ENABLE_CHANGE_STATUS = Number(hl4.STATUS_ID) !== HL4_STATUS.CREATE_IN_CRM && Number(hl4.STATUS_ID) !== HL4_STATUS.IN_CRM && Number(hl4.STATUS_ID) !== HL4_STATUS.UPDATE_IN_CRM;
-        aux.ENABLE_EDIT = Number(hl4.STATUS_ID) !== HL4_STATUS.CREATE_IN_CRM && Number(hl4.STATUS_ID) !== HL4_STATUS.UPDATE_IN_CRM;
+        aux.ENABLE_EDIT = util.getEnableEdit(hl4.STATUS_ID, HL4_STATUS, userId);
         result.push(aux);
     });
 
@@ -177,7 +177,7 @@ function getLevel4ForSearch(budgetYearId, regionId, subRegionId, limit, offset, 
     var results = dataHl4.getLevel4ForSearch(budgetYearId || defaultBudgetYear.BUDGET_YEAR_ID, regionId || 0, subRegionId || 0, limit || -1, offset || 0, userSessionID, util.isSuperAdmin(userSessionID) ? 1 : 0);
     results = JSON.parse(JSON.stringify(results));
     results.result.forEach(function (elem) {
-        elem.ENABLE_EDIT = (Number(elem.HL4_STATUS_DETAIL_ID) !== HL4_STATUS.CREATE_IN_CRM) && (Number(elem.HL4_STATUS_DETAIL_ID) !== HL4_STATUS.UPDATE_IN_CRM);
+        elem.ENABLE_EDIT = util.getEnableEdit(elem.HL4_STATUS_DETAIL_ID, HL4_STATUS, userSessionID);
     });
     return results;
 }
@@ -328,8 +328,12 @@ function insertInCrmBinding(crmBindingChangedFields, crmBindingChangedFieldsUpda
 
 function updateHl4(data, userId) {
     var hl4StatusId = Number(data.hl4.in_hl4_status_detail_id);
-    if (hl4StatusId === HL4_STATUS.CREATE_IN_CRM || hl4StatusId === HL4_STATUS.UPDATE_IN_CRM) {
-        throw ErrorLib.getErrors().CustomError("", "", "Cannot update this selected Initiative/Campaign, because the status doesn´t allow it.");
+
+    //TODO: Super admin validation added because of SAP new requirements, refactor this
+    if (!util.isSuperAdmin(userId)) {
+        if (hl4StatusId === HL4_STATUS.CREATE_IN_CRM || hl4StatusId === HL4_STATUS.UPDATE_IN_CRM) {
+            throw ErrorLib.getErrors().CustomError("", "", "Cannot update this selected Initiative/Campaign, because the status doesn´t allow it.");
+        }
     }
 
     if (!data.hl4.in_hl4_id){
@@ -426,22 +430,41 @@ function updateHl4(data, userId) {
                 }
 
                 var categoryOptionBulk = [];
-                data.hl4_category.forEach(function (hl4Category) {
-                    hl4Category.hl4_category_option.forEach(function (hl4CategoryOption) {
-                        hl4CategoryOption.in_amount = hl4CategoryOption.in_amount || 0;
-                        hl4CategoryOption.in_updated = hl4CategoryOption.in_updated || 0;
-                        hl4Category.categoryOptionLevelId = mapCOL[hl4Category.in_category_id][hl4CategoryOption.in_option_id];
-                        categoryOptionBulk.push({
-                            in_category_option_level_id: hl4Category.categoryOptionLevelId
-                            , in_amount: hl4CategoryOption.in_amount
-                            , in_user_id: userId
-                            , in_updated: hl4CategoryOption.in_updated
-                            , in_hl4_id: hl4_id
+                var categories = util.getCategoryById('hl4', hl4_id);
+                if (!Object.keys(categories).length) {
+                    data.hl4_category.forEach(function (hl4Category) {
+                        hl4Category.hl4_category_option.forEach(function (hl4CategoryOption) {
+                            hl4CategoryOption.in_created_user_id = userId;
+                            hl4CategoryOption.in_amount = hl4CategoryOption.in_amount || 0;
+                            hl4CategoryOption.in_updated = hl4CategoryOption.in_updated || 0;
+                            hl4Category.categoryOptionLevelId = mapCOL[hl4Category.in_category_id][hl4CategoryOption.in_option_id];
+                            categoryOptionBulk.push({
+                                in_category_option_level_id: hl4Category.categoryOptionLevelId
+                                , in_amount: hl4CategoryOption.in_amount
+                                , in_created_user_id: userId
+                                , in_updated: hl4CategoryOption.in_updated
+                                , in_id: hl4_id
+                            });
                         });
                     });
-                });
-                dataCategoryOptionLevel.updateCategoryOption(categoryOptionBulk, 'hl4');
-
+                    dataCategoryOptionLevel.insertCategoryOption(categoryOptionBulk, 'hl4');
+                } else {
+                    data.hl4_category.forEach(function (hl4Category) {
+                        hl4Category.hl4_category_option.forEach(function (hl4CategoryOption) {
+                            hl4CategoryOption.in_amount = hl4CategoryOption.in_amount || 0;
+                            hl4CategoryOption.in_updated = hl4CategoryOption.in_updated || 0;
+                            hl4Category.categoryOptionLevelId = mapCOL[hl4Category.in_category_id][hl4CategoryOption.in_option_id];
+                            categoryOptionBulk.push({
+                                in_category_option_level_id: hl4Category.categoryOptionLevelId
+                                , in_amount: hl4CategoryOption.in_amount
+                                , in_user_id: userId
+                                , in_updated: hl4CategoryOption.in_updated
+                                , in_hl4_id: hl4_id
+                            });
+                        });
+                    });
+                    dataCategoryOptionLevel.updateCategoryOption(categoryOptionBulk, 'hl4');
+                }
                 transactionOk = !!hl4RowsUpdated && !!hl4FncRowsUpdated && hl4_expected_outcomes && hl4_expected_outcomes_detail && hl4_category && hl4_category_option;
                 if (transactionOk) {
                     db.commit();
@@ -709,11 +732,21 @@ function CompareCategoryOption(Category1, Category1_id, ListCategories, existInC
 
 function CompareCategories(ListCategories1, ListCategories2, existInCrm, hl4Id) {
     var flag = false;
+    var mapFields = {};
     var categories = util.getCategoryById('hl4', hl4Id);
-    for (var i = 0; i < ListCategories1.length; i++) {
-        var category = ListCategories1[i];
-        if (categories[category.in_category_id].IN_PROCESSING_REPORT)
+    if (!categories || !categories.length) {
+        categories = AllocationCategory.getCategoryOptionByHierarchyLevelId(HIERARCHY_LEVEL.HL4);
+        for (var i = 0; i < categories.length; i++) {
+            var obj = categories[i];
+            mapFields[obj.CATEGORY_ID] = obj;
+        }
+        categories = mapFields;
+    }
+    for (var j = 0; j < ListCategories1.length; j++) {
+        var category = ListCategories1[j];
+        if (categories[category.in_category_id].IN_PROCESSING_REPORT) {
             flag = CompareCategoryOption(category, category.in_category_id, ListCategories2, existInCrm) || flag;
+        }
     }
     return flag;
 }
@@ -974,15 +1007,15 @@ function changeHl4StatusOnDemand(hl4_id, userId) {
     if(!dataL4DER.getL4ChangedFieldsByHl4Id(hl4_id) || !dataL4DER.getL4ChangedFieldsByHl4Id(hl4_id).length)
         throw ErrorLib.getErrors().CustomError("", "", L3_MSG_INITIATIVE_COULDNT_CHAGE_STATUS);
 
-    // var hl4_category = getHl4CategoryOption(hl4_id);
-    //
-    // var isComplete = isCategoryOptionComplete({
-    //         hl4_category: hl4_category,
-    //         hl4: {in_hl4_id: hl4_id}
-    //     });
-    //
-    // if (!isComplete)
-    //     throw ErrorLib.getErrors().CustomError("", "hl4Services/handlePut/changeHl4Status", L3_MSG_INITIATIVE_COULDNT_CHAGE_STATUS);
+    var hl4_category = getHl4CategoryOption(hl4_id);
+
+    var isComplete = isCategoryOptionComplete({
+            hl4_category: hl4_category,
+            hl4: {in_hl4_id: hl4_id}
+        });
+
+    if (!isComplete)
+        throw ErrorLib.getErrors().CustomError("", "hl4Services/handlePut/changeHl4Status", L3_MSG_INITIATIVE_COULDNT_CHAGE_STATUS);
 
     var existInCrm = dataHl4.existsInCrm(hl4_id);
 
@@ -1020,27 +1053,47 @@ function getHl4CategoryOption(hl4Id) {
     var hl4Categories = dataCategoryOptionLevel.getAllocationCategory(hl4Id, 'hl4');
     var allocationOptions = util.getAllocationOptionByCategoryAndLevelId('hl4', hl4Id);
     var result = [];
-    hl4Categories.forEach(function (catgory) {
-        var aux = util.extractObject(catgory);
-        var hl4Category = {};
-        aux["hl4_category_option"] = allocationOptions[aux.CATEGORY_ID];
+    var aux = [];
+    if (hl4Categories && hl4Categories.length > 0) {
+        hl4Categories.forEach(function (category) {
+            aux = util.extractObject(category);
+            var hl4Category = {};
+            aux["hl4_category_option"] = allocationOptions[aux.CATEGORY_ID];
 
-        hl4Category.hl4_category_option = [];
-        Object.keys(aux).forEach(function (key) {
-            if (key === "hl4_category_option") {
-                for (var i = 0; i < aux[key].length; i++) {
-                    var option = {};
-                    Object.keys(aux[key][i]).forEach(function (auxKey) {
-                        option["in_" + auxKey.toLowerCase()] = aux[key][i][auxKey];
-                    });
-                    hl4Category.hl4_category_option.push(option);
+            hl4Category.hl4_category_option = [];
+            Object.keys(aux).forEach(function (key) {
+                if (key === "hl4_category_option") {
+                    for (var i = 0; i < aux[key].length; i++) {
+                        var option = {};
+                        Object.keys(aux[key][i]).forEach(function (auxKey) {
+                            option["in_" + auxKey.toLowerCase()] = aux[key][i][auxKey];
+                        });
+                        hl4Category.hl4_category_option.push(option);
+                    }
+                } else {
+                    hl4Category["in_" + key.toLowerCase()] = aux[key];
                 }
-            } else {
-                hl4Category["in_" + key.toLowerCase()] = aux[key];
+            });
+            result.push(hl4Category);
+        });
+    } else {
+        aux = AllocationCategory.getCategoryOptionByHierarchyLevelId(HIERARCHY_LEVEL.HL4);
+        result = aux.map(function (elem) {
+            return {in_category_name: elem.CATEGORY_NAME,
+                in_category_id: elem.CATEGORY_ID,
+                in_make_category_mandatory: elem.MAKE_CATEGORY_MANDATORY,
+                in_single_option_only: elem.SINGLE_OPTION_ONLY,
+                hl4_category_option: elem.OPTIONS.map(function (option) {
+                    return {
+                        in_option_name: option.OPTION_NAME,
+                        in_option_id: option.OPTION_ID,
+                        in_category_id: option.CATEGORY_ID,
+                        in_make_category_mandatory: option.MAKE_CATEGORY_MANDATORY
+                    }
+                })
             }
         });
-        result.push(hl4Category);
-    });
+    }
     return result;
 }
 

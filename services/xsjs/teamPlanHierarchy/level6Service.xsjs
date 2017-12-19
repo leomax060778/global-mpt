@@ -39,7 +39,7 @@ function handleGet(params, userId) {
 	}else
 	if(in_hl5_id && !hl5_categories && !hl5_expectedOutcomes && !param_section){
         // hl5.checkPermission(userId, null, in_hl5_id);
-		result = hl6.getHl6ByHl5Id(in_hl5_id);
+		result = hl6.getHl6ByHl5Id(in_hl5_id, userId);
 	}else
 	if(in_hl6_id){
         // hl6.checkPermission(userId, null, in_hl6_id);
