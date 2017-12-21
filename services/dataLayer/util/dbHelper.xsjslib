@@ -187,7 +187,7 @@ function validateErrorCode(error, spName){
 	var regexCode = /server error code: (274|359)/;
 
 	var regexCode301 = /server error code: 301/;
-	var regexCode301Const = /Index\(UK_HL[1-6]_CRM_ID\)/;
+	var regexCode301Const = /UK_HL[1-6]_CRM_ID/;
 	var regexCol = /Failed in "([^"]*)/;
 	var column = str.match(regexCol);
 	if(regexCode.test(str)) /*server error code: 274. inserted value too large for column */
