@@ -1348,7 +1348,14 @@ function isComplete(data) {
 
                 break;
             case "BUDGET":
-                isComplete = !!Number(data.hl6.ALLOW_BUDGET_ZERO) || !!Number(data.hl6.BUDGET);
+                if(Number(data.hl6.ALLOW_BUDGET_ZERO)){
+                    isComplete = true;
+                } else {
+                    var hasBudgetRequestApproved = !!Number(budgetSpendRequest.countApprovedBudgetRequestByHl6Id(data.hl6.HL6_ID || '0'));
+                    var hasBudgetRequestPending = !Number(budgetSpendRequest.countPendingBudgetRequestByHl6Id(data.hl6.HL6_ID || '0'));
+                    isComplete = !!Number(data.hl6.BUDGET) || (hasBudgetRequestApproved && hasBudgetRequestPending);
+                }
+                // isComplete = !!Number(data.hl6.ALLOW_BUDGET_ZERO) || !!Number(data.hl6.BUDGET);
                 break;
             /*case "MARKETING_PROGRAM_ID":
                 isComplete = !!data.hl6.MARKETING_PROGRAM_ID;
@@ -1413,8 +1420,8 @@ function validateHl6(data, userId) {
         if (!data.hl6.HL6_CRM_DESCRIPTION)
             throw ErrorLib.getErrors().CustomError("", "hl6Services/handlePost/insertHl6", L6_MSG_INITIATIVE_CRM_DESCRIPTION);
 
-        if (!data.hl6.ALLOW_BUDGET_ZERO && !Number(data.hl6.BUDGET))
-            throw ErrorLib.getErrors().CustomError("", "hl6Services/handlePost/insertHl6", L6_MSG_INITIATIVE_BUDGET_VALUE);
+        // if (!data.hl6.ALLOW_BUDGET_ZERO && !Number(data.hl6.BUDGET))
+        //     throw ErrorLib.getErrors().CustomError("", "hl6Services/handlePost/insertHl6", L6_MSG_INITIATIVE_BUDGET_VALUE);
 
         if (!data.hl6.ROUTE_TO_MARKET_ID || !Number(data.hl6.ROUTE_TO_MARKET_ID) || !dataRTM.getRouteToMarketById(data.hl6.ROUTE_TO_MARKET_ID))
             throw ErrorLib.getErrors().CustomError("", "hl6Services/handlePost/insertHl6", L6_MSG_INITIATIVE_ROUTE_TO_MARKET);
@@ -1501,37 +1508,6 @@ function validateHl6(data, userId) {
                         throw ErrorLib.getErrors().CustomError("", "hl6Services/handlePost/insertHl6", L6_CAMPAIGN_FORECASTING_KPIS_NOT_VALID);
                 });
             }
-        }
-
-        if (data.hl6_sale) {
-            data.hl6_sale.forEach(function (sale) {
-                if (ORGANIZATION_TYPE[sale.ORGANIZATION_TYPE] === 3) {
-                    if (!sale.DESCRIPTION)
-                        throw ErrorLib.getErrors().CustomError("", "hl6Services/handlePost/insertHl6", levelCampaign + " Sales description can not be found.");
-                } else {
-                    if (!sale.ORGANIZATION_ID || !Number(sale.ORGANIZATION_ID))
-                        throw ErrorLib.getErrors().CustomError("", "hl6Services/handlePost/insertHl6", levelCampaign + " Sales can not be found.");
-                }
-
-                if (!Number(sale.AMOUNT) && sale.AMOUNT != 0)
-                    throw ErrorLib.getErrors().CustomError("", "hl6Services/handlePost/insertHl6", "The " + levelCampaign + " Sales amount (" + sale.in_amount + ") is invalid.");
-            });
-        }
-
-        if (data.partners && data.partners.length) {
-            data.partners.forEach(function (partner) {
-                if (!partner.PARTNER_TYPE_ID || !Number(partner.PARTNER_TYPE_ID))
-                    throw ErrorLib.getErrors().CustomError("", "hl6Services/handlePost/insertHl6", L6_PARTNER_TYPE_NOT_VALID);
-
-                if (!partner.AMOUNT || !Number(partner.AMOUNT))
-                    throw ErrorLib.getErrors().CustomError("", "hl6Services/handlePost/insertHl6", L6_PARTNER_AMOUNT_NOT_VALID);
-
-                if (PARTNER_TYPE.INTEL == partner.PARTNER_TYPE_ID && !partner.INTEL_PROJECT_ID)
-                    throw ErrorLib.getErrors().CustomError("", "hl6Services/handlePost/insertHl6", L6_PARTNER_INCOMPLETE_INTEL);
-
-                if (PARTNER_TYPE.EXTERNAL_PARTNER == partner.PARTNER_TYPE_ID && (!partner.COMPANY_NAME || !partner.COMPANY_ADDRESS))
-                    throw ErrorLib.getErrors().CustomError("", "hl6Services/handlePost/insertHl6", L6_PARTNER_INCOMPLETE_EXTERNAL_PARTNER);
-            });
         }
 
         categoryOptionComplete = isCategoryOptionComplete(data);

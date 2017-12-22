@@ -1258,7 +1258,14 @@ function isComplete(data) {
 
                 break;
             case "BUDGET":
-                isComplete = !!Number(data.hl5.ALLOW_BUDGET_ZERO) || !!Number(data.hl5.BUDGET);
+                if(Number(data.hl5.ALLOW_BUDGET_ZERO)){
+                    isComplete = true;
+                } else {
+                    var hasBudgetRequestApproved = !!Number(budgetSpendRequest.countApprovedBudgetRequestByHl5Id(data.hl5.HL5_ID || '0'));
+                    var hasBudgetRequestPending = !Number(budgetSpendRequest.countPendingBudgetRequestByHl5Id(data.hl5.HL5_ID || '0'));
+                    isComplete = !!Number(data.hl5.BUDGET) || (hasBudgetRequestApproved && hasBudgetRequestPending);
+                }
+                // isComplete = !!Number(data.hl5.ALLOW_BUDGET_ZERO) || !!Number(data.hl5.BUDGET);
                 break;
             case "MARKETING_PROGRAM_ID":
                 isComplete = !!(data.hl5.MARKETING_PROGRAM || data.hl5.MARKETING_PROGRAM_ID);
@@ -1343,11 +1350,11 @@ function validateHl5(data, userId) {
             throw ErrorLib.getErrors().CustomError("", "", L5_MSG_INITIATIVE_DISTRIBUTION_CHANNEL);
         }
 
-        if (!data.hl5.ALLOW_BUDGET_ZERO) {
+        /*if (!data.hl5.ALLOW_BUDGET_ZERO) {
             if (data.hl5.BUDGET <= 0) {
                 throw ErrorLib.getErrors().CustomError("", "", L5_MSG_INITIATIVE_BUDGET_VALUE);
             }
-        }//else{
+        }*///else{
         //    if (data.hl5.BUDGET != 0) {
         //        throw ErrorLib.getErrors().CustomError("", "hl5Services/handlePost/insertHl5", L5_MSG_INITIATIVE_BUDGET_VALUE_zero);
         //    }
@@ -1406,20 +1413,6 @@ function validateHl5(data, userId) {
 
         myBudgetComplete = isMyBudgetComplete(data.hl5_budget);
 
-        if (data.hl5_sale && data.hl5_sale.length) {
-            data.hl5_sale.forEach(function (sale) {
-                if (ORGANIZATION_TYPE[sale.ORGANIZATION_TYPE] === 3) {
-                    if (sale.DESCRIPTION != '' && !sale.DESCRIPTION) {
-                        throw ErrorLib.getErrors().CustomError("", "", levelCampaign + " Sales description can not be found.");
-                    }
-                } else {
-                    if (!sale.ORGANIZATION_ID || !Number(sale.ORGANIZATION_ID)) {
-                        throw ErrorLib.getErrors().CustomError("", "", levelCampaign + " Sales " + key + " can not be found.");
-                    }
-                }
-            });
-        }
-
         if (data.hl5_expected_outcomes) {
             if (!data.hl5_expected_outcomes.hl5_expected_outcomes_detail.length && !data.hl5_expected_outcomes.COMMENTS) {
                 throw ErrorLib.getErrors().CustomError("", "", L5_CAMPAIGN_FORECASTING_KPIS_COMMENT);
@@ -1434,26 +1427,6 @@ function validateHl5(data, userId) {
                 }
                 if (!hl5ExpectedOutcomesDetail.OUTCOMES_ID || !Number(hl5ExpectedOutcomesDetail.OUTCOMES_ID)) {
                     throw ErrorLib.getErrors().CustomError("", "", L5_CAMPAIGN_FORECASTING_KPIS_NOT_VALID);
-                }
-            });
-        }
-
-        if (data.partners && data.partners.length) {
-            data.partners.forEach(function (partner) {
-                if (!partner.PARTNER_TYPE_ID || !Number(partner.PARTNER_TYPE_ID)) {
-                    throw ErrorLib.getErrors().CustomError("", "", L5_PARTNER_TYPE_NOT_VALID);
-                }
-
-                if (!partner.AMOUNT || !Number(partner.AMOUNT)) {
-                    throw ErrorLib.getErrors().CustomError("", "", L5_PARTNER_AMOUNT_NOT_VALID);
-                }
-
-                if (PARTNER_TYPE.INTEL === Number(partner.PARTNER_TYPE_ID) && !partner.INTEL_PROJECT_ID) {
-                    throw ErrorLib.getErrors().CustomError("", "", L5_PARTNER_INCOMPLETE_INTEL);
-                }
-
-                if (PARTNER_TYPE.EXTERNAL_PARTNER === Number(partner.PARTNER_TYPE_ID) && (!partner.COMPANY_NAME || !partner.COMPANY_ADDRESS)) {
-                    throw ErrorLib.getErrors().CustomError("", "", L5_PARTNER_INCOMPLETE_EXTERNAL_PARTNER);
                 }
             });
         }
