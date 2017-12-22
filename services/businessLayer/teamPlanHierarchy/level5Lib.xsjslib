@@ -1213,6 +1213,7 @@ function isComplete(data) {
     var crmBindingFields = Object.keys(deReportDisplayName);
     var isComplete = true;
     var notValidate = ["MARKETING_PROGRAM_DESC"
+        , "MARKETING_ACTIVITY_ID"
         , "MARKETING_ACTIVITY_DESC"
         , "PARENT_PATH"
         , "DISTRIBUTION_CHANNEL_DESC"

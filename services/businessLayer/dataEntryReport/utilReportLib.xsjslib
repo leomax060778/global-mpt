@@ -116,9 +116,9 @@ function parseChangedFields(HL, hlId, changedFields, changedOptions, hlList) {
             var categoryProcessingReportExportKey = CATEGORY_PROCESSING_REPORT_EXPORT_KEYS[elem.PROCESSING_REPORT_EXPORT_KEY];
             obj[categoryProcessingReportExportKey] = obj[categoryProcessingReportExportKey] || [];
             obj[categoryProcessingReportExportKey].push({
-                PERCENTAGE: elem.AMOUNT,
+                PERCENTAGE: Number(elem.AMOUNT) ? elem.AMOUNT : '',
                 NAME: elem.OPTION_NAME,
-                CRM_KEY: elem.CRM_KEY
+                CRM_KEY: Number(elem.AMOUNT) ? elem.CRM_KEY : ''
             });
         }
         return accumulator;
