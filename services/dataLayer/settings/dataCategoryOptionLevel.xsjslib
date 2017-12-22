@@ -13,6 +13,7 @@ var GET_ALLOCATION_CATEGORY_OPTION_LEVEL_TO_DELETE = "GET_ALLOCATION_CATEGORY_OP
 var INS_ALLOCATION_CATEGORY_OPTION_LEVEL = "INS_ALLOCATION_CATEGORY_OPTION_LEVEL";
 var UPD_ALLOCATION_CAT_OPT_LEV_PROCESSING_REPORT = "UPD_ALLOCATION_CAT_OPT_LEV_PROCESSING_REPORT";
 var UPD_ALLOCATION_CATEGORY_OPTION_LEVEL = "UPD_ALLOCATION_CATEGORY_OPTION_LEVEL";
+var UPD_ALLOCATION_OPTION_FLAGS = "UPD_ALLOCATION_OPTION_FLAGS";
 var DEL_ALLOCATION_RELATIONSHIP = "DEL_ALLOCATION_RELATIONSHIP";
 var DEL_ALLOCATION_RELATIONSHIP_BY_CATEGORY_ID = "DEL_ALLOCATION_RELATIONSHIP_BY_CATEGORY_ID";
 /*********************************************************************************************************/
@@ -97,6 +98,16 @@ function updateAllocationCategoryOptionLevel(categoryId, levelId, optionId, proc
     };
 
     return db.executeScalarManual(UPD_ALLOCATION_CATEGORY_OPTION_LEVEL,params,'out_result');
+}
+
+function updateAllocationOptionFlags(reqBody){
+	var params = {};
+	params.in_category_id = reqBody.CATEGORY_ID;
+	params.in_hierarchy_level_id = reqBody.HIERARCHY_LEVEL_ID;
+	params.in_make_category_mandatory = reqBody.MAKE_CATEGORY_MANDATORY;
+	params.in_in_processing_report = reqBody.IN_PROCESSING_REPORT;
+
+	return db.executeScalarManual(UPD_ALLOCATION_OPTION_FLAGS, params, 'out_result');
 }
 
 function deleteAllocationCATEGORYOptionLevel(categoryId, levelId, allocationOptions, userId, autoCommit){

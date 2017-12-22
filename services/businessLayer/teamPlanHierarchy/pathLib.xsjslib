@@ -71,6 +71,7 @@ function getPathByLevelParent(hierarchyLevel, parentId) {
         var path = dataPath.getPathByLevelParent(hierarchyLevel, parentId);
         if (path.length) {
             result.GRANDPARENT_ID = path[0].GRANDPARENT_ID;
+            result.CRM_ID = path[0].CRM_ID;
             switch (parseInt(hierarchyLevel)){
                 case 2:
                     result.PATH_TPH = levelPath + " for " + path[0].CRM_ID;

@@ -1229,11 +1229,11 @@ function updatePartners(data, userId) {
         var pendingPartner = dataPartner.getPendingPartnerByPartnerId(arrPartnerToDelete, 'HL6');
 
         arrPartnerToDelete = pendingPartner.map(function (elem) {
-            return {in_partner_id: elem.PARTNER_ID, in_user_id: userId};
+            return {in_partner_id: elem.IN_PARTNER_ID, in_user_id: userId};
         });
 
         var arrBudgetSpendRequestToDelete = pendingPartner.map(function (elem) {
-            return {in_budget_spend_request_id: elem.BUDGET_SPEND_REQUEST_ID, in_user_id: userId};
+            return {in_budget_spend_request_id: elem.IN_BUDGET_SPEND_REQUEST_ID, in_user_id: userId};
         });
 
         dataPartner.deleteHlPartnerByPartnerId(arrPartnerToDelete, 'HL6');
@@ -1304,6 +1304,7 @@ function isComplete(data) {
     var notValidate = ["MARKETING_PROGRAM_DESC"
         , "MARKETING_ACTIVITY_ID"
         , "MARKETING_ACTIVITY_DESC"
+        , "MARKETING_ACTIVITY_ID"
         , "PARENT_PATH"
         , "DISTRIBUTION_CHANNEL_DESC"
         , "URL"
