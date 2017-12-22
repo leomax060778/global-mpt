@@ -9,6 +9,8 @@ var ErrorLib = mapper.getErrors();
 
 var spGetAPIByWbsId = "GET_API_WBS_BY_ID";
 var spGetAPIByWbsPath = "GET_API_WBS_BY_CRM_PATH";
+var spGetReportExportData = "GET_REPORT_EXPORT_DATA";
+var spInsLogReportExportData = "INS_LOG_REPORT_EXPORT_DATA";
 
 /** ********* END LIST OF PROCEDURES ************** */
 
@@ -25,4 +27,13 @@ function getL6ByWBSPath(wbs_path) {
 	});
 	return db.extractArray(rdo.out_result);
 
+}
+
+function getReportExportData(filter) {
+    var res = db.executeProcedure(spGetReportExportData, filter);
+    return db.extractArray(res.out_result);
+}
+
+function insertLogReportExportData(filterParams) {
+    return db.executeScalarManual(spInsLogReportExportData, filterParams, "out_result");
 }

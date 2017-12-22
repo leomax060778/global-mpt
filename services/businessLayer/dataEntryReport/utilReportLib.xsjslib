@@ -68,11 +68,11 @@ function parseChangedFields(HL, hlId, changedFields, changedOptions, hlList) {
     var CATEGORY_PROCESSING_REPORT_EXPORT_KEYS = {
         SOLUTION: "SOLUTION",
         INDUSTRY: "INDUSTRY",
-        SEGMENT: "SEGMENT",
+        MKTSEG: "SEGMENT",
         INTPLAN: "INTPLAN",
-        BUYING_CLASSIFICATION: "BUYING_CLASSIFICATION"
-
-    };
+        BUYING_CLASSIFICATION: "BUYING_CLASSIFICATION",
+        IMP: "IMP"
+};
     /**
      * Map of the following structure
      * {

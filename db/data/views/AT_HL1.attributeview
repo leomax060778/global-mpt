@@ -51,6 +51,14 @@
       <descriptions defaultDescription="VERSION"/>
       <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL1" columnName="VERSION"/>
     </attribute>
+    <attribute id="CREATED_DATE_TZ" order="13" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="CREATED_DATE_TZ"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL1" columnName="CREATED_DATE_TZ"/>
+    </attribute>
+    <attribute id="MODIFIED_DATE_TZ" order="14" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="MODIFIED_DATE_TZ"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL1" columnName="MODIFIED_DATE_TZ"/>
+    </attribute>
   </attributes>
   <calculatedAttributes/>
   <privateDataFoundation>
