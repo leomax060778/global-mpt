@@ -103,6 +103,14 @@
       <descriptions defaultDescription="HL4_FNC_BUDGET_TOTAL_MKT"/>
       <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL4" columnName="HL4_FNC_BUDGET_TOTAL_MKT"/>
     </attribute>
+    <attribute id="CREATED_DATE_TZ" order="26" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="CREATED_DATE_TZ"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL4" columnName="CREATED_DATE_TZ"/>
+    </attribute>
+    <attribute id="MODIFIED_DATE_TZ" order="27" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="MODIFIED_DATE_TZ"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL4" columnName="MODIFIED_DATE_TZ"/>
+    </attribute>
   </attributes>
   <calculatedAttributes/>
   <privateDataFoundation>

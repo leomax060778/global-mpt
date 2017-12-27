@@ -330,23 +330,21 @@ function sendInCRMMail(hlId, hierarchyLevel) {
             hlInformation = dataHl4.getHl4ById(hlId);
             userData = userLib.getUserById(hlInformation.CREATED_USER_ID);
             reqBody.REQUESTER_NAME = userData[0].FIRST_NAME + " " + userData[0].LAST_NAME;
-            reqBody.PATH = pathLib.getFullPathByLevelParent(hierarchyLevel, Number(hlInformation.HL4_ID)).PATH_TPH + hlInformation.ACRONYM;
-
+            reqBody.PATH = pathLib.getPathByLevelParent(5, Number(hlInformation.HL4_ID)).CRM_ID;
             mailObj = mailHL4.parseInCRM(reqBody, {"ENVIRONMENT": env}, reqBody.REQUESTER_NAME);
             break;
         case "hl5":
             hlInformation = dataHl5.getHl5ById(hlId);
             userData = userLib.getUserById(hlInformation.CREATED_USER_ID);
             reqBody.REQUESTER_NAME = userData[0].FIRST_NAME + " " + userData[0].LAST_NAME;
-            reqBody.PATH = pathLib.getFullPathByLevelParent(hierarchyLevel, Number(hlInformation.HL4_ID)).PATH_TPH + hlInformation.ACRONYM;
-
+            reqBody.PATH = pathLib.getPathByLevelParent(6, Number(hlInformation.HL5_ID)).CRM_ID;
             mailObj = mailHL5.parseInCRM(reqBody, {"ENVIRONMENT": env}, reqBody.REQUESTER_NAME);
             break;
         case "hl6":
             hlInformation = dataHl6.getHl6ById(hlId);
             userData = userLib.getUserById(hlInformation.CREATED_USER_ID);
             reqBody.REQUESTER_NAME = userData[0].FIRST_NAME + " " + userData[0].LAST_NAME;
-            reqBody.PATH = pathLib.getFullPathByLevelParent(hierarchyLevel, Number(hlInformation.HL5_ID)).PATH_TPH + hlInformation.ACRONYM;
+            reqBody.PATH = pathLib.getPathByLevelParent(6, Number(hlInformation.HL5_ID)).CRM_ID + hlInformation.ACRONYM;
 
             mailObj = mailHL6.parseInCRM(reqBody, {"ENVIRONMENT": env}, reqBody.REQUESTER_NAME);
             break;

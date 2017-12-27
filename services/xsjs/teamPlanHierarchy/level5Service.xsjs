@@ -39,7 +39,7 @@ function handleGet(params, userId) {
 		result = hl5.getNewSerialAcronym(in_hl4_id);
 	}else if(in_hl4_id && !dataType){
         // hl4.checkPermission(userId, null, in_hl4_id);
-		result = hl5.getHl5ByHl4Id(in_hl4_id);
+		result = hl5.getHl5ByHl4Id(in_hl4_id, userId);
 	} else if (in_hl5_id) {
         // hl5.checkPermission(userId, null, in_hl5_id);
 		result = hl5.getHl5ById(in_hl5_id);

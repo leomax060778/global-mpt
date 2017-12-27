@@ -45,7 +45,7 @@ function insertRegion(objRegion, userId){
 	parameters.IN_TIME_ZONE_OFFSET = objRegion.REGION_TIME_ZONE_OFFSET;
 	parameters.IN_START_TIME = objRegion.REGION_START_TIME;
 	parameters.IN_END_TIME = objRegion.REGION_END_TIME;
-	parameters.IN_IS_GLOBAL_REGION = Number(objRegion.IS_GLOBAL_REGION);
+	parameters.IN_IS_GLOBAL_REGION = Number(objRegion.IS_GLOBAL_REGION) || 0;
 
 	return db.executeScalar(INS_REGION,parameters,"OUT_REGION_ID");
 }
@@ -62,7 +62,7 @@ function updateRegion(objRegion, userId){
     parameters.IN_TIME_ZONE_OFFSET = objRegion.REGION_TIME_ZONE_OFFSET;
     parameters.IN_START_TIME = objRegion.REGION_START_TIME;
     parameters.IN_END_TIME = objRegion.REGION_END_TIME;
-    parameters.IN_IS_GLOBAL_REGION = Number(objRegion.IS_GLOBAL_REGION);
+    parameters.IN_IS_GLOBAL_REGION = Number(objRegion.IS_GLOBAL_REGION) || 0;
 	
 	return db.executeScalar(UPD_REGION,parameters,"out_result");
 }

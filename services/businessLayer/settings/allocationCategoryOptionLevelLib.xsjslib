@@ -95,6 +95,16 @@ function updateCategoryOptionLevel(data, userId) {
                         data.IN_PROCESSING_REPORT,
                         userId,
                         data.IN_MAKE_CATEGORY_MANDATORY);
+                    
+                    //Update Make Category Mandatory and In Processing Report flags to avoid duplicated registers
+                    var reqBody = {
+                    		CATEGORY_ID: data.IN_CATEGORY_ID,
+                    		HIERARCHY_LEVEL_ID: hierarchylevel,
+                    		MAKE_CATEGORY_MANDATORY: data.IN_MAKE_CATEGORY_MANDATORY,
+                    		IN_PROCESSING_REPORT: data.IN_PROCESSING_REPORT
+                    };
+                    dataCategoryOptionLevel.updateAllocationOptionFlags(reqBody);
+              
                 } else {
                     dataCategoryOptionLevel.insertAllocationCATEGORYOptionLevel(
                         data.IN_CATEGORY_ID,

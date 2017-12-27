@@ -99,7 +99,8 @@ IF(IN_LEVEL = 'HL4') THEN
     VA_HL_IMP_OPTIONS = SELECT TOP 5 option_name,
                                      option_percentage,
                                      Row_number() OVER(ORDER BY option_percentage DESC) AS ROWNUM
-                        FROM   (SELECT TOP 5 O.CRM_KEY     AS OPTION_NAME,
+                        FROM   (SELECT OPTION_NAME, OPTION_PERCENTAGE FROM (
+                                SELECT TOP 5 O.CRM_KEY     AS OPTION_NAME,
                                        HCP.amount AS OPTION_PERCENTAGE
                                 FROM   hl4_category_option HCP
                                        RIGHT JOIN allocation_category_option_level ACOL
@@ -111,6 +112,7 @@ IF(IN_LEVEL = 'HL4') THEN
                                               ON O.allocation_option_id = ACOL.allocation_option_id
                                 WHERE  C.processing_report_export_key = 'IMP'
                                        AND HCP.hl4_id = in_hl_id
+                                       ORDER BY HCP.AMOUNT DESC)
                         -- Padding with empty rows so the row count is always 5
                                 UNION ALL
                                 SELECT '' AS OPTION_NAME,
@@ -140,7 +142,8 @@ IF(IN_LEVEL = 'HL4') THEN
     VA_HL_MKTSEG_OPTIONS = SELECT TOP 5 option_name,
                                         option_percentage,
                                         Row_number() OVER(ORDER BY option_percentage DESC) + 5 AS ROWNUM
-                           FROM   (SELECT TOP 5 O.CRM_KEY     AS OPTION_NAME,
+                           FROM   (SELECT OPTION_NAME, OPTION_PERCENTAGE FROM (
+                                SELECT TOP 5 O.CRM_KEY     AS OPTION_NAME,
                                           HCP.amount AS OPTION_PERCENTAGE
                                    FROM   hl4_category_option HCP
                                           RIGHT JOIN allocation_category_option_level ACOL
@@ -152,6 +155,7 @@ IF(IN_LEVEL = 'HL4') THEN
                                                  ON O.allocation_option_id = ACOL.allocation_option_id
                                    WHERE  C.processing_report_export_key = 'MKTSEG'
                                           AND HCP.hl4_id = in_hl_id
+                                          ORDER BY HCP.AMOUNT DESC)
                           -- Padding with empty rows so the row count is always 5
                                    UNION ALL
                                    SELECT '' AS OPTION_NAME,
@@ -181,7 +185,8 @@ IF(IN_LEVEL = 'HL4') THEN
     VA_HL_INDUSTRY_OPTIONS = SELECT TOP 5 option_name,
                                          option_percentage,
                                          Row_number() OVER(ORDER BY option_percentage DESC) + 10 AS ROWNUM
-                            FROM   (SELECT TOP 5 O.CRM_KEY     AS OPTION_NAME,
+                            FROM   (SELECT OPTION_NAME, OPTION_PERCENTAGE FROM (
+                                SELECT TOP 5 O.CRM_KEY     AS OPTION_NAME,
                                            HCP.amount AS OPTION_PERCENTAGE
                                     FROM   hl4_category_option HCP
                                            RIGHT JOIN allocation_category_option_level ACOL
@@ -193,6 +198,7 @@ IF(IN_LEVEL = 'HL4') THEN
                                                   ON O.allocation_option_id = ACOL.allocation_option_id
                                     WHERE  C.processing_report_export_key = 'INDUSTRY'
                                            AND HCP.hl4_id = in_hl_id
+                                           ORDER BY HCP.AMOUNT DESC)
                                     -- Padding with empty rows so the row count is always 5
                                     UNION ALL
                                     SELECT '' AS OPTION_NAME,
@@ -222,7 +228,8 @@ IF(IN_LEVEL = 'HL4') THEN
     VA_HL_SOLUTION_OPTIONS = SELECT TOP 5 option_name,
                                           option_percentage,
                                           Row_number() OVER(ORDER BY option_percentage DESC) + 15 AS ROWNUM
-                             FROM   (SELECT TOP 5 O.CRM_KEY     AS OPTION_NAME,
+                             FROM   (SELECT OPTION_NAME, OPTION_PERCENTAGE FROM (
+                                SELECT TOP 5 O.CRM_KEY     AS OPTION_NAME,
                                             HCP.amount AS OPTION_PERCENTAGE
                                      FROM   hl4_category_option HCP
                                             RIGHT JOIN allocation_category_option_level ACOL
@@ -234,6 +241,7 @@ IF(IN_LEVEL = 'HL4') THEN
                                                    ON O.allocation_option_id = ACOL.allocation_option_id
                                      WHERE  C.processing_report_export_key = 'SOLUTION'
                                             AND HCP.hl4_id = in_hl_id
+                                            ORDER BY HCP.AMOUNT DESC)
                                      -- Padding with empty rows so the row count is always 5
                                      UNION ALL
                                      SELECT '' AS OPTION_NAME,
@@ -267,7 +275,9 @@ ELSEIF(IN_LEVEL = 'HL5') THEN
 VA_HL_IMP_OPTIONS = SELECT TOP 5 option_name,
                                      option_percentage,
                                      Row_number() OVER(ORDER BY option_percentage DESC) AS ROWNUM
-                        FROM   (SELECT TOP 5 O.CRM_KEY     AS OPTION_NAME,
+                        FROM
+                        (SELECT OPTION_NAME, OPTION_PERCENTAGE FROM (
+                                SELECT TOP 5 O.CRM_KEY     AS OPTION_NAME,
                                        HCP.amount AS OPTION_PERCENTAGE
                                 FROM   hl5_category_option HCP
                                        RIGHT JOIN allocation_category_option_level ACOL
@@ -279,6 +289,7 @@ VA_HL_IMP_OPTIONS = SELECT TOP 5 option_name,
                                               ON O.allocation_option_id = ACOL.allocation_option_id
                                 WHERE  C.processing_report_export_key = 'IMP'
                                        AND HCP.hl5_id = in_hl_id
+                                       ORDER BY HCP.AMOUNT DESC)
                                -- Padding with empty rows so the row count is always 5
                                 UNION ALL
                                 SELECT '' AS OPTION_NAME,
@@ -308,7 +319,8 @@ VA_HL_IMP_OPTIONS = SELECT TOP 5 option_name,
     VA_HL_MKTSEG_OPTIONS = SELECT TOP 5 option_name,
                                         option_percentage,
                                         Row_number() OVER(ORDER BY option_percentage DESC) + 5 AS ROWNUM
-                           FROM   (SELECT TOP 5 O.CRM_KEY     AS OPTION_NAME,
+                           FROM   (SELECT OPTION_NAME, OPTION_PERCENTAGE FROM (
+                                SELECT TOP 5 O.CRM_KEY     AS OPTION_NAME,
                                           HCP.amount AS OPTION_PERCENTAGE
                                    FROM   hl5_category_option HCP
                                           RIGHT JOIN allocation_category_option_level ACOL
@@ -320,6 +332,7 @@ VA_HL_IMP_OPTIONS = SELECT TOP 5 option_name,
                                                  ON O.allocation_option_id = ACOL.allocation_option_id
                                    WHERE  C.processing_report_export_key = 'MKTSEG'
                                           AND HCP.hl5_id = in_hl_id
+                                          ORDER BY HCP.AMOUNT DESC)
                                   -- Padding with empty rows so the row count is always 5
                                    UNION ALL
                                    SELECT '' AS OPTION_NAME,
@@ -350,7 +363,8 @@ VA_HL_IMP_OPTIONS = SELECT TOP 5 option_name,
     VA_HL_INDUSTRY_OPTIONS = SELECT TOP 5 option_name,
                                          option_percentage,
                                          Row_number() OVER(ORDER BY option_percentage DESC) + 10 AS ROWNUM
-                            FROM   (SELECT TOP 5 O.CRM_KEY     AS OPTION_NAME,
+                            FROM   (SELECT OPTION_NAME, OPTION_PERCENTAGE FROM (
+                                SELECT TOP 5 O.CRM_KEY     AS OPTION_NAME,
                                            HCP.amount AS OPTION_PERCENTAGE
                                     FROM   hl5_category_option HCP
                                            RIGHT JOIN allocation_category_option_level ACOL
@@ -362,6 +376,7 @@ VA_HL_IMP_OPTIONS = SELECT TOP 5 option_name,
                                                   ON O.allocation_option_id = ACOL.allocation_option_id
                                     WHERE  C.processing_report_export_key = 'INDUSTRY'
                                            AND HCP.hl5_id = in_hl_id
+                                           ORDER BY HCP.AMOUNT DESC)
                                     -- Padding with empty rows so the row count is always 5
                                     UNION ALL
                                     SELECT '' AS OPTION_NAME,
@@ -391,7 +406,8 @@ VA_HL_IMP_OPTIONS = SELECT TOP 5 option_name,
     VA_HL_SOLUTION_OPTIONS = SELECT TOP 5 option_name,
                                           option_percentage,
                                           Row_number() OVER(ORDER BY option_percentage DESC) + 15 AS ROWNUM
-                             FROM   (SELECT TOP 5 O.CRM_KEY     AS OPTION_NAME,
+                             FROM   (SELECT OPTION_NAME, OPTION_PERCENTAGE FROM (
+                                SELECT TOP 5 O.CRM_KEY     AS OPTION_NAME,
                                             HCP.amount AS OPTION_PERCENTAGE
                                      FROM   hl5_category_option HCP
                                             RIGHT JOIN allocation_category_option_level ACOL
@@ -403,6 +419,7 @@ VA_HL_IMP_OPTIONS = SELECT TOP 5 option_name,
                                                    ON O.allocation_option_id = ACOL.allocation_option_id
                                      WHERE  C.processing_report_export_key = 'SOLUTION'
                                             AND HCP.hl5_id = in_hl_id
+                                            ORDER BY HCP.AMOUNT DESC)
                                      UNION ALL
                                      SELECT '' AS OPTION_NAME,
                                             0  AS OPTION_PERCENTAGE
@@ -434,7 +451,8 @@ ELSEIF(IN_LEVEL = 'HL6') THEN
 VA_HL_IMP_OPTIONS = SELECT TOP 5 option_name,
                                  option_percentage,
                                  Row_number() OVER(ORDER BY option_percentage DESC)  AS ROWNUM
-                    FROM   (SELECT TOP 5 O.CRM_KEY     AS OPTION_NAME,
+                    FROM   (SELECT OPTION_NAME, OPTION_PERCENTAGE FROM (
+                                SELECT TOP 5 O.CRM_KEY     AS OPTION_NAME,
                                    HCP.amount AS OPTION_PERCENTAGE
                             FROM   hl6_category_option HCP
                                    RIGHT JOIN allocation_category_option_level ACOL
@@ -446,6 +464,7 @@ VA_HL_IMP_OPTIONS = SELECT TOP 5 option_name,
                                           ON O.allocation_option_id = ACOL.allocation_option_id
                             WHERE  C.processing_report_export_key = 'IMP'
                                    AND HCP.hl6_id = in_hl_id
+                                   ORDER BY HCP.AMOUNT DESC)
                            -- Padding with empty rows so the row count is always 5
                             UNION ALL
                             SELECT '' AS OPTION_NAME,
@@ -475,7 +494,8 @@ VA_HL_IMP_OPTIONS = SELECT TOP 5 option_name,
 VA_HL_MKTSEG_OPTIONS = SELECT TOP 5 option_name,
                                     option_percentage,
                                     Row_number() OVER(ORDER BY option_percentage DESC) + 5 AS ROWNUM
-                       FROM   (SELECT TOP 5 O.CRM_KEY     AS OPTION_NAME,
+                       FROM   (SELECT OPTION_NAME, OPTION_PERCENTAGE FROM (
+                                SELECT TOP 5 O.CRM_KEY     AS OPTION_NAME,
                                       HCP.amount AS OPTION_PERCENTAGE
                                FROM   hl6_category_option HCP
                                       RIGHT JOIN allocation_category_option_level ACOL
@@ -487,6 +507,7 @@ VA_HL_MKTSEG_OPTIONS = SELECT TOP 5 option_name,
                                              ON O.allocation_option_id = ACOL.allocation_option_id
                                WHERE  C.processing_report_export_key = 'MKTSEG'
                                       AND HCP.hl6_id = in_hl_id
+                                      ORDER BY HCP.AMOUNT DESC)
                               -- Padding with empty rows so the row count is always 5
                                UNION ALL
                                SELECT '' AS OPTION_NAME,
@@ -516,7 +537,8 @@ VA_HL_MKTSEG_OPTIONS = SELECT TOP 5 option_name,
 VA_HL_INDUSTRY_OPTIONS = SELECT TOP 5 option_name,
                                      option_percentage,
                                      Row_number() OVER(ORDER BY option_percentage DESC) + 10 AS ROWNUM
-                        FROM   (SELECT TOP 5 O.CRM_KEY     AS OPTION_NAME,
+                        FROM   (SELECT OPTION_NAME, OPTION_PERCENTAGE FROM (
+                                SELECT TOP 5 O.CRM_KEY     AS OPTION_NAME,
                                        HCP.amount AS OPTION_PERCENTAGE
                                 FROM   hl6_category_option HCP
                                        RIGHT JOIN allocation_category_option_level ACOL
@@ -528,6 +550,7 @@ VA_HL_INDUSTRY_OPTIONS = SELECT TOP 5 option_name,
                                               ON O.allocation_option_id = ACOL.allocation_option_id
                                 WHERE  C.processing_report_export_key = 'INDUSTRY'
                                        AND HCP.hl6_id = in_hl_id
+                                       ORDER BY HCP.AMOUNT DESC)
                                -- Padding with empty rows so the row count is always 5
                                 UNION ALL
                                 SELECT '' AS OPTION_NAME,
@@ -557,7 +580,8 @@ VA_HL_INDUSTRY_OPTIONS = SELECT TOP 5 option_name,
 VA_HL_SOLUTION_OPTIONS = SELECT TOP 5 option_name,
                                       option_percentage,
                                       Row_number() OVER(ORDER BY option_percentage DESC) + 15 AS ROWNUM
-                         FROM   (SELECT TOP 5 O.CRM_KEY     AS OPTION_NAME,
+                         FROM   (SELECT OPTION_NAME, OPTION_PERCENTAGE FROM (
+                                SELECT TOP 5 O.CRM_KEY     AS OPTION_NAME,
                                         HCP.amount AS OPTION_PERCENTAGE
                                  FROM   hl6_category_option HCP
                                         RIGHT JOIN allocation_category_option_level ACOL
@@ -569,6 +593,7 @@ VA_HL_SOLUTION_OPTIONS = SELECT TOP 5 option_name,
                                                ON O.allocation_option_id = ACOL.allocation_option_id
                                  WHERE  C.processing_report_export_key = 'SOLUTION'
                                         AND HCP.hl6_id = in_hl_id
+                                        ORDER BY HCP.AMOUNT DESC)
                                 -- Padding with empty rows so the row count is always 5
                                  UNION ALL
                                  SELECT '' AS OPTION_NAME,

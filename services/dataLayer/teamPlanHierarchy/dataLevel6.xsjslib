@@ -374,7 +374,7 @@ function insertHl6LogStatus(hl6Id,columnName,userId,autoCommit){
 }
 
 
-function updateHl6(hl6Id,hl6CrmDescription,budget, routeToMarket
+function updateHl6(hl6Id,acronym, hl6CrmDescription,budget, routeToMarket
     ,campaignObjectiveId,campaignTypeId,campaignSubTypeId,marketingProgramId,marketingActivityId
     ,actualStartDate,actualEndDate,showOnDgCalendar,businessOwnerId,employeeResponsibleId,costCenterId, inBudget
     ,budgetSpendQ1,budgetSpendQ2,budgetSpendQ3,budgetSpendQ4,euroConversionId,hl6StatusDetailId,salesOrganizationId,userId
@@ -386,6 +386,7 @@ function updateHl6(hl6Id,hl6CrmDescription,budget, routeToMarket
     , priority_id, co_funded, allow_budget_zero,is_power_user,employee_responsible_user,person_responsible, is_complete,autoCommit){
     var params = {
         'in_hl6_id': hl6Id,
+        'in_hl6_acronym': acronym,
         'in_hl6_crm_description' : hl6CrmDescription,
         'in_hl6_budget' : budget,
         'in_route_to_market_id' : routeToMarket,
@@ -448,10 +449,18 @@ function delHl6(hl6Id, userId){
 }
 
 function getNewHl6Id(HL5_ID){
-    var rdo =  db.executeScalarManual(spGetNewHL6ID, {'IN_HL5_ID':HL5_ID}, 'OUT_RESULT');
-    if(rdo <= 0) return 1;
-    if(rdo > 999) throw ErrorLib.getErrors().OutOfRange();
-    return rdo;
+    var rdo =  db.extractArray(db.executeProcedureManual(spGetNewHL6ID, {'IN_HL5_ID':HL5_ID}).out_result);
+    var newId = rdo.length + 1;
+    for (var i = 0; i < rdo.length; i++) {
+        var aux = Number(rdo[i].ACRONYM);
+        if(aux != i + 1){
+            newId = i + 1; //SELECT THE FIRST UNUSED NUMBER
+            break;
+        }
+    }
+    if(newId <= 0) return 1;
+    if(newId > 999) throw ErrorLib.getErrors().OutOfRange();
+    return newId;
 }
 
 function insertHl6Category(hl6Id,categoryId,createdUserId,inProcessingReport,autoCommit){

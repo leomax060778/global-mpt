@@ -240,7 +240,9 @@ function insertUser(user, createUser) {
         user.FIRST_NAME = user.FIRST_NAME.trim();
         user.LAST_NAME = user.LAST_NAME.trim();
         user.EMAIL = user.EMAIL.trim();
-        user.PHONE = user.PHONE.trim();
+        if (user.PHONE) {
+            user.PHONE = user.PHONE.trim();
+        }
         user.PASSWORD = user.PASSWORD ? user.PASSWORD.trim(): '';
         user.CONFIRM_PASSWORD = user.CONFIRM_PASSWORD ? user.CONFIRM_PASSWORD.trim(): '';
 

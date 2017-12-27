@@ -537,12 +537,6 @@ function updateOwnMoneyBudgetSpendRequestByHlIdLevel(hlId, level, amount, budget
             : BUDGET_SPEND_REQUEST_STATUS['PENDING'], userId);
 }
 
-function setOwnMoneyBudgetSpendRequestNoLongerNeededByHlIdLevel(hlId, level, amount, userId) {
-    return dataBudgetSpendRequest.updateBudgetSpendRequestByHlIdLevelType(hlId,
-        HIERARCHY_LEVEL[level], amount, BUDGET_SPEND_REQUEST_TYPE.OWN_MONEY
-        ,BUDGET_SPEND_REQUEST_STATUS['NO_LONGER_REQUESTED'], userId);
-}
-
 function countPendingBudgetRequestByHl5Id(hl5Id) {
     if (!hl5Id)
         throw ErrorLib
@@ -561,6 +555,24 @@ function countPendingBudgetRequestByHl5Id(hl5Id) {
     }
 }
 
+function countApprovedBudgetRequestByHl5Id(hl5Id) {
+    if (!hl5Id)
+        throw ErrorLib
+            .getErrors()
+            .BadRequest(
+                "The HL5 ID was not found",
+                "budgetSpendRequestServices/handleGet/getPendingBudgetRequestByHl5Id",
+                L5_MSG_INITIATIVE_NOT_FOUND);
+
+    try {
+        return dataBudgetSpendRequest
+            .getHl5CountBudgetSpendRequestByBudgetRequestStatus(hl5Id,
+                BUDGET_SPEND_REQUEST_STATUS['APPROVED'], HIERARCHY_LEVEL['HL5']);
+    } catch (e) {
+        throw e;
+    }
+}
+
 function countPendingBudgetRequestByHl6Id(hl6Id) {
     if (!hl6Id)
         throw ErrorLib
@@ -574,6 +586,24 @@ function countPendingBudgetRequestByHl6Id(hl6Id) {
         return dataBudgetSpendRequest
             .getHl6CountBudgetSpendRequestByBudgetRequestStatus(hl6Id,
                 BUDGET_SPEND_REQUEST_STATUS['PENDING'], HIERARCHY_LEVEL['HL6']);
+    } catch (e) {
+        throw e;
+    }
+}
+
+function countApprovedBudgetRequestByHl6Id(hl6Id) {
+    if (!hl6Id)
+        throw ErrorLib
+            .getErrors()
+            .BadRequest(
+                "The HL6 ID was not found",
+                "budgetSpendRequestServices/handleGet/getPendingBudgetRequestByHl6Id",
+                L6_MSG_INITIATIVE_NOT_FOUND);
+
+    try {
+        return dataBudgetSpendRequest
+            .getHl6CountBudgetSpendRequestByBudgetRequestStatus(hl6Id,
+                BUDGET_SPEND_REQUEST_STATUS['APPROVED'], HIERARCHY_LEVEL['HL6']);
     } catch (e) {
         throw e;
     }
