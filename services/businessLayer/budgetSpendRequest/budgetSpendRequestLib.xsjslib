@@ -1,5 +1,6 @@
 $.import("mktgplanningtool.services.commonLib", "mapper");
 var mapper = $.mktgplanningtool.services.commonLib.mapper;
+var config = mapper.getDataConfig();
 var dataBudgetSpendRequest = mapper.getDataBudgetSpendRequest();
 var dataBudgetReport = mapper.getDataBudgetSpendReport();
 var dataHl2 = mapper.getDataLevel2();
@@ -196,7 +197,7 @@ function insertSalesBudgetSpendRequest(sales, id, level, conversionValue, userId
                         .push({
                             in_other_budget_approver_id: otherBudgetApproverId,
                             in_budget_spend_request_id: budgetSpendRequestId,
-                            in_hash: util.getHash(),
+                            in_hash: config.getHash(),
                             in_user_id: userId
                         });
                 });
@@ -282,7 +283,7 @@ function updateSalesBudgetSpendRequest(sales, id, level, conversionValue, userId
                                 .push({
                                     in_other_budget_approver_id: otherBudgetApproverId,
                                     in_budget_spend_request_id: budgetSpendRequestId,
-                                    in_hash: util.getHash(),
+                                    in_hash: config.getHash(),
                                     in_user_id: userId
                                 });
 
@@ -312,7 +313,7 @@ function updateSalesBudgetSpendRequest(sales, id, level, conversionValue, userId
                                     .push({
                                         in_other_budget_approver_id: otherBudgetApproverId,
                                         in_budget_spend_request_id: budgetSpendRequestId,
-                                        in_hash: util.getHash(),
+                                        in_hash: config.getHash(),
                                         in_user_id: userId
                                     });
 

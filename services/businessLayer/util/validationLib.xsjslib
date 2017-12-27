@@ -1,4 +1,5 @@
 $.import("mktgplanningtool.services.commonLib", "mapper");
+var mapper = $.mktgplanningtool.services.commonLib.mapper;
 var dataValidation = mapper.getDataValidation();
 
 /** ***********END INCLUDE LIBRARIES*************** */
