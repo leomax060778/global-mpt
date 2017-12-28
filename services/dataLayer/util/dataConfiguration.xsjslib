@@ -167,7 +167,8 @@ function getNotifyLevel3Account(){
 }
 
 function getHash() {
-	var rdo = db.executeProcedure(spGetNewToken, {});
+    //var rdo = db.executeProcedure(spGetNewToken, {});
+    var rdo = db.executeProcedureManual(spGetNewToken, {});
 	if (rdo['OUT_RESULT']) {
 		return rdo['OUT_RESULT'][0]['SYS_UNIQUE_NUMBER'];
 	}

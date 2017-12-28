@@ -1,0 +1,21 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_LOG_REPORT_EXPORT_DATA" (
+	IN in_mode integer
+	,IN in_filter_criteria nvarchar(255)
+	,OUT out_result bigint
+	)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL" AS
+BEGIN
+
+	INSERT INTO LOG_REPORT_EXPORT_DATA (
+	 mode
+	,filter_criteria
+	)
+	VALUES (
+	 in_mode
+	,in_filter_criteria
+	);
+
+	SELECT TOP 1 CURRENT_IDENTITY_VALUE() INTO out_result FROM "MKTG_PLANNING_TOOL"."LOG_REPORT_EXPORT_DATA";
+END;

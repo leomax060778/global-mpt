@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Dimension:dimension xmlns:Dimension="http://www.sap.com/ndb/BiModelDimension.ecore" schemaVersion="1.2" id="AT_HL6" applyPrivilegeType="ANALYTIC_PRIVILEGE" checkAnalyticPrivileges="true" defaultClient="$$client$$" defaultLanguage="$$language$$" hierarchiesSQLEnabled="false" translationRelevant="true" visibility="internal" dimensionType="Standard">
+  <descriptions defaultDescription="AT_HL4"/>
+  <informationModelLayout relativeWidthScenario="27"/>
+  <attributes>
+    <attribute id="HL6_ID" order="1" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="HL6_ID"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL6" columnName="HL6_ID"/>
+    </attribute>
+    <attribute id="HL6_CRM_DESCRIPTION" order="2" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="HL6_CRM_DESCRIPTION"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL6" columnName="HL6_CRM_DESCRIPTION"/>
+    </attribute>
+    <attribute id="ACRONYM" order="3" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="ACRONYM"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL6" columnName="ACRONYM"/>
+    </attribute>
+    <attribute id="BUDGET" order="4" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="BUDGET"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL6" columnName="BUDGET"/>
+    </attribute>
+    <attribute id="HL5_ID" order="5" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="HL5_ID"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL6" columnName="HL5_ID"/>
+    </attribute>
+    <attribute id="ROUTE_TO_MARKET_ID" order="6" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="ROUTE_TO_MARKET_ID"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL6" columnName="ROUTE_TO_MARKET_ID"/>
+    </attribute>
+    <attribute id="CAMPAIGN_OBJECTIVE_ID" order="7" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="CAMPAIGN_OBJECTIVE_ID"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL6" columnName="CAMPAIGN_OBJECTIVE_ID"/>
+    </attribute>
+    <attribute id="CAMPAIGN_TYPE_ID" order="8" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="CAMPAIGN_TYPE_ID"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL6" columnName="CAMPAIGN_TYPE_ID"/>
+    </attribute>
+    <attribute id="CAMPAIGN_SUBTYPE_ID" order="9" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="CAMPAIGN_SUBTYPE_ID"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL6" columnName="CAMPAIGN_SUBTYPE_ID"/>
+    </attribute>
+    <attribute id="MARKETING_PROGRAM_ID" order="10" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="MARKETING_PROGRAM_ID"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL6" columnName="MARKETING_PROGRAM_ID"/>
+    </attribute>
+    <attribute id="MARKETING_ACTIVITY_ID" order="11" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="MARKETING_ACTIVITY_ID"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL6" columnName="MARKETING_ACTIVITY_ID"/>
+    </attribute>
+    <attribute id="ACTUAL_START_DATE" order="12" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="ACTUAL_START_DATE"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL6" columnName="ACTUAL_START_DATE"/>
+    </attribute>
+    <attribute id="ACTUAL_END_DATE" order="13" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="ACTUAL_END_DATE"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL6" columnName="ACTUAL_END_DATE"/>
+    </attribute>
+    <attribute id="SHOW_ON_DG_CALENDAR" order="14" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="SHOW_ON_DG_CALENDAR"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL6" columnName="SHOW_ON_DG_CALENDAR"/>
+    </attribute>
+    <attribute id="BUSINESS_OWNER_ID" order="15" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="BUSINESS_OWNER_ID"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL6" columnName="BUSINESS_OWNER_ID"/>
+    </attribute>
+    <attribute id="EMPLOYEE_RESPONSIBLE_ID" order="16" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="EMPLOYEE_RESPONSIBLE_ID"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL6" columnName="EMPLOYEE_RESPONSIBLE_ID"/>
+    </attribute>
+    <attribute id="COST_CENTER_ID" order="17" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="COST_CENTER_ID"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL6" columnName="COST_CENTER_ID"/>
+    </attribute>
+    <attribute id="IN_BUDGET" order="18" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="IN_BUDGET"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL6" columnName="IN_BUDGET"/>
+    </attribute>
+    <attribute id="BUDGET_SPEND_Q1" order="19" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="BUDGET_SPEND_Q1"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL6" columnName="BUDGET_SPEND_Q1"/>
+    </attribute>
+    <attribute id="BUDGET_SPEND_Q2" order="20" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="BUDGET_SPEND_Q2"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL6" columnName="BUDGET_SPEND_Q2"/>
+    </attribute>
+    <attribute id="BUDGET_SPEND_Q3" order="21" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="BUDGET_SPEND_Q3"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL6" columnName="BUDGET_SPEND_Q3"/>
+    </attribute>
+    <attribute id="BUDGET_SPEND_Q4" order="22" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="BUDGET_SPEND_Q4"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL6" columnName="BUDGET_SPEND_Q4"/>
+    </attribute>
+    <attribute id="EURO_CONVERSION_ID" order="23" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="EURO_CONVERSION_ID"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL6" columnName="EURO_CONVERSION_ID"/>
+    </attribute>
+    <attribute id="HL6_STATUS_DETAIL_ID" order="24" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="HL6_STATUS_DETAIL_ID"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL6" columnName="HL6_STATUS_DETAIL_ID"/>
+    </attribute>
+    <attribute id="SALES_ORGANIZATION_ID" order="25" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="SALES_ORGANIZATION_ID"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL6" columnName="SALES_ORGANIZATION_ID"/>
+    </attribute>
+    <attribute id="CREATED_DATE_TZ" order="26" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="CREATED_DATE_TZ"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL6" columnName="CREATED_DATE_TZ"/>
+    </attribute>
+    <attribute id="MODIFIED_DATE_TZ" order="27" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="MODIFIED_DATE_TZ"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL6" columnName="MODIFIED_DATE_TZ"/>
+    </attribute>
+    <attribute id="ENABLED" order="28" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="ENABLED"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL6" columnName="ENABLED"/>
+    </attribute>
+    <attribute id="DELETED" order="29" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="DELETED"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL6" columnName="DELETED"/>
+    </attribute>
+    <attribute id="DISTRIBUTION_CHANNEL_ID" order="30" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="DISTRIBUTION_CHANNEL_ID"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL6" columnName="DISTRIBUTION_CHANNEL_ID"/>
+    </attribute>
+    <attribute id="VENUE" order="31" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="VENUE"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL6" columnName="VENUE"/>
+    </attribute>
+    <attribute id="CITY" order="32" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="CITY"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL6" columnName="CITY"/>
+    </attribute>
+    <attribute id="COUNTRY" order="33" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="COUNTRY"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL6" columnName="COUNTRY"/>
+    </attribute>
+    <attribute id="URL" order="34" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="URL"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL6" columnName="URL"/>
+    </attribute>
+    <attribute id="PLANNED_START_DATE" order="35" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="PLANNED_START_DATE"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL6" columnName="PLANNED_START_DATE"/>
+    </attribute>
+    <attribute id="PLANNED_END_DATE" order="36" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="PLANNED_END_DATE"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL6" columnName="PLANNED_END_DATE"/>
+    </attribute>
+    <attribute id="STREET" order="37" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="STREET"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL6" columnName="STREET"/>
+    </attribute>
+    <attribute id="POSTAL_CODE" order="38" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="POSTAL_CODE"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL6" columnName="POSTAL_CODE"/>
+    </attribute>
+    <attribute id="PRIORITY_ID" order="39" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="PRIORITY_ID"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL6" columnName="PRIORITY_ID"/>
+    </attribute>
+    <attribute id="NUMBER_OF_PARTICIPANTS" order="40" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="NUMBER_OF_PARTICIPANTS"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL6" columnName="NUMBER_OF_PARTICIPANTS"/>
+    </attribute>
+    <attribute id="REGION" order="41" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="REGION"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL6" columnName="REGION"/>
+    </attribute>
+    <attribute id="EVENT_OWNER" order="42" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="EVENT_OWNER"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL6" columnName="EVENT_OWNER"/>
+    </attribute>
+    <attribute id="IMPORTED" order="43" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="IMPORTED"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL6" columnName="IMPORTED"/>
+    </attribute>
+    <attribute id="IMPORT_ID" order="44" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="IMPORT_ID"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL6" columnName="IMPORT_ID"/>
+    </attribute>
+    <attribute id="CO_FUNDED" order="45" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="CO_FUNDED"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL6" columnName="CO_FUNDED"/>
+    </attribute>
+    <attribute id="ALLOW_BUDGET_ZERO" order="46" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="ALLOW_BUDGET_ZERO"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL6" columnName="ALLOW_BUDGET_ZERO"/>
+    </attribute>
+    <attribute id="IS_POWER_USER" order="47" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="IS_POWER_USER"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL6" columnName="IS_POWER_USER"/>
+    </attribute>
+    <attribute id="EMPLOYEE_RESPONSIBLE_USER" order="48" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="EMPLOYEE_RESPONSIBLE_USER"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL6" columnName="EMPLOYEE_RESPONSIBLE_USER"/>
+    </attribute>
+    <attribute id="PERSON_RESPONSIBLE" order="49" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="PERSON_RESPONSIBLE"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL6" columnName="PERSON_RESPONSIBLE"/>
+    </attribute>
+    <attribute id="IS_COMPLETE" order="50" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="IS_COMPLETE"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL6" columnName="IS_COMPLETE"/>
+    </attribute>
+  </attributes>
+  <calculatedAttributes/>
+  <privateDataFoundation>
+    <tableProxies>
+      <tableProxy>
+        <table schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL6"/>
+      </tableProxy>
+    </tableProxies>
+    <joins/>
+    <layout>
+      <shapes>
+        <shape modelObjectName="HL6" modelObjectNameSpace="MKTG_PLANNING_TOOL" modelObjectType="catalog">
+          <upperLeftCorner x="317" y="30"/>
+        </shape>
+        <shape modelObjectName="DataFoundation" modelObjectNameSpace="DataFoundation" modelObjectType="repository">
+          <upperLeftCorner x="40" y="85"/>
+          <rectangleSize height="0" width="0"/>
+        </shape>
+      </shapes>
+    </layout>
+  </privateDataFoundation>
+  <hierarchies/>
+</Dimension:dimension>

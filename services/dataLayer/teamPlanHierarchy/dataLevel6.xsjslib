@@ -42,6 +42,7 @@ var spInsertHl6CRMBinding = "INS_HL6_CRM_BINDING";
 var spUpdateHl6CRMBinding = "UPD_HL6_CHANGED_FIELDS";
 var spGetHl6MyBudgetByHl6Id = "GET_HL6_BUDGET_BY_HL6_ID";
 var spGetHl6SalesByHl6Id = "GET_HL6_SALES_BY_ID";
+var spUpdateHl6Sale = "UPD_HL6_SALES";
 
 var spInsHl6Category = "INS_HL6_CATEGORY";
 var spInsHl6CategoryOption = "INS_HL6_CATEGORY_OPTION";
@@ -361,6 +362,11 @@ function getHl6SalesByHl6Id(hl6Id){
         return db.extractArray(rdo.out_result);
     }
     return null;
+}
+
+function updateHl6Sale(hl6Sales){
+    var rdo = db.executeScalarManual(spUpdateHl6Sale, hl6Sales, 'out_result');
+    return rdo;
 }
 
 function insertHl6LogStatus(hl6Id,columnName,userId,autoCommit){

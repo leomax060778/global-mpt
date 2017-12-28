@@ -23,6 +23,10 @@
       <descriptions defaultDescription="CSV_ALIAS"/>
       <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="EXPECTED_OUTCOME_OPTION" columnName="CSV_ALIAS"/>
     </attribute>
+    <attribute id="EXPORT_KEY" order="6" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="EXPORT_KEY"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="EXPECTED_OUTCOME_OPTION" columnName="EXPORT_KEY"/>
+    </attribute>
   </attributes>
   <calculatedAttributes/>
   <privateDataFoundation>

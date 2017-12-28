@@ -1,5 +1,6 @@
 $.import("mktgplanningtool.services.commonLib", "mapper");
 var mapper = $.mktgplanningtool.services.commonLib.mapper;
+var config = mapper.getDataConfig();
 var dataBudgetSpendRequest = mapper.getDataBudgetSpendRequest();
 var dataBudgetReport = mapper.getDataBudgetSpendReport();
 var dataHl2 = mapper.getDataLevel2();
@@ -135,20 +136,19 @@ function insertSalesBudgetSpendRequest(sales, id, level, conversionValue, userId
     var aux = {};
     var arrSaleHl = [];
     var arrBudgetSpendRequestOtherBudgetApprover = [];
-    sales
-        .forEach(function (sale) {
-            if (!aux[sale.ORGANIZATION_ID]
-                && !aux[sale.ORGANIZATION_ID] != sale.ORGANIZATION_TYPE) {
-                arrSaleHl
-                    .push({
-                        in_hl_id: id,
-                        in_organization_id: ORGANIZATION_TYPE[sale.ORGANIZATION_TYPE] !== 3 ? sale.ORGANIZATION_ID
-                            : null,
-                        in_organization_type: ORGANIZATION_TYPE[sale.ORGANIZATION_TYPE]
-                    });
-                aux[sale.ORGANIZATION_ID] = sale.ORGANIZATION_TYPE;
-            }
-        });
+    sales.forEach(function (sale) {
+        if (!aux[sale.ORGANIZATION_ID]
+            && aux[sale.ORGANIZATION_ID] != sale.ORGANIZATION_TYPE) {
+            arrSaleHl
+                .push({
+                    in_hl_id: id,
+                    in_organization_id: ORGANIZATION_TYPE[sale.ORGANIZATION_TYPE] !== 3 ? sale.ORGANIZATION_ID
+                        : null,
+                    in_organization_type: ORGANIZATION_TYPE[sale.ORGANIZATION_TYPE]
+                });
+            aux[sale.ORGANIZATION_ID] = sale.ORGANIZATION_TYPE;
+        }
+    });
 
     // look for SALES ID
     var hlSales = dataBudgetSpendRequest
@@ -157,8 +157,7 @@ function insertSalesBudgetSpendRequest(sales, id, level, conversionValue, userId
     arrSaleHl = [];
     var arrBudgetSpendRequestMessage = [];
 
-    sales
-        .forEach(function (sale) {
+    sales.forEach(function (sale) {
             if (Number(sale.AMOUNT) && sale.MESSAGE) {
                 var budgetSpendRequestId = dataBudgetSpendRequest
                     .insertBudgetSpendRequest(
@@ -173,8 +172,7 @@ function insertSalesBudgetSpendRequest(sales, id, level, conversionValue, userId
                     .forEach(function (hlSale) {
                         if (hlSale.ORGANIZATION_TYPE_ID == ORGANIZATION_TYPE[sale.ORGANIZATION_TYPE]
                             && hlSale.ORGANIZATION_ID == sale.ORGANIZATION_ID) {
-                            arrSaleHl
-                                .push({
+                            arrSaleHl.push({
                                     in_hl_sale_id: hlSale.HL_SALES_ID,
                                     in_budget_spend_request_id: budgetSpendRequestId,
                                     in_user_id: userId
@@ -196,7 +194,7 @@ function insertSalesBudgetSpendRequest(sales, id, level, conversionValue, userId
                         .push({
                             in_other_budget_approver_id: otherBudgetApproverId,
                             in_budget_spend_request_id: budgetSpendRequestId,
-                            in_hash: util.getHash(),
+                            in_hash: config.getHash(),
                             in_user_id: userId
                         });
                 });
@@ -223,7 +221,11 @@ function insertSalesBudgetSpendRequest(sales, id, level, conversionValue, userId
 
     return null;
 }
-
+function setOwnMoneyBudgetSpendRequestNoLongerNeededByHlIdLevel(hlId, level, amount, userId) {
+    return dataBudgetSpendRequest.updateBudgetSpendRequestByHlIdLevelType(hlId,
+        HIERARCHY_LEVEL[level], amount, BUDGET_SPEND_REQUEST_TYPE.OWN_MONEY
+        ,BUDGET_SPEND_REQUEST_STATUS['NO_LONGER_REQUESTED'], userId);
+}
 function updateSalesBudgetSpendRequest(sales, id, level, conversionValue, userId) {
     var arrBudgetSpendRequestToUpdate = [];
     var arrBudgetSpendRequestMessageToInsert = [];
@@ -282,7 +284,7 @@ function updateSalesBudgetSpendRequest(sales, id, level, conversionValue, userId
                                 .push({
                                     in_other_budget_approver_id: otherBudgetApproverId,
                                     in_budget_spend_request_id: budgetSpendRequestId,
-                                    in_hash: util.getHash(),
+                                    in_hash: config.getHash(),
                                     in_user_id: userId
                                 });
 
@@ -312,7 +314,7 @@ function updateSalesBudgetSpendRequest(sales, id, level, conversionValue, userId
                                     .push({
                                         in_other_budget_approver_id: otherBudgetApproverId,
                                         in_budget_spend_request_id: budgetSpendRequestId,
-                                        in_hash: util.getHash(),
+                                        in_hash: config.getHash(),
                                         in_user_id: userId
                                     });
 
@@ -536,12 +538,6 @@ function updateOwnMoneyBudgetSpendRequestByHlIdLevel(hlId, level, amount, budget
             : BUDGET_SPEND_REQUEST_STATUS['PENDING'], userId);
 }
 
-function setOwnMoneyBudgetSpendRequestNoLongerNeededByHlIdLevel(hlId, level, amount, userId) {
-    return dataBudgetSpendRequest.updateBudgetSpendRequestByHlIdLevelType(hlId,
-        HIERARCHY_LEVEL[level], amount, BUDGET_SPEND_REQUEST_TYPE.OWN_MONEY
-        ,BUDGET_SPEND_REQUEST_STATUS['NO_LONGER_REQUESTED'], userId);
-}
-
 function countPendingBudgetRequestByHl5Id(hl5Id) {
     if (!hl5Id)
         throw ErrorLib
@@ -560,6 +556,24 @@ function countPendingBudgetRequestByHl5Id(hl5Id) {
     }
 }
 
+function countApprovedBudgetRequestByHl5Id(hl5Id) {
+    if (!hl5Id)
+        throw ErrorLib
+            .getErrors()
+            .BadRequest(
+                "The HL5 ID was not found",
+                "budgetSpendRequestServices/handleGet/getPendingBudgetRequestByHl5Id",
+                L5_MSG_INITIATIVE_NOT_FOUND);
+
+    try {
+        return dataBudgetSpendRequest
+            .getHl5CountBudgetSpendRequestByBudgetRequestStatus(hl5Id,
+                BUDGET_SPEND_REQUEST_STATUS['APPROVED'], HIERARCHY_LEVEL['HL5']);
+    } catch (e) {
+        throw e;
+    }
+}
+
 function countPendingBudgetRequestByHl6Id(hl6Id) {
     if (!hl6Id)
         throw ErrorLib
@@ -573,6 +587,24 @@ function countPendingBudgetRequestByHl6Id(hl6Id) {
         return dataBudgetSpendRequest
             .getHl6CountBudgetSpendRequestByBudgetRequestStatus(hl6Id,
                 BUDGET_SPEND_REQUEST_STATUS['PENDING'], HIERARCHY_LEVEL['HL6']);
+    } catch (e) {
+        throw e;
+    }
+}
+
+function countApprovedBudgetRequestByHl6Id(hl6Id) {
+    if (!hl6Id)
+        throw ErrorLib
+            .getErrors()
+            .BadRequest(
+                "The HL6 ID was not found",
+                "budgetSpendRequestServices/handleGet/getPendingBudgetRequestByHl6Id",
+                L6_MSG_INITIATIVE_NOT_FOUND);
+
+    try {
+        return dataBudgetSpendRequest
+            .getHl6CountBudgetSpendRequestByBudgetRequestStatus(hl6Id,
+                BUDGET_SPEND_REQUEST_STATUS['APPROVED'], HIERARCHY_LEVEL['HL6']);
     } catch (e) {
         throw e;
     }
@@ -600,7 +632,6 @@ function setBudgetSpendRequestStatus(hlId, level, userId, status, preserveOwnMon
     var arrBudgSpendStatusLog = [];
     var arrBudgetSpendRequestMessage = [];
 
-    // throw JSON.stringify(budgetSpendRequests);
     budgetSpendRequests.forEach(function (request) {
         arrBudgSpendStatus.push({
             in_budget_spend_request_id: request.BUDGET_SPEND_REQUEST_ID

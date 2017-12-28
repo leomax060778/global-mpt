@@ -4,6 +4,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_REQUEST_ACCE
 	IN in_last_name nvarchar(255),
 	IN in_email nvarchar(255),
 	IN in_phone nvarchar(255),
+	IN in_request_access_status_id bigint,
 	IN in_user_id bigint,
 	OUT out_result bigint
  ) 
@@ -15,8 +16,8 @@ BEGIN
 	Write your procedure logic 
  *****************************/
  	
-		INSERT INTO REQUEST_ACCESS(user_name, first_name, last_name, email, phone, created_user_id)
-		VALUES(in_user_name, in_first_name, in_last_name, in_email, in_phone, in_user_id);
+		INSERT INTO REQUEST_ACCESS(user_name, first_name, last_name, email, phone, created_user_id, request_access_status_id)
+		VALUES(in_user_name, in_first_name, in_last_name, in_email, in_phone, in_user_id, in_request_access_status_id);
 	
 		SELECT TOP 1 CURRENT_IDENTITY_VALUE() INTO out_result FROM REQUEST_ACCESS;
 END;

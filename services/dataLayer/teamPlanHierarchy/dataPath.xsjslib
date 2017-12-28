@@ -10,6 +10,7 @@ var GET_CRM_PARENT_PATH_BY_ID_LEVEL_ID = "GET_CRM_PARENT_PATH_BY_ID_LEVEL_ID";
 var INS_CRM_PARENT_PATH = "INS_CRM_PARENT_PATH";
 var UPD_CRM_PARENT_PATH = "UPD_CRM_PARENT_PATH";
 var DEL_CRM_PARENT_PATH = "DEL_CRM_PARENT_PATH";
+var GET_PATH_BY_LEVEL_HL_ID = "GET_PATH_BY_LEVEL_HL_ID";
 
 var HIERARCHY_LEVEL = {
     'hl2': 5,
@@ -64,4 +65,11 @@ function delParentPath(level, id){
         in_id: id
     };
     return db.executeScalarManual(DEL_CRM_PARENT_PATH,parameters,'out_result');
+}
+
+function getPathByLevelHlId(level, HL_id){
+    var result = db.executeProcedureManual(GET_PATH_BY_LEVEL_HL_ID, {'in_lh':HL_id, 'in_level': level});
+    //throw db.extractArray(result.OUT_RESULT);
+    return db.extractArray(result.OUT_RESULT)[0].CRM_ID;
+
 }

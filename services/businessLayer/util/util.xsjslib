@@ -1,11 +1,12 @@
 $.import("mktgplanningtool.services.commonLib", "mapper");
+var mapper = $.mktgplanningtool.services.commonLib.mapper;
 var config = mapper.getDataConfig();
 var userbl = mapper.getUser();
 var dataCategoryOptionLevel = mapper.getDataCategoryOptionLevel();
 var dataL6DER = mapper.getDataLevel6Report();
 var dataL5DER = mapper.getDataLevel5Report();
 var dataCategory = mapper.getDataCategory();
-var dataUtil = mapper.getDataUtil();
+// var dataUtil = mapper.getDataUtil();
 /** ***********END INCLUDE LIBRARIES*************** */
 function validateIsNumber(value){
 	return !isNaN(value);
@@ -214,9 +215,9 @@ function getCategoryById(level, hlId){
 
 }
 
-function getHash() {
-    return dataUtil.getHash();
-}
+/*function getHash() {
+    return config.getHash();
+}*/
 
 function parseAssignedUsers(assignedUsers) {
     return assignedUsers.map(function (user) {
