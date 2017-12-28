@@ -397,7 +397,7 @@ function updateHl4(data, userId) {
 
             var hl4RowsUpdated = dataHl4.updateHl4(hl4);
             if (hl4RowsUpdated > 0) {
-                var mapCOL = util.getMapCategoryOption('hl4');//Set Map for Category Option Level
+
                 insertInCrmBinding(validationResult.crmBindingChangedFields, validationResult.crmBindingChangedFieldsUpdate);
                 if (objHL4.HL4_FNC_BUDGET_TOTAL_MKT != hl4.in_HL4_FNC_BUDGET_TOTAL_MKT) {
                     level5Lib.checkBudgetStatus(hl4);
@@ -429,42 +429,7 @@ function updateHl4(data, userId) {
                         dataExOut.insertHl4ExpectedOutcomesDetail(arrL4Kpi);
                 }
 
-                var categoryOptionBulk = [];
-                var categories = util.getCategoryById('hl4', hl4_id);
-                if (!Object.keys(categories).length) {
-                    data.hl4_category.forEach(function (hl4Category) {
-                        hl4Category.hl4_category_option.forEach(function (hl4CategoryOption) {
-                            hl4CategoryOption.in_created_user_id = userId;
-                            hl4CategoryOption.in_amount = hl4CategoryOption.in_amount || 0;
-                            hl4CategoryOption.in_updated = hl4CategoryOption.in_updated || 0;
-                            hl4Category.categoryOptionLevelId = mapCOL[hl4Category.in_category_id][hl4CategoryOption.in_option_id];
-                            categoryOptionBulk.push({
-                                in_category_option_level_id: hl4Category.categoryOptionLevelId
-                                , in_amount: hl4CategoryOption.in_amount
-                                , in_created_user_id: userId
-                                , in_updated: hl4CategoryOption.in_updated
-                                , in_id: hl4_id
-                            });
-                        });
-                    });
-                    dataCategoryOptionLevel.insertCategoryOption(categoryOptionBulk, 'hl4');
-                } else {
-                    data.hl4_category.forEach(function (hl4Category) {
-                        hl4Category.hl4_category_option.forEach(function (hl4CategoryOption) {
-                            hl4CategoryOption.in_amount = hl4CategoryOption.in_amount || 0;
-                            hl4CategoryOption.in_updated = hl4CategoryOption.in_updated || 0;
-                            hl4Category.categoryOptionLevelId = mapCOL[hl4Category.in_category_id][hl4CategoryOption.in_option_id];
-                            categoryOptionBulk.push({
-                                in_category_option_level_id: hl4Category.categoryOptionLevelId
-                                , in_amount: hl4CategoryOption.in_amount
-                                , in_user_id: userId
-                                , in_updated: hl4CategoryOption.in_updated
-                                , in_hl4_id: hl4_id
-                            });
-                        });
-                    });
-                    dataCategoryOptionLevel.updateCategoryOption(categoryOptionBulk, 'hl4');
-                }
+                updateCategoryOption(data, hl4_id, userId);
                 transactionOk = !!hl4RowsUpdated && !!hl4FncRowsUpdated && hl4_expected_outcomes && hl4_expected_outcomes_detail && hl4_category && hl4_category_option;
                 if (transactionOk) {
                     db.commit();
@@ -485,6 +450,46 @@ function updateHl4(data, userId) {
         throw e;
     } finally {
         db.closeConnection();
+    }
+}
+
+function updateCategoryOption(data, hl4_id, userId, fromChangeHl4StatusOnDemand){
+    var mapCOL = util.getMapCategoryOption('hl4');//Set Map for Category Option Level
+    var categoryOptionBulk = [];
+    var categories = util.getCategoryById('hl4', hl4_id);
+    if (!Object.keys(categories).length) {
+        data.hl4_category.forEach(function (hl4Category) {
+            hl4Category.hl4_category_option.forEach(function (hl4CategoryOption) {
+                hl4CategoryOption.in_created_user_id = userId;
+                hl4CategoryOption.in_amount = hl4CategoryOption.in_amount || 0;
+                hl4CategoryOption.in_updated = hl4CategoryOption.in_updated || 0;
+                hl4Category.categoryOptionLevelId = mapCOL[hl4Category.in_category_id][hl4CategoryOption.in_option_id];
+                categoryOptionBulk.push({
+                    in_category_option_level_id: hl4Category.categoryOptionLevelId
+                    , in_amount: hl4CategoryOption.in_amount
+                    , in_created_user_id: userId
+                    , in_updated: fromChangeHl4StatusOnDemand && !!Number(hl4CategoryOption.in_amount)? 1 : (hl4CategoryOption.in_updated || 0)
+                    , in_id: hl4_id
+                });
+            });
+        });
+        dataCategoryOptionLevel.insertCategoryOption(categoryOptionBulk, 'hl4');
+    } else {
+        data.hl4_category.forEach(function (hl4Category) {
+            hl4Category.hl4_category_option.forEach(function (hl4CategoryOption) {
+                hl4CategoryOption.in_amount = hl4CategoryOption.in_amount || 0;
+                hl4CategoryOption.in_updated = hl4CategoryOption.in_updated || 0;
+                hl4Category.categoryOptionLevelId = mapCOL[hl4Category.in_category_id][hl4CategoryOption.in_option_id];
+                categoryOptionBulk.push({
+                    in_category_option_level_id: hl4Category.categoryOptionLevelId
+                    , in_amount: hl4CategoryOption.in_amount
+                    , in_user_id: userId
+                    , in_updated: fromChangeHl4StatusOnDemand && !!Number(hl4CategoryOption.in_amount)? 1 : (hl4CategoryOption.in_updated || 0)
+                    , in_hl4_id: hl4_id
+                });
+            });
+        });
+        dataCategoryOptionLevel.updateCategoryOption(categoryOptionBulk, 'hl4');
     }
 }
 
@@ -1021,6 +1026,18 @@ function changeHl4StatusOnDemand(hl4_id, userId) {
 
     var statusId = existInCrm ? HL4_STATUS.UPDATE_IN_CRM
         : HL4_STATUS.CREATE_IN_CRM;
+
+    if(statusId == HL4_STATUS.CREATE_IN_CRM){
+        level4DER.deleteL4ChangedFieldsByHl4Id(hl4_id);
+        var hl4_category = getHl4CategoryOption(hl4_id);
+        var data = {
+            hl4: dataHl4.getHl4ById(hl4_id),
+            hl4_category: hl4_category
+        };
+        updateCategoryOption(data, hl4_id, userId, true);
+        var aux = crmFieldsHaveChanged(data, 1, userId, true);
+        insertInCrmBinding(aux.crmBindingChangedFields, [], hl4_id);
+    }
 
     return setHl4Status(hl4_id, statusId, userId);
 }

@@ -17,7 +17,7 @@ in tSales TABLE(
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL" AS
 BEGIN
 out_result =
-	select
+	(select
 		hl6_sales.hl6_sales_id as hl_sales_id,
 	    hl6_sales.organization_id,
 	    hl6_sales.organization_type as organization_type_id,
@@ -26,6 +26,17 @@ out_result =
 	inner join :tSales t on hl6_sales.organization_id =     t.in_organization_id
 	                    and hl6_sales.organization_type =   t.in_organization_type
 	                    and hl6_sales.hl6_id =              t.in_hl_id
+    where hl6_sales.enabled = 1 and hl6_sales.deleted = 0)
+	UNION ALL
+	(select
+    		hl6_sales.hl6_sales_id as hl_sales_id,
+    	    hl6_sales.organization_id,
+    	    hl6_sales.organization_type as organization_type_id,
+    	    hl6_sales.hl6_id as hl_id
+    	from hl6_sales
+    	inner join :tSales t on hl6_sales.organization_id is null
+    	                    and hl6_sales.organization_type =   t.in_organization_type
+    	                    and hl6_sales.hl6_id =              t.in_hl_id
+    where hl6_sales.enabled = 1 and hl6_sales.deleted = 0);
 
-	where hl6_sales.enabled = 1 and hl6_sales.deleted = 0;
 END;

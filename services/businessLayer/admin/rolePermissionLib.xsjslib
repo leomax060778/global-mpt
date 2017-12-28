@@ -80,6 +80,57 @@ function getAllPermissionByRole() {
 	return jsonData;
 }
 
+function getPermissionByRoleId(roleId) {
+    var arrResourcesPermissions = dataRolePermission.getResourcePermissionByRole(roleId);
+
+    var resourcesMap = {};
+
+    arrResourcesPermissions.forEach(function (rolePremisision) {
+
+        if(!resourcesMap[rolePremisision.RESOURCE_ID]) {
+            resourcesMap[rolePremisision.RESOURCE_ID] = {};
+
+            resourcesMap[rolePremisision.RESOURCE_ID].CONFIGURATION = [];
+            resourcesMap[rolePremisision.RESOURCE_ID].RESOURCE_ID = rolePremisision.RESOURCE_ID;
+            resourcesMap[rolePremisision.RESOURCE_ID].RESOURCE = rolePremisision.RESOURCE_NAME;
+        }
+
+
+        var configurationExist = resourcesMap[rolePremisision.RESOURCE_ID].CONFIGURATION.filter(function (elem) {
+            return elem.PERMISSION === rolePremisision.PERMISSION_NAME
+					&& Number(elem.PERMISSION_ID) === Number(rolePremisision.PERMISSION_ID)
+					&& !!elem.ENABLED === !!rolePremisision.ENABLED;
+        });
+
+        if(!configurationExist.length) {
+            resourcesMap[rolePremisision.RESOURCE_ID].CONFIGURATION.push({
+                PERMISSION: rolePremisision.PERMISSION_NAME
+                , PERMISSION_ID: rolePremisision.PERMISSION_ID
+                , ENABLED: !!rolePremisision.ENABLED
+            });
+        }
+	});
+
+    //return resourcesMap;
+
+    // get the permissions by role
+    var jsonData = [];
+
+	// get the roles
+    var roles = dataRole.getRoleById(roleId);
+
+    if (roles.length){
+		var rolePermissionsConfiguration = {
+			"ROLE" : roles[0].NAME,
+			"ROLE_ID" : roles[0].ROLE_ID,
+			"PERMISSIONS" : resourcesMap,
+			"READONLY": roles[0].ROLE_ID == RoleEnum.SuperAdmin
+		};
+        jsonData.push(rolePermissionsConfiguration);
+    }
+    return jsonData;
+}
+
 /* Return permissions for the role supplied as parameter */
 function getPermissionByRole(roleId) {
 
@@ -107,10 +158,7 @@ function getPermissionByRole(roleId) {
 			// loop for permissions by role and resource
 			for (var p = 0; p < sysPermissions.length; p++) {
 				// look for the permission setting for role-resource
-				var currentPermission = dataRolePermission
-						.getPermissionByRoleAndResourceAndPermission(
-								roles[i].ROLE_ID, sysResources[r].RESOURCE_ID,
-								sysPermissions[p].PERMISSION_ID);
+				var currentPermission = dataRolePermission.getPermissionByRoleAndResourceAndPermission(roles[i].ROLE_ID, sysResources[r].RESOURCE_ID, sysPermissions[p].PERMISSION_ID);
 
 				var permissionEnabled = !!(currentPermission.length > 0	&& currentPermission[0].ENABLED == 1);
 

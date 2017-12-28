@@ -9,6 +9,7 @@ var spGetRolePermissionByRole = "GET_ALL_ROLE_PERMISSION_BY_ROLE";
 var spGetRolePermissionByRoleAndResource = "GET_ROLE_PERMISSION_BY_ROLE_RESOURCE_PERMISSION";
 var spInsertRolePermission = "INS_ROLE_PERMISSION";
 var spUpdateRolePermission = "UPD_ROLE_PERMISSION";
+var GET_RESOURCE_PERMISSION_BY_ROLE = "GET_RESOURCE_PERMISSION_BY_ROLE";
 
 function getPermissionByRole(roleId) {
 	if (!!roleId) {
@@ -79,4 +80,11 @@ function updateRolePermission(roleId, resourceId, permissionId, enabled,
 
 	return db.executeScalarManual(spUpdateRolePermission, parameters,
 			"out_result");
+}
+
+
+function getResourcePermissionByRole(roleId) {
+    var params = {'in_role_id': roleId};
+    var rdo = db.executeProcedureManual(GET_RESOURCE_PERMISSION_BY_ROLE,params);
+    return db.extractArray(rdo.out_result);
 }

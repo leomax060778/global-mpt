@@ -1,0 +1,28 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::UPD_HL6_SALES"
+(
+    IN hl6Sales TABLE(
+        in_hl6_sale_id bigint,
+        in_description nvarchar(255),
+        in_currency_id bigint,
+        in_user_id bigint
+    ),
+	out out_result bigint
+)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL" AS
+BEGIN
+
+	UPDATE HL6_SALES
+	SET
+	description = T.IN_DESCRIPTION,
+	currency_id = T.IN_CURRENCY_ID,
+	modified_user_id = T.IN_USER_ID,
+	modified_date_tz = CURRENT_TIMESTAMP
+	from HL6_SALES, (
+        select IN_HL6_SALE_ID, IN_DESCRIPTION, IN_CURRENCY_ID, IN_USER_ID from :hl6Sales
+    ) T
+    where HL6_SALES_ID = T.IN_HL6_SALE_ID;
+
+    SELECT ::ROWCOUNT INTO out_result FROM DUMMY;
+END;

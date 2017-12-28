@@ -136,20 +136,19 @@ function insertSalesBudgetSpendRequest(sales, id, level, conversionValue, userId
     var aux = {};
     var arrSaleHl = [];
     var arrBudgetSpendRequestOtherBudgetApprover = [];
-    sales
-        .forEach(function (sale) {
-            if (!aux[sale.ORGANIZATION_ID]
-                && !aux[sale.ORGANIZATION_ID] != sale.ORGANIZATION_TYPE) {
-                arrSaleHl
-                    .push({
-                        in_hl_id: id,
-                        in_organization_id: ORGANIZATION_TYPE[sale.ORGANIZATION_TYPE] !== 3 ? sale.ORGANIZATION_ID
-                            : null,
-                        in_organization_type: ORGANIZATION_TYPE[sale.ORGANIZATION_TYPE]
-                    });
-                aux[sale.ORGANIZATION_ID] = sale.ORGANIZATION_TYPE;
-            }
-        });
+    sales.forEach(function (sale) {
+        if (!aux[sale.ORGANIZATION_ID]
+            && aux[sale.ORGANIZATION_ID] != sale.ORGANIZATION_TYPE) {
+            arrSaleHl
+                .push({
+                    in_hl_id: id,
+                    in_organization_id: ORGANIZATION_TYPE[sale.ORGANIZATION_TYPE] !== 3 ? sale.ORGANIZATION_ID
+                        : null,
+                    in_organization_type: ORGANIZATION_TYPE[sale.ORGANIZATION_TYPE]
+                });
+            aux[sale.ORGANIZATION_ID] = sale.ORGANIZATION_TYPE;
+        }
+    });
 
     // look for SALES ID
     var hlSales = dataBudgetSpendRequest
@@ -158,8 +157,7 @@ function insertSalesBudgetSpendRequest(sales, id, level, conversionValue, userId
     arrSaleHl = [];
     var arrBudgetSpendRequestMessage = [];
 
-    sales
-        .forEach(function (sale) {
+    sales.forEach(function (sale) {
             if (Number(sale.AMOUNT) && sale.MESSAGE) {
                 var budgetSpendRequestId = dataBudgetSpendRequest
                     .insertBudgetSpendRequest(
@@ -174,8 +172,7 @@ function insertSalesBudgetSpendRequest(sales, id, level, conversionValue, userId
                     .forEach(function (hlSale) {
                         if (hlSale.ORGANIZATION_TYPE_ID == ORGANIZATION_TYPE[sale.ORGANIZATION_TYPE]
                             && hlSale.ORGANIZATION_ID == sale.ORGANIZATION_ID) {
-                            arrSaleHl
-                                .push({
+                            arrSaleHl.push({
                                     in_hl_sale_id: hlSale.HL_SALES_ID,
                                     in_budget_spend_request_id: budgetSpendRequestId,
                                     in_user_id: userId
@@ -224,7 +221,11 @@ function insertSalesBudgetSpendRequest(sales, id, level, conversionValue, userId
 
     return null;
 }
-
+function setOwnMoneyBudgetSpendRequestNoLongerNeededByHlIdLevel(hlId, level, amount, userId) {
+    return dataBudgetSpendRequest.updateBudgetSpendRequestByHlIdLevelType(hlId,
+        HIERARCHY_LEVEL[level], amount, BUDGET_SPEND_REQUEST_TYPE.OWN_MONEY
+        ,BUDGET_SPEND_REQUEST_STATUS['NO_LONGER_REQUESTED'], userId);
+}
 function updateSalesBudgetSpendRequest(sales, id, level, conversionValue, userId) {
     var arrBudgetSpendRequestToUpdate = [];
     var arrBudgetSpendRequestMessageToInsert = [];
@@ -631,7 +632,6 @@ function setBudgetSpendRequestStatus(hlId, level, userId, status, preserveOwnMon
     var arrBudgSpendStatusLog = [];
     var arrBudgetSpendRequestMessage = [];
 
-    // throw JSON.stringify(budgetSpendRequests);
     budgetSpendRequests.forEach(function (request) {
         arrBudgSpendStatus.push({
             in_budget_spend_request_id: request.BUDGET_SPEND_REQUEST_ID

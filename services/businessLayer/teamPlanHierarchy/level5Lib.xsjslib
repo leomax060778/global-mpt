@@ -187,7 +187,11 @@ function getHl5ById(id) {
     var hl5_category = getHl5CategoryOption(id);
     var hl5_service_request_category_option = getServiceRequestCategoryOptionByHl5Id(id);
 
-    hl5.in_totalbudget = (Number(hl5.BUDGET) + (partner.total ? (partner.total / partner.partnerCurrencyValue) : 0) + Number(totalAmount) + partner.totalExternal / saleCurrencyValue).toFixed(2);
+    hl5.in_totalbudget = (Number(hl5.BUDGET)
+        + (partner.total ? (partner.total / partner.partnerCurrencyValue) : 0)
+        + (partner.totalExternal ? (partner.totalExternal / partner.partnerCurrencyValue) : 0)
+        + Number(totalAmount) / saleCurrencyValue).toFixed(2);
+
     hl5.IS_IN_CRM = !!dataHl5.hl5ExistsInCrm(id);
     hl5.BUDGET = Number(hl5.BUDGET) * currencyValueAux;
 
@@ -503,37 +507,72 @@ function insertHl5(data, userId) {
                 var arrPartner = [];
                 var internalCoFundingCurrency = dataCurrency.getCurrencyValueId(data.PARTNER_CURRENCY_ID);
                 data.partners.forEach(function (partner) {
-                    if (Number(partner.AMOUNT) && partner.MESSAGE) {
-                        var budgetSpendRequestId = budgetSpendRequest.insertPartnerBudgetSpendRequest(partner.AMOUNT, partner.MESSAGE, hl5_id, 'HL5', internalCoFundingCurrency, userId);
-                        arrPartner.push({
-                            in_hl5_id: hl5_id
-                            ,
-                            in_partner_name: null
-                            ,
-                            in_partner_type_id: partner.PARTNER_TYPE_ID
-                            ,
-                            in_region_id: null
-                            ,
-                            in_value: null
-                            ,
-                            in_created_user_id: userId
-                            ,
-                            in_budget_spend_request: budgetSpendRequestId
-                            ,
-                            in_currency_id: data.PARTNER_CURRENCY_ID
-                            ,
-                            in_intel_project_id: PARTNER_TYPE.INTEL == partner.PARTNER_TYPE_ID ? partner.INTEL_PROJECT_ID : null
-                            ,
-                            in_claim_id: PARTNER_TYPE.INTEL == partner.PARTNER_TYPE_ID ? partner.CLAIM_ID : null
-                            ,
-                            in_comments: PARTNER_TYPE.INTEL == partner.PARTNER_TYPE_ID ? partner.COMMENTS : null
-                            ,
-                            in_company_name: PARTNER_TYPE.EXTERNAL_PARTNER == partner.PARTNER_TYPE_ID ? partner.COMPANY_NAME : null
-                            ,
-                            in_company_address: PARTNER_TYPE.EXTERNAL_PARTNER == partner.PARTNER_TYPE_ID ? partner.COMPANY_ADDRESS : null
-                            ,
-                            in_invoice_number: PARTNER_TYPE.EXTERNAL_PARTNER == partner.PARTNER_TYPE_ID && partner.INVOICE_NUMBER ? partner.INVOICE_NUMBER : null
-                        });
+                    if (PARTNER_TYPE.INTEL == partner.PARTNER_TYPE_ID) {
+                        if (Number(partner.AMOUNT) && partner.INTEL_PROJECT_ID) {
+                            var budgetSpendRequetId = budgetSpendRequest.insertPartnerBudgetSpendRequest(partner.AMOUNT, partner.MESSAGE, data.hl5.HL5_ID, 'HL5', internalCoFundingCurrency, userId);
+                            arrPartner.push({
+                                in_hl5_id: data.hl5.HL5_ID
+                                ,
+                                in_partner_name: null
+                                ,
+                                in_partner_type_id: partner.PARTNER_TYPE_ID
+                                ,
+                                in_region_id: null
+                                ,
+                                in_value: null
+                                ,
+                                in_created_user_id: userId
+                                ,
+                                in_budget_spend_request: budgetSpendRequetId
+                                ,
+                                in_currency_id: data.PARTNER_CURRENCY_ID
+                                ,
+                                in_intel_project_id: PARTNER_TYPE.INTEL == partner.PARTNER_TYPE_ID ? partner.INTEL_PROJECT_ID : null
+                                ,
+                                in_claim_id: PARTNER_TYPE.INTEL == partner.PARTNER_TYPE_ID ? partner.CLAIM_ID : null
+                                ,
+                                in_comments: PARTNER_TYPE.INTEL == partner.PARTNER_TYPE_ID ? partner.COMMENTS : null
+                                ,
+                                in_company_name: PARTNER_TYPE.EXTERNAL_PARTNER == partner.PARTNER_TYPE_ID ? partner.COMPANY_NAME : null
+                                ,
+                                in_company_address: PARTNER_TYPE.EXTERNAL_PARTNER == partner.PARTNER_TYPE_ID ? partner.COMPANY_ADDRESS : null
+                                ,
+                                in_invoice_number: PARTNER_TYPE.EXTERNAL_PARTNER == partner.PARTNER_TYPE_ID && partner.INVOICE_NUMBER ? partner.INVOICE_NUMBER : null
+                            });
+                        }
+                    } else {
+                        if (Number(partner.AMOUNT)) {
+                            var budgetSpendRequestId = budgetSpendRequest.insertPartnerBudgetSpendRequest(partner.AMOUNT, partner.MESSAGE, hl5_id, 'HL5', internalCoFundingCurrency, userId);
+                            arrPartner.push({
+                                in_hl5_id: hl5_id
+                                ,
+                                in_partner_name: null
+                                ,
+                                in_partner_type_id: partner.PARTNER_TYPE_ID
+                                ,
+                                in_region_id: null
+                                ,
+                                in_value: null
+                                ,
+                                in_created_user_id: userId
+                                ,
+                                in_budget_spend_request: budgetSpendRequestId
+                                ,
+                                in_currency_id: data.PARTNER_CURRENCY_ID
+                                ,
+                                in_intel_project_id: PARTNER_TYPE.INTEL == partner.PARTNER_TYPE_ID ? partner.INTEL_PROJECT_ID : null
+                                ,
+                                in_claim_id: PARTNER_TYPE.INTEL == partner.PARTNER_TYPE_ID ? partner.CLAIM_ID : null
+                                ,
+                                in_comments: PARTNER_TYPE.INTEL == partner.PARTNER_TYPE_ID ? partner.COMMENTS : null
+                                ,
+                                in_company_name: PARTNER_TYPE.EXTERNAL_PARTNER == partner.PARTNER_TYPE_ID ? partner.COMPANY_NAME : null
+                                ,
+                                in_company_address: PARTNER_TYPE.EXTERNAL_PARTNER == partner.PARTNER_TYPE_ID ? partner.COMPANY_ADDRESS : null
+                                ,
+                                in_invoice_number: PARTNER_TYPE.EXTERNAL_PARTNER == partner.PARTNER_TYPE_ID && partner.INVOICE_NUMBER ? partner.INVOICE_NUMBER : null
+                            });
+                        }
                     }
                 });
                 if (arrPartner.length)
@@ -903,7 +942,7 @@ function updateHl5(data1, userId) {
         if (!ownMoneyBudgetSpendRequestStatus || ownMoneyBudgetSpendRequestStatus == budgetSpendRequestStatus.NO_LONGER_REQUESTED) {
             budgetSpendRequest.insertOwnMoneyBudgetSpendRequest(data.hl5.BUDGET, hl5_id, 'HL5', userId, automaticBudgetApproval);
         } else {
-            if (objHL5.BUDGET != data.hl5.BUDGET) {
+            if (Number(objHL5.BUDGET) != Number(data.hl5.BUDGET.toFixed(2))) {
                 if (objHL5.EURO_CONVERSION_ID == data.hl5.EURO_CONVERSION_ID) {
                     if (ownMoneyBudgetSpendRequestStatus && ownMoneyBudgetSpendRequestStatus == budgetSpendRequestStatus.APPROVED)
                         throw ErrorLib.getErrors().CustomError("", "", "Cannot update Tactic Budget because Own money budget spend request is already Approved.");

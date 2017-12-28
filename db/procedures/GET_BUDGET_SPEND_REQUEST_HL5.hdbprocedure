@@ -79,7 +79,7 @@ BEGIN
                 INNER JOIN "MKTG_PLANNING_TOOL"."HL5_STATUS_DETAIL" HL5_STATUS ON HL5_STATUS.HL5_STATUS_DETAIL_ID = HL5.HL5_STATUS_DETAIL_ID
             WHERE HL5.ENABLED = 1
                 AND HL5.DELETED = 0
-                AND BSR.AMOUNT != 0 
+                --AND BSR.AMOUNT != 0
                 AND BSR.BUDGET_SPEND_REQUEST_TYPE_ID = 1
                 AND HL5.ALLOW_BUDGET_ZERO = 0
                 AND BSR.BUDGET_SPEND_REQUEST_STATUS_ID != in_excluded_status_id

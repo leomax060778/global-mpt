@@ -330,28 +330,29 @@ function sendInCRMMail(hlId, hierarchyLevel) {
             hlInformation = dataHl4.getHl4ById(hlId);
             userData = userLib.getUserById(hlInformation.CREATED_USER_ID);
             reqBody.REQUESTER_NAME = userData[0].FIRST_NAME + " " + userData[0].LAST_NAME;
-            reqBody.PATH = pathLib.getPathByLevelParent(5, Number(hlInformation.HL4_ID)).CRM_ID;
+            reqBody.PATH = pathLib.getPathByLevelHlId('hl4', Number(hlInformation.HL4_ID));
             mailObj = mailHL4.parseInCRM(reqBody, {"ENVIRONMENT": env}, reqBody.REQUESTER_NAME);
             break;
         case "hl5":
             hlInformation = dataHl5.getHl5ById(hlId);
             userData = userLib.getUserById(hlInformation.CREATED_USER_ID);
             reqBody.REQUESTER_NAME = userData[0].FIRST_NAME + " " + userData[0].LAST_NAME;
-            reqBody.PATH = pathLib.getPathByLevelParent(6, Number(hlInformation.HL5_ID)).CRM_ID;
+            reqBody.PATH = pathLib.getPathByLevelHlId('hl5', Number(hlInformation.HL5_ID));
             mailObj = mailHL5.parseInCRM(reqBody, {"ENVIRONMENT": env}, reqBody.REQUESTER_NAME);
             break;
         case "hl6":
             hlInformation = dataHl6.getHl6ById(hlId);
             userData = userLib.getUserById(hlInformation.CREATED_USER_ID);
             reqBody.REQUESTER_NAME = userData[0].FIRST_NAME + " " + userData[0].LAST_NAME;
-            reqBody.PATH = pathLib.getPathByLevelParent(6, Number(hlInformation.HL5_ID)).CRM_ID + hlInformation.ACRONYM;
+            reqBody.PATH = pathLib.getPathByLevelHlId('hl6', Number(hlInformation.HL6_ID)) + hlInformation.ACRONYM;
 
             mailObj = mailHL6.parseInCRM(reqBody, {"ENVIRONMENT": env}, reqBody.REQUESTER_NAME);
             break;
     }
     if (hlInformation && userData && userData.length > 0 && mailObj) {
         var mailObject = getJson([{"address": userData[0].EMAIL}], mailObj.subject, mailObj.body);
-        //var mailObject = getJson([{"address": "iberon@folderit.net"}], mailObj.subject, mailObj.body);  //For testing only
+        //var mailObject = getJson([{"address": "lpeccin@folderit.net"}], mailObj.subject, mailObj.body);  //For testing only
+
 
         sendMail(mailObject, true);
     } else {

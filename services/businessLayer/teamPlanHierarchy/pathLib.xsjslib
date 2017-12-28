@@ -154,3 +154,7 @@ function getPathByLevelParentForCrm(level, parentId) {
 
     return parentPath;
 }
+
+function getPathByLevelHlId(level, HL_id){
+    return dataPath.getPathByLevelHlId(level, HL_id);
+}

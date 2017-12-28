@@ -1,26 +1,27 @@
+
 -- *************************************************************************************
 -- Insert deltaTimeLastUpdate to CONFIGURATION table
 INSERT INTO "MKTG_PLANNING_TOOL"."CONFIGURATION"(KEY, VALUE, DESCRIPTION, created_user_id) VALUES ('deltaTimeLastUpdate', 12, 'Default hours since the last update for Report Data Export API', 1);
 
 -- *************************************************************************************
 -- Add EXPORT_KEY column and set values
-ALTER TABLE "MKTG_PLANNING_TOOL"."EXPECTED_OUTCOME_OPTION" ADD EXPORT_KEY NVARCHAR(25);
+ALTER TABLE "MKTG_PLANNING_TOOL"."EXPECTED_OUTCOME_OPTION" ADD (EXPORT_KEY NVARCHAR(25));
 
 UPDATE "MKTG_PLANNING_TOOL"."EXPECTED_OUTCOME_OPTION"
-SET EXPORT_KEY = "MNP"
-WHERE NAME = "MNP";
+SET EXPORT_KEY = 'MNP'
+WHERE NAME = 'MNP';
 
 UPDATE "MKTG_PLANNING_TOOL"."EXPECTED_OUTCOME_OPTION"
-SET EXPORT_KEY = "MTP"
-WHERE NAME = "MTP";
+SET EXPORT_KEY = 'MTP'
+WHERE NAME = 'MTP';
 
 UPDATE "MKTG_PLANNING_TOOL"."EXPECTED_OUTCOME_OPTION"
-SET EXPORT_KEY = "MIP"
-WHERE NAME = "MIP";
+SET EXPORT_KEY = 'MIP'
+WHERE NAME = 'MIP';
 
 UPDATE "MKTG_PLANNING_TOOL"."EXPECTED_OUTCOME_OPTION"
-SET EXPORT_KEY = "LEAD_VOLUMN"
-WHERE NAME = "Lead Volume";
+SET EXPORT_KEY = 'LEAD_VOLUMN'
+WHERE NAME = 'Lead Volume';
 
 -- *************************************************************************************
 -- Create table LOG_REPORT_EXPORT_DATA
