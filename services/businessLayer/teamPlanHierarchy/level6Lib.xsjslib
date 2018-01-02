@@ -137,6 +137,7 @@ function getHl6ByHl5Id(hl5Id, userId) {
     var totalAllocated = 0;
     var remainingBudget = 0;
     var allHl6 = [];
+    var isSuperAdmin = util.isSuperAdmin(userId);
     if (hl6List.length) {
         hl6List.forEach(function (hl6) {
             var aux = {};
@@ -155,7 +156,7 @@ function getHl6ByHl5Id(hl5Id, userId) {
             });
             aux.ENABLE_DELETION = Number(hl6.STATUS_ID) !== HL6_STATUS.CREATE_IN_CRM && Number(hl6.STATUS_ID) !== HL6_STATUS.IN_CRM && Number(hl6.STATUS_ID) !== HL6_STATUS.UPDATE_IN_CRM;
             aux.ENABLE_CHANGE_STATUS = Number(hl6.STATUS_ID) !== HL6_STATUS.CREATE_IN_CRM && Number(hl6.STATUS_ID) !== HL6_STATUS.IN_CRM && Number(hl6.STATUS_ID) !== HL6_STATUS.UPDATE_IN_CRM;
-            aux.ENABLE_EDIT = util.getEnableEdit(hl6.STATUS_ID, HL6_STATUS, userId);
+            aux.ENABLE_EDIT = util.getEnableEdit(hl6.STATUS_ID, HL6_STATUS, userId, isSuperAdmin);
             allHl6.push(aux);
         });
 
@@ -276,17 +277,19 @@ function getUserById(id) {
 }
 
 function getLevel6ForSearch(userSessionID, budget_year_id, region_id, subregion_id, limit, offset) {
-    var list = dataHl6.getHl6ForSearch(userSessionID, util.isSuperAdmin(userSessionID) ? 1 : 0, budget_year_id, region_id || 0, subregion_id || 0, limit, offset || 0);
+    var isSuperAdmin = util.isSuperAdmin(userSessionID);
+    var list = dataHl6.getHl6ForSearch(userSessionID, isSuperAdmin ? 1 : 0, budget_year_id, region_id || 0, subregion_id || 0, limit, offset || 0);
     list = JSON.parse(JSON.stringify(list));
     list.result.forEach(function (elem) {
-        elem.ENABLE_EDIT = util.getEnableEdit(elem.HL6_STATUS_DETAIL_ID, HL6_STATUS, userSessionID);
+        elem.ENABLE_EDIT = util.getEnableEdit(elem.HL6_STATUS_DETAIL_ID, HL6_STATUS, userSessionID, isSuperAdmin);
     });
     return list;
 }
 
 function getHl6ByHl5IdUserId(hl5Id, userId) {
     var crm = 'CRM-';
-    var hl6List = dataHl6.getHl6ByHl5IdUserId(hl5Id, userId, util.isSuperAdmin(userId) ? 1 : 0);
+    var isSuperAdmin = util.isSuperAdmin(userId);
+    var hl6List = dataHl6.getHl6ByHl5IdUserId(hl5Id, userId, isSuperAdmin ? 1 : 0);
     var result = {};
     var requestResult = {results: []};
 
@@ -324,7 +327,7 @@ function getHl6ByHl5IdUserId(hl5Id, userId) {
                         ,
                         ENABLE_DELETION: Number(hl6List[i].STATUS_ID) !== HL6_STATUS.CREATE_IN_CRM && Number(hl6List[i].STATUS_ID) !== HL6_STATUS.IN_CRM && Number(hl6List[i].STATUS_ID) !== HL6_STATUS.UPDATE_IN_CRM
                         ,
-                        ENABLE_EDIT: util.getEnableEdit(hl6List[i].STATUS_ID, HL6_STATUS, userId)
+                        ENABLE_EDIT: util.getEnableEdit(hl6List[i].STATUS_ID, HL6_STATUS, userId, isSuperAdmin)
                         ,
                         ENABLE_CHANGE_STATUS: Number(hl6List[i].STATUS_ID) !== HL6_STATUS.CREATE_IN_CRM && Number(hl6List[i].STATUS_ID) !== HL6_STATUS.IN_CRM && Number(hl6List[i].STATUS_ID) !== HL6_STATUS.UPDATE_IN_CRM
                     })
@@ -357,7 +360,7 @@ function getHl6ByHl5IdUserId(hl5Id, userId) {
                     ,
                     ENABLE_CHANGE_STATUS: Number(hl6List[i].STATUS_ID) !== HL6_STATUS.CREATE_IN_CRM && Number(hl6List[i].STATUS_ID) !== HL6_STATUS.IN_CRM && Number(hl6List[i].STATUS_ID) !== HL6_STATUS.UPDATE_IN_CRM
                     ,
-                    ENABLE_EDIT: util.getEnableEdit(hl6List[i].STATUS_ID, HL6_STATUS, userId)
+                    ENABLE_EDIT: util.getEnableEdit(hl6List[i].STATUS_ID, HL6_STATUS, userId, isSuperAdmin)
                 })
             }
         }
@@ -2040,12 +2043,14 @@ function crmFieldsHaveChanged(data, isComplete, userId, isNew) {
                 }
                 if (fieldChanged || oldParentPath != parentPath) {
 
-                    if (oldParentPath) {
-                        if (oldParentPath != parentPath) {
-                            pathBL.updParentPath('hl6', data.hl6.HL6_ID, parentPath, userId);
+                    if (field === "PARENT_PATH") {
+                        if (oldParentPath) {
+                            if (oldParentPath != parentPath) {
+                                pathBL.updParentPath('hl6', data.hl6.HL6_ID, parentPath, userId);
+                            }
+                        } else {
+                            pathBL.insParentPath('hl6', data.hl6.HL6_ID, data.hl6.HL5_ID, userId);
                         }
-                    } else {
-                        pathBL.insParentPath('hl6', data.hl6.HL6_ID, data.hl6.HL5_ID, userId);
                     }
 
                     var in_hl6_crm_binding_id = l6CrmBindigFields[field] ? l6CrmBindigFields[field].HL6_CRM_BINDING_ID : null;

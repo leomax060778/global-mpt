@@ -71,8 +71,8 @@ function handlePost(reqBody,userId){
 }
 
 function handleDelete(reqBody, userId){
-	var OPTION_ID = reqBody.ALLOCATION_OPTION_ID;
-	var result = AllocationOptionLib.deleteAllocationOption(OPTION_ID, userId);
+	//var OPTION_ID = reqBody.ALLOCATION_OPTION_ID;
+	var result = AllocationOptionLib.deleteAllocationOption(reqBody, userId);
 	return httpUtil.handleResponse(result,httpUtil.OK,httpUtil.AppJson);
 
 }

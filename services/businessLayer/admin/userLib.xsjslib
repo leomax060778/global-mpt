@@ -363,18 +363,25 @@ function updateUser(user, updateUser) {
     }
 }
 
-function deleteUser(user, deleteUser) {
-    if (!user.USER_ID)
-        throw ErrorLib.getErrors().CustomError("",
-            "userServices/handlePost/insertUser",
-            "The USER_ID is not found");
+function deleteUser(data, deleteUser) {
+    if(!data.USERS_IDS){
+        data.USERS_IDS = [data.USER_ID];
+    }
 
-    if (!util.validateIsNumber(user.USER_ID))
-        throw ErrorLib.getErrors().CustomError("",
-            "userServices/handlePost/insertUser", "The USER_ID is invalid");
+    data.USERS_IDS.forEach(function (userId) {
+        if (!userId)
+            throw ErrorLib.getErrors().CustomError("",
+                "userServices/handlePost/insertUser",
+                "The USER_ID is not found");
 
-    return dbUser.deleteUser(user, deleteUser);
+        if (!util.validateIsNumber(userId))
+            throw ErrorLib.getErrors().CustomError("",
+                "userServices/handlePost/insertUser", "The USER_ID is invalid");
 
+        dbUser.deleteUser(userId, deleteUser);
+    });
+
+    return true;
 }
 
 function updateUserPassword(value, modUser) {

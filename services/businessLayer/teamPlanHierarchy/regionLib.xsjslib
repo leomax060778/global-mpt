@@ -8,11 +8,12 @@ var InterlockLib = mapper.getInterlock();
 
 /** ***********END INCLUDE LIBRARIES*************** */
 
-function getAllRegions(fromExecutionLevel) {
+function getAllRegions(fromExecutionLevel, partial) {
+	
 	var regionlist = dataRegion.getAllRegions();
     if(regionlist){
     	regionlist = JSON.parse(JSON.stringify(regionlist));
-    	if(!fromExecutionLevel) {
+    	if(!fromExecutionLevel && !partial) {
             regionlist.forEach(function (i) {
                 var contactData = InterlockLib.getContactDataByOrgRelatedAndOrgId(
                     dataConfig.getOrganizationRelated("REGION")

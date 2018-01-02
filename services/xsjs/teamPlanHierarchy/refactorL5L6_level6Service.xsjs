@@ -38,7 +38,7 @@ function handleGet(params, userId) {
 
 	}else if(in_hl5_id && !hl5_categories && !hl5_expectedOutcomes && !param_section){
         //hl5.checkPermission(userId, null, in_hl5_id);
-		result = hl6.getHl6ByHl5Id(in_hl5_id);
+		result = hl6.getHl6ByHl5Id(in_hl5_id, userId);
 	}else if(in_hl6_id){
         //hl6.checkPermission(userId, null, in_hl6_id);
 		result = hl6.getHl6ById(in_hl6_id);
@@ -77,7 +77,8 @@ function handlePut(reqBody, userId){
 				return	httpUtil.handleResponse(rdo,httpUtil.OK,httpUtil.AppJson);
 		        break;
 			case changeStatus:
-				var rdo = hl6.changeHl6StatusOnDemand(hl6Id, userId);
+                var CANCEL_CONFIRMATION = parameters.get('CANCEL_CONFIRMATION');
+				var rdo = hl6.changeHl6StatusOnDemand(hl6Id, userId, CANCEL_CONFIRMATION);
 				return	httpUtil.handleResponse(rdo,httpUtil.OK,httpUtil.AppJson);
 				break;
 		    default:

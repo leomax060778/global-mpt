@@ -23,20 +23,28 @@ function allocationOptionRelations(optionId){
 	return dbOption.getAllocationOptionRelationsByOptionId(optionId);
 }
 
-function deleteAllocationOption(optionId, userId){
-	var optionRelations = allocationOptionRelations(optionId);
-	
-	if(optionRelations.length){
-		//Error message constructor
-		var currentRelationsError = "The Option could not be deleted because is currently assigned to: \n";
-		optionRelations.forEach(function(relation){
-			currentRelationsError += levelMap[relation.HIERARCHY_LEVEL] + ": "+relation.CATEGORY_NAME+"\n";
-		});
-		currentRelationsError += "Remove the option from all categories before delete it."
-		//--
-		throw ErrorLib.getErrors().CustomError("", "allocationCategoryOptionLevelService/handleDelete/deleteAllocationOption", currentRelationsError);
+function deleteAllocationOption(data, userId){
+	if(!data.ALLOCATION_OPTION_IDS){
+        data.ALLOCATION_OPTION_IDS = [data.ALLOCATION_OPTION_ID];
 	}
-	return dbOption.deleteAllocationOption(optionId, userId);
+
+    data.ALLOCATION_OPTION_IDS.forEach(function (optionId) {
+        var optionRelations = allocationOptionRelations(optionId);
+
+        if(optionRelations.length){
+            //Error message constructor
+            var currentRelationsError = "The Option could not be deleted because is currently assigned to: \n";
+            optionRelations.forEach(function(relation){
+                currentRelationsError += levelMap[relation.HIERARCHY_LEVEL] + ": "+relation.CATEGORY_NAME+"\n";
+            });
+            currentRelationsError += "Remove the option from all categories before delete it.";
+            //--
+            throw ErrorLib.getErrors().CustomError("", "allocationCategoryOptionLevelService/handleDelete/deleteAllocationOption", currentRelationsError);
+        }
+        dbOption.deleteAllocationOption(optionId, userId);
+	});
+
+    return true;
 }
 
 function updateAllocationOption(reqbody, userId) {

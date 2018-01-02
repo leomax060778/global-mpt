@@ -105,6 +105,7 @@ var HIERARCHY_LEVEL = {
 function getHl4(id, userId) {
     var spResult = dataHl4.getHl4(id);
     var result = [];
+    var isSuperAdmin = util.isSuperAdmin(userId);
     spResult.out_result.forEach(function (hl4) {
         var aux = {};
         aux = util.extractObject(hl4);
@@ -116,7 +117,7 @@ function getHl4(id, userId) {
         aux.REMAINING = hl4.REMAINING;
         aux.ENABLE_DELETION = Number(hl4.STATUS_ID) !== HL4_STATUS.CREATE_IN_CRM && Number(hl4.STATUS_ID) !== HL4_STATUS.IN_CRM && Number(hl4.STATUS_ID) !== HL4_STATUS.UPDATE_IN_CRM;
         aux.ENABLE_CHANGE_STATUS = Number(hl4.STATUS_ID) !== HL4_STATUS.CREATE_IN_CRM && Number(hl4.STATUS_ID) !== HL4_STATUS.IN_CRM && Number(hl4.STATUS_ID) !== HL4_STATUS.UPDATE_IN_CRM;
-        aux.ENABLE_EDIT = util.getEnableEdit(hl4.STATUS_ID, HL4_STATUS, userId);
+        aux.ENABLE_EDIT = util.getEnableEdit(hl4.STATUS_ID, HL4_STATUS, userId, isSuperAdmin);
         result.push(aux);
     });
 
@@ -176,8 +177,9 @@ function getLevel4ForSearch(budgetYearId, regionId, subRegionId, limit, offset, 
     var defaultBudgetYear = budgetYear.getDefaultBudgetYear();
     var results = dataHl4.getLevel4ForSearch(budgetYearId || defaultBudgetYear.BUDGET_YEAR_ID, regionId || 0, subRegionId || 0, limit || -1, offset || 0, userSessionID, util.isSuperAdmin(userSessionID) ? 1 : 0);
     results = JSON.parse(JSON.stringify(results));
+    var isSuperAdmin = util.isSuperAdmin(userSessionID);
     results.result.forEach(function (elem) {
-        elem.ENABLE_EDIT = util.getEnableEdit(elem.HL4_STATUS_DETAIL_ID, HL4_STATUS, userSessionID);
+        elem.ENABLE_EDIT = util.getEnableEdit(elem.HL4_STATUS_DETAIL_ID, HL4_STATUS, userSessionID, isSuperAdmin);
     });
     return results;
 }

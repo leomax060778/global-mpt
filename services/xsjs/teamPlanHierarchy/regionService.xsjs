@@ -16,7 +16,7 @@ function processRequest(){
 
 function handleGet(parameters){
     var method = httpUtil.getUrlParameters().get("METHOD");
-	if(parameters.length > 0 && method != fromExecutionLevel){
+	if(parameters.length > 0 && method != fromExecutionLevel && !httpUtil.getUrlParameterByName("PARTIAL") ){
 		if(parameters[0].name == regionId){		
 			var rdo = blRegion.getRegionById(parameters[0].value);
 			httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);				
@@ -25,7 +25,7 @@ function handleGet(parameters){
 			throw ErrorLib.getErrors().BadRequest("","regionServices/handleGet","invalid parameter name (can be: REGION_ID)");
 		}
 	}else{
-		var rdo = blRegion.getAllRegions(method == fromExecutionLevel);
+		var rdo = blRegion.getAllRegions(method == fromExecutionLevel, httpUtil.getUrlParameterByName("PARTIAL"));
 		httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
 	}
 	

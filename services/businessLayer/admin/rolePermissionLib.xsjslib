@@ -119,11 +119,12 @@ function getPermissionByRoleId(roleId) {
 	// get the roles
     var roles = dataRole.getRoleById(roleId);
 
+    var arrayResources = Object.keys(resourcesMap).map(function(key){ return resourcesMap[key]});
     if (roles.length){
 		var rolePermissionsConfiguration = {
 			"ROLE" : roles[0].NAME,
 			"ROLE_ID" : roles[0].ROLE_ID,
-			"PERMISSIONS" : resourcesMap,
+			"PERMISSIONS" : arrayResources,
 			"READONLY": roles[0].ROLE_ID == RoleEnum.SuperAdmin
 		};
         jsonData.push(rolePermissionsConfiguration);

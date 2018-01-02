@@ -344,7 +344,7 @@ function sendInCRMMail(hlId, hierarchyLevel) {
             hlInformation = dataHl6.getHl6ById(hlId);
             userData = userLib.getUserById(hlInformation.CREATED_USER_ID);
             reqBody.REQUESTER_NAME = userData[0].FIRST_NAME + " " + userData[0].LAST_NAME;
-            reqBody.PATH = pathLib.getPathByLevelHlId('hl6', Number(hlInformation.HL6_ID)) + hlInformation.ACRONYM;
+            reqBody.PATH = pathLib.getPathByLevelHlId('hl6', Number(hlInformation.HL6_ID));
 
             mailObj = mailHL6.parseInCRM(reqBody, {"ENVIRONMENT": env}, reqBody.REQUESTER_NAME);
             break;
