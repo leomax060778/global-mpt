@@ -79,6 +79,7 @@ function completeCRMPath(array, key, setDisplayName, parse, userId) {
 
     array.forEach(function (data) {
         if (data.BUDGET_SPEND_REQUEST_AMOUNT) {
+            data.BUDGET_SPEND_REQUEST_AMOUNT = (Number(data.BUDGET_SPEND_REQUEST_AMOUNT)).toFixed(2);
             data.BUDGET_SPEND_REQUEST_AMOUNT_KEUR = (data.CURRENCY_ABBREVIATION !== "EUR") ? "( " + calculateBudgetInEuros(data) + " K EUR )" : "";
             data.BUDGET_SPEND_REQUEST_AMOUNT = "" + data.BUDGET_SPEND_REQUEST_AMOUNT + " K " + data.CURRENCY_ABBREVIATION;
         } else if (data.BUDGET) {

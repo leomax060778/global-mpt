@@ -46,26 +46,32 @@ function updateMarketingProgram(payload, userId) {
         , userId);
 }
 
-function deleteMarketingProgram(marketingProgram, userId, confirm) {
-
-    if (!marketingProgram.IN_MARKETING_PROGRAM_ID)
-        throw ErrorLib.getErrors().CustomError("",
-            "marketingProgramServices/handleDelete/deleteMarketingProgram",
-            "The MARKETING_PROGRAM_ID is not found");
-    if (confirm) {
-        return dataMarketingProgram.deleteMarketingProgram(marketingProgram.IN_MARKETING_PROGRAM_ID, userId);
-    } else {
-        var countRegisters = dataMarketingProgram.checkInUseMarketingProgramById(marketingProgram.IN_MARKETING_PROGRAM_ID);
-        var retValue = 0;
-        if (countRegisters > 0)
-            throw ErrorLib.getErrors().ConfirmDelete("",
-                "marketingProgramServices/handleDelete/checkInUseMarketingProgramById",
-                countRegisters);
-        else
-            retValue = dataMarketingProgram.deleteMarketingProgram(marketingProgram.IN_MARKETING_PROGRAM_ID, userId);
-
-        return retValue;
+function deleteMarketingProgram(data, userId, confirm) {
+    if(!data.MARKETING_PROGRAM_IDS){
+        data.MARKETING_PROGRAM_IDS = [data.IN_MARKETING_PROGRAM_ID];
     }
+
+    data.MARKETING_PROGRAM_IDS.forEach(function (marketingProgramId) {
+        if (!marketingProgramId)
+            throw ErrorLib.getErrors().CustomError("",
+                "marketingProgramServices/handleDelete/deleteMarketingProgram",
+                "The MARKETING_PROGRAM_ID is not found");
+        if (confirm) {
+            dataMarketingProgram.deleteMarketingProgram(marketingProgramId, userId);
+        } else {
+            var countRegisters = dataMarketingProgram.checkInUseMarketingProgramById(marketingProgramId);
+            var retValue = 0;
+            if (countRegisters > 0)
+                throw ErrorLib.getErrors().ConfirmDelete("",
+                    "marketingProgramServices/handleDelete/checkInUseMarketingProgramById",
+                    countRegisters);
+            else
+                retValue = dataMarketingProgram.deleteMarketingProgram(marketingProgramId, userId);
+
+            // return retValue;
+        }
+    });
+    return true;
 }
 
 function checkMarketingProgram(data){

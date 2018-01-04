@@ -667,10 +667,11 @@ function insertOtherBudgetApprover(otherBudgetApprover, userId) {
 }
 
 function getHlSalesByHlId(id, level) {
-    var saleRequests = dataBudgetSpendRequest.getHlSalesByHlId(id, level);
+    var saleRequests = JSON.parse(JSON.stringify(dataBudgetSpendRequest.getHlSalesByHlId(id, level)));
     var result = {};
 
     saleRequests.forEach(function (request) {
+        request.AMOUNT = (Number(request.AMOUNT)).toFixed(2);
         if (request.FULL_NAME && request.EMAIL) {
             if (result[request.BUDGET_SPEND_REQUEST_ID]) {
                 result[request.BUDGET_SPEND_REQUEST_ID].otherBudgetApprovers.push({

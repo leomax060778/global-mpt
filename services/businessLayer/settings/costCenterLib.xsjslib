@@ -268,21 +268,26 @@ function updCostCenterEmployeeResponsible(costCenterId, costCenterEmployeeRespon
 }
 
 function delCostCenter(data, userId){
-	var costCenterId = data.in_cost_center_id;
-	if(!costCenterId)
-		throw ErrorLib.getErrors().CustomError("",
-			"costCenterServices/handledelet/delCostCenter",
-			"Cost Center ID is not found");
+	if(!data.COST_CENTER_IDS){
+        data.COST_CENTER_IDS = [data.in_cost_center_id];
+	}
+    data.COST_CENTER_IDS.forEach(function (costCenterId) {
+	// var costCenterId = data.in_cost_center_id;
+		if(!costCenterId)
+			throw ErrorLib.getErrors().CustomError("",
+				"costCenterServices/handledelet/delCostCenter",
+				"Cost Center ID is not found");
 
-	if(costCenterInUse(costCenterId).length)
-		throw ErrorLib.getErrors().CustomError("",
-			"costCenterServices/handledelet/delCostCenter",
-			"Cannot delete this Cost Center. It is in use.");
+		if(costCenterInUse(costCenterId).length)
+			throw ErrorLib.getErrors().CustomError("",
+				"costCenterServices/handledelet/delCostCenter",
+				"Cannot delete this Cost Center. It is in use.");
 
-	delCostCenterTeamsByCostCenterId(costCenterId, userId, 'soft');
-	delCostCenterEmployeeResponsibleByCostCenterId(costCenterId, userId, 'soft');
-
-	return dataCostCenter.delCostCenterById(costCenterId, userId);
+		delCostCenterTeamsByCostCenterId(costCenterId, userId, 'soft');
+		delCostCenterEmployeeResponsibleByCostCenterId(costCenterId, userId, 'soft');
+		dataCostCenter.delCostCenterById(costCenterId, userId);
+    });
+    return true;
 }
 
 function costCenterInUse (costCenterId){

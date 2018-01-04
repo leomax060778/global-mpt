@@ -12,12 +12,18 @@ function processRequest(){
 }
 
 function handleGet(parameters, userSessionID){
-	var type = httpUtil.getUrlParameters().get("TYPE");
+	var type = httpUtil.getUrlParameterByName("TYPE");    
 	var rdo;
 	/*if(!type){
 		rdo = blDetailedReport.getL4DetailedReport();
 	} else {*/
 		switch(type) {
+			case 'FILTERS':
+				rdo = blDetailedReport.getPathHl1Hl2Hl3(httpUtil.getUrlParameterByName("BUDGET_YEAR"), httpUtil.getUrlParameterByName("REGION_ID"));
+				break;
+            case 'DETAILED':
+                rdo = blDetailedReport.getDetailedReport(httpUtil.getUrlParameterByName("HL1_ID"),httpUtil.getUrlParameterByName("HL2_ID"),httpUtil.getUrlParameterByName("HL3_ID"));
+                break;
 			case 'L4':
 				rdo = blDetailedReport.getL4DetailedReport();
 				break;
@@ -25,7 +31,7 @@ function handleGet(parameters, userSessionID){
 				rdo = blDetailedReport.getL5DetailedReport();
 				break;
 			default:
-				throw ErrorLib.getErrors().BadRequest("","reportServices/handleGet","invalid parameter value (should be either L4 or L5)");
+				throw ErrorLib.getErrors().BadRequest("","reportServices/handleGet","invalid parameter value (should be either L4, L5, FILTERS or DETAILED)");
 		}
 	//}
 	

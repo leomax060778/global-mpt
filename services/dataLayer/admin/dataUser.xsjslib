@@ -173,12 +173,12 @@ function updateUser(user, modUser) {
 	return db.executeScalar(spUpdateUser, param, "out_result");
 }
 
-function deleteUser(user, modUser) {
+function deleteUser(userId, modUser) {
 	var param = {};
-	param.in_user_id = user.USER_ID;
+	param.in_user_id = userId;
 	param.in_modified_user_id = modUser; // User that insert.
 
-	return db.executeScalar(spDeleteUser, param, "out_result");
+	return db.executeScalarManual(spDeleteUser, param, "out_result");
 }
 
 function updatePass(userId, pass, passSalt, modUser) {

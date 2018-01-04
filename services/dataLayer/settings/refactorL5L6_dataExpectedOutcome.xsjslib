@@ -63,6 +63,7 @@ var spInsertHl6ExpOutcome = "INS_HL6_EXPECTED_OUTCOMES";
 var spInsertHl6ExpOutcomeDetail = "INS_HL6_EXPECTED_OUTCOMES_DETAIL";
 var spDeleteHl6ExpOutcome = "DEL_HL6_EXPECTED_OUTCOMES_BY_HL6_ID";
 var spDeleteHl6ExpOutcomeDetail = "DEL_HL6_EXPECTED_OUTCOMES_DETAIL_BY_HL6_ID";
+var GET_HL6_ID_BY_HL5_ID = "GET_HL6_ID_BY_HL5_ID";
 /****end L6**************************************************/
 
 
@@ -501,3 +502,11 @@ function deleteHl1ExpectedOutcomesDetail(in_hl1_id, in_user_id){
     return rdo;
 }
 /***************************/
+
+function getHl6Id_byHl5Id(hl5_id){
+    if(hl5_id){
+        var rdo = db.executeProcedure(GET_HL6_ID_BY_HL5_ID, {'in_hl5_id':hl5_id});
+        return db.extractArray(rdo.out_result);
+    }
+    return null;
+}

@@ -131,12 +131,13 @@ function getHl5ByHl4Id(id, userId) {
     var totalAllocated = 0;
     var hl5BudgetRemaining = 0;
     var allHl5 = [];
+    var isSuperAdmin = util.isSuperAdmin(userId);
     if (hl5List.length) {
         hl5List = JSON.parse(JSON.stringify(hl5List));
         hl5List.forEach(function (hl5) {
             hl5.ENABLE_DELETION = Number(hl5.STATUS_ID) !== HL5_STATUS.IN_CRM && Number(hl5.STATUS_ID) !== HL5_STATUS.UPDATE_IN_CRM && Number(hl5.STATUS_ID) !== HL5_STATUS.CREATE_IN_CRM;
             hl5.ENABLE_CHANGE_STATUS = Number(hl5.STATUS_ID) !== HL5_STATUS.IN_CRM && Number(hl5.STATUS_ID) !== HL5_STATUS.UPDATE_IN_CRM && Number(hl5.STATUS_ID) !== HL5_STATUS.CREATE_IN_CRM;
-            hl5.ENABLE_EDIT = util.getEnableEdit(hl5.STATUS_ID, HL5_STATUS, userId);
+            hl5.ENABLE_EDIT = util.getEnableEdit(hl5.STATUS_ID, HL5_STATUS, userId, isSuperAdmin);
         });
         hl5TotalBudget = dataHl4.getHl4ById(id).HL4_FNC_BUDGET_TOTAL_MKT;
         totalAllocated = dataHl5.getHl5TotalBudgetByHl4Id(id);
@@ -260,7 +261,7 @@ function getHl5ByUserId(userId, isMarketingTacticView) {
                         , BUDGET_SPEND_REQUEST_STATUS: hl5List[i].BUDGET_SPEND_REQUEST_STATUS
                         , ENABLE_DELETION: Number(hl5List[i].STATUS_DETAIL_ID) !== HL5_STATUS.CREATE_IN_CRM && Number(hl5List[i].STATUS_DETAIL_ID) !== HL5_STATUS.IN_CRM && Number(hl5List[i].STATUS_DETAIL_ID) !== HL5_STATUS.UPDATE_IN_CRM
                         , ENABLE_CHANGE_STATUS: Number(hl5List[i].STATUS_DETAIL_ID) !== HL5_STATUS.CREATE_IN_CRM && Number(hl5List[i].STATUS_DETAIL_ID) !== HL5_STATUS.IN_CRM && Number(hl5List[i].STATUS_DETAIL_ID) !== HL5_STATUS.UPDATE_IN_CRM
-                        , ENABLE_EDIT: util.getEnableEdit(hl5List[i].STATUS_DETAIL_ID, HL5_STATUS, userId)
+                        , ENABLE_EDIT: util.getEnableEdit(hl5List[i].STATUS_DETAIL_ID, HL5_STATUS, userId, isSuperAdmin)
                         , IN_CRM_CHILD: hl5List[i].IN_CRM_CHILD
                     })
                 }
@@ -281,7 +282,7 @@ function getHl5ByUserId(userId, isMarketingTacticView) {
                     , BUDGET_SPEND_REQUEST_STATUS: hl5List[i].BUDGET_SPEND_REQUEST_STATUS
                     , ENABLE_DELETION: Number(hl5List[i].STATUS_DETAIL_ID) !== HL5_STATUS.CREATE_IN_CRM && Number(hl5List[i].STATUS_DETAIL_ID) !== HL5_STATUS.IN_CRM && Number(hl5List[i].STATUS_DETAIL_ID) !== HL5_STATUS.UPDATE_IN_CRM
                     , ENABLE_CHANGE_STATUS: Number(hl5List[i].STATUS_DETAIL_ID) !== HL5_STATUS.CREATE_IN_CRM && Number(hl5List[i].STATUS_DETAIL_ID) !== HL5_STATUS.IN_CRM && Number(hl5List[i].STATUS_DETAIL_ID) !== HL5_STATUS.UPDATE_IN_CRM
-                    , ENABLE_EDIT: util.getEnableEdit(hl5List[i].STATUS_DETAIL_ID, HL5_STATUS, userId)
+                    , ENABLE_EDIT: util.getEnableEdit(hl5List[i].STATUS_DETAIL_ID, HL5_STATUS, userId, isSuperAdmin)
                     , IN_CRM_CHILD: hl5List[i].IN_CRM_CHILD
                 })
             }
@@ -299,10 +300,11 @@ function getUserById(id) {
 }
 
 function getLevel5ForSearch(budgetYearId, regionId, subRegionId, limit, offset, userSessionID) {
-    var results = dataHl5.getHl5ForSearch(budgetYearId, regionId || 0, subRegionId || 0, limit, offset || 0, userSessionID, util.isSuperAdmin(userSessionID) ? 1 : 0);
+    var isSuperAdmin = util.isSuperAdmin(userSessionID);
+    var results = dataHl5.getHl5ForSearch(budgetYearId, regionId || 0, subRegionId || 0, limit, offset || 0, userSessionID, isSuperAdmin ? 1 : 0);
     results = JSON.parse(JSON.stringify(results));
     results.result.forEach(function (elem) {
-        elem.ENABLE_EDIT = util.getEnableEdit(elem.HL5_STATUS_DETAIL_ID, HL5_STATUS, userSessionID);
+        elem.ENABLE_EDIT = util.getEnableEdit(elem.HL5_STATUS_DETAIL_ID, HL5_STATUS, userSessionID, isSuperAdmin);
     });
     return results;
 }
@@ -1979,8 +1981,14 @@ function crmFieldsHaveChanged(data, isComplete, userId, isNew) {
 
                 if (fieldChanged || oldParentPath != parentPath) {
 
-                    if (oldParentPath != parentPath)
-                        pathBL.updParentPath('hl5', data.hl5.HL5_ID, parentPath, userId);
+                    if (field === "PARENT_PATH") {
+                        if (oldParentPath) {
+                            if (oldParentPath != parentPath)
+                                pathBL.updParentPath('hl5', data.hl5.HL5_ID, parentPath, userId);
+                        } else {
+                            pathBL.insParentPath('hl5', data.hl5.HL5_ID, data.hl5.HL4_ID, userId);
+                        }
+                    }
 
                     var in_hl5_crm_binding_id = l5CrmBindigFields[field] ? l5CrmBindigFields[field].HL5_CRM_BINDING_ID : null;
 

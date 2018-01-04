@@ -140,9 +140,17 @@ function getExpectedOutcomesByParentIdLevel(parentId, level) {
     if (expectedOutcomes && expectedOutcomes.length) {
         expectedOutcomes.forEach(function (eo) {
             var aux = util.extractObject(eo);
-            var expectedOutcomesId = aux[hlExpectedOutcomesIdMap[level.toUpperCase()]];
-            var detail = getExpectedOutcomeDetailByIdMap[level.toUpperCase()](expectedOutcomesId);
+            aux.detail = [];
+            var detail = getExpectedOutcomeDetailByIdMap[level.toUpperCase()](parentId);
+            detail = detail.filter(function (expectedOutcomeDetail) {
+                return expectedOutcomeDetail.EURO_VALUE
+                && expectedOutcomeDetail.VOLUME_VALUE
+                && expectedOutcomeDetail.OUTCOMES_NAME
+                && expectedOutcomeDetail.OUTCOMES_TYPE_NAME;
+            });
+            if(detail.length) {
             aux.detail = addParentKpiDataToDetail(parentId, level, detail);
+            }
             result.push(aux);
         });
 
@@ -324,17 +332,10 @@ function filterKpiByLevel(kpis, level){
     result.COMMENTS = kpis.COMMENTS || '';
     kpis.KPIS.forEach(function (kpi) {
         if(mapEOL[kpi.OUTCOMES_TYPE_ID] && mapEOL[kpi.OUTCOMES_TYPE_ID][kpi.OUTCOMES_ID]) {
-            if(level != 'HL6'){
                 kpi.EURO_VALUE = 0;
                 kpi.VOLUME_VALUE = 0;
-            }
-            result.KPIS.push(kpi);
+            result.KPIS.push(kpi)
         }
-    });
-
-
-    result.KPIS = kpis.KPIS.filter(function (kpi) {
-        return !!mapEOL[kpi.OUTCOMES_TYPE_ID][kpi.OUTCOMES_ID];
     });
 
     return result;

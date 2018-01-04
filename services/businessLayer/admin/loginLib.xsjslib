@@ -159,7 +159,7 @@ function login(username,password){
 	
 	if(rdo.Rol){
 		var rolId = rdo.Rol[0]['ROLE_ID'];
-		rdo.Permissions = rolePermissionLib.getPermissionByRole(rolId);
+        rdo.Permissions = rolePermissionLib.getPermissionByRoleId(rolId);
 	}
 	
 	
