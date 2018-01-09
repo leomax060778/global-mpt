@@ -1,0 +1,43 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_NEWS" (
+    IN in_title nvarchar(255),
+    IN in_description nvarchar(2000),
+    IN in_author_id bigint,
+    IN in_attachment_id bigint,
+    IN in_created_user_id bigint,
+    IN in_status_id bigint,
+    IN in_budget_year_id bigint,
+    IN in_published_date timestamp,
+    IN in_display_created_date timestamp,
+    IN in_content nclob,
+    OUT out_result bigint
+) 
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER 
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	AS
+BEGIN
+    INSERT INTO "MKTG_PLANNING_TOOL"."NEWS"(
+            title,
+            description,
+            author_id,
+            attachment_id,
+            created_user_id,
+            status_id,
+            budget_year_id,
+            published_date,
+            display_created_date,
+            content
+        ) VALUES(
+              in_title,
+              in_description,
+              in_author_id,
+              in_attachment_id,
+              in_created_user_id,
+              in_status_id,
+              in_budget_year_id,
+              in_published_date,
+              in_display_created_date,
+              in_content
+          );
+        SELECT TOP 1 CURRENT_IDENTITY_VALUE() INTO out_result FROM "MKTG_PLANNING_TOOL"."NEWS";
+END;

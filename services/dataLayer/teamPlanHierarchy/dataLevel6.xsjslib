@@ -13,6 +13,9 @@ var spGetHl6TotalBudgetByHl5Id = "GET_ALL_HL6_TOTAL_BUDGET";
 var spGetHl6RemainingBudgetByHl5Id = "GET_ALL_HL6_REMAINING_BUDGET";
 var spGetNewHL6ID = "GET_NEW_HL6_ID";
 var GET_HL6_BY_USER_ID = 'GET_HL6_BY_USER_ID';
+var spMassInsertHl6LogStatus = "INS_MASS_HL6_LOG_STATUS";
+var HL6_MASS_CHANGE_STATUS = "HL6_MASS_CHANGE_STATUS";
+var GET_HL6_FOR_EMAIL = "GET_HL6_FOR_EMAIL";
 
 /********INSERT**********************/
 var spInsHl6CrmBinding = "INS_HL6_CRM_BINDING";
@@ -176,6 +179,14 @@ function getHl6ById(hl6Id, autoCommit) {
     }
     return db.extractArray(rdo.out_result)[0];
 }
+function getHl6ForEmail(ids) {
+    var rdo = db.executeProcedureManual(GET_HL6_FOR_EMAIL, {
+        'in_hl6_ids': ids.map(function (value) {
+            return {id: value.hl6_id}
+        })
+    });
+    return db.extractArray(rdo.out_result);
+}
 
 function getHl6ByAcronym(hl6Acronym,hl5Id, autoCommit) {
     var params = {
@@ -335,6 +346,13 @@ function hl6ChangeStatus(hl6Id,statusId,userId,autoCommit) {
     var rdo = db.executeScalarManual(spHl6ChangeStatus,params,'out_result');
     return rdo;
 }
+function massChangeStatusHl6(hl6Ids, status, userId) {
+    var result = {};
+    var parameters = {"in_hl6_ids": hl6Ids, 'in_status_id': status, 'in_user_id': userId};
+    var list = db.executeProcedureManual(HL6_MASS_CHANGE_STATUS, parameters);
+    result.out_result_hl6 = list.out_result;
+    return result;
+}
 
 
 function insertHl6CRMBinding(data){
@@ -378,6 +396,12 @@ function insertHl6LogStatus(hl6Id,columnName,userId,autoCommit){
     var rdo = db.executeScalarManual(spInsHl6LogStatus,params,'out_hl6_log_status_id');
     return rdo;
 }
+function massInsertHl6LogStatus(hl6_ids, status, userId) {
+    var parameters = {"in_hl6_ids": hl6_ids, 'in_status_id': status, 'in_user_id': userId};
+    var rdo = db.executeScalarManual(spMassInsertHl6LogStatus, parameters, 'out_hl6_log_status_id');
+    return rdo;
+}
+
 
 
 function updateHl6(hl6Id,acronym, hl6CrmDescription,budget, routeToMarket

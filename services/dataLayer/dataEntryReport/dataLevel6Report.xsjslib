@@ -12,6 +12,7 @@ var GET_ALL_HL6_CHANGED_FIELDS = "GET_ALL_HL6_CHANGED_FIELDS";
 var spDelL6ChangedFieldsByHl6Id = "DEL_HL6_CRM_BINDING";
 var GET_HL6_FOR_PROCESSING_REPORT = "GET_HL6_FOR_PROCESSING_REPORT";
 var UPD_PROCESSING_REPORT_EXPORT_DATA = "UPD_PROCESSING_REPORT_EXPORT_DATA";
+var spMassDelL6ChangedFieldsByHl6Id = "DEL_MASS_HL6_CRM_BINDING";
 
 /*********** END LIST OF PROCEDURES ***************/
 
@@ -63,4 +64,12 @@ function deleteL6ChangedFieldsByHl6Id(id){
 		return rdo;
 	}	
 	return null;
+}
+
+function massDeleteL6ChangedFieldsByHl6Id(ids) {
+    if (id) {
+        var rdo = db.executeScalarManual(spMassDelL6ChangedFieldsByHl6Id, {'in_hl6_ids': ids}, 'out_result');
+        return rdo;
+    }
+    return null;
 }

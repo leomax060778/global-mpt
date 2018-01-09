@@ -20,8 +20,9 @@ function parseBudgetSpendReport(reqBody, budgetSpendRequestData, budgetSpendRequ
     body += '<table><tr><th>Field</th><th>Current Value</th></tr>';
     body += '<tr><td>CRM</td><td>' + (budgetSpendRequestData.HL5_PATH || budgetSpendRequestData.HL6_PATH) + '</td></tr>';
 
+    
     if(fromApprover){
-    	body += '<tr><td>CRM Description</td><td>' + budgetSpendRequestData.HL5_CRM_DESCRIPTION || budgetSpendRequestData.HL6_CRM_DESCRIPTION + '</td></tr>';
+    	body += '<tr><td>CRM Description</td><td>' + (budgetSpendRequestData.HL5_CRM_DESCRIPTION || budgetSpendRequestData.HL6_CRM_DESCRIPTION ) + '</td></tr>';
     }
 
     body += '<tr><td>Request Type</td><td>' + budgetSpendRequestData.BUDGET_SPEND_REQUEST_TYPE_DISPLAY_NAME + '</td></tr>';
@@ -38,7 +39,10 @@ function parseBudgetSpendReport(reqBody, budgetSpendRequestData, budgetSpendRequ
 
     if(fromApprover){
         body += '<p>All Budget Spend Request Information:</p>';
+
+        //throw JSON.stringify(budgetSpendRequestList);
         budgetSpendRequestList.forEach(function (budgetSpendRequest){
+
             budgetSpendRequest.CHILDREN.forEach(function(elem){
                 body += '<table><tr><th>Field</th><th>Current Value</th></tr>';
                 body += '<tr><td>CRM</td><td>' + (elem.HL5_PATH || elem.HL6_PATH) + '</td></tr>';

@@ -39,7 +39,7 @@ var util = mapper.getUtil();
 
 var L6_COULDNT_SEND_EMAIL_IN_CRM = "The email could not be sent.";
 
-var sender = config.getMailEnvironment().indexOf('Dev') < 0 ? config.getSMTPAccount() : 'fsavat@folderit.net';
+var sender = config.getMailEnvironment().indexOf('Dev') < 0 ? config.getSMTPAccount() : 'support_planningtool@folderit.net';
 var typeText = "TEXT";
 var typeInline = "INLINE";
 var typeAttachment = "ATTACHMENT";
@@ -315,6 +315,23 @@ function getDefaultTemplate(body) {
     return newPart;
 
 }
+function getDefaultTemplateWithoutEval() {
+    //TODO: add variable mail template id as function parameter
+    var mailTemplateId = currentMailTemplateId;
+    var textHtmlBody = getMailTemplateById(mailTemplateId);
+    var textHtml = "<html><head><meta http-equiv='Content-Type' content='text/html; charset=iso-8859-1'></head>" + textHtmlBody + "</html>";
+    var newPart = new $.net.Mail.Part();
+
+    newPart.type = $.net.Mail.Part.TYPE_TEXT;
+    newPart.text = textHtml;
+    newPart.contentType = "text/html";
+    newPart.alternative = "alternative text";
+    newPart.alternativeContentType = "text/plain";
+    newPart.encoding = "UTF-8";
+
+    return newPart;
+
+}
 
 function sendInCRMMail(hlId, hierarchyLevel) {
     var hlInformation = null;
@@ -322,7 +339,6 @@ function sendInCRMMail(hlId, hierarchyLevel) {
     var mailObj = null;
     var reqBody = {};
     var env = config.getMailEnvironment();
-
 
 
     switch (hierarchyLevel) {
@@ -357,6 +373,43 @@ function sendInCRMMail(hlId, hierarchyLevel) {
         sendMail(mailObject, true);
     } else {
         throw ErrorLib.getErrors().CustomError("", "hl6Services/handlePut/sendInCRMMail", L6_COULDNT_SEND_EMAIL_IN_CRM);
+    }
+}
+
+function massSendInCRMMail(hlIds, hierarchyLevel) {
+    var hlInformation = null;
+    var userData = null;
+    var reqBody = {};
+    var env = config.getMailEnvironment();
+    var defaultTemplate = getDefaultTemplateWithoutEval();
+    var mailObjects;
+
+    switch (hierarchyLevel) {
+        case "hl4":
+            mailObjects = dataHl4.getHl4ForEmail(hlIds);
+            break;
+        case "hl5":
+            mailObjects = dataHl5.getHl5ForEmail(hlIds);
+            break;
+        case "hl6":
+            mailObjects = dataHl6.getHl6ForEmail(hlIds);
+            break;
+    }
+
+    for (var i = 0; i < mailObjects.length; i++) {
+        var mailObj = mailObjects[i];
+        var aux;
+        if (hierarchyLevel === 'hl4') {
+            aux = mailHL4.parseInCRM(mailObj, {"ENVIRONMENT": env}, mailObj.REQUESTER_NAME);
+        } else if (hierarchyLevel === 'hl5') {
+            aux = mailHL5.parseInCRM(mailObj, {"ENVIRONMENT": env}, mailObj.REQUESTER_NAME);
+        } else {
+            aux = mailHL6.parseInCRM(mailObj, {"ENVIRONMENT": env}, mailObj.REQUESTER_NAME);
+        }
+        var mailObject = getJson([{"address": mailObj.EMAIL}], aux.subject, aux.body);
+        defaultTemplate.text = defaultTemplate.text.replace("\"+ body +\"", aux.body);
+        sendMail(mailObject, true, null, defaultTemplate);
+
     }
 }
 
@@ -416,7 +469,7 @@ function sendProcessingReportRequesterMail(data, userId) {
         throw ErrorLib.getErrors().CustomError("", "mailServices/handlePost/sendProcessingReportRequesterMail"
             , "Invalid addressee email.");
 
-    if(!util.validateIsSapEmail(addressee.EMAIL))
+    if (!util.validateIsSapEmail(addressee.EMAIL))
         throw ErrorLib.getErrors().CustomError("", "mailServices/handlePost/sendProcessingReportRequesterMail"
             , "Addressee email must be a SAP email account.");
 
@@ -432,7 +485,7 @@ function sendProcessingReportRequesterMail(data, userId) {
 }
 
 //Send a email
-function sendMail(reqBody, defaultBody, OptionalSender) {
+function sendMail(reqBody, defaultBody, OptionalSender, defaultTemplate) {
     try {
         if (validate(reqBody)) {
 
@@ -471,7 +524,7 @@ function sendMail(reqBody, defaultBody, OptionalSender) {
             }
 
             if (defaultBody) {
-                mail.parts.push(getDefaultTemplate(body));
+                mail.parts.push(defaultTemplate || getDefaultTemplate(body));
             } else {
                 var newPart = new $net.Mail.Part();
                 newPart.type = $.net.Mail.Part.TYPE_TEXT;

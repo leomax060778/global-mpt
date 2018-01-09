@@ -10,7 +10,9 @@ var GET_PROCESSING_REPORT_FOR_DOWNLOAD = "GET_PROCESSING_REPORT_FOR_DOWNLOAD";
 var GET_ALL_HL4_CHANGED_FIELDS = "GET_ALL_HL4_CHANGED_FIELDS";
 var spGetL4ChangedFieldsByHl4Id = "GET_HL4_CHANGED_FIELDS_BY_HL4_ID";
 var spDelL4ChangedFieldsByHl4Id = "DEL_HL4_CRM_BINDING";
+var spMassDelL4ChangedFieldsByHl4Id = "DEL_MASS_HL4_CRM_BINDING";
 var UPD_PROCESSING_REPORT_EXPORT_DATA = "UPD_PROCESSING_REPORT_EXPORT_DATA";
+var UPD_MASS_PROCESSING_REPORT_EXPORT_DATA = "UPD_MASS_PROCESSING_REPORT_EXPORT_DATA";
 
 /*********** END LIST OF PROCEDURES ***************/
 
@@ -58,6 +60,13 @@ function getL4ChangedFieldsByHl4Id(id) {
 function deleteL4ChangedFieldsByHl4Id(id) {
     if (id) {
         var rdo = db.executeScalarManual(spDelL4ChangedFieldsByHl4Id, {'in_hl4_id': id}, 'out_result');
+        return rdo;
+    }
+    return null;
+}
+function massDeleteL4ChangedFieldsByHl4Id(ids) {
+    if (id) {
+        var rdo = db.executeScalarManual(spMassDelL4ChangedFieldsByHl4Id, {'in_hl4_ids': ids}, 'out_result');
         return rdo;
     }
     return null;

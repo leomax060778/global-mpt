@@ -41,6 +41,15 @@ var getExpectedOutcomeDetailByIdMap = {
     HL4: dataExpectedOutcome.getHl3ExpectedOutcomeDetailById
 };
 
+var getExpectedOutcomeDetailMap = {
+    HL1: dataExpectedOutcome.getHL1ExpectedOutcomeDetailById,
+    HL2: dataExpectedOutcome.getHl2ExpectedOutcomeDetailById,
+    HL3: dataExpectedOutcome.getHl3ExpectedOutcomeDetailById,
+    HL4: dataExpectedOutcome.getHl4ExpectedOutcomeDetailById,
+    HL5: dataExpectedOutcome.getHl5ExpectedOutcomeDetailById,
+    HL6: dataExpectedOutcome.getHl6ExpectedOutcomeDetailById
+};
+
 var hlExpectedOutcomesIdMap = {
     HL1: 'HL1_EXPECTED_OUTCOMES_ID',
     HL2: 'HL1_EXPECTED_OUTCOMES_ID',//'HL2_EXPECTED_OUTCOMES_ID',
@@ -135,9 +144,9 @@ function getExpectedOutcomesByParentIdLevel(parentId, level) {
             var detail = getExpectedOutcomeDetailByIdMap[level.toUpperCase()](parentId);
             detail = detail.filter(function (expectedOutcomeDetail) {
                 return expectedOutcomeDetail.EURO_VALUE
-                && expectedOutcomeDetail.VOLUME_VALUE
-                && expectedOutcomeDetail.OUTCOMES_NAME
-                && expectedOutcomeDetail.OUTCOMES_TYPE_NAME;
+                    && expectedOutcomeDetail.VOLUME_VALUE
+                    && expectedOutcomeDetail.OUTCOMES_NAME
+                    && expectedOutcomeDetail.OUTCOMES_TYPE_NAME;
             });
             if(detail.length) {
                 aux.detail = addParentKpiDataToDetail(parentId, level, detail);
@@ -152,7 +161,8 @@ function getExpectedOutcomesByParentIdLevel(parentId, level) {
 }
 
 function getExpectedOutcomesByHL1Id(hl1_id, fromGrid) {
-    var result = {COMMENTS: '', KPIS: []};
+    return getExpectedOutcomesByHlIdParentId(hl1_id, null, 'HL1', 'HL2', fromGrid);
+    /*var result = {COMMENTS: '', KPIS: []};
     var expectedOutcomes = dataExpectedOutcome.getHL1ExpectedOutcomeDetailById(hl1_id);
     if (expectedOutcomes && expectedOutcomes.length) {
         expectedOutcomes.forEach(function (elem) {
@@ -164,21 +174,21 @@ function getExpectedOutcomesByHL1Id(hl1_id, fromGrid) {
                     OUTCOMES_NAME: elem.OUTCOMES_NAME,
                     OUTCOMES_ID: elem.OUTCOMES_ID,
                     EURO_VALUE: elem.EURO_VALUE,
-                    VOLUME_VALUE: elem.VOLUME_VALUE,
-                    EXPECTED_OUTCOME_LEVEL_ID: elem.EXPECTED_OUTCOME_LEVEL_ID
+                    VOLUME_VALUE: elem.VOLUME_VALUE
                 })
             }
         });
-        if (result.KPIS.length/* && fromGrid*/) {
+        if (result.KPIS.length) {
             result.KPIS = addParentKpiDataToDetail(hl1_id, 'HL2', result.KPIS, fromGrid);
         }
     }
 
-    return result;
+    return result;*/
 }
 
 function getExpectedOutcomesByHl2Id(hl2_id, hl1_id, fromGrid) {
-    var result = {COMMENTS: '', KPIS: []};
+    return getExpectedOutcomesByHlIdParentId(hl2_id, hl1_id, 'HL2', 'HL3', fromGrid);
+    /*var result = {COMMENTS: '', KPIS: []};
     var expectedOutcomes = dataExpectedOutcome.getHl2ExpectedOutcomeDetailById(hl2_id);
     if (expectedOutcomes && expectedOutcomes.length) {
         expectedOutcomes.forEach(function (elem) {
@@ -190,8 +200,7 @@ function getExpectedOutcomesByHl2Id(hl2_id, hl1_id, fromGrid) {
                     OUTCOMES_NAME: elem.OUTCOMES_NAME,
                     OUTCOMES_ID: elem.OUTCOMES_ID,
                     EURO_VALUE: elem.EURO_VALUE,
-                    VOLUME_VALUE: elem.VOLUME_VALUE,
-                    EXPECTED_OUTCOME_LEVEL_ID: elem.EXPECTED_OUTCOME_LEVEL_ID
+                    VOLUME_VALUE: elem.VOLUME_VALUE
                 })
             }
         });
@@ -203,11 +212,12 @@ function getExpectedOutcomesByHl2Id(hl2_id, hl1_id, fromGrid) {
         }
     }
 
-    return result;
+    return result;*/
 }
 
 function getExpectedOutcomesByHl3Id(hl3_id, hl2_id, fromGrid) {
-    var result = {COMMENTS: '', KPIS: []};
+    return getExpectedOutcomesByHlIdParentId(hl3_id, hl2_id, 'HL3', 'HL4', fromGrid);
+    /*var result = {COMMENTS: '', KPIS: []};
     var expectedOutcomes = dataExpectedOutcome.getHl3ExpectedOutcomeDetailById(hl3_id);
     if (expectedOutcomes && expectedOutcomes.length) {
         expectedOutcomes.forEach(function (elem) {
@@ -219,8 +229,7 @@ function getExpectedOutcomesByHl3Id(hl3_id, hl2_id, fromGrid) {
                     OUTCOMES_NAME: elem.OUTCOMES_NAME,
                     OUTCOMES_ID: elem.OUTCOMES_ID,
                     EURO_VALUE: elem.EURO_VALUE,
-                    VOLUME_VALUE: elem.VOLUME_VALUE,
-                    EXPECTED_OUTCOME_LEVEL_ID: elem.EXPECTED_OUTCOME_LEVEL_ID
+                    VOLUME_VALUE: elem.VOLUME_VALUE
                 })
             }
         });
@@ -232,7 +241,7 @@ function getExpectedOutcomesByHl3Id(hl3_id, hl2_id, fromGrid) {
         }
     }
 
-    return result;
+    return result;*/
 }
 
 function getExpectedOutcomesByHl4Id(hl4_id, hl3_id) {
@@ -256,102 +265,12 @@ function getExpectedOutcomesByHl4Id(hl4_id, hl3_id) {
     return result[0];
 }
 
-function getExpectedOutcomesByHl5Id(hl5_id, hl4_id ) {
-    var expectedOutcomes = dataExpectedOutcome.getExpectedOutcomeByHl5Id(hl5_id);
-    var result = [];
-    if (expectedOutcomes && expectedOutcomes.length) {
-        expectedOutcomes.forEach(function (eo) {
-            var aux = util.extractObject(eo);
-            var detail = dataExpectedOutcome.getHl5ExpectedOutcomeDetailById(aux.HL5_EXPECTED_OUTCOMES_ID);
-            if (!hl4_id) {
-                aux.detail = detail;
-            } else {
-                if (detail.length) {
-                    aux.detail = addParentKpiDataToDetail(hl4_id, 'HL5', detail);
-                } else {
-                    aux.detail = [];
-                    aux.parentValues = getExpectedOutcomeTotalAvailableByHlIdLevelId(hl4_id, 'HL5');
-                }
-            }
-            result.push(aux);
-        });
-    } else {
-        result.push({COMMENT: '', detail: []});
-    }
-
-    //************************************************
-        //Get EO from children
-        var ChildrenId = dataExpectedOutcome.getHl6Id_byHl5Id(hl5_id);
-        var resultHl6 = [];
-        ChildrenId.forEach(function(Hl6){
-            resultHl6.push(getExpectedOutcomesByHl6Id(Hl6.HL6_ID,hl5_id));
-        });
-
-        //take the details from children
-        var detailHl6 = [];
-        resultHl6.forEach(function(eo_hl6){
-            if(eo_hl6.detail && eo_hl6.detail.length){
-                detailHl6.push.apply(detailHl6,eo_hl6.detail);
-            }
-        });
-
-        //SUM each detail that is repeted
-        var detailSum = {};
-        detailHl6.forEach(function(currentDetail){
-            if(!(detailSum[currentDetail.OUTCOMES_TYPE_ID] &&
-                    detailSum[currentDetail.OUTCOMES_TYPE_ID][currentDetail.OUTCOMES_ID])){
-                detailSum[currentDetail.OUTCOMES_TYPE_ID] = detailSum[currentDetail.OUTCOMES_TYPE_ID] || {};
-                detailSum[currentDetail.OUTCOMES_TYPE_ID][currentDetail.OUTCOMES_ID] = {
-                    EURO_VALUE: Number(currentDetail.EURO_VALUE),
-                    VOLUME_VALUE: Number(currentDetail.VOLUME_VALUE),
-                    OUTCOMES_NAME: currentDetail.OUTCOMES_NAME,
-                    OUTCOMES_TYPE_NAME: currentDetail.OUTCOMES_TYPE_NAME,
-                    OUTCOMES_ID: currentDetail.OUTCOMES_ID,
-                    OUTCOMES_TYPE_ID: currentDetail.OUTCOMES_TYPE_ID
-                }
-            }else{
-                detailSum[currentDetail.OUTCOMES_TYPE_ID][currentDetail.OUTCOMES_ID].EURO_VALUE += Number(currentDetail.EURO_VALUE);
-                detailSum[currentDetail.OUTCOMES_TYPE_ID][currentDetail.OUTCOMES_ID].VOLUME_VALUE += Number(currentDetail.VOLUME_VALUE);
-            }
-        });
-        var auxDetail = [];
-
-        //convert in a array
-        Object.keys(detailSum).forEach(function(kSum){
-            Object.keys(detailSum[kSum]).forEach(function(kDetail){
-                auxDetail.push(detailSum[kSum][kDetail]);
-            });
-        });
-        result[0].detailChildren = auxDetail;
-
-    //************************************************
-
-    return result[0];
+function getExpectedOutcomesByHl5Id(hl5_id, hl4_id) {
+    return getExpectedOutcomesByHlIdParentId(hl5_id, hl4_id, 'HL5', 'HL6');
 }
 
 function getExpectedOutcomesByHl6Id(hl6_id, hl5_id) {
-    var expectedOutcomes = dataExpectedOutcome.getExpectedOutcomeByHl6Id(hl6_id);
-    var result = [];
-    if (expectedOutcomes && expectedOutcomes.length) {
-        expectedOutcomes.forEach(function (eo) {
-            var aux = util.extractObject(eo);
-            var detail = dataExpectedOutcome.getHl6ExpectedOutcomeDetailById(aux.HL6_EXPECTED_OUTCOMES_ID);
-            if (!hl5_id) {
-                aux.detail = detail;
-            } else {
-                if (detail.length) {
-                    aux.detail = addParentKpiDataToDetail(hl5_id, 'HL6', detail);
-                } else {
-                    aux.detail = [];
-                    aux.parentValues = getExpectedOutcomeTotalAvailableByHlIdLevelId(hl5_id, 'HL6');
-                }
-            }
-            result.push(aux);
-        });
-    } else {
-        result.push({COMMENT: '', detail: []});
-    }
-    return result[0];
+    return getExpectedOutcomesByHlIdParentId(hl6_id, hl5_id, 'HL6');
 }
 
 function getExpectedOutcomeTotalAvailableByHlIdLevelId(parentId, level, childId) {
@@ -413,11 +332,45 @@ function filterKpiByLevel(kpis, level){
     result.COMMENTS = kpis.COMMENTS || '';
     kpis.KPIS.forEach(function (kpi) {
         if(mapEOL[kpi.OUTCOMES_TYPE_ID] && mapEOL[kpi.OUTCOMES_TYPE_ID][kpi.OUTCOMES_ID]) {
-            kpi.EURO_VALUE = 0;
-            kpi.VOLUME_VALUE = 0;
             result.KPIS.push(kpi)
         }
     });
+
+    return result;
+}
+
+function getExpectedOutcomesByHlIdParentId(hlId, parentId, level, nextLevel, fromGrid){
+    var result = {COMMENTS: '', KPIS: []};
+    var expectedOutcomes = getExpectedOutcomeDetailMap[level.toUpperCase()](hlId);
+    if (expectedOutcomes && expectedOutcomes.length) {
+        expectedOutcomes.forEach(function (elem) {
+            result.COMMENTS = elem.COMMENTS;
+            if(elem.OUTCOMES_TYPE_ID){
+                result.KPIS.push({
+                    OUTCOMES_TYPE_NAME: elem.OUTCOMES_TYPE_NAME,
+                    OUTCOMES_TYPE_ID: elem.OUTCOMES_TYPE_ID,
+                    OUTCOMES_NAME: elem.OUTCOMES_NAME,
+                    OUTCOMES_ID: elem.OUTCOMES_ID,
+                    EURO_VALUE: elem.EURO_VALUE,
+                    VOLUME_VALUE: elem.VOLUME_VALUE,
+                    EXPECTED_OUTCOME_LEVEL_ID: elem.EXPECTED_OUTCOME_LEVEL_ID
+                })
+            }
+        });
+        if(level != 'HL4' && level != 'HL5' && level != 'HL6') {
+            if (result.KPIS.length) {
+                if (parentId)
+                    result.KPIS = fromGrid ? addParentKpiDataToDetail(hlId, nextLevel.toUpperCase(), result.KPIS, fromGrid)
+                        : addParentKpiDataToDetail(parentId, level.toUpperCase(), result.KPIS);
+                else {
+                    result.KPIS = addParentKpiDataToDetail(hlId, nextLevel.toUpperCase(), result.KPIS, fromGrid);
+                }
+
+            } else if (parentId) {
+                result.parentValues = getExpectedOutcomeTotalAvailableByHlIdLevelId(parentId, level.toUpperCase());
+            }
+        }
+    }
 
     return result;
 }

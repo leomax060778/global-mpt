@@ -1,0 +1,14 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::DEL_MASS_HL5_CRM_BINDING" (
+	IN in_hl5_ids table(
+	hl5_id bigint),
+	OUT out_result INTEGER
+)  
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER 
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	AS
+BEGIN
+ 	DELETE FROM "MKTG_PLANNING_TOOL"."HL5_CRM_BINDING" hcb
+	WHERE hcb.hl5_id in (SELECT hl5_id FROM :in_hl5_ids);
+	SELECT ::ROWCOUNT INTO out_result FROM DUMMY;
+END;

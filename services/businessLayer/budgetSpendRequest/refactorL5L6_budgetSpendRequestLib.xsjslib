@@ -178,26 +178,27 @@ function insertSalesBudgetSpendRequest(sales, id, level, conversionValue, userId
                         });
                 }
             });
+            if(sale.OTHER_BUDGET_APPROVERS && sale.OTHER_BUDGET_APPROVERS.length) {
+                sale.OTHER_BUDGET_APPROVERS.forEach(function (otherBudgetApprover) {
+                    if (otherBudgetApprover.EMAIL && otherBudgetApprover.FULL_NAME) {
+                        var budgetApprover = dataBudgetSpendRequest.getOtherBudgetApproverByEmail(otherBudgetApprover.EMAIL);
 
-            sale.OTHER_BUDGET_APPROVERS.forEach(function (otherBudgetApprover) {
-                if (otherBudgetApprover.EMAIL && otherBudgetApprover.FULL_NAME) {
-                    var budgetApprover = dataBudgetSpendRequest.getOtherBudgetApproverByEmail(otherBudgetApprover.EMAIL);
+                        var otherBudgetApproverId = 0;
+                        if (!budgetApprover || !budgetApprover.OTHER_BUDGET_APPROVER_ID)
+                            otherBudgetApproverId = insertOtherBudgetApprover(otherBudgetApprover, userId);
+                        else
+                            otherBudgetApproverId = budgetApprover.OTHER_BUDGET_APPROVER_ID;
 
-                    var otherBudgetApproverId = 0;
-                    if (!budgetApprover || !budgetApprover.OTHER_BUDGET_APPROVER_ID)
-                        otherBudgetApproverId = insertOtherBudgetApprover(otherBudgetApprover, userId);
-                    else
-                        otherBudgetApproverId = budgetApprover.OTHER_BUDGET_APPROVER_ID;
-
-                    arrBudgetSpendRequestOtherBudgetApprover
-                        .push({
-                            in_other_budget_approver_id: otherBudgetApproverId,
-                            in_budget_spend_request_id: budgetSpendRequestId,
-                            in_hash: config.getHash(),
-                            in_user_id: userId
-                        });
-                }
-            });
+                        arrBudgetSpendRequestOtherBudgetApprover
+                            .push({
+                                in_other_budget_approver_id: otherBudgetApproverId,
+                                in_budget_spend_request_id: budgetSpendRequestId,
+                                in_hash: config.getHash(),
+                                in_user_id: userId
+                            });
+                    }
+                });
+            }
 
             arrBudgetSpendRequestMessage
                 .push({
@@ -261,46 +262,19 @@ function updateSalesBudgetSpendRequest(sales, id, level, conversionValue, userId
 
                 var otherBudgetApprovers = [];
                 if (insertMessage) {
-                    sale.OTHER_BUDGET_APPROVERS.forEach(function (otherBudgetApprover) {
-                        if (otherBudgetApprover.FULL_NAME && otherBudgetApprover.EMAIL) {
+                    if(sale.OTHER_BUDGET_APPROVERS && sale.OTHER_BUDGET_APPROVERS.length) {
+                        sale.OTHER_BUDGET_APPROVERS.forEach(function (otherBudgetApprover) {
+                            if (otherBudgetApprover.FULL_NAME && otherBudgetApprover.EMAIL) {
 
-                            var budgetApprover = dataBudgetSpendRequest.getOtherBudgetApproverByEmail(otherBudgetApprover.EMAIL);
+                                var budgetApprover = dataBudgetSpendRequest.getOtherBudgetApproverByEmail(otherBudgetApprover.EMAIL);
 
-                            var otherBudgetApproverId = 0;
-                            if (!budgetApprover || !budgetApprover.OTHER_BUDGET_APPROVER_ID) {
-                                otherBudgetApproverId = insertOtherBudgetApprover(otherBudgetApprover, userId);
-                            }
-                            else {
-                                otherBudgetApproverId = budgetApprover.OTHER_BUDGET_APPROVER_ID;
-                            }
-
-                            arrBudgetSpendRequestOtherBudgetApprover
-                                .push({
-                                    in_other_budget_approver_id: otherBudgetApproverId,
-                                    in_budget_spend_request_id: budgetSpendRequestId,
-                                    in_hash: config.getHash(),
-                                    in_user_id: userId
-                                });
-
-                            otherBudgetApprovers.push({
-                                    in_other_budget_approver_id: otherBudgetApproverId,
-                                    in_budget_spend_request_id: budgetSpendRequestId
+                                var otherBudgetApproverId = 0;
+                                if (!budgetApprover || !budgetApprover.OTHER_BUDGET_APPROVER_ID) {
+                                    otherBudgetApproverId = insertOtherBudgetApprover(otherBudgetApprover, userId);
                                 }
-                            );
-                        }
-                    });
-                }
-                else {
-                    var otherBudgetApproversEmail = dataBudgetSpendRequest.getOtherBudgetApproversByBudgetSpendRequestId(budgetSpendRequestId);
-
-                    sale.OTHER_BUDGET_APPROVERS.forEach(function (otherBudgetApprover) {
-                        if (otherBudgetApprover.FULL_NAME && otherBudgetApprover.EMAIL) {
-                            var ba = otherBudgetApproversEmail.filter(function (elem) {
-                                return elem.EMAIL == otherBudgetApprover.EMAIL;
-                            });
-
-                            if (!ba.length) {
-                                var otherBudgetApproverId = insertOtherBudgetApprover(otherBudgetApprover, userId);
+                                else {
+                                    otherBudgetApproverId = budgetApprover.OTHER_BUDGET_APPROVER_ID;
+                                }
 
                                 arrBudgetSpendRequestOtherBudgetApprover
                                     .push({
@@ -316,8 +290,38 @@ function updateSalesBudgetSpendRequest(sales, id, level, conversionValue, userId
                                     }
                                 );
                             }
-                        }
-                    });
+                        });
+                    }
+                }
+                else {
+                    var otherBudgetApproversEmail = dataBudgetSpendRequest.getOtherBudgetApproversByBudgetSpendRequestId(budgetSpendRequestId);
+                    if(sale.OTHER_BUDGET_APPROVERS && sale.OTHER_BUDGET_APPROVERS.length) {
+                        sale.OTHER_BUDGET_APPROVERS.forEach(function (otherBudgetApprover) {
+                            if (otherBudgetApprover.FULL_NAME && otherBudgetApprover.EMAIL) {
+                                var ba = otherBudgetApproversEmail.filter(function (elem) {
+                                    return elem.EMAIL == otherBudgetApprover.EMAIL;
+                                });
+
+                                if (!ba.length) {
+                                    var otherBudgetApproverId = insertOtherBudgetApprover(otherBudgetApprover, userId);
+
+                                    arrBudgetSpendRequestOtherBudgetApprover
+                                        .push({
+                                            in_other_budget_approver_id: otherBudgetApproverId,
+                                            in_budget_spend_request_id: budgetSpendRequestId,
+                                            in_hash: config.getHash(),
+                                            in_user_id: userId
+                                        });
+
+                                    otherBudgetApprovers.push({
+                                            in_other_budget_approver_id: otherBudgetApproverId,
+                                            in_budget_spend_request_id: budgetSpendRequestId
+                                        }
+                                    );
+                                }
+                            }
+                        });
+                    }
                 }
 
 

@@ -16,6 +16,9 @@ var spGetHl5TotalBudgetByHl4Id = "GET_ALL_HL5_TOTAL_BUDGET";
 var spGetHl5RemainingBudgetByHl4Id = "GET_ALL_HL5_REMAINING_BUDGET";
 var spExistsInCrm = "HL5_EXISTS_IN_CRM";
 var spGetHl5MyBudgetByHl5Id = "GET_HL5_BUDGET_BY_ID";
+var spMassInsertHl5LogStatus = "INS_MASS_HL5_LOG_STATUS";
+var HL5_MASS_CHANGE_STATUS = "HL5_MASS_CHANGE_STATUS";
+var GET_HL5_FOR_EMAIL = "GET_HL5_FOR_EMAIL";
 var spGetHl5SalesByHl5Id = "GET_HL5_SALES_BY_ID";
 var spGetHl5AllocatedBudget = "GET_HL5_ALLOCATED_BUDGET";
 var spGetHl5Category = "GET_HL5_CATEGORY";
@@ -149,6 +152,14 @@ function getHl5ById(id){
 	}
 	return null;
 }
+function getHl5ForEmail(ids) {
+    var rdo = db.executeProcedureManual(GET_HL5_FOR_EMAIL, {
+        'in_hl5_ids': ids.map(function (value) {
+            return {id: value.hl5_id}
+        })
+    });
+    return db.extractArray(rdo.out_result);
+}
 
 function getHl5ByAcronym(acronyn, in_hl4_id){
 	if(acronyn != ""){
@@ -269,6 +280,12 @@ function insertHl5LogStatus(hl5Id,columnName,userId,autoCommit){
 	}
 	return rdo;
 }
+function massInsertHl5LogStatus(hl5_ids, status, userId) {
+    var parameters = {"in_hl5_ids": hl5_ids, 'in_status_id': status, 'in_user_id': userId};
+    var rdo = db.executeScalarManual(spMassInsertHl5LogStatus, parameters, 'out_hl5_log_status_id');
+    return rdo;
+}
+
 
 function insertHl5CategoryOption(hl5CategoryId,optionId,amount,createdUserId, updated, autoCommit){
 	var params = {
@@ -435,6 +452,13 @@ function changeStatusHl5(hl5Id, statusId,userId, autoCommit){
 	return rdo;
 }
 
+function massChangeStatusHl5(hl5Ids, status, userId) {
+    var result = {};
+    var parameters = {"in_hl5_ids": hl5Ids, 'in_status_id': status, 'in_user_id': userId};
+    var list = db.executeProcedureManual(HL5_MASS_CHANGE_STATUS, parameters);
+    result.out_result_hl5 = list.out_result;
+    return result;
+}
 //autoCommit = false then executeScalarManual else executeScalar.
 function updHl5ChangedFields(data, autoCommit){
 	/*var params = {

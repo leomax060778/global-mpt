@@ -30,6 +30,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::UPD_SEGMENTATION
     IN in_exclude_contacs_touched_by_telemarketing INTEGER,
     IN in_apply_sale_play_for_target TINYINT,
     IN in_apply_predictive_analytics_for_target TINYINT,
+    IN in_accept_terms_state TINYINT,
 	IN in_user_id bigint,
 	in in_summary nvarchar(255),
 	OUT out_result BIGINT
@@ -69,6 +70,7 @@ BEGIN
        EXCLUDE_CONTACS_TOUCHED_BY_TELEMARKETING = in_exclude_contacs_touched_by_telemarketing,
        APPLY_SALE_PLAY_FOR_TARGET = in_apply_sale_play_for_target,
        APPLY_PREDICTIVE_ANALYTICS_FOR_TARGET = in_apply_predictive_analytics_for_target,
+       ACCEPT_TERMS_STATE = in_accept_terms_state,
        MODIFIED_USER_ID = in_user_id,
        MODIFIED_DATE_TZ = CURRENT_TIMESTAMP,
        SUMMARY = in_summary

@@ -173,9 +173,9 @@ function updateUser(user, modUser) {
 	return db.executeScalar(spUpdateUser, param, "out_result");
 }
 
-function deleteUser(userId, modUser) {
+function deleteUser(userTable, modUser) {
 	var param = {};
-	param.in_user_id = userId;
+	param.userTable = userTable;
 	param.in_modified_user_id = modUser; // User that insert.
 
 	return db.executeScalarManual(spDeleteUser, param, "out_result");

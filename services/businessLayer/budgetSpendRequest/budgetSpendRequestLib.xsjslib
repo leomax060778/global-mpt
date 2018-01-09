@@ -151,63 +151,64 @@ function insertSalesBudgetSpendRequest(sales, id, level, conversionValue, userId
     });
 
     // look for SALES ID
-    var hlSales = dataBudgetSpendRequest
-        .getSalesByHlIdOrganizationIdOrganizationType(arrSaleHl, level);
+    var hlSales = dataBudgetSpendRequest.getSalesByHlIdOrganizationIdOrganizationType(arrSaleHl, level);
 
     arrSaleHl = [];
     var arrBudgetSpendRequestMessage = [];
 
     sales.forEach(function (sale) {
-            if (Number(sale.AMOUNT) && sale.MESSAGE) {
-                var budgetSpendRequestId = dataBudgetSpendRequest
-                    .insertBudgetSpendRequest(
-                        Number(sale.AMOUNT) / conversionValue,
-                        id,
-                        level,
-                        sale.MESSAGE,
-                        BUDGET_SPEND_REQUEST_TYPE['CO_FUNDING_INTERNAL'],
-                        BUDGET_SPEND_REQUEST_STATUS['PENDING'],
-                        userId);
-                hlSales
-                    .forEach(function (hlSale) {
-                        if (hlSale.ORGANIZATION_TYPE_ID == ORGANIZATION_TYPE[sale.ORGANIZATION_TYPE]
-                            && hlSale.ORGANIZATION_ID == sale.ORGANIZATION_ID) {
-                            arrSaleHl.push({
-                                    in_hl_sale_id: hlSale.HL_SALES_ID,
-                                    in_budget_spend_request_id: budgetSpendRequestId,
-                                    in_user_id: userId
-                                });
-                        }
-                    });
-
-                sale.otherBudgetApprovers.forEach(function (otherBudgetApprover) {
-
-                    var budgetApprover = dataBudgetSpendRequest.getOtherBudgetApproverByEmail(otherBudgetApprover.EMAIL);
-
-                    var otherBudgetApproverId = 0;
-                    if (!budgetApprover || !budgetApprover.OTHER_BUDGET_APPROVER_ID)
-                        otherBudgetApproverId = insertOtherBudgetApprover(otherBudgetApprover, userId);
-                    else
-                        otherBudgetApproverId = budgetApprover.OTHER_BUDGET_APPROVER_ID;
-
-                    arrBudgetSpendRequestOtherBudgetApprover
+        if (Number(sale.AMOUNT) && sale.MESSAGE) {
+            var budgetSpendRequestId = dataBudgetSpendRequest
+                .insertBudgetSpendRequest(
+                    Number(sale.AMOUNT) / conversionValue,
+                    id,
+                    level,
+                    sale.MESSAGE,
+                    BUDGET_SPEND_REQUEST_TYPE['CO_FUNDING_INTERNAL'],
+                    BUDGET_SPEND_REQUEST_STATUS['PENDING'],
+                    userId);
+            hlSales.forEach(function (hlSale) {
+                if (hlSale.ORGANIZATION_TYPE_ID == ORGANIZATION_TYPE[sale.ORGANIZATION_TYPE]
+                    && hlSale.ORGANIZATION_ID == sale.ORGANIZATION_ID) {
+                    arrSaleHl
                         .push({
-                            in_other_budget_approver_id: otherBudgetApproverId,
+                            in_hl_sale_id: hlSale.HL_SALES_ID,
                             in_budget_spend_request_id: budgetSpendRequestId,
-                            in_hash: config.getHash(),
                             in_user_id: userId
                         });
-                });
+                }
+            });
+            if(sale.OTHER_BUDGET_APPROVERS && sale.OTHER_BUDGET_APPROVERS.length) {
+                sale.OTHER_BUDGET_APPROVERS.forEach(function (otherBudgetApprover) {
+                    if (otherBudgetApprover.EMAIL && otherBudgetApprover.FULL_NAME) {
+                        var budgetApprover = dataBudgetSpendRequest.getOtherBudgetApproverByEmail(otherBudgetApprover.EMAIL);
 
-                arrBudgetSpendRequestMessage
-                    .push({
-                        in_budget_spend_request_id: budgetSpendRequestId,
-                        in_message: sale.MESSAGE,
-                        in_budget_spend_request_origin_id: BUDGET_SPEND_REQUEST_ORIGIN.BUDGET_REQUESTOR,
-                        in_user_id: userId
-                    });
+                        var otherBudgetApproverId = 0;
+                        if (!budgetApprover || !budgetApprover.OTHER_BUDGET_APPROVER_ID)
+                            otherBudgetApproverId = insertOtherBudgetApprover(otherBudgetApprover, userId);
+                        else
+                            otherBudgetApproverId = budgetApprover.OTHER_BUDGET_APPROVER_ID;
+
+                        arrBudgetSpendRequestOtherBudgetApprover
+                            .push({
+                                in_other_budget_approver_id: otherBudgetApproverId,
+                                in_budget_spend_request_id: budgetSpendRequestId,
+                                in_hash: config.getHash(),
+                                in_user_id: userId
+                            });
+                    }
+                });
             }
-        });
+
+            arrBudgetSpendRequestMessage
+                .push({
+                    in_budget_spend_request_id: budgetSpendRequestId,
+                    in_message: sale.MESSAGE,
+                    in_budget_spend_request_origin_id: BUDGET_SPEND_REQUEST_ORIGIN.BUDGET_REQUESTOR,
+                    in_user_id: userId
+                });
+        }
+    });
     if (arrBudgetSpendRequestMessage.length)
         dataBudgetSpendRequest.insertBudgetSpendRequestMessage(arrBudgetSpendRequestMessage);
 
@@ -221,11 +222,7 @@ function insertSalesBudgetSpendRequest(sales, id, level, conversionValue, userId
 
     return null;
 }
-function setOwnMoneyBudgetSpendRequestNoLongerNeededByHlIdLevel(hlId, level, amount, userId) {
-    return dataBudgetSpendRequest.updateBudgetSpendRequestByHlIdLevelType(hlId,
-        HIERARCHY_LEVEL[level], amount, BUDGET_SPEND_REQUEST_TYPE.OWN_MONEY
-        ,BUDGET_SPEND_REQUEST_STATUS['NO_LONGER_REQUESTED'], userId);
-}
+
 function updateSalesBudgetSpendRequest(sales, id, level, conversionValue, userId) {
     var arrBudgetSpendRequestToUpdate = [];
     var arrBudgetSpendRequestMessageToInsert = [];
@@ -261,54 +258,23 @@ function updateSalesBudgetSpendRequest(sales, id, level, conversionValue, userId
                         in_message: sale.MESSAGE,
                         in_user_id: userId
                     });
-
-                    // dataBudgetSpendRequest.deleteHardBudgetSpendRequestOtherBudgetApproverByBudgetSpendRequestId(budgetSpendRequestId);
                 }
 
                 var otherBudgetApprovers = [];
                 if (insertMessage) {
-                    sale.otherBudgetApprovers.forEach(function (otherBudgetApprover) {
-                        if (otherBudgetApprover.FULL_NAME && otherBudgetApprover.EMAIL) {
+                    if(sale.OTHER_BUDGET_APPROVERS && sale.OTHER_BUDGET_APPROVERS.length) {
+                        sale.OTHER_BUDGET_APPROVERS.forEach(function (otherBudgetApprover) {
+                            if (otherBudgetApprover.FULL_NAME && otherBudgetApprover.EMAIL) {
 
-                            var budgetApprover = dataBudgetSpendRequest.getOtherBudgetApproverByEmail(otherBudgetApprover.EMAIL);
+                                var budgetApprover = dataBudgetSpendRequest.getOtherBudgetApproverByEmail(otherBudgetApprover.EMAIL);
 
-                            var otherBudgetApproverId = 0;
-                            if (!budgetApprover || !budgetApprover.OTHER_BUDGET_APPROVER_ID) {
-                                otherBudgetApproverId = insertOtherBudgetApprover(otherBudgetApprover, userId);
-                            }
-                            else {
-                                otherBudgetApproverId = budgetApprover.OTHER_BUDGET_APPROVER_ID;
-                            }
-
-                            arrBudgetSpendRequestOtherBudgetApprover
-                                .push({
-                                    in_other_budget_approver_id: otherBudgetApproverId,
-                                    in_budget_spend_request_id: budgetSpendRequestId,
-                                    in_hash: config.getHash(),
-                                    in_user_id: userId
-                                });
-
-                            otherBudgetApprovers.push({
-                                    in_other_budget_approver_id: otherBudgetApproverId,
-                                    in_budget_spend_request_id: budgetSpendRequestId
+                                var otherBudgetApproverId = 0;
+                                if (!budgetApprover || !budgetApprover.OTHER_BUDGET_APPROVER_ID) {
+                                    otherBudgetApproverId = insertOtherBudgetApprover(otherBudgetApprover, userId);
                                 }
-                            );
-                        }
-                    });
-                }
-                else {
-                    var otherBudgetApproversEmail = dataBudgetSpendRequest.getOtherBudgetApproversByBudgetSpendRequestId(budgetSpendRequestId);
-
-
-                    sale.otherBudgetApprovers.forEach(function (otherBudgetApprover) {
-                        if (otherBudgetApprover.FULL_NAME && otherBudgetApprover.EMAIL) {
-
-                            var ba = otherBudgetApproversEmail.filter(function (elem) {
-                                return elem.EMAIL == otherBudgetApprover.EMAIL;
-                            });
-
-                            if (!ba.length) {
-                                var otherBudgetApproverId = insertOtherBudgetApprover(otherBudgetApprover, userId);
+                                else {
+                                    otherBudgetApproverId = budgetApprover.OTHER_BUDGET_APPROVER_ID;
+                                }
 
                                 arrBudgetSpendRequestOtherBudgetApprover
                                     .push({
@@ -324,8 +290,38 @@ function updateSalesBudgetSpendRequest(sales, id, level, conversionValue, userId
                                     }
                                 );
                             }
-                        }
-                    });
+                        });
+                    }
+                }
+                else {
+                    var otherBudgetApproversEmail = dataBudgetSpendRequest.getOtherBudgetApproversByBudgetSpendRequestId(budgetSpendRequestId);
+                    if(sale.OTHER_BUDGET_APPROVERS && sale.OTHER_BUDGET_APPROVERS.length) {
+                        sale.OTHER_BUDGET_APPROVERS.forEach(function (otherBudgetApprover) {
+                            if (otherBudgetApprover.FULL_NAME && otherBudgetApprover.EMAIL) {
+                                var ba = otherBudgetApproversEmail.filter(function (elem) {
+                                    return elem.EMAIL == otherBudgetApprover.EMAIL;
+                                });
+
+                                if (!ba.length) {
+                                    var otherBudgetApproverId = insertOtherBudgetApprover(otherBudgetApprover, userId);
+
+                                    arrBudgetSpendRequestOtherBudgetApprover
+                                        .push({
+                                            in_other_budget_approver_id: otherBudgetApproverId,
+                                            in_budget_spend_request_id: budgetSpendRequestId,
+                                            in_hash: config.getHash(),
+                                            in_user_id: userId
+                                        });
+
+                                    otherBudgetApprovers.push({
+                                            in_other_budget_approver_id: otherBudgetApproverId,
+                                            in_budget_spend_request_id: budgetSpendRequestId
+                                        }
+                                    );
+                                }
+                            }
+                        });
+                    }
                 }
 
 
@@ -371,7 +367,7 @@ function updateSalesBudgetSpendRequest(sales, id, level, conversionValue, userId
 function insertPartnerBudgetSpendRequest(value, message, id, level, conversionValue, userId) {
     var arrBudgetSpendRequestMessage = [];
     var budgetSpendRequestId = dataBudgetSpendRequest.insertBudgetSpendRequest(
-        value / conversionValue, id, level, message,
+        value / conversionValue, id, level, message || '',
         BUDGET_SPEND_REQUEST_TYPE['CO_FUNDING_EXTERNAL'],
         BUDGET_SPEND_REQUEST_STATUS['PENDING'], userId);
 
@@ -395,20 +391,22 @@ function updateBudgetSpendRequest(budgetSpendRequest, userId, externalCall) {
 
     if (externalCall) {
         var arrBudgetSpendRequestMessageToUpdate = [];
-        budgetSpendRequest.forEach(function (request) {
-            if (request.in_message && request.in_message.trim()) {
-                arrBudgetSpendRequestMessageToUpdate
-                    .push({
-                        in_budget_spend_request_id: request.in_budget_spend_request_id,
-                        in_message: request.in_message,
-                        in_budget_spend_request_origin_id: BUDGET_SPEND_REQUEST_ORIGIN.BUDGET_REQUESTOR,
-                        in_user_id: userId
-                    });
-            }
-        });
+        budgetSpendRequest
+            .forEach(function (request) {
+                if (request.in_message && request.in_message.trim()) {
+                    arrBudgetSpendRequestMessageToUpdate
+                        .push({
+                            in_budget_spend_request_id: request.in_budget_spend_request_id,
+                            in_message: request.in_message,
+                            in_budget_spend_request_origin_id: BUDGET_SPEND_REQUEST_ORIGIN.BUDGET_REQUESTOR,
+                            in_user_id: userId
+                        });
+                }
+            });
 
         if (arrBudgetSpendRequestMessageToUpdate.length)
-            dataBudgetSpendRequest.updateBudgetSpendRequestMessage(arrBudgetSpendRequestMessageToUpdate);
+            dataBudgetSpendRequest
+                .updateBudgetSpendRequestMessage(arrBudgetSpendRequestMessageToUpdate);
     }
 
     return dataBudgetSpendRequest.updateBudgetSpendRequest(budgetSpendRequest);
@@ -538,6 +536,12 @@ function updateOwnMoneyBudgetSpendRequestByHlIdLevel(hlId, level, amount, budget
             : BUDGET_SPEND_REQUEST_STATUS['PENDING'], userId);
 }
 
+function setOwnMoneyBudgetSpendRequestNoLongerNeededByHlIdLevel(hlId, level, amount, userId) {
+    return dataBudgetSpendRequest.updateBudgetSpendRequestByHlIdLevelType(hlId,
+        HIERARCHY_LEVEL[level], amount, BUDGET_SPEND_REQUEST_TYPE.OWN_MONEY
+        ,BUDGET_SPEND_REQUEST_STATUS['NO_LONGER_REQUESTED'], userId);
+}
+
 function countPendingBudgetRequestByHl5Id(hl5Id) {
     if (!hl5Id)
         throw ErrorLib
@@ -610,8 +614,8 @@ function countApprovedBudgetRequestByHl6Id(hl6Id) {
     }
 }
 
-function setBudgetSpendRequestStatusNoLongerRequested(hlId, level, userId) {
-    return setBudgetSpendRequestStatus(hlId, level, userId, BUDGET_SPEND_REQUEST_STATUS.NO_LONGER_REQUESTED);
+function setBudgetSpendRequestStatusNoLongerRequested(hlId, level, userId, preserveOwnMoney) {
+    return setBudgetSpendRequestStatus(hlId, level, userId, BUDGET_SPEND_REQUEST_STATUS.NO_LONGER_REQUESTED, preserveOwnMoney);
 }
 
 function disableCoFundedBudgetSpendRequests(hlId, level, userId) {
@@ -671,19 +675,19 @@ function getHlSalesByHlId(id, level) {
     var result = {};
 
     saleRequests.forEach(function (request) {
-        request.AMOUNT = (Number(request.AMOUNT)).toFixed(2);
+        request.AMOUNT = Number(request.AMOUNT).toFixed(2);
         if (request.FULL_NAME && request.EMAIL) {
             if (result[request.BUDGET_SPEND_REQUEST_ID]) {
-                result[request.BUDGET_SPEND_REQUEST_ID].otherBudgetApprovers.push({
-                    full_name: request.FULL_NAME,
-                    email: request.EMAIL
+                result[request.BUDGET_SPEND_REQUEST_ID].OTHER_BUDGET_APPROVERS.push({
+                    FULL_NAME: request.FULL_NAME,
+                    EMAIL: request.EMAIL
                 });
             } else {
                 result[request.BUDGET_SPEND_REQUEST_ID] = JSON.parse(JSON.stringify(request));
-                result[request.BUDGET_SPEND_REQUEST_ID].otherBudgetApprovers = [{
-                    full_name: request.FULL_NAME,
-                    email: request.EMAIL,
-                    other_budget_approver_id: request.OTHER_BUDGET_APPROVER_ID
+                result[request.BUDGET_SPEND_REQUEST_ID].OTHER_BUDGET_APPROVERS = [{
+                    FULL_NAME: request.FULL_NAME,
+                    EMAIL: request.EMAIL,
+                    OTHER_BUDGET_APPROVER_ID: request.OTHER_BUDGET_APPROVER_ID
                 }];
             }
         } else {

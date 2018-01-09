@@ -364,22 +364,15 @@ function updateUser(user, updateUser) {
 }
 
 function deleteUser(data, deleteUser) {
-    if(!data.USERS_IDS){
-        data.USERS_IDS = [data.USER_ID];
+    if(!data.USER_IDS){
+        data.USER_IDS = [data.USER_ID];
     }
 
-    data.USERS_IDS.forEach(function (userId) {
-        if (!userId)
-            throw ErrorLib.getErrors().CustomError("",
-                "userServices/handlePost/insertUser",
-                "The USER_ID is not found");
-
-        if (!util.validateIsNumber(userId))
-            throw ErrorLib.getErrors().CustomError("",
-                "userServices/handlePost/insertUser", "The USER_ID is invalid");
-
-        dbUser.deleteUser(userId, deleteUser);
+    var users = data.USER_IDS.map(function (userId) {
+        return {'in_user_id' : userId}
     });
+
+    dbUser.deleteUser(users, deleteUser);
 
     return true;
 }

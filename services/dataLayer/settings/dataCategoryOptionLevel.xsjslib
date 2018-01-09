@@ -248,3 +248,30 @@ function resetHl4CategoryOptionUpdated(id, level, userId){
 	var rdo = db.executeScalarManual(storedProcedure, parameters, 'out_result');
 	return rdo;
 }
+function massResetHl4CategoryOptionUpdated(ids, level, userId){
+	var parameters = {
+		'in_ids': ids.map(function (value) { return {id: value.hl4_id } }),
+		'in_user_id': userId
+	};
+	var storedProcedure = "MASS_RESET_"+ level.toUpperCase() +"_CATEGORY_OPTION_UPDATED";
+	var rdo = db.executeScalarManual(storedProcedure, parameters, 'out_result');
+	return rdo;
+}
+function massResetHl5CategoryOptionUpdated(ids, level, userId){
+	var parameters = {
+		'in_ids': ids.map(function (value) { return {id: value.hl5_id} }),
+		'in_user_id': userId
+	};
+	var storedProcedure = "MASS_RESET_"+ level.toUpperCase() +"_CATEGORY_OPTION_UPDATED";
+	var rdo = db.executeScalarManual(storedProcedure, parameters, 'out_result');
+	return rdo;
+}
+function massResetHl6CategoryOptionUpdated(ids, level, userId){
+	var parameters = {
+		'in_ids': ids.map(function (value) { return {id: value.hl6_id} }),
+		'in_user_id': userId
+	};
+	var storedProcedure = "MASS_RESET_"+ level.toUpperCase() +"_CATEGORY_OPTION_UPDATED";
+	var rdo = db.executeScalarManual(storedProcedure, parameters, 'out_result');
+	return rdo;
+}
