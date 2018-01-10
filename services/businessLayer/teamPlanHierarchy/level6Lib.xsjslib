@@ -683,9 +683,12 @@ function deleteHl6(hl6, userId, rollBack) {
     }
 
     var userRoleId = Number(dbUserRole.getUserRoleByUserId(userId)[0].ROLE_ID);
+    //FIXME: this needs to be removed with the new implementation for permissions
+    /*
     if (!rollBack && userRoleId !== 1 && userRoleId !== 2) {
         throw ErrorLib.getErrors().CustomError("", "", L6_MSG_NO_PRIVILEGE);
     }
+    */
 
     var hl6StatusId = !rollBack ? Number(dataHl6.getHl6StatusByHl6Id(hl6Id).HL6_STATUS_DETAIL_ID) : 0;
 
@@ -1935,7 +1938,7 @@ function clone(cloneHl6Id, userId){
     data.STATUS_DETAIL_ID = HL6_STATUS.IN_PROGRESS;
     var acronym = getNewHl6Id(data.HL5_ID);
     data.CREATED_USER_ID = userId;
-    data.CRM_DESCRIPTION = ' ';
+    data.CRM_DESCRIPTION = 'Copy';
     data.BUDGET = 0;
     data.ALLOW_BUDGET_ZERO = 0;
     data.CO_FUNDED = 0;

@@ -81,8 +81,8 @@ ALTER TABLE "MKTG_PLANNING_TOOL"."READ_NEWS" ADD FOREIGN KEY ( "NEWS_ID" ) REFER
 --***************************************************************************************
 -- Create resource for News Flash and News Manager
 
-INSERT INTO "MKTG_PLANNING_TOOL"."RESOURCE"(NAME,CREATED_USER_ID,OBJECT_NAME)VALUES('News Viewer',1,'newsViewer');
-INSERT INTO "MKTG_PLANNING_TOOL"."RESOURCE"(NAME,CREATED_USER_ID,OBJECT_NAME)VALUES('News Manager',1,'newsManager');
+INSERT INTO "MKTG_PLANNING_TOOL"."RESOURCE"(RESOURCE_ID, NAME,CREATED_USER_ID,OBJECT_NAME)VALUES(17, 'News Viewer',1,'newsViewer');
+INSERT INTO "MKTG_PLANNING_TOOL"."RESOURCE"(RESOURCE_ID, NAME,CREATED_USER_ID,OBJECT_NAME)VALUES(18, 'News Manager',1,'newsManager');
 
 --***************************************************************************************
 -- Add permissions for SuperAdmin
