@@ -57,14 +57,21 @@ function parser(partners, currencyValueAux) {
     par.forEach(function (partner) {
         var obj = {};
         Object.keys(partner).forEach(function (key) {
-            obj[key] = key == "VALUE" ? (Number(partner.VALUE) * (currencyValueAux || 1)).toFixed(2) : partner[key];
+            if(key == "VALUE"){
+                obj.AMOUNT = (Number(partner.VALUE) * (currencyValueAux || 1)).toFixed(2);
+            } else {
+                obj[key] = partner[key];
+            }
+
+            // obj[key] = key == "VALUE" ? (Number(partner.VALUE) * (currencyValueAux || 1)).toFixed(2) : partner[key];
         });
         rdo.push(obj);
 
-        if (obj.PARTNER_TYPE_ID != 1)
-            total = total + parseFloat(obj.VALUE);
-        else
-            totalExternal = totalExternal + parseFloat(obj.VALUE);
+        if (obj.PARTNER_TYPE_ID != 1) {
+            total = total + parseFloat(obj.AMOUNT);
+        } else {
+            totalExternal = totalExternal + parseFloat(obj.AMOUNT);
+        }
     });
     return {
         partners: rdo, total: Number(total), partnerCurrencyValue: rdo.length ? Number(rdo[0].CURRENCY_VALUE) : null

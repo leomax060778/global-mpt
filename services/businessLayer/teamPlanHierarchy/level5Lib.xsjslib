@@ -46,6 +46,7 @@ var dataCST = mapper.getDataCampaignSubType();
 var dataCT = mapper.getDataCampaignType();
 var dataObj = mapper.getDataObjectives();
 var dataMO = mapper.getDataMarketingOrganization();
+var uploadLib = mapper.getUploadLib();
 /*************************************************/
 
 var levelCampaign = "Marketing Tactic ";
@@ -176,7 +177,7 @@ function getHl5ById(hl5Id, carryOver) {
         var internalCofunding = getInternalCofunding(hl5Id);
         var externalCofunding = getExternalCofunding(hl5Id);
         hl5.BUDGET_EUROS = (Number(hl5.BUDGET)).toFixed(2);
-        hl5.BUDGET_CURRENCY = {ID: hl5.EURO_CONVERSION_ID, VALUE: Number(hl5.CURRENCY_VALUE).toFixed(2)};
+        hl5.BUDGET_CURRENCY = {ID: hl5.EURO_CONVERSION_ID, VALUE: Number(hl5.CURRENCY_VALUE)};
         hl5.PARTNERS = externalCofunding.PARTNERS;
         hl5.INTEL_TOTAL_BUDGET = externalCofunding.PARTNER_INTEL_TOTAL;
         hl5.INTEL_TOTAL_BUDGET_EUROS = externalCofunding.PARTNER_INTEL_TOTAL_EUROS;
@@ -195,7 +196,10 @@ function getHl5ById(hl5Id, carryOver) {
         hl5.CATEGORIES = getCategoryOption(hl5Id);
         hl5.SERVICE_REQUEST_CATEGORIES = getServiceRequestCategoryOptionByHl5Id(hl5Id);
 
-        hl5.TOTAL_BUDGET = (Number(hl5.BUDGET_EUROS) + Number(hl5.INTEL_TOTAL_BUDGET_EUROS)
+        hl5.TOTAL_BUDGET = ((Number(hl5.BUDGET_EUROS) + Number(hl5.INTEL_TOTAL_BUDGET_EUROS)
+            + Number(hl5.EXTERNAL_TOTAL_BUDGET_EUROS) + Number(hl5.SALE_TOTAL_EUROS)) * hl5.BUDGET_CURRENCY.VALUE).toFixed(2);
+
+        hl5.TOTAL_BUDGET_EUR = (Number(hl5.BUDGET_EUROS) + Number(hl5.INTEL_TOTAL_BUDGET_EUROS)
             + Number(hl5.EXTERNAL_TOTAL_BUDGET_EUROS) + Number(hl5.SALE_TOTAL_EUROS)).toFixed(2);
 
         hl5.BUDGET = (Number(hl5.BUDGET) * Number(hl5.CURRENCY_VALUE)).toFixed(2);
@@ -219,9 +223,12 @@ function getHl5ByUserId(userId, isMarketingTacticView) {
     var crm = 'CRM-';
     var hl5List;
 
+    var isAdmin = false;
+    var isSuperAdmin = util.isSuperAdmin(userId);
+    if(!isSuperAdmin){
+        isAdmin = util.isAdmin(userId);
+    }
     if (isMarketingTacticView) {
-        var isAdmin = util.isAdmin(userId);
-        var isSuperAdmin = util.isSuperAdmin(userId);
         if (isAdmin || isSuperAdmin) {
             hl5List = dataHl5.getHl5ByUserIdRoleFilter(userId);
         } else {
@@ -1350,6 +1357,8 @@ function changeStatusOnDemand(hl5_id, userId, cancelConfirmation) {
                 updateCategoryOption(data, hl5_id, userId, true);
                 var aux = crmFieldsHaveChanged(data, 1, userId, true);
                 insertInCrmBinding(aux.crmBindingChangedFields, [], hl5_id);
+            } else {
+                throw ErrorLib.getErrors().CustomError("", "", L5_MSG_COULDNT_CHANGE_STATUS);
             }
         }
 
@@ -2146,6 +2155,7 @@ function serverToUiParser(object) {
 
 function clone(cloneHl5Id, userId){
     var data = getHl5ById(cloneHl5Id);
+    var currencyId = uploadLib.getDefaultCurrencyForBudgetYearByPath(data);
     data = uiToServerParser(data);
     data.STATUS_DETAIL_ID = HL5_STATUS.IN_PROGRESS;
     var acronym = getNewSerialAcronym(data.HL4_ID);
@@ -2158,8 +2168,9 @@ function clone(cloneHl5Id, userId){
     data.IMPORTED = 0;
     data.IMPORT_ID = null;
     data.SALE_REQUESTS = null;
+    data.EURO_CONVERSION_ID = currencyId;
+    data.SALE_CURRENCY_ID = currencyId;
     var hl5_id = insertDataHl5(acronym, data);
-    data.SALE_CURRENCY_ID = data.SALE_CURRENCY.ID;
     pathBL.insParentPath('hl5', hl5_id, data.HL4_ID, userId);
     data.HL5_ID = hl5_id;
     insertExpectedOutcomes(data, userId);

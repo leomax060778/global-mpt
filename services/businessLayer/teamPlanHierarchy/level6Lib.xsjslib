@@ -38,6 +38,7 @@ var databudgetSpendRequest = mapper.getDataBudgetSpendRequest();
 var expectedOutcomesLevelLib = mapper.getExpectedOutcomesLevelLib();
 var allocationCategoryOptionLevelLib = mapper.getAllocationCategoryOptionLevelLib();
 var level4Lib = mapper.getLevel4();
+var uploadLib = mapper.getUploadLib();
 /** ********************************************** */
 
 var levelCampaign = "Marketing Sub Tactic";
@@ -181,8 +182,12 @@ function getHl6ById(hl6Id) {
 
     hl6.CATEGORIES = getCategoryOption(hl6Id);
 
-    hl6.TOTAL_BUDGET = (Number(hl6.BUDGET_EUROS) + Number(hl6.INTEL_TOTAL_BUDGET_EUROS)
+    hl6.TOTAL_BUDGET = ((Number(hl6.BUDGET_EUROS) + Number(hl6.INTEL_TOTAL_BUDGET_EUROS)
+        + Number(hl6.EXTERNAL_TOTAL_BUDGET_EUROS) + Number(hl6.SALE_TOTAL_EUROS)) * hl6.BUDGET_CURRENCY.VALUE).toFixed(2);
+
+    hl6.TOTAL_BUDGET_EUR = (Number(hl6.BUDGET_EUROS) + Number(hl6.INTEL_TOTAL_BUDGET_EUROS)
         + Number(hl6.EXTERNAL_TOTAL_BUDGET_EUROS) + Number(hl6.SALE_TOTAL_EUROS)).toFixed(2);
+
     hl6.MULTI_TACTIC = !!Number(hl6.MULTI_TACTIC);
     hl6.IS_IN_CRM = !!dataHl6.hl6ExistsInCrm(hl6Id);
     hl6.BUDGET = (Number(hl6.BUDGET) * Number(hl6.CURRENCY_VALUE)).toFixed(2);
@@ -1218,6 +1223,8 @@ function changeStatusOnDemand(hl6_id, userId, cancelConfirmation) {
                 updateCategoryOption(data, hl6_id, userId, true);
                 var aux = crmFieldsHaveChanged(data, 1, userId, true);
                 insertInCrmBinding(aux.crmBindingChangedFields, [], hl6_id);
+            } else {
+                throw ErrorLib.getErrors().CustomError("", "", L6_MSG_COULDNT_CHANGE_STATUS);
             }
         }
 
@@ -1584,7 +1591,7 @@ function updateExternalCoFunding(data, userId) {
             if (!partner.PARTNER_ID) {
                 var budgetSpendRequestId = budgetSpendRequest.insertPartnerBudgetSpendRequest(partner.AMOUNT, partner.MESSAGE, data.HL6_ID, 'HL6', externalCoFundingCurrency, userId);
                 arrPartnerToInsert.push({
-                    in_hl5_id: data.HL6_ID
+                    in_hl6_id: data.HL6_ID
                     ,
                     in_partner_name: null
                     ,
@@ -1934,6 +1941,7 @@ function serverToUiParser(object) {
 
 function clone(cloneHl6Id, userId){
     var data = getHl6ById(cloneHl6Id);
+    var currencyId = uploadLib.getDefaultCurrencyForBudgetYearByPath(data);
     data = uiToServerParser(data);
     data.STATUS_DETAIL_ID = HL6_STATUS.IN_PROGRESS;
     var acronym = getNewHl6Id(data.HL5_ID);
@@ -1946,8 +1954,9 @@ function clone(cloneHl6Id, userId){
     data.IMPORTED = 0;
     data.IMPORT_ID = null;
     data.SALE_REQUESTS = null;
+    data.EURO_CONVERSION_ID = currencyId;
+    data.SALE_CURRENCY_ID = currencyId;
     var hl6_id = insertData(data, acronym);
-    data.SALE_CURRENCY_ID = data.SALE_CURRENCY.ID;
     pathBL.insParentPath('hl6', hl6_id, data.HL5_ID, userId);
     data.HL6_ID = hl6_id;
     insertExpectedOutcomes(data, userId);

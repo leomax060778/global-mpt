@@ -3,13 +3,13 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL6_BY_USER_
         IN in_user_id BIGINT,
         IN in_issa INTEGER,
         OUT out_result TABLE(
-              HL6_ID BIGINT
+              HL6_ID INTEGER
               ,HL5_ID INTEGER
             , HL6_CRM_DESCRIPTION NVARCHAR(100)
             , HL6_ACRONYM NVARCHAR(25)
             , HL5_PATH NVARCHAR(255)
             , IN_BUDGET Tinyint
-            , STATUS_ID BIGINT
+            , STATUS_ID INTEGER
             , STATUS_DETAIL NVARCHAR(255)
             , CREATED_BY NVARCHAR(255)
             , OWNER_EMAIL NVARCHAR(500)
@@ -20,7 +20,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL6_BY_USER_
             , IMPORTED tinyint
             , IMPORT_ID INTEGER
             , CRM_DESCRIPTION NVARCHAR(255)
-            , BUDGET_SPEND_REQUEST_STATUS_ID bigint
+            , BUDGET_SPEND_REQUEST_STATUS_ID INTEGER
             , BUDGET_SPEND_REQUEST_STATUS nvarchar(255)
             , HL6_PATH NVARCHAR(255)
         )
@@ -31,7 +31,7 @@ DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
 AS
 BEGIN
 	
-va_intermidate = SELECT
+va_intermidate = SELECT DISTINCT
         hl6.hl6_ID AS HL6_ID
         ,hl6.hl5_ID AS HL5_ID
         ,hl6.hl6_crm_description AS HL6_CRM_DESCRIPTION
@@ -51,6 +51,10 @@ va_intermidate = SELECT
         ,BSRS.DISPLAY_NAME as BUDGET_SPEND_REQUEST_STATUS
 
     FROM HL6 Hl6
+    INNER JOIN HL5 hl5 ON hl5.hl5_id=hl6.hl5_id AND hl5.enabled=1 AND hl5.deleted=0
+   INNER JOIN HL4 hl4 ON hl4.hl4_id=hl5.hl4_id AND hl4.enabled=1 AND hl4.deleted=0
+   INNER JOIN HL3 hl3 ON hl3.hl3_id=hl4.hl3_id AND hl3.enabled=1 AND hl3.deleted=0
+   INNER JOIN HL3_USER hl3_user ON hl3.hl3_id=hl3_user.hl3_id
     INNER JOIN CURRENCY euro_conversions ON hl6.euro_conversion_id = euro_conversions.euro_conversion_id  AND euro_conversions.enabled=1 AND euro_conversions.deleted=0
     INNER JOIN hl6_status_detail hl6_status_detail ON hl6_status_detail.hl6_status_detail_id = hl6.hl6_status_detail_id
     INNER JOIN "MKTG_PLANNING_TOOL"."USER" userTable ON userTable.USER_ID = hl6.created_user_id
@@ -58,7 +62,6 @@ va_intermidate = SELECT
     LEFT JOIN BUDGET_SPEND_REQUEST BSR ON BSR.HL_ID = HL6.HL6_ID AND BSR.HIERARCHY_LEVEL_ID = 2 AND BSR.BUDGET_SPEND_REQUEST_TYPE_ID = 1
     LEFT JOIN BUDGET_SPEND_REQUEST_STATUS BSRS ON BSRS.BUDGET_SPEND_REQUEST_STATUS_ID = BSR.BUDGET_SPEND_REQUEST_STATUS_ID
     WHERE hl6.enabled=1 AND hl6.deleted=0
-	AND hl6.created_user_id = in_user_id
 	AND HL6.HL5_ID = in_hl5_id
 	ORDER BY hl6.acronym ASC;
 
