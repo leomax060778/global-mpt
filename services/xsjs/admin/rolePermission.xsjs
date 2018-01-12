@@ -22,7 +22,7 @@ function handleGet(parameters, userSessionID){
 			return httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
 		}else if (parameters[0].name === GET_PERMISSION_BY_ROLE_ID) {
 			var roleId = parameters[0].value;
-			var rdo = blRolePermission.getPermissionByRole(roleId)
+			var rdo = blRolePermission.getPermissionByRoleId(roleId)
 			return httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
 		}else{
 			throw ErrorLib.getErrors().BadRequest("","rolePermissionServices/handleGet","invalid parameter name (can be: ROLE_ID)");

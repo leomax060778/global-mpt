@@ -12,6 +12,7 @@ var GET_ALL_HL5_CHANGED_FIELDS = "GET_ALL_HL5_CHANGED_FIELDS";
 var spGetL5ChangedFieldsByHl5Id = "GET_HL5_CHANGED_FIELDS_BY_HL5_ID";
 var spDelL5ChangedFieldsByHl5Id = "DEL_HL5_CRM_BINDING";
 var UPD_PROCESSING_REPORT_EXPORT_DATA = "UPD_PROCESSING_REPORT_EXPORT_DATA";
+var spMassDelL5ChangedFieldsByHl5Id = "DEL_MASS_HL5_CRM_BINDING";
 
 /*********** END LIST OF PROCEDURES ***************/
 
@@ -68,4 +69,11 @@ function deleteL5ChangedFieldsByHl5Id(id){
 		return rdo;
 	}	
 	return null;
+}
+function massDeleteL5ChangedFieldsByHl5Id(ids) {
+    if (id) {
+        var rdo = db.executeScalarManual(spMassDelL5ChangedFieldsByHl5Id, {'in_hl5_ids': ids}, 'out_result');
+        return rdo;
+    }
+    return null;
 }

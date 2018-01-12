@@ -165,6 +165,10 @@ function deleteL6ChangedFieldsByHl6Id(hl6Id) {
     return dataL6DER.deleteL6ChangedFieldsByHl6Id(hl6Id);
 }
 
+function massDeleteL6ChangedFieldsByHl6Ids(hl6Ids) {
+    return dataL6DER.massDeleteL6ChangedFieldsByHl6Id(hl6Ids);
+}
+
 function checkChangedField(changedFields, field, value) {
     var hasChanged = false;
     for (var i = 0; i < changedFields.length; i++) {

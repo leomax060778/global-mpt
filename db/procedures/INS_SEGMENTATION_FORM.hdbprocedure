@@ -30,6 +30,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_SEGMENTATION
     IN in_exclude_contacs_touched_by_telemarketing INTEGER,
     IN in_apply_sale_play_for_target TINYINT,
     IN in_apply_predictive_analytics_for_target TINYINT,
+    IN in_accept_terms_state TINYINT,
 	IN in_user_id bigint,
     in in_summary NVARCHAR(255),
 	OUT out_result BIGINT
@@ -71,7 +72,8 @@ BEGIN
        APPLY_SALE_PLAY_FOR_TARGET,
        APPLY_PREDICTIVE_ANALYTICS_FOR_TARGET,
        CREATED_USER_ID,
-       SUMMARY
+       SUMMARY,
+       ACCEPT_TERMS_STATE
        )
        VALUES(
        in_form_status_detail_id,
@@ -106,7 +108,8 @@ BEGIN
        in_apply_sale_play_for_target,
        in_apply_predictive_analytics_for_target,
        in_user_id,
-       in_summary
+       in_summary,
+       in_accept_terms_state
        );
 
         SELECT TOP 1 CURRENT_IDENTITY_VALUE() INTO out_result FROM "MKTG_PLANNING_TOOL"."SEGMENTATION_FORM";

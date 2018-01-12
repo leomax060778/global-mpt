@@ -615,7 +615,7 @@ function insertSegmentationForm(formStatusDetailId,serviceRequestCategoryOptionL
                                 revenueRangeTo, currencyId, numberOfEmployeeFrom, numberOfEmployeeTo, customerStatusId, regionalBuyingClassificationId,
                                 competitorId, partnerId, unqualifiedAddressId, accountWithActivePipelineId, accountWithActiveLeadId, contactDetail,
                                 maxContactPerOrganization, excludeContacsTouchedByTelemarketing, applySalePlayForTarget, applyPredictiveAnalyticsForTarget,
-                                userId, summary) {
+                                acceptTermsState, userId, summary) {
     var parameters = {
         in_form_status_detail_id: formStatusDetailId,
         in_service_request_category_option_level_id: serviceRequestCategoryOptionLevelId,
@@ -648,6 +648,7 @@ function insertSegmentationForm(formStatusDetailId,serviceRequestCategoryOptionL
         in_exclude_contacs_touched_by_telemarketing: excludeContacsTouchedByTelemarketing,
         in_apply_sale_play_for_target: applySalePlayForTarget,
         in_apply_predictive_analytics_for_target: applyPredictiveAnalyticsForTarget,
+        in_accept_terms_state: acceptTermsState,
         in_user_id: userId,
         in_summary: summary
     };
@@ -689,7 +690,7 @@ function updateSegmentationForm(segmentationFormId, formStatusDetailId, hl5Id, r
                                 revenueRangeTo, currencyId, numberOfEmployeeFrom, numberOfEmployeeTo, customerStatusId, regionalBuyingClassificationId,
                                 competitorId, partnerId, unqualifiedAddressId, accountWithActivePipelineId, accountWithActiveLeadId, contactDetail,
                                 maxContactPerOrganization, excludeContacsTouchedByTelemarketing, applySalePlayForTarget, applyPredictiveAnalyticsForTarget,
-                                userId, summary) {
+                                acceptTermsState, userId, summary) {
     var parameters = {
         in_form_status_detail_id: formStatusDetailId,
         in_segmentation_form_id: segmentationFormId,
@@ -722,6 +723,7 @@ function updateSegmentationForm(segmentationFormId, formStatusDetailId, hl5Id, r
         in_exclude_contacs_touched_by_telemarketing: excludeContacsTouchedByTelemarketing,
         in_apply_sale_play_for_target: applySalePlayForTarget,
         in_apply_predictive_analytics_for_target: applyPredictiveAnalyticsForTarget,
+        in_accept_terms_state: acceptTermsState,
         in_user_id: userId,
         in_summary: summary
     };

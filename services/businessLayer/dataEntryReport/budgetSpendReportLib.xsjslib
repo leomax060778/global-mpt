@@ -383,7 +383,7 @@ function approveBudgetSpendRequest(reqBody, userId) {
             var hl6budgetSpendRequestList = getSpendBudgetReportByRequestorId(requestor.REQUESTOR_ID, 'HL6', eachReqBody.BUDGET_SPEND_REQUEST_ID);
             var budgetSpendRequestList = hl5budgetSpendRequestList.concat(hl6budgetSpendRequestList);
 
-            // throw JSON.stringify(budgetSpendRequestList);
+            //throw JSON.stringify(budgetSpendRequestList);
 
             var objToMail = {
                 mailObject: mailObject, budgetSpendRequestList: budgetSpendRequestList

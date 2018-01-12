@@ -1,0 +1,18 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_MASS_HL5_LOG_STATUS" (
+	IN in_hl5_ids table(
+	hl5_id bigint
+	),
+	IN in_status_id BIGINT,
+	IN in_user_id BIGINT,
+	OUT out_hl5_log_status_id bigint)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER 
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	AS
+BEGIN
+ 	INSERT INTO "MKTG_PLANNING_TOOL"."HL5_STATUS_HISTORY" (hl5_id, hl5_status_detail_id, created_user_id)
+	(SELECT hl5_id, in_status_id, in_user_id from :in_hl5_ids);
+
+	SELECT TOP 1 CURRENT_IDENTITY_VALUE() INTO out_hl5_log_status_id FROM "MKTG_PLANNING_TOOL"."HL5_STATUS_HISTORY";
+ 
+END;

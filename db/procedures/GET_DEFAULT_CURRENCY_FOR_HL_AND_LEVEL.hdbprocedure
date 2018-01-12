@@ -1,4 +1,8 @@
 PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_DEFAULT_CURRENCY_FOR_HL_AND_LEVEL" (
+/*
+*   Get the default currency for the budget year of a given WBS_ID
+*
+*/
 	    in hl_id integer
 	, in hierarchy_level_id integer
 	,OUT out_result TABLE (euro_conversion_id BIGINT

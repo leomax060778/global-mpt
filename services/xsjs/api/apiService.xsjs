@@ -23,6 +23,7 @@ function handleGet(parameters, userSessionID) {
     var method = httpUtil.getUrlParameters().get("method").toUpperCase();
     var deltaTimeLastUpdate = httpUtil.getUrlParameters().get("DELTA_TIME_LAST_UPDATE");
     var levelFilter = httpUtil.getUrlParameters().get("HIERARCHY_LEVEL");
+    var scope = httpUtil.getUrlParameters().get("SCOPE");
 	if (parameters.length > 0) {
 		switch (parameters[0].name) {
 			case GET_WBS_BY_ID:
@@ -37,6 +38,7 @@ function handleGet(parameters, userSessionID) {
                     filter.IN_IS_FULL_DOWNLOAD = (method.toUpperCase() === "FULL") ? 1 : 0;
                     filter.IN_HIERARCHY_LEVEL = filter.IN_IS_FULL_DOWNLOAD ? [] : levelFilter;
                     filter.IN_DELTA_TIME_LAST_UPDATE = deltaTimeLastUpdate || 0;
+                    filter.SCOPE = scope || null;
                     rdo = apiLib.getReportExportData(filter);
                 } else {
                     throw ErrorLib.getErrors().BadRequest("", "",

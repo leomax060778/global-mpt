@@ -1,0 +1,53 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_NEWS_UNREAD" (
+    IN in_user_id bigint,
+    OUT out_result TABLE(
+        news_id integer,
+        title nvarchar(255),
+        description nvarchar(2000),
+        author_id bigint,
+        published_date timestamp,
+        attachment_id bigint,
+        original_name nvarchar(255),
+        saved_name nvarchar(255),
+        author_name nvarchar(255),
+        budget_year_id bigint,
+        budget_year bigint,
+        content_length integer
+    )
+)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	READS SQL DATA AS
+BEGIN
+ out_result = SELECT TOP 1
+                NW.NEWS_ID,
+                NW.TITLE,
+                NW.DESCRIPTION,
+                NW.AUTHOR_ID,
+                NW.PUBLISHED_DATE,
+                NW.ATTACHMENT_ID,
+                ATT.ORIGINAL_NAME,
+                ATT.SAVED_NAME,
+                author.USER_NAME AS author_name,
+                NW.BUDGET_YEAR_ID,
+                BUDGET_YEAR.BUDGET_YEAR,
+                LENGTH (NW.CONTENT) AS content_length
+                FROM "NEWS" NW
+                INNER JOIN "USER" author ON author.USER_ID = NW.AUTHOR_ID
+                INNER JOIN "NEWS_STATUS" news_st ON news_st.NEWS_STATUS_ID = NW.STATUS_ID
+                INNER JOIN "BUDGET_YEAR" BUDGET_YEAR ON BUDGET_YEAR.BUDGET_YEAR_ID = NW.BUDGET_YEAR_ID
+                LEFT JOIN "ATTACHMENT" ATT ON ATT.ATTACHMENT_ID = NW.ATTACHMENT_ID
+                WHERE NW.ENABLED = 1
+                    AND NW.DELETED = 0
+                    AND NW.STATUS_ID = 3
+                    AND DAYS_BETWEEN (NW.PUBLISHED_DATE, CURRENT_TIMESTAMP) >= 0
+                    AND NOT EXISTS
+                        (
+                            SELECT  READ_NEWS.USER_ID
+                            FROM    "READ_NEWS" READ_NEWS
+                            WHERE   READ_NEWS.USER_ID = in_user_id
+                                    and READ_NEWS.NEWS_ID = NW.NEWS_ID
+                        )
+                ORDER BY NW.PUBLISHED_DATE DESC;
+END;

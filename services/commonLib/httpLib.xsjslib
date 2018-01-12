@@ -26,6 +26,7 @@ function handleResponsePlain(strbody){
 function handleResponse(body, code, type) {
 	$.response.contentType = type;
 	$.response.status = code;
+	$.response.headers.set("TRANSACTION_ID",$.request.TRANSACTION || "");
 	$.response.setBody(JSON.stringify(body));
 }
 

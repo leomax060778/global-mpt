@@ -332,8 +332,6 @@ function filterKpiByLevel(kpis, level){
     result.COMMENTS = kpis.COMMENTS || '';
     kpis.KPIS.forEach(function (kpi) {
         if(mapEOL[kpi.OUTCOMES_TYPE_ID] && mapEOL[kpi.OUTCOMES_TYPE_ID][kpi.OUTCOMES_ID]) {
-                kpi.EURO_VALUE = 0;
-                kpi.VOLUME_VALUE = 0;
             result.KPIS.push(kpi)
         }
     });

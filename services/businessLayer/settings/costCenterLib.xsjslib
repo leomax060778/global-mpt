@@ -176,7 +176,7 @@ function existCostCentermarketingOrganizationTeams(marketingOrganizationId, team
 }
 
 function insCostCenterEmployeeResponsible(costCenterId, employeeResponsibleId, userId){
-	if(costCenterId && employeeResponsibleId && userI){
+	if(costCenterId && employeeResponsibleId && userId){
         return dataCostCenter.insCostCenterEmployeeResponsible(costCenterId, employeeResponsibleId, userId);
 	}else{return false}
 

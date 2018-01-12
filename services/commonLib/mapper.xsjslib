@@ -430,6 +430,11 @@ function getProcessingReportMailLib(){
     return $.mktgplanningtool.services.mails.processingReportMailLib;
 }
 
+function getNews(){
+	$.import("mktgplanningtool.services.businessLayer.news","newsLib");
+    return $.mktgplanningtool.services.businessLayer.news.newsLib;
+}
+
 /************Data Layer Mapper*****************/
 
 function getdbHelper(){
@@ -806,4 +811,9 @@ function getDataOrganizationType(){
 function getDataOrganizationTypeInterlockOrganization(){
     $.import("mktgplanningtool.services.dataLayer.settings","dataOrganizationTypeInterlockOrganization");
     return $.mktgplanningtool.services.dataLayer.settings.dataOrganizationTypeInterlockOrganization;
+}
+
+function getDataNews(){
+    $.import("mktgplanningtool.services.dataLayer.news","dataNews");
+    return $.mktgplanningtool.services.dataLayer.news.dataNews;
 }

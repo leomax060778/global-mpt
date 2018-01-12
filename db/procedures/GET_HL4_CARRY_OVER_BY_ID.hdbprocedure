@@ -2,7 +2,9 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL4_CARRY_OV
 	IN in_hl4_id BIGINT,
 	OUT out_result TABLE(
 	hl4_id BIGINT,
-	employee_responsible_user nvarchar(10)
+	employee_responsible_user nvarchar(10),
+	cost_center_id INTEGER,
+	COST_CENTER_NAME NVARCHAR(255)
 	)
 )
 	LANGUAGE SQLSCRIPT
@@ -12,10 +14,13 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL4_CARRY_OV
 BEGIN
 
 out_result =
-	SELECT  HL4.hl4_id,
-		    HL4.shopping_cart_approver as employee_responsible_user
+	SELECT  HL4.HL4_ID,
+		    HL4.SHOPPING_CART_APPROVER as EMPLOYEE_RESPONSIBLE_USER,
+		    COST_CENTER.COST_CENTER_ID,
+		    CONCAT(CONCAT(COST_CENTER.NAME, ', '), COST_CENTER.COST_CENTER_CODE) AS COST_CENTER_NAME
 
 	FROM HL4
+	LEFT JOIN COST_CENTER ON COST_CENTER.COST_CENTER_CODE = HL4.COST_CENTER
 	WHERE HL4.hl4_id = in_hl4_id
 	  AND HL4.deleted = 0
 	  AND HL4.enabled = 1;

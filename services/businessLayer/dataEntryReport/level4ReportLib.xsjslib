@@ -110,7 +110,9 @@ function deleteL4ChangedFieldsByHl4Id(hl4Id) {
             "level4ReportServices/handleGet/deleteL4ChangedFieldsByHl4Id", e.toString());
     }
 }
-
+function massDeleteL4ChangedFieldsByHl4Ids(hl4Ids) {
+    return dataL4DER.massDeleteL4ChangedFieldsByHl4Id(hl4Ids);
+}
 function checkChangedField(changedFields, field, value) {
     var hasChanged = false;
     for (var i = 0; i < changedFields.length; i++) {

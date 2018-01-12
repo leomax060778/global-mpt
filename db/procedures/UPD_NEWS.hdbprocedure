@@ -1,0 +1,34 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::UPD_NEWS" (
+	IN in_news_id bigint,
+	IN in_title nvarchar(255),
+	IN in_description nvarchar(2000),
+	IN in_attachment_id bigint,
+	IN in_modified_user_id bigint,
+	IN in_status_id bigint,
+	IN in_budget_year_id bigint,
+	IN in_published_date timestamp,
+	IN in_display_created_date timestamp,
+	IN in_content nclob,
+ 	OUT out_result bigint
+)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER 
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+    AS
+BEGIN
+    UPDATE NEWS
+	    SET NEWS.title = in_title,
+			NEWS.description = in_description,
+			NEWS.attachment_id = in_attachment_id,
+			NEWS.status_id = in_status_id,
+			NEWS.budget_year_id = in_budget_year_id,
+			NEWS.published_date = in_published_date,
+	      	NEWS.display_created_date = in_display_created_date,
+			NEWS.modified_date_tz = CURRENT_TIMESTAMP,
+			NEWS.modified_user_id = in_modified_user_id,
+			NEWS.CONTENT = in_content
+	FROM "NEWS" NEWS
+	WHERE NEWS.news_id = in_news_id;
+
+SELECT ::ROWCOUNT into out_result FROM DUMMY;
+END;

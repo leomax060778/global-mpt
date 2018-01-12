@@ -1,21 +1,19 @@
 PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::DEL_USER" (
-	IN in_user_id BIGINT,
-	IN in_modified_user_id BIGINT,
-	OUT out_result INTEGER) 
+	IN userTable TABLE( in_user_id BIGINT)
+	, in_modified_user_id BIGINT
+	,OUT out_result INTEGER)
 	LANGUAGE SQLSCRIPT
 	SQL SECURITY INVOKER 
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
 	AS
 BEGIN
 
-		UPDATE user
-		SET user.deleted = 1,
-			user.enabled = 0,
-			user.modified_user_id = in_modified_user_id,
-			user.modified_date_tz = CURRENT_TIMESTAMP
-		FROM "MKTG_PLANNING_TOOL"."USER" user
-		WHERE user_id = in_user_id;
+		UPDATE USER
+		SET USER.deleted = 1,
+			USER.enabled = 0,
+			USER.modified_user_id = in_modified_user_id,
+			USER.modified_date_tz = CURRENT_TIMESTAMP
+		WHERE user_id IN (SELECT in_user_id FROM :userTable);
 		
 		SELECT ::ROWCOUNT INTO out_result FROM DUMMY;
-
 END;

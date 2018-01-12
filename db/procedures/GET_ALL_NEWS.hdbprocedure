@@ -1,0 +1,39 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_ALL_NEWS" (
+    OUT out_result TABLE( news_id integer,
+						title nvarchar(255),
+						description nvarchar(2000),
+						author_id integer,
+						author_name nvarchar(255),
+						published_date timestamp,
+						created_date timestamp,
+						modified_date timestamp,
+						status_id integer,
+						status_name nvarchar(255),
+						update_status_tz timestamp,
+						content_length integer
+					)
+)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	AS
+BEGIN
+ out_result = SELECT "NEWS".NEWS_ID,
+ 						"NEWS".TITLE,
+ 						"NEWS".DESCRIPTION,
+ 						"NEWS".AUTHOR_ID,
+ 						author.USER_NAME AS author_name,
+ 						"NEWS".PUBLISHED_DATE,
+ 						"NEWS".DISPLAY_CREATED_DATE AS CREATED_DATE,
+ 						"NEWS".MODIFIED_DATE_TZ AS MODIFIED_DATE,
+ 						"NEWS".STATUS_ID,
+					 	news_st.NAME AS status_name,
+					 	"NEWS".UPDATE_STATUS_TZ,
+					 	LENGTH ("NEWS".CONTENT) AS content_length
+  			  FROM "NEWS"
+  			  INNER JOIN "NEWS_STATUS" news_st ON news_st.NEWS_STATUS_ID = "NEWS".STATUS_ID
+  			  INNER JOIN "USER" author ON author.USER_ID = "NEWS".AUTHOR_ID
+  			  INNER JOIN "BUDGET_YEAR" budget_year ON BUDGET_YEAR.BUDGET_YEAR_ID = "NEWS".BUDGET_YEAR_ID
+   			  WHERE "NEWS".ENABLED = 1
+   			  	AND "NEWS".DELETED = 0;
+END;

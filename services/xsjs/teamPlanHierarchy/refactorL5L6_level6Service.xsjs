@@ -37,10 +37,8 @@ function handleGet(params, userId) {
 		result = acronym ? acronym : 0;
 
 	}else if(in_hl5_id && !hl5_categories && !hl5_expectedOutcomes && !param_section){
-        //hl5.checkPermission(userId, null, in_hl5_id);
 		result = hl6.getHl6ByHl5Id(in_hl5_id, userId);
 	}else if(in_hl6_id){
-        //hl6.checkPermission(userId, null, in_hl6_id);
 		result = hl6.getHl6ById(in_hl6_id);
 	}else if (param_section && param_section == section){
 		var budget_year_id = httpUtil.getUrlParameters().get("BUDGET_YEAR_ID") || null;
@@ -49,10 +47,6 @@ function handleGet(params, userId) {
 		var limit = httpUtil.getUrlParameters().get("LIMIT") || null;
 		var offset = httpUtil.getUrlParameters().get("OFFSET") || null;
 		result = hl6.getLevel6ForSearch(userId, budget_year_id, region_id, subregion_id, limit, offset);
-	}else if(hl5_categories && in_hl5_id && hl5_categories == categories){
-		result = hl6.getHl6Categories(in_hl5_id);
-	}else if(hl5_expectedOutcomes && in_hl5_id && hl5_expectedOutcomes == expectedOutcomes) {
-		result = hl6.getHl6ExpectedOutcomesOptions(in_hl5_id);
 	} else if(in_hl5_id && param_section && param_section == getHl6ByUserId){
         result = hl6.getHl6ByHl5IdUserId(in_hl5_id, userId);
     } else{
@@ -64,21 +58,17 @@ function handleGet(params, userId) {
 //Implementation of PUT call -- Update HL6
 function handlePut(reqBody, userId){
 	var parameters = httpUtil.getUrlParameters();
-    //hl6.checkPermission(userId, null, parameters.get('HL6_ID') || reqBody.HL6_ID || reqBody.hl6.in_hl6_id);
 	if(parameters.length > 0){
 		var aCmd = parameters.get('method');
 		var hl6Id = !reqBody ? parameters.get('HL6_ID') : reqBody.hl6Ids;
 		switch (aCmd) {
-			/*case sendInCrmNotificationMail:
-					hl6.sendProcessingReportEmail(hl6Id, userId);
-					//fallthrough*/
 		    case setStatusInCRM: //set status In CRM
-		    	var rdo = hl6.setHl6StatusInCRM(hl6Id, userId);
+		    	var rdo = hl6.setStatusInCRM(hl6Id, userId);
 				return	httpUtil.handleResponse(rdo,httpUtil.OK,httpUtil.AppJson);
 		        break;
 			case changeStatus:
                 var CANCEL_CONFIRMATION = parameters.get('CANCEL_CONFIRMATION');
-				var rdo = hl6.changeHl6StatusOnDemand(hl6Id, userId, CANCEL_CONFIRMATION);
+				var rdo = hl6.changeStatusOnDemand(hl6Id, userId, CANCEL_CONFIRMATION);
 				return	httpUtil.handleResponse(rdo,httpUtil.OK,httpUtil.AppJson);
 				break;
 		    default:
@@ -92,14 +82,12 @@ function handlePut(reqBody, userId){
 
 //Implementation of DELETE call -- Delete HL6
 function handleDelete(reqBody, userId){
-    //hl6.checkPermission(userId, null, reqBody.HL6_ID);
 	var result =  hl6.deleteHl6(reqBody, userId);
 	return httpUtil.handleResponse(result,httpUtil.OK,httpUtil.AppJson);
 }
 
 //Implementation of POST call -- Insert HL6
 function handlePost(reqBody, userId) {
-    //hl5.checkPermission(userId, null, reqBody.HL5_ID);
 	var result = hl6.insertHl6(reqBody, userId); //return new L6 Id
 	return httpUtil.handleResponse(result,httpUtil.OK,httpUtil.AppJson);
 }

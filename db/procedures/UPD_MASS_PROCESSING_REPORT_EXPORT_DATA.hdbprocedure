@@ -1,0 +1,22 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::UPD_MASS_PROCESSING_REPORT_EXPORT_DATA" (
+	IN IN_HL_IDS table(
+	    id bigint
+	),
+	IN IN_HIERARCHY_LEVEL NVARCHAR(3),
+	OUT out_result bigint
+	)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL" AS
+BEGIN
+DECLARE va_result bigint;
+DECLARE CURSOR c_cursor1 FOR
+  SELECT id from :IN_HL_IDS;
+
+ FOR cur_row1 as c_cursor1 DO
+    call "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::UPD_PROCESSING_REPORT_EXPORT_DATA" (cur_row1.id, IN_HIERARCHY_LEVEL, va_result);
+ END FOR;
+
+
+	SELECT ::ROWCOUNT into out_result FROM DUMMY;
+END;

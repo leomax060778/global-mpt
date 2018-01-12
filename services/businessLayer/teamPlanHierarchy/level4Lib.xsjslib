@@ -132,8 +132,8 @@ function getHl4(id, userId) {
     return responseObj;
 }
 
-function getHL4CarryOverById(hl4Id, userId){
-    if (!hl4Id){
+function getHL4CarryOverById(hl4Id, userId) {
+    if (!hl4Id) {
         throw ErrorLib.getErrors().BadRequest("The HL4 ID could not be found.", "", L4_ID_NOT_FOUND);
     }
 
@@ -184,7 +184,7 @@ function getLevel4ForSearch(budgetYearId, regionId, subRegionId, limit, offset, 
     return results;
 }
 
-function getHl4ByBudgetYear(hl4Id){
+function getHl4ByBudgetYear(hl4Id) {
     return dataHl4.getHl4ByBudgetYear(hl4Id || null);
 }
 
@@ -267,7 +267,7 @@ function insertHl4(data, userId) {
                             arrL4Kpi.push(objL4Kpi);
                         }
                     });
-                    if(arrL4Kpi.length)
+                    if (arrL4Kpi.length)
                         dataExOut.insertHl4ExpectedOutcomesDetail(arrL4Kpi);
                 }
 
@@ -311,12 +311,12 @@ function insertHl4(data, userId) {
     }
 }
 
-function insertInCrmBinding(crmBindingChangedFields, crmBindingChangedFieldsUpdate, hl4Id){
-    if(hl4Id){
-        for(var i = 0; i < crmBindingChangedFields.length; i++){
+function insertInCrmBinding(crmBindingChangedFields, crmBindingChangedFieldsUpdate, hl4Id) {
+    if (hl4Id) {
+        for (var i = 0; i < crmBindingChangedFields.length; i++) {
             crmBindingChangedFields[i].in_hl4_id = hl4Id;
         }
-        for(var j = 0; j < crmBindingChangedFieldsUpdate.length; j++){
+        for (var j = 0; j < crmBindingChangedFieldsUpdate.length; j++) {
             crmBindingChangedFieldsUpdate[j].in_hl4_id = hl4Id;
         }
     }
@@ -338,15 +338,15 @@ function updateHl4(data, userId) {
         }
     }
 
-    if (!data.hl4.in_hl4_id){
+    if (!data.hl4.in_hl4_id) {
         throw ErrorLib.getErrors().CustomError("", "", L3_MSG_INITIATIVE_NOT_FOUND);
     }
 
-    if (!util.validateIsNumber(data.hl4.in_hl4_id)){
+    if (!util.validateIsNumber(data.hl4.in_hl4_id)) {
         throw ErrorLib.getErrors().CustomError("", "", L3_MSG_INITIATIVE_NOT_FOUND);
     }
 
-    if (!userId){
+    if (!userId) {
         throw ErrorLib.getErrors().CustomError("", "", L3_MSG_USER_NOT_FOUND);
     }
 
@@ -427,7 +427,7 @@ function updateHl4(data, userId) {
                             arrL4Kpi.push(objL4Kpi);
                         }
                     });
-                    if(arrL4Kpi.length)
+                    if (arrL4Kpi.length)
                         dataExOut.insertHl4ExpectedOutcomesDetail(arrL4Kpi);
                 }
 
@@ -455,7 +455,7 @@ function updateHl4(data, userId) {
     }
 }
 
-function updateCategoryOption(data, hl4_id, userId, fromChangeHl4StatusOnDemand){
+function updateCategoryOption(data, hl4_id, userId, fromChangeHl4StatusOnDemand) {
     var mapCOL = util.getMapCategoryOption('hl4');//Set Map for Category Option Level
     var categoryOptionBulk = [];
     var categories = util.getCategoryById('hl4', hl4_id);
@@ -468,10 +468,14 @@ function updateCategoryOption(data, hl4_id, userId, fromChangeHl4StatusOnDemand)
                 hl4Category.categoryOptionLevelId = mapCOL[hl4Category.in_category_id][hl4CategoryOption.in_option_id];
                 categoryOptionBulk.push({
                     in_category_option_level_id: hl4Category.categoryOptionLevelId
-                    , in_amount: hl4CategoryOption.in_amount
-                    , in_created_user_id: userId
-                    , in_updated: fromChangeHl4StatusOnDemand && !!Number(hl4CategoryOption.in_amount)? 1 : (hl4CategoryOption.in_updated || 0)
-                    , in_id: hl4_id
+                    ,
+                    in_amount: hl4CategoryOption.in_amount
+                    ,
+                    in_created_user_id: userId
+                    ,
+                    in_updated: fromChangeHl4StatusOnDemand && !!Number(hl4CategoryOption.in_amount) ? 1 : (hl4CategoryOption.in_updated || 0)
+                    ,
+                    in_id: hl4_id
                 });
             });
         });
@@ -484,10 +488,14 @@ function updateCategoryOption(data, hl4_id, userId, fromChangeHl4StatusOnDemand)
                 hl4Category.categoryOptionLevelId = mapCOL[hl4Category.in_category_id][hl4CategoryOption.in_option_id];
                 categoryOptionBulk.push({
                     in_category_option_level_id: hl4Category.categoryOptionLevelId
-                    , in_amount: hl4CategoryOption.in_amount
-                    , in_user_id: userId
-                    , in_updated: fromChangeHl4StatusOnDemand && !!Number(hl4CategoryOption.in_amount)? 1 : (hl4CategoryOption.in_updated || 0)
-                    , in_hl4_id: hl4_id
+                    ,
+                    in_amount: hl4CategoryOption.in_amount
+                    ,
+                    in_user_id: userId
+                    ,
+                    in_updated: fromChangeHl4StatusOnDemand && !!Number(hl4CategoryOption.in_amount) ? 1 : (hl4CategoryOption.in_updated || 0)
+                    ,
+                    in_hl4_id: hl4_id
                 });
             });
         });
@@ -521,7 +529,7 @@ function deleteHl4(hl4, userId, rollBack) {
     }
 
     try {
-        if(!rollBack) {
+        if (!rollBack) {
             level5Lib.deleteHl5ByHl4(hl4.in_hl4_id, userId);
         }
 
@@ -551,39 +559,39 @@ function deleteHl4(hl4, userId, rollBack) {
 
 function validateHl4(data, userId) {
     var existInCrm = 0;
-    if (!data){
+    if (!data) {
         throw ErrorLib.getErrors().CustomError("", "", L3_MSG_INITIATIVE_NOT_FOUND);
     }
 
-    if (!data.hl4.in_hl4_details){
+    if (!data.hl4.in_hl4_details) {
         throw ErrorLib.getErrors().CustomError("", "", L3_MSG_INITIATIVE_DETAIL);
     }
 
-    if (!data.hl4.in_hl4_business_details){
+    if (!data.hl4.in_hl4_business_details) {
         throw ErrorLib.getErrors().CustomError("", "", L3_MSG_INITIATIVE_BUSINESS);
     }
 
-    if (!data.hl4.in_acronym){
+    if (!data.hl4.in_acronym) {
         throw ErrorLib.getErrors().CustomError("", "", L3_MSG_INITIATIVE_ACRONYM);
     }
 
     // Validate whether Acronym already exists or not
 
-    if (existsHl4inPlan(data.hl4)){
+    if (existsHl4inPlan(data.hl4)) {
         throw ErrorLib.getErrors().CustomError("", "", L3_MSG_INITIATIVE_EXISTS);
     }
 
     // end validate Acronym
 
-    if (data.hl4.in_acronym.length !== 3){
+    if (data.hl4.in_acronym.length !== 3) {
         throw ErrorLib.getErrors().CustomError("", "", L3_MSG_INITIATIVE_ACRONYM_LENGTH);
     }
 
-    if (!data.hl4.in_hl4_crm_description){
+    if (!data.hl4.in_hl4_crm_description) {
         throw ErrorLib.getErrors().CustomError("", "", L3_MSG_INITIATIVE_CRM_DESCRIPTION);
     }
 
-    if (data.hl4.in_hl4_fnc_budget_total_mkt < 0){
+    if (data.hl4.in_hl4_fnc_budget_total_mkt < 0) {
         throw ErrorLib.getErrors().CustomError("", "", L3_MSG_INITIATIVE_BUDGET_VALUE);
     }
 
@@ -613,7 +621,7 @@ function validateHl4(data, userId) {
             if (!hl4ExpectedOutcomesDetail.in_outcomes_id || !Number(hl4ExpectedOutcomesDetail.in_outcomes_id))
                 throw ErrorLib.getErrors().CustomError("", "", L3_CAMPAIGN_FORECASTING_KPIS_NOT_VALID);
 
-            if(totalAvailable && totalAvailable[hl4ExpectedOutcomesDetail.in_outcomes_type_id] && totalAvailable[hl4ExpectedOutcomesDetail.in_outcomes_type_id][hl4ExpectedOutcomesDetail.in_outcomes_id]) {
+            if (totalAvailable && totalAvailable[hl4ExpectedOutcomesDetail.in_outcomes_type_id] && totalAvailable[hl4ExpectedOutcomesDetail.in_outcomes_type_id][hl4ExpectedOutcomesDetail.in_outcomes_id]) {
                 if (Number(hl4ExpectedOutcomesDetail.in_amount_value) > totalAvailable[hl4ExpectedOutcomesDetail.in_outcomes_type_id][hl4ExpectedOutcomesDetail.in_outcomes_id].VOLUME_AVAILABLE_TO_ALLOCATE)
                     throw ErrorLib.getErrors().CustomError("", "", L3_CAMPAIGN_FORECASTING_KPIS_VOLUME);
 
@@ -623,11 +631,11 @@ function validateHl4(data, userId) {
         });
     }
 
-    if (!data.hl4_category){
+    if (!data.hl4_category) {
         throw ErrorLib.getErrors().CustomError("", "", L3_CATEGORY_NOT_EMPTY);
     }
 
-    if (!data.hl4.in_hl4_id && data.hl4_category.length !== dataCategory.getAllocationCategoryCountByHlId('hl4')){
+    if (!data.hl4.in_hl4_id && data.hl4_category.length !== dataCategory.getAllocationCategoryCountByHlId('hl4')) {
         throw ErrorLib.getErrors().CustomError("", "", L3_CATEGORY_INCORRECT_NUMBER);
     }
 
@@ -647,9 +655,9 @@ function validateHl4(data, userId) {
         var categoryHasChanged = categoryChanged(data, existInCrm);
 
 
-        if (!crmFieldsHasChanged && !categoryHasChanged){
+        if (!crmFieldsHasChanged && !categoryHasChanged) {
             statusId = data.hl4.in_hl4_status_detail_id;
-        } else{
+        } else {
             statusId = HL4_STATUS.VALID_FOR_CRM;
         }
     } else {
@@ -787,7 +795,6 @@ function isMyBudgetComplete(hl4_budget) {
     });
 
 
-
     if (myBudgetTotalPercentage > 100)
         throw ErrorLib.getErrors().CustomError("", "", L3_MSG_INITIATIVE_BUDGET_PERCENT);
     if (myBudgetTotalPercentage < 100)
@@ -810,7 +817,7 @@ function isCategoryOptionComplete(data) {
         /*if (!hl4Category.hl4_category_option.length)
             percentagePerOption = 100;*/
 
-        if(!data.hl4.in_hl4_id && (!hl4Category.hl4_category_option || !hl4Category.hl4_category_option.length))
+        if (!data.hl4.in_hl4_id && (!hl4Category.hl4_category_option || !hl4Category.hl4_category_option.length))
             hl4Category.hl4_category_option = getOptionByCategoryId(categoryOption, hl4Category.in_category_id);
 
 
@@ -829,7 +836,7 @@ function isCategoryOptionComplete(data) {
         if (percentagePerOption > 100)
             throw ErrorLib.getErrors().CustomError("", "", L3_CATEGORY_TOTAL_PERCENTAGE);
 
-        if(!Number(hl4Category.in_make_category_mandatory) && (percentagePerOption === 0 || percentagePerOption === 100)){
+        if (!Number(hl4Category.in_make_category_mandatory) && (percentagePerOption === 0 || percentagePerOption === 100)) {
             categoryOptionComplete = true;
         } else if (percentagePerOption < 100) {
             categoryOptionComplete = false;
@@ -844,13 +851,13 @@ function isCategoryOptionComplete(data) {
 
 function getOptionByCategoryId(categories, categoryId) {
     var options = [];
-    for(var i = 0; i < categories.length; i++) {
-        if(categories[i].CATEGORY_ID == categoryId && categories[i].OPTIONS && categories[i].OPTIONS.length){
+    for (var i = 0; i < categories.length; i++) {
+        if (categories[i].CATEGORY_ID == categoryId && categories[i].OPTIONS && categories[i].OPTIONS.length) {
             options = categories[i].OPTIONS.map(function (option) {
-               return {
-                   in_option_id: option.OPTION_ID
-                   , in_amount: 0
-               }
+                return {
+                    in_option_id: option.OPTION_ID
+                    , in_amount: 0
+                }
             });
         }
     }
@@ -924,10 +931,10 @@ function checkBudgetStatus(objHl3, hl4_id, new_hl4_budget) {
 
         var resultHl4;
 
-        if(Number(objHl3)){
-        	resultHl4 = dataHl4.getHl4(objHl3);// GET_HL4_BY_HL3_ID
-        }else{
-        	resultHl4 = dataHl4.getHl4(objHl3.IN_HL3_ID);// GET_HL4_BY_HL3_ID
+        if (Number(objHl3)) {
+            resultHl4 = dataHl4.getHl4(objHl3);// GET_HL4_BY_HL3_ID
+        } else {
+            resultHl4 = dataHl4.getHl4(objHl3.IN_HL3_ID);// GET_HL4_BY_HL3_ID
         }
 
         if (resultHl4) {
@@ -976,10 +983,37 @@ function setHl4Status(hl4_id, status_id, userId) {
         }
     }
     dataL4Report.updateLevel4ReportForDownload(hl4_id);
+
     return updateOK;
 }
+
+function massSetHl4Status(hl4Ids, status_id, userId) {
+    var updateOK;
+    var changeHL4tatus = dataHl4.massChangeStatusHl4(hl4Ids, status_id, userId).out_result_hl4;
+    dataHl4.massInsertHl4LogStatus(hl4Ids, status_id, userId);
+    updateOK = changeHL4tatus;
+    if (HL4_STATUS.IN_CRM == status_id) {
+        if (level4DER.massDeleteL4ChangedFieldsByHl4Ids(hl4Ids) !== null) {
+            massResetHl4CategoryOptionUpdated(hl4Ids, userId);
+        } else {
+            updateOK = false;
+        }
+    }
+    return updateOK;
+}
+
 function resetHl4CategoryOptionUpdated(hl4Id, userId) {
     dataCategoryOptionLevel.resetHl4CategoryOptionUpdated(hl4Id, 'hl4', userId);
+
+    /*var hl4Categories = dataHl4.getHl4Category(hl4Id);
+     hl4Categories.forEach(function(hl4Category){
+     dataHl4.resetHl4CategoryOptionUpdated(hl4Id, userId);
+     });*/
+    return true;
+}
+
+function massResetHl4CategoryOptionUpdated(hl4Id, userId) {
+    dataCategoryOptionLevel.massResetHl4CategoryOptionUpdated(hl4Id, 'hl4', userId);
 
     /*var hl4Categories = dataHl4.getHl4Category(hl4Id);
      hl4Categories.forEach(function(hl4Category){
@@ -992,34 +1026,39 @@ function resetHl4CategoryOptionUpdated(hl4Id, userId) {
 function setHl4StatusInCRM(hl4_id, userId) {
     var hl4Ids = [];
     var result;
-    if(!(hl4_id.constructor === Array)){
-        hl4Ids.push(hl4_id);
-    } else {
-        hl4Ids = hl4_id;
+    if (hl4_id.constructor === Array) {
+        hl4Ids = hl4_id.map(function (value) {
+            return {hl4_id: value}
+        });
     }
-    for(var i = 0; i < hl4Ids.length; i++){
-        if(!Number(hl4Ids[i]))
-            throw ErrorLib.getErrors().CustomError("", "", L3_MSG_INITIATIVE_NOT_FOUND);
 
-        result = setHl4Status(hl4Ids[i], HL4_STATUS.IN_CRM, userId);
+    if (hl4Ids.length) {
+        massSetHl4Status(hl4Ids, HL4_STATUS.IN_CRM, userId);
+        mail.massSendInCRMMail(hl4Ids, "hl4");
+        hl4Ids.forEach(function (value) {
+            dataL4Report.updateLevel4ReportForDownload(value.hl4_id);
+        })
+    } else {
+        if (!Number(hl4_id))
+            throw ErrorLib.getErrors().CustomError("", "", L3_MSG_INITIATIVE_NOT_FOUND);
+        result = setHl4Status(hl4_id, HL4_STATUS.IN_CRM, userId);
         if (result) {
-            mail.sendInCRMMail(hl4Ids[i], "hl4");
+            mail.sendInCRMMail(hl4_id, "hl4");
         }
     }
-
     return 1;
 }
 
 function changeHl4StatusOnDemand(hl4_id, userId) {
-    if(!dataL4DER.getL4ChangedFieldsByHl4Id(hl4_id) || !dataL4DER.getL4ChangedFieldsByHl4Id(hl4_id).length)
+    if (!dataL4DER.getL4ChangedFieldsByHl4Id(hl4_id) || !dataL4DER.getL4ChangedFieldsByHl4Id(hl4_id).length)
         throw ErrorLib.getErrors().CustomError("", "", L3_MSG_INITIATIVE_COULDNT_CHAGE_STATUS);
 
     var hl4_category = getHl4CategoryOption(hl4_id);
 
     var isComplete = isCategoryOptionComplete({
-            hl4_category: hl4_category,
-            hl4: {in_hl4_id: hl4_id}
-        });
+        hl4_category: hl4_category,
+        hl4: {in_hl4_id: hl4_id}
+    });
 
     if (!isComplete)
         throw ErrorLib.getErrors().CustomError("", "hl4Services/handlePut/changeHl4Status", L3_MSG_INITIATIVE_COULDNT_CHAGE_STATUS);
@@ -1029,7 +1068,7 @@ function changeHl4StatusOnDemand(hl4_id, userId) {
     var statusId = existInCrm ? HL4_STATUS.UPDATE_IN_CRM
         : HL4_STATUS.CREATE_IN_CRM;
 
-    if(statusId == HL4_STATUS.CREATE_IN_CRM){
+    if (statusId == HL4_STATUS.CREATE_IN_CRM) {
         level4DER.deleteL4ChangedFieldsByHl4Id(hl4_id);
         var hl4_category = getHl4CategoryOption(hl4_id);
         var data = {
@@ -1098,7 +1137,8 @@ function getHl4CategoryOption(hl4Id) {
     } else {
         aux = AllocationCategory.getCategoryOptionByHierarchyLevelId(HIERARCHY_LEVEL.HL4);
         result = aux.map(function (elem) {
-            return {in_category_name: elem.CATEGORY_NAME,
+            return {
+                in_category_name: elem.CATEGORY_NAME,
                 in_category_id: elem.CATEGORY_ID,
                 in_make_category_mandatory: elem.MAKE_CATEGORY_MANDATORY,
                 in_single_option_only: elem.SINGLE_OPTION_ONLY,
@@ -1163,7 +1203,11 @@ function crmFieldsHaveChanged(data, isComplete, userId) {
     var crmBindingChangedFields = [];
     var crmBindingChangedFieldsUpdate = [];
     if (!isComplete)
-        return {crmFieldsHaveChanged: true, crmBindingChangedFields: crmBindingChangedFields, crmBindingChangedFieldsUpdate: crmBindingChangedFieldsUpdate};
+        return {
+            crmFieldsHaveChanged: true,
+            crmBindingChangedFields: crmBindingChangedFields,
+            crmBindingChangedFieldsUpdate: crmBindingChangedFieldsUpdate
+        };
     var l4ReportFields = level4DER.getProcessingReportFields();
     var deReportDisplayName = l4ReportFields.deReportDisplayName;
     var crmBindingFields = l4ReportFields.crmBindingFields;
@@ -1242,7 +1286,11 @@ function crmFieldsHaveChanged(data, isComplete, userId) {
             });
         });
     }
-    return {crmFieldsHaveChanged: crmFieldsHaveChanged, crmBindingChangedFields: crmBindingChangedFields, crmBindingChangedFieldsUpdate: crmBindingChangedFieldsUpdate};
+    return {
+        crmFieldsHaveChanged: crmFieldsHaveChanged,
+        crmBindingChangedFields: crmBindingChangedFields,
+        crmBindingChangedFieldsUpdate: crmBindingChangedFieldsUpdate
+    };
 }
 
 function parseObject(data) {
@@ -1265,6 +1313,7 @@ function parseObject(data) {
     }
 
 }
+
 //event is "Created" or "Updated"
 function notifyChangeByEmail(data, userId, event) {
 
@@ -1320,6 +1369,6 @@ function checkPermission(userSessionID, method, hl4Id) {
     }
 }
 
-function getExpectedOutcomesByHl4Id(hl4Id, hl3Id){
+function getExpectedOutcomesByHl4Id(hl4Id, hl3Id) {
     return expectedOutcomesLib.getExpectedOutcomesByHl4Id(hl4Id, hl3Id);
 }

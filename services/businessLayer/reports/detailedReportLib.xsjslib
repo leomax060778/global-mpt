@@ -38,19 +38,31 @@ function getDetailedReport(hl1_id, hl2_id, hl3_id){
     });
 
     var map_hl5_kpi = {};
+    var outcomesNameL5 = "";
     rdo.HL5_KPI.forEach(function(hl5_kpi){
         map_hl5_kpi[hl5_kpi.HL5_ID] = map_hl5_kpi[hl5_kpi.HL5_ID] || {};
         map_hl5_kpi[hl5_kpi.HL5_ID].KPI_COMMENTS = hl5_kpi.HL5_COMMENTS;
-        map_hl5_kpi[hl5_kpi.HL5_ID][hl5_kpi.HL5_OUTCOMES_NAME + " VALUE"] = hl5_kpi.HL5_EURO_VALUE;
-        map_hl5_kpi[hl5_kpi.HL5_ID][hl5_kpi.HL5_OUTCOMES_NAME + " VOLUME"] = hl5_kpi.HL5_VOLUME_VALUE;
+        if (hl5_kpi.HL5_OUTCOMES_NAME.indexOf("/") > 0) {
+            outcomesNameL5 = hl5_kpi.HL5_OUTCOMES_NAME.replace("/", " ");
+        } else {
+            outcomesNameL5 = hl5_kpi.HL5_OUTCOMES_NAME;
+        }
+        map_hl5_kpi[hl5_kpi.HL5_ID][outcomesNameL5 + " VALUE"] = hl5_kpi.HL5_EURO_VALUE;
+        map_hl5_kpi[hl5_kpi.HL5_ID][outcomesNameL5 + " VOLUME"] = hl5_kpi.HL5_VOLUME_VALUE;
     });
 
     var map_hl6_kpi = {};
+    var outcomesNameL6 = "";
     rdo.HL6_KPI.forEach(function(hl6_kpi){
         map_hl6_kpi[hl6_kpi.HL6_ID] = map_hl6_kpi[hl6_kpi.HL6_ID] || {};
         map_hl6_kpi[hl6_kpi.HL6_ID].KPI_COMMENTS = hl6_kpi.HL6_COMMENTS;
-        map_hl6_kpi[hl6_kpi.HL6_ID][hl6_kpi.HL6_OUTCOMES_NAME + " VALUE"] = hl6_kpi.HL6_EURO_VALUE;
-        map_hl6_kpi[hl6_kpi.HL6_ID][hl6_kpi.HL6_OUTCOMES_NAME + " VOLUME"] = hl6_kpi.HL6_VOLUME_VALUE;
+        if (hl6_kpi.HL6_OUTCOMES_NAME.indexOf("/") > 0) {
+            outcomesNameL6 = hl6_kpi.HL6_OUTCOMES_NAME.replace("/", " ");
+        } else {
+            outcomesNameL6 = hl6_kpi.HL6_OUTCOMES_NAME;
+        }
+        map_hl6_kpi[hl6_kpi.HL6_ID][outcomesNameL6 + " VALUE"] = hl6_kpi.HL6_EURO_VALUE;
+        map_hl6_kpi[hl6_kpi.HL6_ID][outcomesNameL6 + " VOLUME"] = hl6_kpi.HL6_VOLUME_VALUE;
     });
 
 

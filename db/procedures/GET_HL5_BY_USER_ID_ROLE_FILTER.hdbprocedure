@@ -10,9 +10,9 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL5_BY_USER_
             , CREATED_BY NVARCHAR(255)
             , HL5_BUDGET DECIMAL(19,2)
             , TOTAL_HL6 INT
-            , QUANTITY_HL6_OUT_BUDGET INT
-            , ALLOCATED DECIMAL(19,2)
-            , REMAINING DECIMAL(19,2)
+            --, QUANTITY_HL6_OUT_BUDGET INT
+            --, ALLOCATED DECIMAL(19,2)
+            --, REMAINING DECIMAL(19,2)
             , IMPORTED tinyint
             , CRM_DESCRIPTION NVARCHAR(255)
             , BUDGET_SPEND_REQUEST_STATUS_ID bigint
@@ -25,31 +25,7 @@ SQL SECURITY INVOKER
 DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
 AS
 BEGIN
-
     va_intermidate = SELECT distinct
-        hl5.hl5_ID AS HL5_ID
-        , hl5.acronym AS HL5_ACRONYM
-        , hl4.hl4_id
-        , hl5_status_detail.detail AS STATUS_DETAIL
-        , CONCAT(CONCAT(userTable.FIRST_NAME, ' '),userTable.LAST_NAME) AS CREATED_BY
-        , hl5.BUDGET AS HL5_BUDGET
-        , HL5.IMPORTED as IMPORTED
-        , HL5.HL5_CRM_DESCRIPTION AS CRM_DESCRIPTION
-        , BSRS.BUDGET_SPEND_REQUEST_STATUS_ID
-        , BSRS.DISPLAY_NAME as BUDGET_SPEND_REQUEST_STATUS
-        , hl5.hl5_status_detail_id
-    FROM HL5 Hl5
-        INNER JOIN HL4 hl4 ON hl4.hl4_id=hl5.hl4_id AND hl4.enabled=1 AND hl4.deleted=0
-        INNER JOIN hl5_status_detail hl5_status_detail ON hl5_status_detail.hl5_status_detail_id = hl5.hl5_status_detail_id
-        INNER JOIN USER userTable ON userTable.USER_ID = hl5.created_user_id
-        --will see his own L5s + L5s created by other users assigned to L3
-        INNER JOIN HL3_USER ON HL3_USER.USER_ID = in_user_id
-        INNER JOIN HL3 ON HL3.HL3_ID = HL3_USER.HL3_ID and HL4.hl3_id = HL3.hl3_id
-        LEFT JOIN BUDGET_SPEND_REQUEST BSR ON BSR.HL_ID = HL5.HL5_ID AND BSR.HIERARCHY_LEVEL_ID = 2 AND BSR.BUDGET_SPEND_REQUEST_TYPE_ID = 1
-        LEFT JOIN BUDGET_SPEND_REQUEST_STATUS BSRS ON BSRS.BUDGET_SPEND_REQUEST_STATUS_ID = BSR.BUDGET_SPEND_REQUEST_STATUS_ID
-    WHERE hl5.enabled=1 AND hl5.deleted=0
-    UNION
-    SELECT distinct
             hl5.hl5_ID AS HL5_ID
             , hl5.acronym AS HL5_ACRONYM
             , hl4.hl4_id
@@ -61,16 +37,20 @@ BEGIN
             , BSRS.BUDGET_SPEND_REQUEST_STATUS_ID
             , BSRS.DISPLAY_NAME as BUDGET_SPEND_REQUEST_STATUS
             , hl5.hl5_status_detail_id
+            , hl3.hl3_id
+            , hl4.ACRONYM
         FROM HL5 Hl5
             INNER JOIN HL4 hl4 ON hl4.hl4_id=hl5.hl4_id AND hl4.enabled=1 AND hl4.deleted=0
             INNER JOIN hl5_status_detail hl5_status_detail ON hl5_status_detail.hl5_status_detail_id = hl5.hl5_status_detail_id
             INNER JOIN USER userTable ON userTable.USER_ID = hl5.created_user_id
+            INNER JOIN HL3_USER ON HL3_USER.USER_ID = in_user_id
+            INNER JOIN HL3 ON HL3.HL3_ID = HL3_USER.HL3_ID and HL4.hl3_id = HL3.hl3_id
             LEFT JOIN BUDGET_SPEND_REQUEST BSR ON BSR.HL_ID = HL5.HL5_ID AND BSR.HIERARCHY_LEVEL_ID = 2 AND BSR.BUDGET_SPEND_REQUEST_TYPE_ID = 1
             LEFT JOIN BUDGET_SPEND_REQUEST_STATUS BSRS ON BSRS.BUDGET_SPEND_REQUEST_STATUS_ID = BSR.BUDGET_SPEND_REQUEST_STATUS_ID
-    WHERE hl5.created_user_id = in_user_id and hl5.enabled=1 AND hl5.deleted=0;
+    WHERE hl5.enabled=1 AND hl5.deleted=0 and (hl5.created_user_id = in_user_id or HL3_USER.USER_ID = in_user_id);
 
 
-aux_out_result = SELECT
+aux_out_result = SELECT DISTINCT
         va_hl5.HL5_ID
 		, va_hl5.HL5_ACRONYM
 		, va_hl5.HL4_ID
@@ -79,13 +59,12 @@ aux_out_result = SELECT
 		, va_hl5.HL5_BUDGET
 		, va_hl5.CRM_DESCRIPTION
 		, COUNT(DISTINCT HL6.HL6_ID) AS TOTAL_HL6
-		, COALESCE(SUM(hl6.BUDGET),0) AS ALLOCATED
-        , COALESCE((va_hl5.HL5_BUDGET - SUM(hl6.BUDGET)), va_hl5.HL5_BUDGET) AS REMAINING
-		, SUM(CASE WHEN  HL6.IN_BUDGET IS NULL THEN 0 WHEN HL6.IN_BUDGET = 0 THEN 1 ELSE 0 END) QUANTITY_HL6_OUT_BUDGET --# of L6 out off budget
 		, SUM(CASE WHEN (hl6.HL6_STATUS_DETAIL_ID = 2 OR hl6.HL6_STATUS_DETAIL_ID = 3 OR hl6.HL6_STATUS_DETAIL_ID = 4) THEN 1 ELSE 0 END) AS IN_CRM_CHILD
         , va_hl5.IMPORTED
         , va_hl5.BUDGET_SPEND_REQUEST_STATUS_ID
         , va_hl5.BUDGET_SPEND_REQUEST_STATUS
+        , va_hl5.hl3_id
+        , va_hl5.ACRONYM
         , va_hl5.HL5_STATUS_DETAIL_ID
     FROM :va_intermidate va_hl5
         LEFT JOIN HL6 hl6 ON hl6.HL5_ID = va_hl5.hl5_id AND hl6.enabled = 1 AND hl6.deleted = 0
@@ -101,20 +80,21 @@ aux_out_result = SELECT
         , va_hl5.CRM_DESCRIPTION
         , va_hl5.BUDGET_SPEND_REQUEST_STATUS_ID
         , va_hl5.BUDGET_SPEND_REQUEST_STATUS
+        , va_hl5.hl3_id
+        , va_hl5.ACRONYM
         , va_hl5.HL5_STATUS_DETAIL_ID;
 
 temp_l4_result =
     select hl4.hl4_id
         , "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BGY.BUDGET_YEAR, hl1.acronym, hl2.ORGANIZATION_ACRONYM, hl3.acronym, hl4.acronym, '', '') AS HL4_PATH
-    from HL4 hl4
-        INNER JOIN HL3 hl3 ON hl3.hl3_id=hl4.hl3_id AND hl3.enabled = 1 AND hl3.deleted = 0 AND hl4.enabled = 1 AND hl4.deleted = 0
+    from :aux_out_result hl4
+        INNER JOIN HL3 hl3 ON hl3.hl3_id=hl4.hl3_id AND hl3.enabled = 1 AND hl3.deleted = 0
         INNER JOIN HL2 hl2 ON hl2.hl2_id = hl3.hl2_id AND hl2.enabled = 1 AND hl2.deleted = 0
-            and HL2.IMPLEMENT_EXECUTION_LEVEL = 1
         INNER JOIN HL1 hl1 ON hl1.hl1_id = hl2.hl1_id AND hl1.enabled = 1 AND hl1.deleted = 0
         INNER JOIN BUDGET_YEAR BGY ON hl1.budget_year_id = BGY.budget_year_id AND BGY.enabled = 1 AND BGY.deleted = 0;
 
 out_result =
-    select
+    select DISTINCT
           T2.HL4_ID
         , T2.HL4_PATH
         , T.HL5_ID
@@ -123,31 +103,15 @@ out_result =
         , T.HL5_STATUS_DETAIL_ID AS STATUS_DETAIL_ID
         , T.CREATED_BY
         , T.HL5_BUDGET
-        , SUM(T.TOTAL_HL6) AS TOTAL_HL6
-        , SUM(T.QUANTITY_HL6_OUT_BUDGET) AS QUANTITY_HL6_OUT_BUDGET
-        , SUM(T.ALLOCATED) AS ALLOCATED
-        , SUM(T.REMAINING) AS REMAINING
+        , T.TOTAL_HL6
         , T.IMPORTED
         , T.CRM_DESCRIPTION
         , T.BUDGET_SPEND_REQUEST_STATUS_ID
         , T.BUDGET_SPEND_REQUEST_STATUS
-   ,T.IN_CRM_CHILD
+        ,T.IN_CRM_CHILD
  from :temp_l4_result T2
         inner join :aux_out_result T on T2.HL4_ID = T.HL4_ID
-    GROUP BY
-        T.HL5_ID
-        , T.HL5_ACRONYM
-        , T2.HL4_ID
-        , T2.HL4_PATH
-        , T.STATUS_DETAIL
-        , T.CREATED_BY
-        , T.HL5_BUDGET
-        , T.IMPORTED
-        , T.CRM_DESCRIPTION
-        , T.BUDGET_SPEND_REQUEST_STATUS_ID
-        , T.BUDGET_SPEND_REQUEST_STATUS
-        , T.HL5_STATUS_DETAIL_ID
-   ,T.IN_CRM_CHILD
+
  ORDER BY T2.HL4_PATH ASC, T.HL5_ACRONYM ASC;
 
 END;

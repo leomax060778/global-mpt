@@ -162,6 +162,9 @@ function getL5ChangedFieldsByHl5Id(hl5Id, userId) {
 function deleteL5ChangedFieldsByHl5Id(hl5Id) {
     return dataL5DER.deleteL5ChangedFieldsByHl5Id(hl5Id);
 }
+function massDeleteL5ChangedFieldsByHl5Ids(hl5Ids) {
+    return dataL5DER.massDeleteL5ChangedFieldsByHl5Id(hl5Ids);
+}
 
 function checkChangedField(changedFields, field, value) {
     var hasChanged = false;
