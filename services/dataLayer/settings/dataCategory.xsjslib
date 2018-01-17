@@ -27,6 +27,7 @@ var GET_ALLOCATION_CATEGORY_BY_ID = "GET_ALLOCATION_CATEGORY_BY_ID";
 var GET_ALLOCATION_CATEGORY_BY_NAME = "GET_ALLOCATION_CATEGORY_BY_NAME";
 var GET_ALLOCATION_CATEGORY_IN_USE_BY_CATGEORY_ID = "GET_ALLOCATION_CATEGORY_IN_USE_BY_CATGEORY_ID";
 var GET_ALLOCATION_CATEGORY_COUNT_BY_HL_ID = "GET_ALLOCATION_CATEGORY_COUNT_BY_HL_ID";
+var GET_ALLOCATION_CATEGORY_BY_EXPORT_KEY = "GET_ALLOCATION_CATEGORY_BY_EXPORT_KEY";
 var UPD_ALLOCATION_CATEGORY = "UPD_ALLOCATION_CATEGORY";
 var DEL_ALLOCATION_CATEGORY = "DEL_ALLOCATION_CATEGORY";
 /******************************************************/
@@ -261,4 +262,12 @@ function deleteAllocationCategory(categoryId, userId, autoCommit){
 		rdo = db.executeScalarManual(DEL_ALLOCATION_CATEGORY,params,'out_result');
 	}
 	return rdo;
+}
+
+function getCategoryByProcessingReportExportKey(exportKey){
+    var params = {
+        'in_export_key' : exportKey
+    };
+    var result = db.executeProcedureManual(GET_ALLOCATION_CATEGORY_BY_EXPORT_KEY, params);
+    return db.extractArray(result.out_result)[0];
 }

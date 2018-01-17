@@ -29,6 +29,8 @@ var MSG_HL5_NOT_FOUND = "Hl5 not found.";
 var MSG_FK_MAP_NOT_FOUND = "Foreign key map, not found.";
 var MSG_NOT_FOUND = ", not found.";
 var MSG_INVALID_DATE_FORMAT = "Invalid date format";
+var MSG_INVALID_EMPLOYEE_RESPONSIBLE_ID = "The Employee Responsible number has a invalid format.";
+var MSG_INVALID_TOP_NODE = "The Top node is invalid.";
 var MSG_RECORD_WITHOUT_PARENT = "This record does not have a value parent.";
 var MSG_ACRONYM_NOT_FOUND = "Acronym does not match with Parent.";
 //Mapper//
@@ -151,7 +153,10 @@ function getMapKPY() {
 //FOREIGN_COLUMN_REFERENCE: Referenced field in above table needed to extract value (only for static configuration)
 //FOREIGN_COLUMN_FILTER: needed table column name to find foreign register
 function getMapCategories() {
-    var rdo = [];
+    mapCategory =  dataUpload.getMapCategories();
+    return mapCategory;
+
+    /*var rdo = [];
     var categories = categoryLib.getAllAllocationCategory();
     categories.forEach(function (cat) {
 
@@ -179,7 +184,8 @@ function getMapCategories() {
         rdo.push(objL6);
     });
     mapCategory = rdo;
-    return rdo;
+    return rdo;*/
+
 }
 
 //create a complete map with Excel, Categories and expected outcomes (KPI)
@@ -189,8 +195,8 @@ function getMapHLExcelComplete() {
     //rdo = rdo.concat(getMapCategories());
     //rdo = rdo.concat(getMapKPY());
     //uncomment for faster concat!
-    Array.prototype.push.apply(rdo, getMapCategories());
-    Array.prototype.push.apply(rdo, getMapKPY());
+    // Array.prototype.push.apply(rdo, getMapCategories());
+    // Array.prototype.push.apply(rdo, getMapKPY());
     map = rdo;
     return rdo;
 }
@@ -677,7 +683,262 @@ function level2Processor(userId, arrayPaths, IMPORT_ID) {
     return arrHl;
 }
 
-function processor(userId, arrayPaths, IMPORT_ID) {
+function processor(userId, arrayPaths, IMPORT_ID){
+    var HLs = [];
+    /**
+     * Initialize Map from DB - The foreign keys need this
+     */
+    getMapHLExcelComplete();
+
+    arrayPaths.forEach(function(obj){
+        try{
+            /**
+             *initialize hl object
+             */
+            var hl = {};
+            hl.IMPORT_ID = IMPORT_ID;
+            hl.categories = [];
+            hl.expectedOutcomes = [];
+            hl.expected_outcomes_detail = [];
+            var kpiIndexMap = {};
+            var budget = 0;
+            /*********************************/
+
+            /**
+             * get all row by each path
+             */
+            var row = dataUpload.getDataFromDictionaryByPath(obj.PATH, userId);
+            /*********************************/
+
+            if(validate(row)){//if this row isn't valid then not will be inserted o updated
+
+                /**
+                 * Process each cell from a row
+                 */
+                row.forEach(function(cell){
+
+                    /**
+                     * Set Level
+                     */
+                    hl.HIERARCHY_LEVEL_ID = cell.HIERARCHY_LEVEL_ID ? cell.HIERARCHY_LEVEL_ID  : null;
+
+                    /**
+                     *
+                     */
+                    if(cell.UPLOAD_KEY === 'HL4_ID' || cell.UPLOAD_KEY === 'HL5_ID'){
+                        hl.PARENT = cell.UPLOAD_VALUE;
+                    }
+
+                    /**
+                     * Process Foreign key
+                     */
+                    var fieldMapper = getValue(cell.UPLOAD_KEY);
+                    if (fieldMapper && fieldMapper.FOREIGN_TABLE_NAME) {//IS A FOREIGN KEY
+                        hl[cell.UPLOAD_KEY] = getForeignId(
+                            fieldMapper.FOREIGN_TABLE_NAME,
+                            fieldMapper.FOREIGN_COLUMN_REFERENCE,
+                            fieldMapper.FOREIGN_COLUMN_FILTER,
+                            cell.UPLOAD_VALUE,
+                            fieldMapper.OTHER_CONDITION, '')[fieldMapper.FOREIGN_COLUMN_REFERENCE];
+                    }
+                    else{
+                        /**
+                         * Process simple fields
+                         */
+                        switch (cell.UPLOAD_KEY){
+                            case 'SHOW_ON_DG_CALENDAR':{
+                                var showOnCalendar = cell.UPLOAD_VALUE.replace("\r", "");
+                                if (showOnCalendar.indexOf("X") < 0)
+                                    hl[cell.UPLOAD_KEY] = 0;
+                                else
+                                    hl[cell.UPLOAD_KEY] = 1;
+                                break;
+                            }
+                            case 'BUDGET':{
+                                budget = Number(parseNumberBudget(cell.UPLOAD_VALUE));
+                                if (!processDistributionComplete(row, budget)) {
+                                    var error = ErrorLib.getErrors().ImportError("", "", "Distribution budget is not complete.");
+                                    error.row = row;
+                                    throw error;
+                                }
+                                hl[cell.UPLOAD_KEY] = budget;
+                                break;
+                            }
+                            case 'BUDGET_SPEND_Q1':{
+                                hl[cell.UPLOAD_KEY] = processDistribution(row, budget, cell.UPLOAD_KEY);
+                                break;
+                            }
+                            case 'BUDGET_SPEND_Q2':{
+                                hl[cell.UPLOAD_KEY] = processDistribution(row, budget, cell.UPLOAD_KEY);
+                                break;
+                            }
+                            case 'BUDGET_SPEND_Q3':{
+                                hl[cell.UPLOAD_KEY] = processDistribution(row, budget, cell.UPLOAD_KEY);
+                                break;
+                            }
+                            case 'BUDGET_SPEND_Q4':{
+                                hl[cell.UPLOAD_KEY] = processDistribution(row, budget, cell.UPLOAD_KEY);
+                                break;
+                            }
+                            case 'PLANNED_START_DATE':{
+                                hl[cell.UPLOAD_KEY] = processorDate(cell.UPLOAD_VALUE);
+                                break;
+                            }
+                            case 'PLANNED_END_DATE':{
+                                hl[cell.UPLOAD_KEY] = processorDate(cell.UPLOAD_VALUE);
+                                break;
+                            }
+                            case 'ACTUAL_START_DATE':{
+                                hl[cell.UPLOAD_KEY] = processorDate(cell.UPLOAD_VALUE);
+                                break;
+                            }
+                            case 'ACTUAL_END_DATE':{
+                                hl[cell.UPLOAD_KEY] = processorDate(cell.UPLOAD_VALUE);
+                                break;
+                            }
+                            case 'EMPLOYEE_RESPONSIBLE':{
+                                var regexEmployee = /(d|i)[\d]{+}/gi;
+                                if(regexEmployee.test(cell.UPLOAD_VALUE)){
+                                    hl[cell.UPLOAD_KEY] = cell.UPLOAD_VALUE;
+                                }else{
+                                    var error = ErrorLib.getErrors().ImportError("", "", MSG_INVALID_EMPLOYEE_RESPONSIBLE_ID);
+                                    error.row = row;
+                                    throw error;
+                                }
+                                break;
+                            }
+                            default:{
+                                /**
+                                 * If not a special case, then map it directly
+                                 */
+                                hl[cell.UPLOAD_KEY] = cell.UPLOAD_VALUE;
+                                break;
+                            }
+                        }//end switch
+                    }//end else
+                });//end row.foreach
+
+
+                /**
+                 * Validate Top Node
+                 */
+                 var hlId = hl.HL4_ID || hl.HL5_ID;
+                 var level = hl.HIERARCHY_LEVEL_ID;
+                 var topNode = dataUpload.getTopNode(hlId, level);
+                 if (topNode){
+                     if(hl.TOP_NODE !== topNode.CRM_ID){
+                         var error = ErrorLib.getErrors().ImportError("", "", MSG_INVALID_TOP_NODE + "data HLId: " + hlId);
+                         error.row = row;
+                         throw error;
+                     }
+                 }
+
+                /******************************************/
+
+                /**
+                 * Process All Allocation Category Option Level
+                 */
+                hl.CATEGORIES = processCategory(hl);
+                /************************************************/
+
+                /**
+                 * Set acronym to L5 or L6
+                 */
+                if (hl.HIERARCHY_LEVEL_ID === 2) {
+                    //get last piece of path separete with "_" or "-"
+                    if (obj.PATH.indexOf("-") === -1) {
+                        if (obj.PATH.indexOf(hl.PARENT) >= 0) {
+                            hl.ACRONYM = obj.PATH.substring(hl.PARENT.length);
+                        } else {
+                            var error = ErrorLib.getErrors().ImportError("", ""
+                                , MSG_ACRONYM_NOT_FOUND + "path: " + obj.PATH + " parent: " + hl.PARENT);
+                            error.row = row;
+                            throw error;
+                        }
+                    }
+                    else {
+                        var auxAcronym = obj.PATH.split("-");
+                        hl.ACRONYM = auxAcronym[auxAcronym.length - 1];
+                    }
+                }
+                else {
+                    if (hl.PARENT)
+                        hl.ACRONYM = obj.PATH.substring(hl.PARENT.length);
+                    else {
+                        var error = ErrorLib.getErrors().ImportError("", "", MSG_RECORD_WITHOUT_PARENT);
+                        error.row = row;
+                        throw error;
+                    }
+                }
+                /*******************************************************/
+
+                /**
+                 * Set Default Currency
+                 */
+                hl.EURO_CONVERSION_ID = getDefaultCurrencyForBudgetYearByPath(hl);
+                /***********************************************************/
+
+                /**
+                 * Set User
+                 */
+                hl.CREATED_USER_ID = userId;
+                /*************************************************************/
+
+                /**
+                 * set in budget false
+                 */
+                hl.IN_BUDGET = 0;
+                /***************************************************************/
+
+                /**
+                 * Set Import Id
+                 */
+                hl.IMPORT_ID = IMPORT_ID;
+                /**********************************************************/
+
+                /**
+                 * Validate if the record isn't a L5 o L6
+                 */
+                if (hl.HIERARCHY_LEVEL_ID != 2 && hl.HIERARCHY_LEVEL_ID != 3) {
+                    var error = ErrorLib.getErrors().ImportError("", "", "This record is incomplete or is not HL5/6");
+                    error.row = row;
+                    throw error;
+                }
+
+                /**
+                 * Save and log the record
+                 */
+                if (mapInsertHierarchyLevelInsert[hl.HIERARCHY_LEVEL_ID](hl, userId))
+                    logImportSuccess(row, IMPORT_ID, userId)
+                /******************************************************************/
+
+            }//end if validate
+        }
+        catch(e){
+            if (e && e.code == 456) {
+                logImportError(e, IMPORT_ID, userId);
+            } else {
+                logImportAnotherError(obj.PATH, obj.HIERARCHY_LEVEL_ID, e, IMPORT_ID, userId);
+            }
+        }
+    });//end arrayPath.foreach
+    return true;
+}
+
+function processorDate(UPLOAD_VALUE){
+    var newDate = UPLOAD_VALUE;
+    if (!new Date(newDate).valueOf()) {
+        var error = ErrorLib.getErrors().ImportError("", "uploadL5L6Lib/processor/", MSG_INVALID_DATE_FORMAT);
+        error.row = row;
+        throw error;
+    }
+    return (new Date(newDate)).toISOString();
+}
+
+/**
+ * @deprecated
+ */
+function processor_old(userId, arrayPaths, IMPORT_ID) {
     var HLs = [];
 
     //initialize map
@@ -692,13 +953,14 @@ function processor(userId, arrayPaths, IMPORT_ID) {
             hl.categories = [];
             hl.expectedOutcomes = [];
             hl.expected_outcomes_detail = [];
+
             var kpiIndexMap = {};
 
             //get all row by each path
             var row = dataUpload.getDataFromDictionaryByPath(obj.PATH, userId);
             var budget = 0;
 
-            if (validate(row)) {
+            if (validate(row)) { //VALIDATE PARENTS
 
                 row.forEach(function (cell) {
 
@@ -791,6 +1053,16 @@ function processor(userId, arrayPaths, IMPORT_ID) {
                                 throw error;
                             }
                             hl[cell.UPLOAD_KEY] = (new Date(newDate)).toISOString();
+                        }
+                        else if (cell.UPLOAD_KEY == 'EMPLOYEE_RESPONSIBLE'){
+                            var regexEmployee = /(d|i)[\d]{+}/gi;
+                                if(regexEmployee.test(cell.UPLOAD_VALUE)){
+                                    hl[cell.UPLOAD_KEY] = cell.UPLOAD_VALUE;
+                                }else{
+                                    var error = ErrorLib.getErrors().ImportError("", "uploadL5L6Lib/processor/", MSG_INVALID_EMPLOYEE_RESPONSIBLE_ID);
+                                    error.row = row;
+                                    throw error;
+                                }
                         }
                         else {
                             hl[cell.UPLOAD_KEY] = cell.UPLOAD_VALUE;
@@ -896,7 +1168,7 @@ function parseNumberBudget(stringValue) {
 function logImportAnotherError(path, level, error, importId, userId) {
     var separator = "/**/";
 
-    dataUpload.insertLog("", "", 1,
+    dataUpload.insertLog("", new Error().stack , 1,
         "logImportAnotherError - PATH: " + path + separator + "HL_ID: " + level + separator + "DETAIL: " + error, importId,
         userId);
 }
@@ -1085,7 +1357,211 @@ function findOption(option, listOptions) {
     return null;
 }
 
-function processCategory(cell) {
+function processCategory(hl){
+    /**
+     * Initialize the categories Array
+     * @type {Array}
+     */
+    var CATEGORIES = [];
+
+    /**
+     * Initialize the 4 CATEGORIES
+     * Marketing Priority
+     * Industry
+     * Marketin Segment
+     * Solution
+     */
+    var impCategory = categoryLib.getCategoryByProcessingReportExportKey('IMP');
+    var IMP = {};
+    IMP.OPTIONS = [];
+    IMP.CATEGORY_ID = impCategory.ALLOCATION_CATEGORY_ID;
+    CATEGORIES.push(IMP);
+
+    var industryCategory = categoryLib.getCategoryByProcessingReportExportKey('INDUSTRY');
+    var IND = {};
+    IND.OPTIONS = [];
+    IND.CATEGORY_ID = industryCategory.ALLOCATION_CATEGORY_ID;
+    CATEGORIES.push(IND);
+
+    var mktsegCategory = categoryLib.getCategoryByProcessingReportExportKey('MKTSEG');
+    var MKTSEG = {};
+    MKTSEG.OPTIONS = [];
+    MKTSEG.CATEGORY_ID = mktsegCategory.ALLOCATION_CATEGORY_ID;
+    CATEGORIES.push(MKTSEG);
+
+    var solutionCategory = categoryLib.getCategoryByProcessingReportExportKey('SOLUTION');
+    var SOLUTION = {};
+    SOLUTION.OPTIONS = [];
+    SOLUTION.CATEGORY_ID = solutionCategory.ALLOCATION_CATEGORY_ID;
+    CATEGORIES.push(SOLUTION);
+    /**************************************************/
+
+    /**
+     * Map Option to Marketing Priority
+     */
+    if(hl.ZZIMP_PERCENTAGE1 && hl.IMP1 ){
+        var IMP1 = {};
+        IMP1.AMOUNT = hl.ZZIMP_PERCENTAGE1;
+        IMP1.OPTION_ID = hl.IMP1;
+        IMP.OPTIONS.push(IMP1);
+    }
+
+    if(hl.ZZIMP_PERCENTAGE2 && hl.IMP2) {
+        var IMP2 = {};
+        IMP2.AMOUNT = hl.ZZIMP_PERCENTAGE2;
+        IMP2.OPTION_ID = hl.IMP2;
+        IMP.OPTIONS.push(IMP2);
+    }
+
+    if(hl.ZZIMP_PERCENTAGE3 && hl.IMP3 ) {
+        var IMP3 = {};
+        IMP3.AMOUNT = hl.ZZIMP_PERCENTAGE3;
+        IMP3.OPTION_ID = hl.IMP3;
+        IMP.OPTIONS.push(IMP3);
+    }
+
+    if(hl.ZZIMP_PERCENTAGE4 && hl.IMP4 ) {
+        var IMP4 = {};
+        IMP4.AMOUNT = hl.ZZIMP_PERCENTAGE4;
+        IMP4.OPTION_ID = hl.IMP4;
+        IMP.OPTIONS.push(IMP4);
+    }
+
+    if(hl.ZZIMP_PERCENTAGE5 && hl.IMP5 ) {
+        var IMP5 = {};
+        IMP5.AMOUNT = hl.ZZIMP_PERCENTAGE5;
+        IMP5.OPTION_ID = hl.IMP5;
+        IMP.OPTIONS.push(IMP5);
+    }
+    /******************************************************************************************************/
+
+
+    /**
+     * Map Option to Industry
+     */
+    if(hl.ZZIND_PERCENTAGE1 && hl.INDUSTRY1 ){
+        var INDUSTRY1 = {};
+        INDUSTRY1.AMOUNT = hl.ZZIND_PERCENTAGE1;
+        INDUSTRY1.OPTION_ID = hl.INDUSTRY1;
+        IND.OPTIONS.push(INDUSTRY1);
+    }
+
+    if(hl.ZZIND_PERCENTAGE2 && hl.INDUSTRY2) {
+        var INDUSTRY2 = {};
+        INDUSTRY2.AMOUNT = hl.ZZIND_PERCENTAGE2;
+        INDUSTRY2.OPTION_ID = hl.INDUSTRY2;
+        IND.OPTIONS.push(INDUSTRY2);
+    }
+
+    if(hl.ZZIND_PERCENTAGE3 && hl.INDUSTRY3) {
+        var INDUSTRY3 = {};
+        INDUSTRY3.AMOUNT = hl.ZZIND_PERCENTAGE3;
+        INDUSTRY3.OPTION_ID = hl.INDUSTRY3;
+        IND.OPTIONS.push(INDUSTRY3);
+    }
+
+    if(hl.ZZIND_PERCENTAGE4 && hl.INDUSTRY4) {
+        var INDUSTRY4 = {};
+        INDUSTRY4.AMOUNT = hl.ZZIND_PERCENTAGE4;
+        INDUSTRY4.OPTION_ID = hl.INDUSTRY4;
+        IND.OPTIONS.push(INDUSTRY4);
+    }
+
+    if(hl.ZZIND_PERCENTAGE5 && hl.INDUSTRY5) {
+        var INDUSTRY5 = {};
+        INDUSTRY5.AMOUNT = hl.ZZIND_PERCENTAGE5;
+        INDUSTRY5.OPTION_ID = hl.INDUSTRY5;
+        IND.OPTIONS.push(INDUSTRY5);
+    }
+    /******************************************************************************************************/
+
+    /**
+     * Map Option to Marketing Segment
+     */
+    if(hl.ZZMSEG_PERCENTAGE1 && hl.MKTSEG1 ){
+        var MKTSEG1 = {};
+        MKTSEG1.AMOUNT = hl.ZZMSEG_PERCENTAGE1;
+        MKTSEG1.OPTION_ID = hl.MKTSEG1;
+        MKTSEG.OPTIONS.push(MKTSEG1)
+    }
+
+    if(hl.ZZMSEG_PERCENTAGE2 && hl.MKTSEG2) {
+        var MKTSEG2 = {};
+        MKTSEG2.AMOUNT = hl.ZZMSEG_PERCENTAGE2;
+        MKTSEG2.OPTION_ID = hl.MKTSEG2;
+        MKTSEG.OPTIONS.push(MKTSEG2)
+    }
+
+    if(hl.ZZMSEG_PERCENTAGE3 && hl.MKTSEG3) {
+        var MKTSEG3 = {};
+        MKTSEG3.AMOUNT = hl.ZZMSEG_PERCENTAGE3;
+        MKTSEG3.OPTION_ID = hl.MKTSEG3;
+        MKTSEG.OPTIONS.push(MKTSEG3)
+    }
+
+    if(hl.ZZMSEG_PERCENTAGE4 && hl.MKTSEG4) {
+        var MKTSEG4 = {};
+        MKTSEG4.AMOUNT = hl.ZZMSEG_PERCENTAGE4;
+        MKTSEG4.OPTION_ID = hl.MKTSEG4;
+        MKTSEG.OPTIONS.push(MKTSEG4)
+    }
+
+    if(hl.ZZMSEG_PERCENTAGE5 && hl.MKTSEG5) {
+        var MKTSEG5 = {};
+        MKTSEG5.AMOUNT = hl.ZZMSEG_PERCENTAGE5;
+        MKTSEG5.OPTION_ID = hl.MKTSEG5;
+        MKTSEG.OPTIONS.push(MKTSEG5)
+    }
+    /******************************************************************************************************/
+
+    /**
+     * Map Option to solution
+     */
+    if(hl.ZZSOL_PERCENTAGE1 && hl.SOLUTION1 ){
+        var SOLUTION1 = {};
+        SOLUTION1.AMOUNT = hl.ZZSOL_PERCENTAGE1;
+        SOLUTION1.OPTION_ID = hl.SOLUTION1;
+        SOLUTION.OPTIONS.push(SOLUTION1);
+    }
+
+    if(hl.ZZSOL_PERCENTAGE2 && hl.SOLUTION2) {
+        var SOLUTION2 = {};
+        SOLUTION2.AMOUNT = hl.ZZSOL_PERCENTAGE2;
+        SOLUTION2.OPTION_ID = hl.SOLUTION2;
+        SOLUTION.OPTIONS.push(SOLUTION2);
+    }
+
+    if(hl.ZZSOL_PERCENTAGE3 && hl.SOLUTION3) {
+        var SOLUTION3 = {};
+        SOLUTION3.AMOUNT = hl.ZZSOL_PERCENTAGE3;
+        SOLUTION3.OPTION_ID = hl.SOLUTION3;
+        SOLUTION.OPTIONS.push(SOLUTION3);
+    }
+
+    if(hl.ZZSOL_PERCENTAGE4 && hl.SOLUTION4) {
+        var SOLUTION4 = {};
+        SOLUTION4.AMOUNT = hl.ZZSOL_PERCENTAGE4;
+        SOLUTION4.OPTION_ID = hl.SOLUTION4;
+        SOLUTION.OPTIONS.push(SOLUTION4);
+    }
+
+    if(hl.ZZSOL_PERCENTAGE5 && hl.SOLUTION5) {
+        var SOLUTION5 = {};
+        SOLUTION5.AMOUNT = hl.ZZSOL_PERCENTAGE5;
+        SOLUTION5.OPTION_ID = hl.SOLUTION5;
+        SOLUTION.OPTIONS.push(SOLUTION5);
+    }
+    /******************************************************************************************************/
+
+    return CATEGORIES;
+}
+
+/**
+ * @deprecated
+ * @param cell
+ * @returns {*}
+ */
+function processCategory_old(cell) {
     var category = categoryLib.getAllocationCategoryByName(cell.UPLOAD_KEY);
     if (category) {
         var options = categoryLib.getOptionByLevelByCategory(cell.HIERARCHY_LEVEL_ID, category.CATEGORY_ID);

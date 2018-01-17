@@ -19,6 +19,7 @@ in in_hl6_id bigint
     invoice_number nvarchar(255),
     description nvarchar(255),
     budget_spend_request_status_id bigint,
+    status NVARCHAR(255),
     budget_spend_request_id bigint
 )
 ) 
@@ -71,10 +72,12 @@ temp_out_hl6_partner =
         t.invoice_number,
         bsr.description,
         bsr.budget_spend_request_status_id,
+        BSRS.NAME AS STATUS,
         bsr.budget_spend_request_id
         from :temp_out_hl6_partner t
         inner join currency c on c.euro_conversion_id = t.currency_id
         left join budget_spend_request bsr on bsr.budget_spend_request_id = t.budget_spend_request_id
+        LEFT JOIN BUDGET_SPEND_REQUEST_STATUS BSRS ON bsr.BUDGET_SPEND_REQUEST_STATUS_ID = BSRS.BUDGET_SPEND_REQUEST_STATUS_ID
         and (bsr.BUDGET_SPEND_REQUEST_STATUS_ID = 1 OR bsr.BUDGET_SPEND_REQUEST_STATUS_ID = 2);
 
 

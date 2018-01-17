@@ -1,0 +1,31 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::DEL_HL6_EXPECTED_OUTCOMES_BY_HL5_ID" (
+	IN in_hl5_id BIGINT,
+	IN in_user_id BIGINT,
+	OUT out_result BIGINT)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	AS
+BEGIN
+    DECLARE va_exp_out  TABLE (
+         HL6_EXPECTED_OUTCOMES_ID BIGINT
+    );
+        va_exp_out = SELECT HL6_EXPECTED_OUTCOMES_ID FROM HL6_EXPECTED_OUTCOMES HEO JOIN HL6 ON HL6.HL6_ID = HEO.HL6_ID WHERE HL6.HL5_ID = in_hl5_id;
+
+		UPDATE HL6_EXPECTED_OUTCOMES
+        		SET deleted = 1,
+        		enabled = 0,
+        			modified_user_id = in_user_id,
+        			modified_date_tz = CURRENT_TIMESTAMP
+        		WHERE HL6_EXPECTED_OUTCOMES_ID IN (SELECT HL6_EXPECTED_OUTCOMES_ID FROM :va_exp_out);
+
+        UPDATE HL6_EXPECTED_OUTCOMES_DETAIL
+            SET deleted = 1,
+            enabled = 0,
+                modified_user_id = in_user_id,
+                modified_date_tz = CURRENT_TIMESTAMP
+            WHERE HL6_EXPECTED_OUTCOMES_ID in (SELECT HL6_EXPECTED_OUTCOMES_ID FROM :va_exp_out);
+
+		SELECT ::ROWCOUNT INTO out_result FROM DUMMY;
+
+END;

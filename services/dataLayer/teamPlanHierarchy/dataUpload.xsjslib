@@ -10,6 +10,7 @@ var spINS_DICTIONARY = "INS_DICTIONARY_L5_L6";
 var spINS_DICTIONARY_KPI = "INS_DICTIONARY_KPI";
 var spGET_MAP_HL_EXCEL = "GET_MAP_HL_EXCEL";
 var spGET_MAP_HL1_EXCEL = "GET_MAP_HL1_EXCEL";
+var spGET_MAP_HL5_HL6_CATEGORIES = "GET_MAP_HL5_HL6_CATEGORIES";
 var spGET_MAP_L1L2L3_EXCEL = "GET_MAP_L1L2L3_EXCEL";
 var spGET_ALL_PATH_FROM_DICTIONARY_L5_L6 = "GET_ALL_PATH_FROM_DICTIONARY_L5_L6";
 var spGET_HL5_PATH_FROM_DICTIONARY_L5_L6 = "GET_HL5_PATH_FROM_DICTIONARY_L5_L6";
@@ -24,6 +25,7 @@ var DEL_DICTIONARY_L5_L6_BY_USER_ID = "DEL_DICTIONARY_L5_L6_BY_USER_ID";
 var INS_IMPORT_HL = "INS_IMPORT_HL";
 var UPD_IMPORT_HL = "UPD_IMPORT_HL";
 var GET_DEFAULT_CURRENCY_FOR_HL_AND_LEVEL = "GET_DEFAULT_CURRENCY_FOR_HL_AND_LEVEL";
+var GET_TOP_NODE = "GET_TOP_NODE";
 /******************************************************/
 var hierarchyLevel = {
     "hl1": 6,
@@ -35,6 +37,11 @@ var hierarchyLevel = {
 
 function getMapHL1Excel(){
     var rdo = db.executeProcedure(spGET_MAP_HL1_EXCEL, {});
+    return db.extractArray(rdo.OUT_RESULT);
+}
+
+function getMapCategories(){
+    var rdo = db.executeProcedure(spGET_MAP_HL5_HL6_CATEGORIES, {});
     return db.extractArray(rdo.OUT_RESULT);
 }
 
@@ -226,4 +233,13 @@ function updateImportHl(importId, userId){
     };
     var rdo = db.executeScalarManual(UPD_IMPORT_HL, params, "out_result");
     return rdo;
+}
+
+function getTopNode(Hl_Id, level){
+    var param = {
+        'IN_HL_ID': Hl_Id,
+        'IN_LEVEL': level};
+
+    var rdo = db.executeProcedure(GET_TOP_NODE, param);
+    return db.extractArray(rdo.OUT_RESULT)[0];
 }

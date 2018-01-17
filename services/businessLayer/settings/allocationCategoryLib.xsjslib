@@ -164,3 +164,7 @@ function checkAllocationCategory(data){
 
 	return {allocationCategoryToCreate: allocationCategoryToInsert, allocationCategoryToUpdate: allocationCategoryToUpdate};
 }
+
+function getCategoryByProcessingReportExportKey(exportKey){
+    return dbCategory.getCategoryByProcessingReportExportKey(exportKey);
+}

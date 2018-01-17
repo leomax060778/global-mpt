@@ -5,8 +5,10 @@ var dataPartner = mapper.getDataPartner();
 var businessAttachment = mapper.getAttachment();
 var db = mapper.getdbHelper();
 var dbInterlock = mapper.getDataInterLock();
+var uploadLib = mapper.getUploadLib();
 var ErrorLib = mapper.getErrors();
 var util = mapper.getUtil();
+var dataUpload = mapper.getDataUpload();
 /*************************************************/
 
 //Hierarchy level map
@@ -27,9 +29,7 @@ function getPartnerByHl4Id(hl4Id, currencyValueAux) {
 }
 
 function getPartnerByHl5Id(hl5Id) {
-    var result = parseAttachment(dataPartner.getPartnerByHl5Id(hl5Id, HIERARCHY_LEVEL.HL5), HIERARCHY_LEVEL.HL5);
-
-    return result;
+    return parseAttachment(dataPartner.getPartnerByHl5Id(hl5Id, HIERARCHY_LEVEL.HL5), HIERARCHY_LEVEL.HL5, null, hl5Id);
 }
 /**
  *
@@ -37,15 +37,16 @@ function getPartnerByHl5Id(hl5Id) {
  * @returns {{partners: Array, total: number, partnerCurrencyValue: *, partnerCurrencyId: null, totalExternal: number}}
  */
 function getPartnerByHl6Id(hl6Id) {
-    return parser(dataPartner.getPartnerByHl6Id(hl6Id));
+    return parser(dataPartner.getPartnerByHl6Id(hl6Id), null, hl6Id);
 }
 /**
  *
  * @param partners {Array}
  * @param currencyValueAux
+ * @param hl6Id
  * @returns {{partners: Array, total: number, partnerCurrencyValue: *, partnerCurrencyId: null, totalExternal: number}}
  */
-function parser(partners, currencyValueAux) {
+function parser(partners, currencyValueAux, hl6Id) {
     var total = 0;
     var totalExternal = 0;
     var rdo = [];
@@ -57,7 +58,7 @@ function parser(partners, currencyValueAux) {
     par.forEach(function (partner) {
         var obj = {};
         Object.keys(partner).forEach(function (key) {
-            if(key == "VALUE"){
+            if (key == "VALUE") {
                 obj.AMOUNT = (Number(partner.VALUE) * (currencyValueAux || 1)).toFixed(2);
             } else {
                 obj[key] = partner[key];
@@ -73,14 +74,26 @@ function parser(partners, currencyValueAux) {
             totalExternal = totalExternal + parseFloat(obj.AMOUNT);
         }
     });
+    var partnerCurrencyValue;
+    var partnerCurrencyId;
+    if (rdo.length) {
+        partnerCurrencyValue = Number(rdo[0].CURRENCY_VALUE);
+        partnerCurrencyId = rdo[0].CURRENCY_ID;
+    } else {
+        var partnerCurrency = getDefaultCurrencyForBudgetYearByHlId(hl6Id, 'HL6');
+        partnerCurrencyValue = partnerCurrency.CURRENCY_VALUE;
+        partnerCurrencyId = partnerCurrency.EURO_CONVERSION_ID;
+    }
     return {
-        partners: rdo, total: Number(total), partnerCurrencyValue: rdo.length ? Number(rdo[0].CURRENCY_VALUE) : null
-        , partnerCurrencyId: rdo.length ? rdo[0].CURRENCY_ID : null, totalExternal: Number(totalExternal)
+        partners: rdo, total: Number(total), partnerCurrencyValue: partnerCurrencyValue
+        , partnerCurrencyId: partnerCurrencyId, totalExternal: Number(totalExternal)
     };
 
 }
-
-function parseAttachment(res, hierarchyLevel, currencyValueAux){
+function getDefaultCurrencyForBudgetYearByHlId(hlId, level){
+    return dataUpload.getDefaultCurrencyForHlLevel(hlId, HIERARCHY_LEVEL[level]);
+}
+function parseAttachment(res, hierarchyLevel, currencyValueAux, hl5Id){
     var total = 0;
     var totalExternal = 0;
     var rdo = [];
@@ -123,10 +136,20 @@ function parseAttachment(res, hierarchyLevel, currencyValueAux){
     par.forEach(function(partner){
         partner.ATTACHMENTS = partnerAttachment[partner.PARTNER_ID] || [];
     });
+    var partnerCurrencyValue;
+    var partnerCurrencyId;
+    if (rdo.length) {
+        partnerCurrencyValue = Number(rdo[0].CURRENCY_VALUE);
+        partnerCurrencyId = rdo[0].CURRENCY_ID;
+    } else {
+        var partnerCurrency = getDefaultCurrencyForBudgetYearByHlId(hl5Id, 'HL5');
+        partnerCurrencyValue = partnerCurrency.CURRENCY_VALUE;
+        partnerCurrencyId = partnerCurrency.EURO_CONVERSION_ID;
+    }
 
     return {
-        partners: par, total: Number(total), partnerCurrencyValue: par.length ? Number(par[0].CURRENCY_VALUE) : null
-        , partnerCurrencyId: par.length ? par[0].CURRENCY_ID : null, totalExternal: Number(totalExternal)
+        partners: par, total: Number(total), partnerCurrencyValue: partnerCurrencyValue
+        , partnerCurrencyId: partnerCurrencyId, totalExternal: Number(totalExternal)
     };
 }
 

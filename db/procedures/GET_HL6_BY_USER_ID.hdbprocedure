@@ -16,7 +16,6 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL6_BY_USER_
             , HL6_BUDGET DECIMAL(19,2)
             , EURO_CONVERSION_ID BIGINT
             , CRT_RELATED TINYINT
-            , SALE_ORGANIZATION NVARCHAR(255)
             , IMPORTED tinyint
             , IMPORT_ID INTEGER
             , CRM_DESCRIPTION NVARCHAR(255)
@@ -43,7 +42,6 @@ va_intermidate = SELECT DISTINCT
         ,userTable.EMAIL AS OWNER_EMAIL
         ,hl6.BUDGET AS HL6_BUDGET
         ,euro_conversions.euro_conversion_id AS EURO_CONVERSION_ID
-        ,saleOrganization.NAME as SALE_ORGANIZATION
         ,hl6.IMPORTED as IMPORTED
         ,hl6.IMPORT_ID as IMPORT_ID
         ,hl6.HL6_CRM_DESCRIPTION AS CRM_DESCRIPTION
@@ -58,7 +56,6 @@ va_intermidate = SELECT DISTINCT
     INNER JOIN CURRENCY euro_conversions ON hl6.euro_conversion_id = euro_conversions.euro_conversion_id  AND euro_conversions.enabled=1 AND euro_conversions.deleted=0
     INNER JOIN hl6_status_detail hl6_status_detail ON hl6_status_detail.hl6_status_detail_id = hl6.hl6_status_detail_id
     INNER JOIN "MKTG_PLANNING_TOOL"."USER" userTable ON userTable.USER_ID = hl6.created_user_id
-    INNER JOIN SALE_ORGANIZATION saleOrganization ON saleOrganization.SALES_ORGANIZATION_ID = HL6.SALES_ORGANIZATION_ID
     LEFT JOIN BUDGET_SPEND_REQUEST BSR ON BSR.HL_ID = HL6.HL6_ID AND BSR.HIERARCHY_LEVEL_ID = 2 AND BSR.BUDGET_SPEND_REQUEST_TYPE_ID = 1
     LEFT JOIN BUDGET_SPEND_REQUEST_STATUS BSRS ON BSRS.BUDGET_SPEND_REQUEST_STATUS_ID = BSR.BUDGET_SPEND_REQUEST_STATUS_ID
     WHERE hl6.enabled=1 AND hl6.deleted=0
@@ -77,7 +74,7 @@ va_intermidate = SELECT DISTINCT
     from HL5 hl5
     INNER JOIN HL4 hl4 ON hl4.hl4_id=hl5.hl4_id AND hl4.enabled=1 AND hl4.deleted=0
     INNER JOIN HL3 hl3 ON hl3.hl3_id=hl4.hl3_id AND hl3.enabled=1 AND hl3.deleted=0
-    INNER JOIN HL3_USER hl3_user ON hl3.hl3_id=hl3_user.hl3_id and (in_issa = 1 or hl3_user.user_id = in_user_id)
+    --INNER JOIN HL3_USER hl3_user ON hl3.hl3_id=hl3_user.hl3_id and (in_issa = 1 or hl3_user.user_id = in_user_id)
     INNER JOIN HL2 hl2 ON hl2.hl2_id = hl3.hl2_id AND hl2.enabled=1 AND hl2.deleted=0
     INNER JOIN HL1 hl1 ON hl1.hl1_id = hl2.hl1_id AND hl1.enabled=1 AND hl1.deleted=0
     INNER JOIN BUDGET_YEAR BGY ON hl1.budget_year_id = BGY.budget_year_id AND BGY.enabled=1 AND BGY.deleted=0
@@ -98,7 +95,6 @@ out_result = SELECT
 		,va_hl6.HL6_BUDGET
 		,va_hl6.EURO_CONVERSION_ID
 		,va_hl5.CRT_RELATED
-		,va_hl6.SALE_ORGANIZATION
 		,va_hl6.IMPORTED
         ,va_hl6.IMPORT_ID
         ,va_hl6.CRM_DESCRIPTION

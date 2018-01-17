@@ -25,16 +25,11 @@ var spUpdateInterlockOrganizationTypeTo = "UPD_INTERLOCK_ORGANIZATION_TYPE_TO";
 
 var spUpdateInterlock = "UPD_INTERLOCK";
 var spInsertInterlockLogStatus = "INS_INTERLOCK_LOG_STATUS";
-/*var spInsertInterlockRegion = "INS_INTERLOCK_REGION";
-var spInsertInterlockSubregion = "INS_INTERLOCK_SUBREGION";*/
 var spInsertInterlockContactData = "INS_INTERLOCK_CONTACT_DATA";
 var spInsertInterlockRequestMessage = "INS_INTERLOCK_REQUEST_MESSAGE";
 
 var spDeleteInterlockByIlId = "DEL_INTERLOCK_BY_IL_ID";
 var spGetInterlockByEmail = "GET_INTERLOCK_BY_EMAIL";
-/*var spDeleteInterlockRouteByIlId = "DEL_INTERLOCK_GLOBAL_TEAM_BY_IL_ID";
-var spDeleteInterlockRegionByIlId = "DEL_INTERLOCK_REGION_BY_IL_ID";
-var spDeleteInterlockSubregionByIlId = "DEL_INTERLOCK_SUBREGION_BY_IL_ID";*/
 var spDeleteInterlockContactDataById = "DEL_INTERLOCK_CONTACT_DATA";
 var spDeleteHardInterlockContactDataById = "DEL_HARD_INTERLOCK_CONTACT_DATA";
 var spDeleteInterlockRequestMessageById = "DEL_INTERLOCK_REQUEST_MESSAGE_BY_ID";
@@ -223,38 +218,6 @@ function updateInterlock(objInterlock, userId) {
 
     return db.executeScalarManual(spUpdateInterlock, params, 'out_result');
 }
-
-/*function insertInterlockRequestInterlockOrganization(parameters, userId) {
-    var params = {};
-    params.in_interlock_organization_id = parameters.ORGANIZATION_ID;
-    params.in_interlock_organization_id_from = parameters.ORGANIZATION_ID_FROM;
-    params.in_interlock_request_id = parameters.INTERLOCK_REQUEST_ID;
-    params.in_created_user_id = userId;
-
-    var rdo = db.executeScalarManual(INS_INTERLOCK_REQUEST_INTERLOCK_ORGANIZATION, params, 'out_id');
-    return rdo;
-}
-
-function insertInterlockRegion(parameters, userId) {
-    var params = {};
-    params.in_organization_id = parameters.ORGANIZATION_ID;
-    params.in_interlock_request_id = parameters.INTERLOCK_REQUEST_ID;
-    params.in_created_user_id = userId;
-    params.in_organization_id_from = parameters.ORGANIZATION_ID_FROM;
-
-    var rdo = db.executeScalarManual(spInsertInterlockRegion, params, 'out_interlock_region_id');
-    return rdo;
-}
-
-function insertInterlockSubregion(parameters, userId) {
-    var params = {};
-    params.in_organization_id = parameters.ORGANIZATION_ID;
-    params.in_interlock_request_id = parameters.INTERLOCK_REQUEST_ID;
-    params.in_created_user_id = userId;
-    params.in_organization_id_from = parameters.ORGANIZATION_ID_FROM;
-    var rdo = db.executeScalarManual(spInsertInterlockSubregion, params, 'out_interlock_subregion_id');
-    return rdo;
-}*/
 
 function insertInterlockLogStatus(interlock_id, status_id, created_user_id, requesterEmail) {
     var params = {};
