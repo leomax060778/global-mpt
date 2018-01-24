@@ -268,6 +268,10 @@ function getExpectedOutcomesByHl4Id(hl4_id, hl3_id) {
 function getExpectedOutcomesByHl5Id(hl5_id, hl4_id) {
     return getExpectedOutcomesByHlIdParentId(hl5_id, hl4_id, 'HL5', 'HL6');
 }
+function getAggregatedKPIByHl5Id(hl5Id) {
+    return {COMMENTS: "", KPIS: dataExpectedOutcome.getAggregatedKPIByHl5Id(hl5Id)};
+}
+
 
 function getExpectedOutcomesByHl6Id(hl6_id, hl5_id) {
     return getExpectedOutcomesByHlIdParentId(hl6_id, hl5_id, 'HL6');
@@ -332,6 +336,10 @@ function filterKpiByLevel(kpis, level){
     result.COMMENTS = kpis.COMMENTS || '';
     kpis.KPIS.forEach(function (kpi) {
         if(mapEOL[kpi.OUTCOMES_TYPE_ID] && mapEOL[kpi.OUTCOMES_TYPE_ID][kpi.OUTCOMES_ID]) {
+            //Show 0 as value on carry over
+            kpi.EURO_VALUE = 0;
+            kpi.VOLUME_VALUE = 0;
+
             result.KPIS.push(kpi)
         }
     });

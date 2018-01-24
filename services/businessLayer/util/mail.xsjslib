@@ -315,6 +315,7 @@ function getDefaultTemplate(body) {
     return newPart;
 
 }
+
 function getDefaultTemplateWithoutEval() {
     //TODO: add variable mail template id as function parameter
     var mailTemplateId = currentMailTemplateId;
@@ -396,6 +397,7 @@ function massSendInCRMMail(hlIds, hierarchyLevel) {
             break;
     }
 
+    var originalText = defaultTemplate.text.replace("</head>\"", "</head>").replace("\"</html>", "</html>");
     for (var i = 0; i < mailObjects.length; i++) {
         var mailObj = mailObjects[i];
         var aux;
@@ -407,7 +409,7 @@ function massSendInCRMMail(hlIds, hierarchyLevel) {
             aux = mailHL6.parseInCRM(mailObj, {"ENVIRONMENT": env}, mailObj.REQUESTER_NAME);
         }
         var mailObject = getJson([{"address": mailObj.EMAIL}], aux.subject, aux.body);
-        defaultTemplate.text = defaultTemplate.text.replace("\"+ body +\"", aux.body);
+        defaultTemplate.text = originalText.replace("\"+ body +\"", aux.body);
         sendMail(mailObject, true, null, defaultTemplate);
 
     }

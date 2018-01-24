@@ -181,7 +181,8 @@ function getHlCategoryOptionByLevelHlId(level, hlId) {
             SINGLE_OPTION_ONLY: categoryOption.SINGLE_OPTION_ONLY || 0,
             CATEGORY_OPTION_LEVEL_ID: categoryOption.CATEGORY_OPTION_LEVEL_ID,
             AMOUNT: categoryOption.AMOUNT,
-            CATEGORY_OPTION_ID: categoryOption.CATEGORY_OPTION_ID
+            CATEGORY_OPTION_ID: categoryOption.CATEGORY_OPTION_ID,
+            UPDATED: categoryOption.UPDATED
         });
     });
     return util.objectToArray(result);

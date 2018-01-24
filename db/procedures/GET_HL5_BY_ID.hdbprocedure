@@ -54,6 +54,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL5_BY_ID" (
         , EMPLOYEE_RESPONSIBLE_USER nvarchar(7)
         , PERSON_RESPONSIBLE NVARCHAR(7)
         , CURRENCY_VALUE DECIMAL(19,6)
+        , CURRENCY_ABBREVIATION NVARCHAR(7)
         , STATUS NVARCHAR(25)
         , IS_COMPLETE TINYINT
         , MULTI_TACTIC TINYINT
@@ -130,6 +131,7 @@ out_result = select
                 , HL5.EMPLOYEE_RESPONSIBLE_USER
                 , HL5.PERSON_RESPONSIBLE
                 , CURRENCY.CURRENCY_VALUE
+                , CURRENCY.CURRENCY_ABBREVIATION
                 , STATUS.DETAIL AS STATUS
                 , HL5.IS_COMPLETE
                 , HL5.MULTI_TACTIC

@@ -1,8 +1,7 @@
 PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_MASS_HL6_LOG_STATUS" (
 	IN in_hl6_ids table(
-	hl6_id bigint
+	    hl6_id bigint
 	),
-	IN in_status_id BIGINT,
 	IN in_user_id BIGINT,
 	OUT out_hl6_log_status_id bigint)
 	LANGUAGE SQLSCRIPT
@@ -11,7 +10,8 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_MASS_HL6_LOG
 	AS
 BEGIN
  	INSERT INTO "MKTG_PLANNING_TOOL"."HL6_STATUS_HISTORY" (hl6_id, hl6_status_detail_id, created_user_id)
-	(SELECT hl6_id, in_status_id, in_user_id from :in_hl6_ids);
+    (SELECT HL6.HL6_ID, HL6.HL6_STATUS_DETAIL_ID, :in_user_id from :in_hl6_ids T
+    INNER JOIN HL6 ON HL6.HL6_ID = T.HL6_ID);
 
 	SELECT TOP 1 CURRENT_IDENTITY_VALUE() INTO out_hl6_log_status_id FROM "MKTG_PLANNING_TOOL"."HL6_STATUS_HISTORY";
  

@@ -63,8 +63,9 @@ var GET_HL5_BY_IMPORT_ID = "GET_HL5_BY_IMPORT_ID";
 var DEL_HL5_HARD_BY_ID = "DEL_HL5_HARD_BY_ID";
 var DEL_HL5_CATEGORY_OPTION_HARD = "DEL_HL5_CATEGORY_OPTION_HARD";
 /******************************************************/
-var spDelHl5Sales = "DEL_HL5_SALES"
+var spDelHl5Sales = "DEL_HL5_SALES";
 var GET_MULTI_TACTIC_BY_HL5_ID = "GET_MULTI_TACTIC_BY_HL5_ID";
+var UPD_HL5_STATUS_TO_IN_CRM = "UPD_HL5_STATUS_TO_IN_CRM";
 
 function getMarketingActivityHl5(budgetYearId,currentHl5Id){
 	var params = {
@@ -280,8 +281,8 @@ function insertHl5LogStatus(hl5Id,columnName,userId,autoCommit){
 	}
 	return rdo;
 }
-function massInsertHl5LogStatus(hl5_ids, status, userId) {
-    var parameters = {"in_hl5_ids": hl5_ids, 'in_status_id': status, 'in_user_id': userId};
+function massInsertHl5LogStatus(hl5_ids, userId) {
+    var parameters = {"in_hl5_ids": hl5_ids, 'in_user_id': userId};
     var rdo = db.executeScalarManual(spMassInsertHl5LogStatus, parameters, 'out_hl5_log_status_id');
     return rdo;
 }
@@ -452,12 +453,12 @@ function changeStatusHl5(hl5Id, statusId,userId, autoCommit){
 	return rdo;
 }
 
-function massChangeStatusHl5(hl5Ids, status, userId) {
-    var result = {};
-    var parameters = {"in_hl5_ids": hl5Ids, 'in_status_id': status, 'in_user_id': userId};
-    var list = db.executeProcedureManual(HL5_MASS_CHANGE_STATUS, parameters);
-    result.out_result_hl5 = list.out_result;
-    return result;
+function massChangeStatusHl5(data) {
+    // var result = {};
+    //var parameters = {"in_hl5_ids": hl5Ids, 'in_status_id': status, 'in_user_id': userId};
+    return db.executeScalarManual(HL5_MASS_CHANGE_STATUS, data, 'out_result');
+    // result.out_result_hl5 = list.out_result;
+    // return result;
 }
 //autoCommit = false then executeScalarManual else executeScalar.
 function updHl5ChangedFields(data, autoCommit){
@@ -740,4 +741,8 @@ function getMultiTacticById(hl5_id){
     };
     var rdo = db.executeProcedureManual(GET_MULTI_TACTIC_BY_HL5_ID,params);
     return db.extractArray(rdo.out_result);
+}
+
+function setInCrmStatus() {
+	return db.executeScalarManual(UPD_HL5_STATUS_TO_IN_CRM,{},'out_result');
 }

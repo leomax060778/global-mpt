@@ -11,6 +11,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL6_CATEGORY
     , amount decimal(19,2)
     , SINGLE_OPTION_ONLY TINYINT
     , MAKE_CATEGORY_MANDATORY TINYINT
+    , UPDATED TINYINT
 	)
 ) 
 	LANGUAGE SQLSCRIPT
@@ -30,6 +31,7 @@ BEGIN
 	, hl6CO.amount
 	, ac.SINGLE_OPTION_ONLY
     	, ACOL.MAKE_CATEGORY_MANDATORY
+    	, hl6CO.UPDATED
 	FROM hl6_category_option hl6CO
 	inner join allocation_category_option_level ACOL on hl6CO.allocation_category_option_level_id = ACOL.allocation_category_option_level_id
 	AND ACOL.enabled = 1 AND ACOL.deleted = 0
@@ -49,6 +51,7 @@ BEGIN
                            , AMOUNT
                            , SINGLE_OPTION_ONLY
                             , MAKE_CATEGORY_MANDATORY
+                            , UPDATED
                     FROM :va_hl6_category_option
                      ORDER BY CATEGORY_NAME, OPTION_NAME;
 END;

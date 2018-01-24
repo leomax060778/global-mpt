@@ -46,6 +46,7 @@ var spDeleteHl3ExpOutcomeDetail = "DEL_HL3_EXPECTED_OUTCOMES_DETAIL_BY_HL3_ID";
 /**L5***********************************************/
 var spGetExpOutByHl5Id = "GET_EXPECTED_OUTCOMES_BY_HL5_ID";
 var GET_HL5_KPI_BY_HL5_ID = "GET_HL5_KPI_BY_HL5_ID";
+var GET_AGGREGATED_KPI_BY_HL5_ID = "GET_AGGREGATED_KPI_BY_HL5_ID";
 var spInsertHl5ExpOutcome = "INS_HL5_EXPECTED_OUTCOMES";
 var spInsertHl5ExpOutcomeDetail = "INS_HL5_EXPECTED_OUTCOMES_DETAIL";
 var spDeleteHl5ExpOutcome = "DEL_HL5_EXPECTED_OUTCOMES_BY_HL5_ID";
@@ -54,6 +55,7 @@ var spDeleteHl5ExpOutcomeDetailHard = "DEL_HL5_EXPECTED_OUTCOMES_DETAIL_BY_HL5_I
 var spDeleteHl6ExpOutcomeDetailHard = "DEL_HL6_EXPECTED_OUTCOMES_DETAIL_BY_HL6_ID_HARD";
 var spDeleteHl5ExpOutcomeHard = "DEL_HL5_EXPECTED_OUTCOMES_BY_HL5_ID_HARD";
 var spDeleteHl6ExpOutcomeHard = "DEL_HL6_EXPECTED_OUTCOMES_BY_HL6_ID_HARD";
+var DEL_HL6_EXPECTED_OUTCOMES_BY_HL5_ID = "DEL_HL6_EXPECTED_OUTCOMES_BY_HL5_ID";
 /****end L5**************************************************/
 
 /**L6***********************************************/
@@ -445,6 +447,13 @@ function deleteHl6ExpectedOutcomesDetail(in_hl6_id, in_user_id){
     var rdo = db.executeScalarManual(spDeleteHl6ExpOutcomeDetail, parameters, 'out_result');
     return rdo;
 }
+function deleteHl6ExpectedOutcomesByHl5Id(in_hl5_id, in_user_id){
+    var parameters = {};
+    parameters.in_hl5_id = in_hl5_id;
+    parameters.in_user_id = in_user_id;
+    var rdo = db.executeScalarManual(DEL_HL6_EXPECTED_OUTCOMES_BY_HL5_ID, parameters, 'out_result');
+    return rdo;
+}
 /**FIN HL6****************************/
 
 
@@ -509,4 +518,8 @@ function getHl6Id_byHl5Id(hl5_id){
         return db.extractArray(rdo.out_result);
     }
     return null;
+}
+function getAggregatedKPIByHl5Id(hl5_id) {
+    var rdo = db.executeProcedure(GET_AGGREGATED_KPI_BY_HL5_ID, {'in_hl5_id': hl5_id});
+    return db.extractArray(rdo.out_result);
 }
