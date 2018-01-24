@@ -1,9 +1,9 @@
 PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::HL6_MASS_CHANGE_STATUS" (
-	IN in_hl6_ids table (
-	   hl6_id bigint
+	IN hl6List table (
+	   in_hl6_id bigint,
+	   in_status_id BIGINT,
+       in_user_id BIGINT
 	),
-	IN in_status_id BIGINT,
-	IN in_user_id BIGINT,
 	OUT out_result INTEGER
 ) 
 	LANGUAGE SQLSCRIPT
@@ -14,10 +14,11 @@ BEGIN
 
 	-- Update current status in HL6
 		UPDATE HL6
-		SET hl6_status_detail_id = in_status_id,
-			modified_user_id = in_user_id,
-			modified_date_tz = CURRENT_TIMESTAMP
-		WHERE hl6_id in (SELECT hl6_id FROM :in_hl6_ids);
+		SET hl6_status_detail_id = T.IN_STATUS_ID,
+            modified_user_id = T.IN_USER_ID,
+            modified_date_tz = CURRENT_TIMESTAMP
+        from HL6
+        INNER JOIN :hl6List T ON HL6.HL6_ID = T.IN_HL6_ID;
 			
 		--Number of affected rows
 		SELECT ::ROWCOUNT into out_result FROM DUMMY;	  

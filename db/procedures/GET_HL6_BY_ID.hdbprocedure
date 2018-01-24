@@ -59,6 +59,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL6_BY_ID"(
             , EMPLOYEE_RESPONSIBLE_USER nvarchar(7)
             , PERSON_RESPONSIBLE NVARCHAR(7)
             , CURRENCY_VALUE DECIMAL(19,6)
+            , CURRENCY_ABBREVIATION NVARCHAR(7)
             , STATUS NVARCHAR(25)
             , IS_COMPLETE TINYINT
             , MULTI_TACTIC TINYINT
@@ -140,6 +141,7 @@ va_own_money_budget_request = SELECT TOP 1 BSRS.budget_spend_request_status_id
                 , HL6.EMPLOYEE_RESPONSIBLE_USER
                 , HL6.PERSON_RESPONSIBLE
                 , CURRENCY.CURRENCY_VALUE
+                , CURRENCY.CURRENCY_ABBREVIATION
                 , STATUS.DETAIL AS STATUS
                 , HL6.IS_COMPLETE
                 , HL5.MULTI_TACTIC

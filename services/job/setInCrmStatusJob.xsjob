@@ -1,0 +1,20 @@
+{
+    "description": "Set In CRM Status after all budget request are approved",
+    "action": "mktgplanningtool.services.job:setInCrmStatus.xsjs::setInCrmStatus",
+    "schedules": [
+       {
+          "description": "Set In CRM Status after all budget request are approved",
+          "xscron": "* * * * 6 0 0",
+          "parameter": {
+                "app": "MPT"
+             }
+       },
+       {
+          "description": "Set In CRM Status after all budget request are approved",
+          "xscron": "* * * * 16 0 0",
+          "parameter": {
+                "app": "MPT"
+             }
+       }
+    ]
+}

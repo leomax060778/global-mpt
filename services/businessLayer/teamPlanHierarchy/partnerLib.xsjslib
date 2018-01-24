@@ -138,9 +138,9 @@ function parseAttachment(res, hierarchyLevel, currencyValueAux, hl5Id){
     });
     var partnerCurrencyValue;
     var partnerCurrencyId;
-    if (rdo.length) {
-        partnerCurrencyValue = Number(rdo[0].CURRENCY_VALUE);
-        partnerCurrencyId = rdo[0].CURRENCY_ID;
+    if (par.length) {
+        partnerCurrencyValue = Number(par[0].CURRENCY_VALUE);
+        partnerCurrencyId = par[0].CURRENCY_ID;
     } else {
         var partnerCurrency = getDefaultCurrencyForBudgetYearByHlId(hl5Id, 'HL5');
         partnerCurrencyValue = partnerCurrency.CURRENCY_VALUE;

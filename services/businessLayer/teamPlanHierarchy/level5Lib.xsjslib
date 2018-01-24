@@ -4,6 +4,7 @@ var mapper = $.mktgplanningtool.services.commonLib.mapper;
 var dataL5DER = mapper.getDataLevel5Report();
 var dataHl3 = mapper.getDataLevel3();
 var dataHl4 = mapper.getDataLevel4();
+
 var dataCampaignType = mapper.getDataCampaignType();
 var dataHl5 = mapper.getDataLevel5();
 var dataCostCenter = mapper.getDataCostCenter();
@@ -96,6 +97,7 @@ var L5_MY_BUDGET_COMPLETE = "My Budget should be 100% complete.";
 var L5_COST_CENTER_NOT_VALID = "Cost Center cannot be empty.";
 var L5_RESPONSIBLE_NOT_VALID = "Employee Responsible cannot be empty.";
 var L5_PRIORITY_NOT_VALID = "Priority cannot be empty.";
+var L5_BUSINESS_OWNER_NOT_VALID = "Business Owner cannot be empty.";
 var L5_MSG_INITIATIVE_CRM_ACRONYM = "The Acronym has been used. The new Serial Acronym is: ";
 var L5_MSG_INITIATIVE_ROUTE_TO_MARKET = "The Marketing Tactic route to market cannot be found.";
 var L5_MSG_INITIATIVE_CAMPAIGN_OBJECTIVE = "The Marketing Tactic campaign objective cannot be found.";
@@ -178,7 +180,11 @@ function getHl5ById(hl5Id, carryOver) {
         var internalCofunding = getInternalCofunding(hl5Id);
         var externalCofunding = getExternalCofunding(hl5Id);
         hl5.BUDGET_EUROS = (Number(hl5.BUDGET)).toFixed(2);
-        hl5.BUDGET_CURRENCY = {ID: hl5.EURO_CONVERSION_ID, VALUE: Number(hl5.CURRENCY_VALUE)};
+        hl5.BUDGET_CURRENCY = {
+            ID: hl5.EURO_CONVERSION_ID,
+            VALUE: Number(hl5.CURRENCY_VALUE).toFixed(2),
+            ABBREVIATION: hl5.CURRENCY_ABBREVIATION
+        };
         hl5.PARTNERS = externalCofunding.PARTNERS;
         hl5.INTEL_TOTAL_BUDGET = externalCofunding.PARTNER_INTEL_TOTAL;
         hl5.INTEL_TOTAL_BUDGET_EUROS = externalCofunding.PARTNER_INTEL_TOTAL_EUROS;
@@ -751,26 +757,16 @@ function updateHl5(data, userId) {
         insertInCrmBinding(validationResult.crmBindingChangedFields, validationResult.crmBindingChangedFieldsUpdate, hl5_id);
 
         if (data.STATUS_DETAIL_ID != objHL5.HL5_STATUS_DETAIL_ID) {
-            setStatus(data.HL5_ID, data.STATUS_DETAIL_ID, userId);
+            dataHl5.insertHl5LogStatus(data.HL5_ID, objHL5.HL5_STATUS_DETAIL_ID, userId);
         }
-
         var ownMoneyBudgetSpendRequestStatus = budgetSpendRequest.getOwnMoneyBudgetSpendRequestStatusByHlIdLevel(hl5_id, 'HL5');
-        if (!ownMoneyBudgetSpendRequestStatus || ownMoneyBudgetSpendRequestStatus == budgetSpendRequestStatus.NO_LONGER_REQUESTED) {
+        if (!ownMoneyBudgetSpendRequestStatus) {
             budgetSpendRequest.insertOwnMoneyBudgetSpendRequest(data.BUDGET, hl5_id, 'HL5', userId, automaticApproval && data.IN_BUDGET);
         } else {
-            if (Number(objHL5.BUDGET) != Number(data.BUDGET)) {
-                if (objHL5.EURO_CONVERSION_ID == data.EURO_CONVERSION_ID) {
-                    if (ownMoneyBudgetSpendRequestStatus && ownMoneyBudgetSpendRequestStatus == budgetSpendRequestStatus.APPROVED) {
-                        budgetSpendRequest.insertOwnMoneyBudgetSpendRequest(data.BUDGET, hl5_id, 'HL5', userId, automaticApproval && data.IN_BUDGET);
-                    } else {
-                        budgetSpendRequest.updateOwnMoneyBudgetSpendRequestByHlIdLevel(hl5_id, 'HL5', data.BUDGET, automaticApproval && data.IN_BUDGET, userId);
-                    }
-                } else {
-                    budgetSpendRequest.setOwnMoneyBudgetSpendRequestNoLongerNeededByHlIdLevel(hl5_id, 'HL5', objHL5.BUDGET, userId);
-                    budgetSpendRequest.insertOwnMoneyBudgetSpendRequest(data.BUDGET, hl5_id, 'HL5', userId, automaticApproval && data.IN_BUDGET);
-                }
-                level6Lib.checkBudgetStatus(data);
+            if (Number(objHL5.BUDGET).toFixed(2) != Number(data.BUDGET).toFixed(2)) {
+                budgetSpendRequest.updateOwnMoneyBudgetSpendRequestByHlIdLevel(hl5_id, 'HL5', data.BUDGET, automaticApproval && data.IN_BUDGET, userId);
             }
+            level6Lib.checkBudgetStatus(data);
         }
 
         updateExpectedOutcomes(data, userId);
@@ -868,8 +864,6 @@ function isComplete(data, fromChangeStatusOnDemand) {
     var notValidate = ["MARKETING_PROGRAM_DESC"
         , "MARKETING_ACTIVITY_ID"
         , "MARKETING_ACTIVITY_DESC"
-        , "PRIORITY_ID"
-        , "BUSINESS_OWNER_ID"
         , "PARENT_PATH"
         , "DISTRIBUTION_CHANNEL_DESC"
         , "URL"
@@ -915,20 +909,23 @@ function isComplete(data, fromChangeStatusOnDemand) {
 
                 break;
             case "BUDGET":
-                isComplete = Number(data.ALLOW_BUDGET_ZERO)
-                    || (!!Number(data.BUDGET) && data.IN_BUDGET && data.AUTOMATIC_APPROVAL)
-                    || (data.AUTOMATIC_APPROVAL && Number(data.CO_FUNDED) && ((data.SALE_REQUESTS && data.SALE_REQUESTS.length) || (data.PARTNER && data.PARTNER.length)));
-                /*if (Number(data.ALLOW_BUDGET_ZERO)
-                    || (!!Number(data.BUDGET) && data.IN_BUDGET)
-                    || (data.AUTOMATIC_APPROVAL && ((data.SALE_REQUESTS && data.SALE_REQUESTS.length) || (data.PARTNER && data.PARTNER.length)))) {
+                if (Number(data.ALLOW_BUDGET_ZERO)) {
                     isComplete = true;
                 } else {
-                    /!*var hasBudgetRequestApproved = !!Number(budgetSpendRequest.countApprovedBudgetRequestByHl5Id(data.HL5_ID || '0'));
-                    var hasBudgetRequestPending = !Number(budgetSpendRequest.countPendingBudgetRequestByHl5Id(data.HL5_ID || '0'));
-                    isComplete = !!Number(data.BUDGET) || (hasBudgetRequestApproved && hasBudgetRequestPending);*!/
-
-                    isComplete = false;
-                }*/
+                    if (data.AUTOMATIC_APPROVAL) {
+                        isComplete = (!!Number(data.BUDGET) && data.IN_BUDGET)
+                            || (Number(data.CO_FUNDED) && ((data.SALE_REQUESTS && data.SALE_REQUESTS.length) || (data.PARTNER && data.PARTNER.length)));
+                    } else {
+                        if (!!Number(data.BUDGET)) {
+                            isComplete = true;
+                        } else {
+                            var hasBudgetRequestApproved = !!Number(budgetSpendRequest.countApprovedBudgetRequestByHl5Id(data.HL5_ID || '0'));
+                            var hasBudgetRequestPending = !Number(budgetSpendRequest.countPendingBudgetRequestByHl5Id(data.HL5_ID || '0'));
+                            isComplete = !!Number(data.BUDGET) || (hasBudgetRequestApproved && hasBudgetRequestPending);
+                        }
+                    }
+                    isComplete = isComplete && validateBudgetDistribution(data);
+                }
                 break;
             case "HL5_CRM_DESCRIPTION":
                 isComplete = fromChangeStatusOnDemand ? !!data.HL5_CRM_DESCRIPTION : !!data.CRM_DESCRIPTION;
@@ -979,8 +976,8 @@ function validateHl5(data, userId) {
     var isHl5Complete = isComplete(data);
     data.IS_COMPLETE = Number(isHl5Complete);
 
+    var hl5 = data.HL5_ID ? dataHl5.getHl5ById(data.HL5_ID) : {};
     if (data.HL5_ID && dataHl5.hl5ExistsInCrm(data.HL5_ID)) {
-        var hl5 = dataHl5.getHl5ById(data.HL5_ID);
         if (hl5.ACRONYM != data.ACRONYM)
             throw ErrorLib.getErrors().CustomError("", "hl5Services/handlePost/insertHl5", L5_MSG_INITIATIVE_PROPERTIES_CANNOT_UPDATE);
     }
@@ -1038,6 +1035,14 @@ function validateHl5(data, userId) {
             throw ErrorLib.getErrors().CustomError("", "", L5_MSG_INITIATIVE_CAMPAIGN_SUBTYPE);
         }
 
+        if (!data.PRIORITY_ID || data.PRIORITY_ID < 0) {
+            throw ErrorLib.getErrors().CustomError("", "", L5_PRIORITY_NOT_VALID);
+        }
+
+        if (!data.BUSINESS_OWNER_ID || data.BUSINESS_OWNER_ID < 0) {
+            throw ErrorLib.getErrors().CustomError("", "", L5_BUSINESS_OWNER_NOT_VALID);
+        }
+
         if (!data.SALES_ORGANIZATION_ID || !Number(data.SALES_ORGANIZATION_ID) || !dataMO.getMarketingOrganizationById(data.SALES_ORGANIZATION_ID))
             throw ErrorLib.getErrors().CustomError("", "", L5_MSG_INITIATIVE_SALES_ORGANIZATION);
 
@@ -1079,9 +1084,6 @@ function validateHl5(data, userId) {
         crmBindingChangedFields = crmFieldsHasChangedResult.crmBindingChangedFields;
         crmBindingChangedFieldsUpdate = crmFieldsHasChangedResult.crmBindingChangedFieldsUpdate;
         if (data.HL5_ID) {
-            if (!data.ALLOW_BUDGET_ZERO && data.STATUS_DETAIL_ID != HL5_STATUS.IN_PROGRESS && !myBudgetComplete) {
-                throw ErrorLib.getErrors().CustomError("", "", L5_MY_BUDGET_COMPLETE);
-            }
 
             existInCrm = dataHl5.hl5ExistsInCrm(data.HL5_ID);
 
@@ -1311,18 +1313,29 @@ function setStatus(hl5_id, status_id, userId) {
     return true;
 }
 
-function massSetHl5Status(hl5Ids, status_id, userId) {
+function massSetHl5Status(hl5Ids, userId) {
     var updateOK;
-    var changeHL5tatus = dataHl5.massChangeStatusHl5(hl5Ids, status_id, userId).out_result_hl5;
-    dataHl5.massInsertHl5LogStatus(hl5Ids, status_id, userId);
+    var hl5List = [];
+    hl5Ids.forEach(function (hl5) {
+        var status_id = !!Number(budgetSpendRequest.countPendingBudgetRequestByHl5Id(hl5.hl5_id))
+            ? HL5_STATUS.IN_CRM_NEED_NEW_BUDGET_APPROVAL : HL5_STATUS.IN_CRM;
+        hl5List.push({
+            "in_hl5_id": hl5.hl5_id
+            , 'in_status_id': status_id
+            , 'in_user_id': userId
+        });
+    });
+    dataHl5.massInsertHl5LogStatus(hl5Ids, userId);
+    var changeHL5tatus = dataHl5.massChangeStatusHl5(hl5List);
+    // dataHl5.massInsertHl5LogStatus(hl5Ids, userId);
     updateOK = changeHL5tatus;
-    if (HL5_STATUS.IN_CRM == status_id) {
-        if (level5DER.massDeleteL5ChangedFieldsByHl5Ids(hl5Ids) !== null) {
-            massResetHl5CategoryOptionUpdated(hl5Ids, userId);
-        } else {
-            updateOK = false;
-        }
+    // if (HL5_STATUS.IN_CRM == status_id) {
+    if (level5DER.massDeleteL5ChangedFieldsByHl5Ids(hl5Ids) !== null) {
+        massResetHl5CategoryOptionUpdated(hl5Ids, userId);
+    } else {
+        updateOK = false;
     }
+    // }
     return updateOK;
 }
 
@@ -1342,22 +1355,25 @@ function setStatusInCRM(hl5_id, userId) {
         hl5Ids = hl5_id.map(function (value) {
             return {hl5_id: value}
         });
+    } else {
+        hl5Ids.push({hl5_id: hl5_id})
     }
 
     if (hl5Ids.length) {
-        massSetHl5Status(hl5Ids, HL5_STATUS.IN_CRM, userId);
+        massSetHl5Status(hl5Ids, userId);
         mail.massSendInCRMMail(hl5Ids, "hl5");
         hl5Ids.forEach(function (value) {
             dataL5Report.updateLevel5ReportForDownload(value.hl5_id);
         })
-    } else {
-        if (!Number(hl5_id))
-            throw ErrorLib.getErrors().CustomError("", "", L3_MSG_INITIATIVE_NOT_FOUND);
-        result = setStatus(hl5_id, HL5_STATUS.IN_CRM, userId);
-        if (result) {
-            mail.sendInCRMMail(hl5_id, "hl5");
-        }
     }
+    /* else {
+            if (!Number(hl5_id))
+                throw ErrorLib.getErrors().CustomError("", "", L3_MSG_INITIATIVE_NOT_FOUND);
+            result = setStatus(hl5_id, HL5_STATUS.IN_CRM, userId);
+            if (result) {
+                mail.sendInCRMMail(hl5_id, "hl5");
+            }
+        }*/
     return 1;
 }
 
@@ -1379,24 +1395,6 @@ function changeStatusOnDemand(hl5_id, userId, cancelConfirmation) {
                 statusId = hl5.HL5_STATUS_DETAIL_ID;
             }
 
-            if (!hl5.ALLOW_BUDGET_ZERO) {
-                if (!isDataComplete) {
-                    throw ErrorLib.getErrors().CustomError("", "", L5_MSG_COULDNT_CHANGE_STATUS);
-                }
-
-                var budgetSpendRequestStatus = budgetSpendRequest.getBudgetSpendRequestsStatus();
-                var hasBudgetRequestPending = budgetSpendRequest.countPendingBudgetRequestByHl5Id(hl5_id) > 0;
-
-                if (hasBudgetRequestPending) {
-                    throw ErrorLib.getErrors().CustomError("", "", L5_MSG_COULDNT_CHANGE_STATUS_DUE_PENDING_BUDGET_SPEND_REQUEST);
-                }
-
-                var ownMoneyBudgetSpendRequestStatus = budgetSpendRequest.getOwnMoneyBudgetSpendRequestStatusByHlIdLevel(hl5_id, 'HL5');
-                if (ownMoneyBudgetSpendRequestStatus && ownMoneyBudgetSpendRequestStatus != budgetSpendRequestStatus.APPROVED) {
-                    throw ErrorLib.getErrors().CustomError("", "", L5_MSG_COULDNT_CHANGE_STATUS_DUE_OWN_MONEY_BUDGET_SPEND_REQUEST_STATUS);
-                }
-            }
-
             if (statusId == HL5_STATUS.CREATE_IN_CRM) {
                 level5DER.deleteL5ChangedFieldsByHl5Id(hl5_id);
                 var targetKpis = expectedOutcomesLib.getExpectedOutcomesByHl5Id(hl5_id, hl5.HL4_ID);
@@ -1407,8 +1405,9 @@ function changeStatusOnDemand(hl5_id, userId, cancelConfirmation) {
                 data.AUTOMATIC_APPROVAL = blLevel2.getHl2AllowAutomaticBudgetApprovalByHl4Id(data.HL4_ID);
                 var internalCofunding = getInternalCofunding(hl5_id);
                 var externalCofunding = getExternalCofunding(hl5_id);
-                hl5.PARTNERS = externalCofunding.PARTNERS;
-                hl5.SALE_REQUESTS = internalCofunding.SALE_REQUESTS;
+                data.PARTNERS = externalCofunding.PARTNERS;
+                data.SALE_REQUESTS = internalCofunding.SALE_REQUESTS;
+                data.BUDGET_DISTRIBUTION = dataHl5.getHl5MyBudgetByHl5Id(hl5_id);
                 isDataComplete = isComplete(data, true);
                 if (isDataComplete) {
                     updateCategoryOption(data, hl5_id, userId, true);
@@ -1418,30 +1417,24 @@ function changeStatusOnDemand(hl5_id, userId, cancelConfirmation) {
                     throw ErrorLib.getErrors().CustomError("", "", L5_MSG_COULDNT_CHANGE_STATUS);
                 }
             }
+        } else {
+            statusId = HL5_STATUS.VALID_FOR_CRM;
+        }
 
-            if (!hl5.ALLOW_BUDGET_ZERO) {
-                if (!isDataComplete) {
-                    throw ErrorLib.getErrors().CustomError("", "", L5_MSG_COULDNT_CHANGE_STATUS);
-                }
-
-                var budgetSpendRequestStatus = budgetSpendRequest.getBudgetSpendRequestsStatus();
-                var hasBudgetRequestPending = budgetSpendRequest.countPendingBudgetRequestByHl5Id(hl5_id) > 0;
-
-                if (hasBudgetRequestPending) {
-                    throw ErrorLib.getErrors().CustomError("", "", L5_MSG_COULDNT_CHANGE_STATUS_DUE_PENDING_BUDGET_SPEND_REQUEST);
-                }
-
-                var ownMoneyBudgetSpendRequestStatus = budgetSpendRequest.getOwnMoneyBudgetSpendRequestStatusByHlIdLevel(hl5_id, 'HL5');
-                if (ownMoneyBudgetSpendRequestStatus && ownMoneyBudgetSpendRequestStatus != budgetSpendRequestStatus.APPROVED) {
-                    throw ErrorLib.getErrors().CustomError("", "", L5_MSG_COULDNT_CHANGE_STATUS_DUE_OWN_MONEY_BUDGET_SPEND_REQUEST_STATUS);
-                }
+        if (!hl5.ALLOW_BUDGET_ZERO) {
+            if (!isDataComplete) {
+                throw ErrorLib.getErrors().CustomError("", "", L5_MSG_COULDNT_CHANGE_STATUS);
             }
 
-            return setStatus(hl5_id, statusId, userId);
+            var budgetSpendRequestStatus = budgetSpendRequest.getBudgetSpendRequestsStatus();
+
+            var ownMoneyBudgetSpendRequestStatus = budgetSpendRequest.getOwnMoneyBudgetSpendRequestStatusByHlIdLevel(hl5_id, 'HL5');
+            if (!ownMoneyBudgetSpendRequestStatus || (ownMoneyBudgetSpendRequestStatus && ownMoneyBudgetSpendRequestStatus != budgetSpendRequestStatus.APPROVED)) {
+                throw ErrorLib.getErrors().CustomError("", "", L5_MSG_COULDNT_CHANGE_STATUS_DUE_OWN_MONEY_BUDGET_SPEND_REQUEST_STATUS);
+            }
         }
-        /* else {
-                    statusId = HL5_STATUS.VALID_FOR_CRM;
-                }*/
+
+        return setStatus(hl5_id, statusId, userId);
     }
     return true;
 }
@@ -1526,8 +1519,6 @@ function crmFieldsHaveChanged(data, isComplete, userId, isNew) {
                 if (field.indexOf('_DATE') <= 0) {
                     switch (field) {
                         case "MARKETING_ACTIVITY_ID":
-                        case "PRIORITY_ID":
-                        case "BUSINESS_OWNER_ID":
                             fieldChanged = (oldHl5[field] || 0) != (Number(data[field]) || 0);
                             break;
                         case "URL":
@@ -1543,6 +1534,7 @@ function crmFieldsHaveChanged(data, isComplete, userId, isNew) {
                             break;
                         case "HL5_CRM_DESCRIPTION":
                             fieldChanged = oldHl5.HL5_CRM_DESCRIPTION != data.CRM_DESCRIPTION;
+                            break;
                         case "BUDGET":
                             var oldCurrencyValue = Number(dataCurrency.getCurrencyValueId(oldHl5.EURO_CONVERSION_ID));
                             var newCurrencyValue = Number(dataCurrency.getCurrencyValueId(data.EURO_CONVERSION_ID));
@@ -1819,6 +1811,7 @@ function insertInternalCofunding(data, automaticBudgetApproval, userId) {
 }
 
 function updateInternalCofunding(data, automaticBudgetApproval, userId) {
+
     if (data.SALES && data.SALES.length) {
         var internalCoFundingCurrency = dataCurrency.getCurrencyValueId(data.SALE_CURRENCY_ID);
         var aux = {};
@@ -1846,8 +1839,8 @@ function updateInternalCofunding(data, automaticBudgetApproval, userId) {
         }
     }
 
-    if (data.SALE_REQUESTS_REMOVED && data.SALE_REQUESTS_REMOVED.length) {
-        var saleBudgetSpendRquestToDelete = data.SALE_REQUESTS_REMOVED.map(function (id) {
+    if (data.REMOVED_SALES_IDS && data.REMOVED_SALES_IDS.length) {
+        var saleBudgetSpendRquestToDelete = data.REMOVED_SALES_IDS.map(function (id) {
             return {in_budget_spend_request_id: id, in_user_id: userId};
         });
         budgetSpendRequest.deleteBudgetSpendRequestBySale(saleBudgetSpendRquestToDelete, 'HL5');
@@ -1897,6 +1890,7 @@ function insertExternalCoFunding(data, automaticBudgetApproval, userId) {
 }
 
 function updateExternalCoFunding(data, automaticBudgetApproval, userId) {
+
     if (data.PARTNERS && data.PARTNERS.length) {
         var arrPartnerToInsert = [];
         var arrPartnerToUpdate = [];
@@ -1989,9 +1983,9 @@ function updateExternalCoFunding(data, automaticBudgetApproval, userId) {
             budgetSpendRequest.updatePartnerBudgetSpendRequest(budgetSpendRequestToUpdate, data.HL5_ID, 'HL5', automaticBudgetApproval, userId);
     }
 
-    if (data.PARTNERS_REQUESTS_REMOVED && data.PARTNERS_REQUESTS_REMOVED.length) {
+    if (data.REMOVED_PARTNER_IDS && data.REMOVED_PARTNER_IDS.length) {
         var arrBudgetSpendRequestToDelete = [];
-        var arrPartnerToDelete = data.PARTNERS_REQUESTS_REMOVED.map(function (id) {
+        var arrPartnerToDelete = data.REMOVED_PARTNER_IDS.map(function (id) {
             return {in_partner_id: id, in_user_id: userId};
         });
         var pendingPartner = dataPartner.getPendingPartnerByPartnerId(arrPartnerToDelete, "HL5");
@@ -2263,7 +2257,7 @@ function clone(cloneHl5Id, userId) {
     data.HL5_ID = hl5_id;
     insertExpectedOutcomes(data, userId);
     insertBudgetDistribution(data, userId, true);
-    insertInternalCofunding(data, userId);
+    insertInternalCofunding(data, null, userId);
     insertCategoryOption(data, userId);
     return {CRM_ID: dataPath.getPathByLevelHlId('hl5', hl5_id)};
 }

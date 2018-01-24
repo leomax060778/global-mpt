@@ -57,6 +57,7 @@ var spInsHl6BudgetSalesUpload = "INS_HL6_BUDGET_SALES_UPLOAD";
 var GET_HL6_BY_IMPORT_ID = "GET_HL6_BY_IMPORT_ID";
 var DEL_HL6_HARD_BY_ID = "DEL_HL6_HARD_BY_ID";
 var DEL_HL6_CATEGORY_OPTION_HARD = "DEL_HL6_CATEGORY_OPTION_HARD";
+var UPD_HL6_STATUS_TO_IN_CRM = "UPD_HL6_STATUS_TO_IN_CRM";
 
 /*inserts*/
 function insertHl6(hl6CrmDescription,hl6Acronym,budget,hl5Id, routeToMarket
@@ -346,12 +347,13 @@ function hl6ChangeStatus(hl6Id,statusId,userId,autoCommit) {
     var rdo = db.executeScalarManual(spHl6ChangeStatus,params,'out_result');
     return rdo;
 }
-function massChangeStatusHl6(hl6Ids, status, userId) {
-    var result = {};
-    var parameters = {"in_hl6_ids": hl6Ids, 'in_status_id': status, 'in_user_id': userId};
-    var list = db.executeProcedureManual(HL6_MASS_CHANGE_STATUS, parameters);
-    result.out_result_hl6 = list.out_result;
-    return result;
+function massChangeStatusHl6(data) {
+    // var result = {};
+    // var parameters = {"in_hl6_ids": hl6Ids, 'in_status_id': status, 'in_user_id': userId};
+    // var list = db.executeProcedureManual(HL6_MASS_CHANGE_STATUS, parameters);
+    // result.out_result_hl6 = list.out_result;
+    // return result;
+    return db.executeScalarManual(HL6_MASS_CHANGE_STATUS, data, 'out_result');
 }
 
 
@@ -396,8 +398,8 @@ function insertHl6LogStatus(hl6Id,columnName,userId,autoCommit){
     var rdo = db.executeScalarManual(spInsHl6LogStatus,params,'out_hl6_log_status_id');
     return rdo;
 }
-function massInsertHl6LogStatus(hl6_ids, status, userId) {
-    var parameters = {"in_hl6_ids": hl6_ids, 'in_status_id': status, 'in_user_id': userId};
+function massInsertHl6LogStatus(hl6_ids, userId) {
+    var parameters = {"in_hl6_ids": hl6_ids, 'in_user_id': userId};
     var rdo = db.executeScalarManual(spMassInsertHl6LogStatus, parameters, 'out_hl6_log_status_id');
     return rdo;
 }
@@ -624,4 +626,8 @@ function delHl6CategoryOptionHard(hl6Id, autoCommit){
         rdo = db.executeScalarManual(DEL_HL6_CATEGORY_OPTION_HARD,params,'out_result');
     }
     return rdo;
+}
+
+function setInCrmStatus() {
+    return db.executeScalarManual(UPD_HL6_STATUS_TO_IN_CRM,{},'out_result');
 }

@@ -117,9 +117,9 @@ function insertOwnMoneyBudgetSpendRequest(amount, id, level, userId, budgetReque
     var message = 'Own money Budget Request';
 
     var budgetSpendRequestId = dataBudgetSpendRequest.insertBudgetSpendRequest(
-        amount, id, level, message, BUDGET_SPEND_REQUEST_TYPE['OWN_MONEY'],
-        budgetRequestApproved ? BUDGET_SPEND_REQUEST_STATUS['APPROVED']
-            : BUDGET_SPEND_REQUEST_STATUS['PENDING'], userId);
+        amount, id, level, message, BUDGET_SPEND_REQUEST_TYPE.OWN_MONEY,
+        budgetRequestApproved ? BUDGET_SPEND_REQUEST_STATUS.APPROVED
+            : BUDGET_SPEND_REQUEST_STATUS.PENDING, userId);
 
     /*var arrBudgetSpendRequestMessage = [];
     arrBudgetSpendRequestMessage.push({
@@ -404,14 +404,14 @@ function insertPartnerBudgetSpendRequest(value, message, id, level, conversionVa
 }
 
 function updatePartnerBudgetSpendRequest(budgetSpendRequest, id, level, automaticBudgetApproval, userId) {
+
     var arrBudgetSpendRequestMessageToUpdate = [];
     var updateMessage = false;
     var statusId = automaticBudgetApproval ? BUDGET_SPEND_REQUEST_STATUS.APPROVED : BUDGET_SPEND_REQUEST_STATUS.PENDING;
-    var budgetSpendRequestList = level == 'HL5' ? dataPartner.getPartnerByHl5Id(id, HIERARCHY_LEVEL.HL5) : dataPartner.getPartnerByHl6Id(id);
+    var budgetSpendRequestList = level == 'HL5' ? dataPartner.getPartnerByHl5Id(id, HIERARCHY_LEVEL.HL5).out_result : dataPartner.getPartnerByHl6Id(id);
     var arrBudgetSpendRequestToUpdate = [];
-
+    
     budgetSpendRequest.forEach(function (request) {
-        if (request.in_message && request.in_message.trim()) {
             var budgetSpendRequest = getBudgetRequestByIdFromList(request.in_budget_spend_request_id, budgetSpendRequestList);
 
             if (budgetSpendRequest && Number(request.in_amount).toFixed(2) != Number(budgetSpendRequest.VALUE).toFixed(2)) {
@@ -423,25 +423,25 @@ function updatePartnerBudgetSpendRequest(budgetSpendRequest, id, level, automati
             if(updateMessage || (statusId == BUDGET_SPEND_REQUEST_STATUS.PENDING && request.in_message != budgetSpendRequest.MESSAGE)) {
                 arrBudgetSpendRequestToUpdate.push({
                     in_budget_spend_request_id: request.in_budget_spend_request_id,
-                    in_amount: in_amount,
-                    in_message: request.in_message,
+                    in_amount: request.in_amount,
+                    in_message: (request.in_message != budgetSpendRequest.MESSAGE) ? request.in_message || "" : budgetSpendRequest.MESSAGE,
                     in_budget_spend_request_status_id: statusId,
                     in_user_id: userId
                 });
 
                 arrBudgetSpendRequestMessageToUpdate.push({
                     in_budget_spend_request_id: request.in_budget_spend_request_id,
-                    in_message: request.in_message,
+                    in_message: (request.in_message != budgetSpendRequest.MESSAGE) ? request.in_message || "" : budgetSpendRequest.MESSAGE,
                     in_budget_spend_request_origin_id: BUDGET_SPEND_REQUEST_ORIGIN.BUDGET_REQUESTOR,
                     in_user_id: userId
                 });
             }
-        }
+
     });
 
     if (arrBudgetSpendRequestToUpdate.length) {
         dataBudgetSpendRequest.updateBudgetSpendRequestMessage(arrBudgetSpendRequestMessageToUpdate);
-        dataBudgetSpendRequest.updateBudgetSpendRequest(budgetSpendRequest)
+        dataBudgetSpendRequest.updateBudgetSpendRequest(arrBudgetSpendRequestToUpdate)
     }
 
     return true;
@@ -567,8 +567,8 @@ function getOwnMoneyBudgetSpendRequestStatusByHlIdLevel(hlId, level) {
 function updateOwnMoneyBudgetSpendRequestByHlIdLevel(hlId, level, amount, budgetRequestApproved, userId) {
     return dataBudgetSpendRequest.updateBudgetSpendRequestByHlIdLevelType(hlId,
         HIERARCHY_LEVEL[level], amount, BUDGET_SPEND_REQUEST_TYPE.OWN_MONEY,
-        budgetRequestApproved ? BUDGET_SPEND_REQUEST_STATUS['APPROVED']
-            : BUDGET_SPEND_REQUEST_STATUS['PENDING'], userId);
+        budgetRequestApproved ? BUDGET_SPEND_REQUEST_STATUS.APPROVED
+            : BUDGET_SPEND_REQUEST_STATUS.PENDING, userId);
 }
 
 function setOwnMoneyBudgetSpendRequestNoLongerNeededByHlIdLevel(hlId, level, amount, userId) {
