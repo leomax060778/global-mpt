@@ -17,6 +17,6 @@ out_result =
 	 expected_outcome_level_id
 	from expected_outcome_level eol
 	where eol.hierarchy_level_id = in_hierarchy_level_id
-	and eol.expected_outcome_option_id = in_outcomes_idand eol.enabled = 1
+	and eol.expected_outcome_option_id = in_outcomes_id and eol.enabled = 1
     and eol.deleted = 0;
 END;
