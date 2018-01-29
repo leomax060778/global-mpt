@@ -71,6 +71,8 @@ select L5.hl4_id, coalesce(sum(L5.budget),0) AS budget
     inner join hl4 L4 ON L3.hl3_id=L4.hl3_id AND L3.enabled=1 AND L3.deleted=0
     inner join hl5 L5 ON L5.hl4_id = L4.hl4_id and  L4.enabled=1 AND L4.deleted=0
     where L5.enabled = 1 and L5.deleted = 0 and L3.hl3_id = in_hl3_id
+    --- This means that will be included those records that aren´t in Deleted In CRM ---
+    	  AND L5.HL5_STATUS_DETAIL_ID != 10
     group by L5.hl4_id;
 
 out_result = SELECT
@@ -97,6 +99,8 @@ out_result = SELECT
 
     FROM :va_intermidate va_hl4
         LEFT JOIN HL5 hl5 ON hl5.HL4_ID = va_hl4.hl4_id AND hl5.enabled = 1 AND hl5.deleted = 0
+            --- This means that will be included those records that aren´t in Deleted In CRM ---
+            	  AND HL5.HL5_STATUS_DETAIL_ID != 10
         LEFT JOIN :va_hl6 va_hl6 ON hl5.HL5_ID = va_hl6.HL5_ID
         LEFT JOIN :va_hl5_budget va_hl5_budget ON va_hl5_budget.HL4_ID = va_hl4.hl4_id
 
@@ -117,6 +121,9 @@ out_result = SELECT
     	    INTO out_total_allocated
     	    FROM (
     	        SELECT DISTINCT HL4_ID, HL4_BUDGET FROM :va_intermidate
+    	        where
+    	        --- This means that will be included those records that aren´t in Deleted In CRM ---
+                  STATUS_ID != 10
     	    ) HL4;
     out_remaining_budget := out_total_budget - out_total_allocated;
 		

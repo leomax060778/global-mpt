@@ -50,7 +50,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_HL5"
     ,IN in_employee_responsible_user nvarchar(7)
     ,IN in_person_responsible nvarchar(7)
     ,IN in_is_complete TINYINT
-    ,IN in_multi_tactic TINYINT
+    ,IN in_forecast_at_l5 TINYINT
     
 	,OUT out_hl5_id bigint
 	) 
@@ -110,7 +110,7 @@ BEGIN
     , employee_responsible_user
     , person_responsible
     , is_complete
-    , multi_tactic
+    , forecast_at_l5
 	)
 	VALUES (
      in_hl5_crm_description
@@ -164,7 +164,7 @@ BEGIN
     , in_employee_responsible_user
     , in_person_responsible
     , in_is_complete
-    , in_multi_tactic
+    , in_forecast_at_l5
 );
 	
 	SELECT TOP 1 CURRENT_IDENTITY_VALUE() INTO out_hl5_id FROM "MKTG_PLANNING_TOOL"."HL5";

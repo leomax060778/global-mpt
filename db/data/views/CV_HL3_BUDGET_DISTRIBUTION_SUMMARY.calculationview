@@ -46,6 +46,8 @@ va_hl4 = SELECT HL4.HL3_ID
 	FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL4&quot; HL4
 	WHERE HL4.ENABLED = 1
 	AND HL4.DELETED = 0
+	--- This means that will be included those records that aren´t in Deleted In CRM ---
+	  AND HL4.HL4_STATUS_DETAIL_ID != 10
 	GROUP BY HL4.HL3_ID;
 
 var_out = select hl3.HL3_ID

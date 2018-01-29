@@ -42,6 +42,8 @@ var spGetHl4AllocatedBudget = "GET_HL4_ALLOCATED_BUDGET";
 var spResetHl4CategoryOptionUpdated = "RESET_HL4_CATEGORY_OPTION_UPDATED";
 var GET_HL4_FOR_EMAIL = "GET_HL4_FOR_EMAIL";
 
+var UPD_DELETION_REASON = "UPD_HL4_DELETION_REASON";
+
 /******************************************************/
 
 function getAllHl4() {
@@ -176,8 +178,8 @@ function insertHl4LogStatus(hl4_id, status, userId) {
     return rdo;
 }
 
-function massInsertHl4LogStatus(hl4_ids, status, userId) {
-    var parameters = {"in_hl4_ids": hl4_ids, 'in_status_id': status, 'in_user_id': userId};
+function massInsertHl4LogStatus(hl4_ids, userId) {
+    var parameters = {"in_hl4_ids": hl4_ids, 'in_user_id': userId};
     var rdo = db.executeScalarManual(spMassInsertHl4LogStatus, parameters, 'out_hl4_log_status_id');
     return rdo;
 }
@@ -279,12 +281,14 @@ function changeStatusHl4(hl4_id, status, userId) {
     return result;
 }
 
-function massChangeStatusHl4(hl4Ids, status, userId) {
-    var result = {};
+//function massChangeStatusHl4(hl4Ids, status, userId) {
+function massChangeStatusHl4(data) {
+    return db.executeScalarManual(HL4_MASS_CHANGE_STATUS, data, 'out_result');
+  /*  var result = {};
     var parameters = {"in_hl4_ids": hl4Ids, 'in_status_id': status, 'in_user_id': userId};
     var list = db.executeProcedureManual(HL4_MASS_CHANGE_STATUS, parameters);
     result.out_result_hl4 = list.out_result;
-    return result;
+    return result;*/
 }
 
 function getHl4Childrens(hl4_id) {
@@ -313,4 +317,14 @@ function resetHl4CategoryOptionUpdated(hl4CategoryId, userId) {
         return rdo;
     }
     return null;
+}
+
+function updateDeletionReason(hl4Id, deleteionReason, userId){
+    var parameters = {
+        in_hl4_id: hl4Id
+        , in_deletion_reason: deleteionReason
+        , in_user_id: userId
+    };
+    var rdo = db.executeScalarManual(UPD_DELETION_REASON, parameters, 'out_result');
+    return rdo;
 }

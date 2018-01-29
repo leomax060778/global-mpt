@@ -1,18 +1,18 @@
 PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_MASS_HL4_LOG_STATUS" (
 	IN in_hl4_ids table(
-	hl4_id bigint
+	    hl4_id bigint
 	),
-	IN in_status_id BIGINT,
 	IN in_user_id BIGINT,
-	OUT out_hl4_log_status_id bigint) 
+	OUT out_hl4_log_status_id bigint)
 	LANGUAGE SQLSCRIPT
-	SQL SECURITY INVOKER 
+	SQL SECURITY INVOKER
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
 	AS
 BEGIN
  	INSERT INTO "MKTG_PLANNING_TOOL"."HL4_STATUS_HISTORY" (hl4_id, hl4_status_detail_id, created_user_id)
-	(SELECT hl4_id, in_status_id, in_user_id from :in_hl4_ids);
+	(SELECT HL4.HL4_ID, HL4.HL4_STATUS_DETAIL_ID, :in_user_id from :in_hl4_ids T
+	INNER JOIN HL4 ON HL4.HL4_ID = T.HL4_ID);
 
 	SELECT TOP 1 CURRENT_IDENTITY_VALUE() INTO out_hl4_log_status_id FROM "MKTG_PLANNING_TOOL"."HL4_STATUS_HISTORY";
- 
+
 END;

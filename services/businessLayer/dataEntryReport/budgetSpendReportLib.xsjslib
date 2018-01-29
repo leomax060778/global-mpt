@@ -120,16 +120,18 @@ function calcuteTotals(budgetSpendRequests){
         };
 
         data.CHILDREN.forEach(function (request) {
-            switch (Number(request.BUDGET_SPEND_REQUEST_TYPE_ID)){
-                case BUDGET_SPEND_REQUEST_TYPE.OWN_MONEY:
-                    totals.OWN_MONEY += Number(request.BUDGET);
-                    break;
-                case BUDGET_SPEND_REQUEST_TYPE.CO_FUNDING_EXTERNAL:
-                    totals.CO_FUNDING_EXTERNAL += Number(request.BUDGET);
-                    break;
-                case BUDGET_SPEND_REQUEST_TYPE.CO_FUNDING_INTERNAL:
-                    totals.CO_FUNDING_INTERNAL += Number(request.BUDGET);
-                    break;
+            if (request.BUDGET_SPEND_REQUEST_STATUS_ID != statusMap.NoLongerRequested && request.BUDGET_SPEND_REQUEST_STATUS_ID != statusMap.Rejected) {
+                switch (Number(request.BUDGET_SPEND_REQUEST_TYPE_ID)) {
+                    case BUDGET_SPEND_REQUEST_TYPE.OWN_MONEY:
+                        totals.OWN_MONEY += Number(request.BUDGET);
+                        break;
+                    case BUDGET_SPEND_REQUEST_TYPE.CO_FUNDING_EXTERNAL:
+                        totals.CO_FUNDING_EXTERNAL += Number(request.BUDGET);
+                        break;
+                    case BUDGET_SPEND_REQUEST_TYPE.CO_FUNDING_INTERNAL:
+                        totals.CO_FUNDING_INTERNAL += Number(request.BUDGET);
+                        break;
+                }
             }
         });
 

@@ -15,6 +15,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL5_BY_HL4_I
              , ACRONYM NVARCHAR(4)
              , HL5_CRM_DESCRIPTION NVARCHAR(255) 
              , IN_CRM_CHILD integer
+             , PARENT_STATUS_ID integer
         )
 )
 LANGUAGE SQLSCRIPT
@@ -33,6 +34,7 @@ va_intermidate = SELECT
     ,HL5.ACRONYM
     ,HL5_CRM_DESCRIPTION
     ,HL5.HL5_STATUS_DETAIL_ID
+    , HL4.HL4_STATUS_DETAIL_ID AS PARENT_STATUS_ID
     FROM HL5 Hl5
     INNER JOIN HL4 hl4 ON hl4.hl4_id=hl5.hl4_id AND hl4.enabled=1 AND hl4.deleted=0
     INNER JOIN HL3 hl3 ON hl3.hl3_id=hl4.hl3_id AND hl3.enabled=1 AND hl3.deleted=0
@@ -61,9 +63,12 @@ aux_out_result = SELECT
         ,va_hl5.IMPORTED
         ,va_hl5.ACRONYM
         ,va_hl5.HL5_CRM_DESCRIPTION
+        ,va_hl5.PARENT_STATUS_ID
 
     FROM :va_intermidate va_hl5
     LEFT JOIN HL6 hl6 ON hl6.HL5_ID = va_hl5.hl5_id AND hl6.enabled=1 AND hl6.deleted=0
+    --- This means that will be included those records that aren´t in Deleted In CRM ---
+        	  AND HL6.HL6_STATUS_DETAIL_ID != 10
     --LEFT JOIN BUDGET_SPEND_REQUEST BSR ON BSR.HL_ID = HL6.HL6_ID AND HIERARCHY_LEVEL_ID = 3 AND BSR.BUDGET_SPEND_REQUEST_TYPE_ID = 1
     --AND (BSR.BUDGET_SPEND_REQUEST_STATUS_ID = 1 OR BSR.BUDGET_SPEND_REQUEST_STATUS_ID = 2)
 
@@ -77,7 +82,8 @@ aux_out_result = SELECT
     --,BSR.AMOUNT
     ,va_hl5.IMPORTED
     ,va_hl5.ACRONYM
-    , va_hl5.HL5_CRM_DESCRIPTION;
+    , va_hl5.HL5_CRM_DESCRIPTION
+    ,va_hl5.PARENT_STATUS_ID;
 
 out_result =
 select
@@ -96,6 +102,7 @@ select
 ,T.ACRONYM
 ,T.HL5_CRM_DESCRIPTION
 ,T.IN_CRM_CHILD
+,T.PARENT_STATUS_ID
 from :aux_out_result T
 GROUP BY
 T.HL5_ID
@@ -108,6 +115,7 @@ T.HL5_ID
 ,T.ACRONYM
 ,T.HL5_CRM_DESCRIPTION
 ,T.IN_CRM_CHILD
+,T.PARENT_STATUS_ID
 ORDER BY T.CRM_ID ASC;
 
 END;

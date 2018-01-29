@@ -59,6 +59,8 @@ var DEL_HL6_HARD_BY_ID = "DEL_HL6_HARD_BY_ID";
 var DEL_HL6_CATEGORY_OPTION_HARD = "DEL_HL6_CATEGORY_OPTION_HARD";
 var UPD_HL6_STATUS_TO_IN_CRM = "UPD_HL6_STATUS_TO_IN_CRM";
 
+var UPD_DELETION_REASON = "UPD_HL6_DELETION_REASON";
+
 /*inserts*/
 function insertHl6(hl6CrmDescription,hl6Acronym,budget,hl5Id, routeToMarket
     ,campaignObjectiveId,campaignTypeId,campaignSubTypeId,marketingProgramId,marketingActivityId
@@ -630,4 +632,14 @@ function delHl6CategoryOptionHard(hl6Id, autoCommit){
 
 function setInCrmStatus() {
     return db.executeScalarManual(UPD_HL6_STATUS_TO_IN_CRM,{},'out_result');
+}
+
+function updateDeletionReason(hl6Id, deleteionReason, userId){
+    var parameters = {
+        in_hl6_id: hl6Id
+        , in_deletion_reason: deleteionReason
+        , in_user_id: userId
+    };
+    var rdo = db.executeScalarManual(UPD_DELETION_REASON, parameters, 'out_result');
+    return rdo;
 }

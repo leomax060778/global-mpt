@@ -62,8 +62,9 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL6_BY_ID"(
             , CURRENCY_ABBREVIATION NVARCHAR(7)
             , STATUS NVARCHAR(25)
             , IS_COMPLETE TINYINT
-            , MULTI_TACTIC TINYINT
+            , FORECAST_AT_L5 TINYINT
             , COST_CENTER_NAME NVARCHAR(255)
+            , PRIORITY_NAME NVARCHAR(255)
 		)
 	)
 	LANGUAGE SQLSCRIPT
@@ -144,8 +145,9 @@ va_own_money_budget_request = SELECT TOP 1 BSRS.budget_spend_request_status_id
                 , CURRENCY.CURRENCY_ABBREVIATION
                 , STATUS.DETAIL AS STATUS
                 , HL6.IS_COMPLETE
-                , HL5.MULTI_TACTIC
+                , HL5.FORECAST_AT_L5
                 , CONCAT(CONCAT(COST_CENTER.NAME, ', '), COST_CENTER.COST_CENTER_CODE) AS COST_CENTER_NAME
+                , PRI.NAME AS PRIORITY_NAME
 			FROM HL6
 			INNER JOIN HL5 ON HL5.HL5_ID = HL6.HL5_ID
 			LEFT JOIN :va_own_money_budget_request BSRS ON BSRS.HL6_ID = HL6.HL6_ID
@@ -153,6 +155,7 @@ va_own_money_budget_request = SELECT TOP 1 BSRS.budget_spend_request_status_id
             LEFT JOIN CURRENCY ON HL6.EURO_CONVERSION_ID = CURRENCY.EURO_CONVERSION_ID
             LEFT JOIN HL6_STATUS_DETAIL STATUS ON HL6.HL6_STATUS_DETAIL_ID = STATUS.HL6_STATUS_DETAIL_ID
             LEFT JOIN COST_CENTER COST_CENTER ON HL6.COST_CENTER_ID = COST_CENTER.COST_CENTER_ID
+            LEFT JOIN PRIORITY PRI ON PRI.priority_id = HL6.priority_id
 			WHERE HL6.HL6_ID = in_hl6_id
 				AND HL6.ENABLED = 1
 				AND HL6.DELETED = 0;

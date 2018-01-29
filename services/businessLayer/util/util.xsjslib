@@ -244,8 +244,10 @@ function getHierarchyLevelEnum() {
  * @param {boolean} superAdmin
  * @returns {isSuperAdmin|boolean} - true if the user is super admin or if the status is different from Create in CRM or Update in CRM
  */
-function getEnableEdit(statusId, statusLevel, userId, superAdmin) {
+function getEnableEdit(statusId, statusLevel, userId, superAdmin, parentStatusId, granParentStatusId) {
     superAdmin = superAdmin == undefined ? isSuperAdmin(userId) : superAdmin;
 	//TODO: Super admin validation added because of SAP new requirements, refactor this
-	return (superAdmin || (Number(statusId) !== statusLevel.CREATE_IN_CRM && Number(statusId) !== statusLevel.UPDATE_IN_CRM));
+	return  Number(statusId) !== statusLevel.DELETED_IN_CRM && Number(parentStatusId || 0) !== statusLevel.DELETED_IN_CRM
+		&& Number(granParentStatusId || 0) !== statusLevel.DELETED_IN_CRM
+		&& (superAdmin || (Number(statusId) !== statusLevel.CREATE_IN_CRM && Number(statusId) !== statusLevel.UPDATE_IN_CRM));
 }

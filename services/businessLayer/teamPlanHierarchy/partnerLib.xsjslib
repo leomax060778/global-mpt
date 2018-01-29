@@ -68,10 +68,12 @@ function parser(partners, currencyValueAux, hl6Id) {
         });
         rdo.push(obj);
 
-        if (obj.PARTNER_TYPE_ID != 1) {
-            total = total + parseFloat(obj.AMOUNT);
-        } else {
-            totalExternal = totalExternal + parseFloat(obj.AMOUNT);
+        if(obj.BUDGET_SPEND_REQUEST_STATUS_ID != 4) {
+            if (obj.PARTNER_TYPE_ID != 1) {
+                total = total + parseFloat(obj.AMOUNT);
+            } else {
+                totalExternal = totalExternal + parseFloat(obj.AMOUNT);
+            }
         }
     });
     var partnerCurrencyValue;
@@ -112,16 +114,18 @@ function parseAttachment(res, hierarchyLevel, currencyValueAux, hl5Id){
 
     for(var i=0; i<len; i++){
         if(par[i]){
-            par[i].AMOUNT = (Number(par[i].VALUE) * (currencyValueAux || 1)).toFixed(2);
-            if (par[i].PARTNER_TYPE_ID != 1){
-                total = total + parseFloat(par[i].AMOUNT);
-            } else{
-                totalExternal = totalExternal + parseFloat(par[i].AMOUNT);
-            }
-            par[i].PARTNER_NAME = undefined;
-            par[i].REGION_NAME = undefined;
-            par[i].REGION_ID = undefined;
-            par[i].VALUE = undefined;
+                par[i].AMOUNT = (Number(par[i].VALUE) * (currencyValueAux || 1)).toFixed(2);
+                if(par[i].BUDGET_SPEND_REQUEST_STATUS_ID != 4) {
+                    if (par[i].PARTNER_TYPE_ID != 1) {
+                        total = total + parseFloat(par[i].AMOUNT);
+                    } else {
+                        totalExternal = totalExternal + parseFloat(par[i].AMOUNT);
+                    }
+                }
+                par[i].PARTNER_NAME = undefined;
+                par[i].REGION_NAME = undefined;
+                par[i].REGION_ID = undefined;
+                par[i].VALUE = undefined;
         }
 
         if(attachments[i]){
