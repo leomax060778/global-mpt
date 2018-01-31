@@ -36,9 +36,9 @@ BEGIN
 		WHERE 
 		HL6.HL6_STATUS_DETAIL_ID IN (SELECT HL6_STATUS_DETAIL_ID
 					FROM "MKTG_PLANNING_TOOL".HL6_STATUS_DETAIL
-					WHERE DETAIL IN ('Create In CRM',  'Update In CRM')) AND
+					WHERE DETAIL IN ('Create In CRM',  'Update In CRM', 'Deletion Request')) AND
 		HL6.ENABLED = 1 AND
 		HL6.DELETED = 0
-		ORDER BY hl6_modified_date ASC, hl6_path ASC;
+		ORDER BY hl6_modified_date ASC, hl6_path ASC;		
 		
 END;

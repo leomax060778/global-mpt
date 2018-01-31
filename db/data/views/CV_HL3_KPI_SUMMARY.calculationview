@@ -70,6 +70,8 @@ BEGIN
                    ON hl4_eod.OUTCOMES_ID = eol.EXPECTED_OUTCOME_LEVEL_ID
                    and  eol.HIERARCHY_LEVEL_ID = 1
                    WHERE hl4_eod.DELETED = 0 AND hl4_eod.ENABLED = 1
+                   --- This means that will be included those records that aren´t in Deleted In CRM ---
+					  AND HL4.HL4_STATUS_DETAIL_ID != 10
                    GROUP BY eol.EXPECTED_OUTCOME_ID, eol.EXPECTED_OUTCOME_OPTION_ID, hl4.HL3_ID;
 
 

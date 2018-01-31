@@ -20,7 +20,9 @@ BEGIN
 	  AND HL4.hl4_id != in_hl4_id
 	  AND HL4.deleted = 0
 	  AND HL4.enabled = 1
-	  AND HL4.in_budget = 1;
+	  AND HL4.in_budget = 1
+	  --- This means that will be included those records that aren´t in Deleted In CRM ---
+            AND HL4.HL4_STATUS_DETAIL_ID != 10;
 
 	out_hl3_allocated_budget := IFNULL(va_hl3_allocated_budget, 0);
 

@@ -1,7 +1,7 @@
 PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_MULTI_TACTIC_BY_HL5_ID" (
 	in in_hl5_id BIGINT
 	,out out_result TABLE (
-		MULTI_TACTIC TINYINT
+		FORECAST_AT_L5 TINYINT
 		)
 
 )
@@ -11,7 +11,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_MULTI_TACTIC
 	READS SQL DATA AS
 BEGIN
 out_result = select
-             MULTI_TACTIC
+             FORECAST_AT_L5
              from hl5
              where hl5_id = in_hl5_id;
 

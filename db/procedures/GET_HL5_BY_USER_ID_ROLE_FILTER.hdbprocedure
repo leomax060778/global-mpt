@@ -3,6 +3,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL5_BY_USER_
         OUT out_result TABLE(
              HL4_ID BIGINT
             , HL4_PATH NVARCHAR(255)
+            , PARENT_STATUS_ID INTEGER
             , HL5_ID INTEGER
             , HL5_ACRONYM NVARCHAR(255)
             , STATUS_DETAIL NVARCHAR(255)
@@ -39,6 +40,7 @@ BEGIN
             , hl5.hl5_status_detail_id
             , hl3.hl3_id
             , hl4.ACRONYM
+            , hl4.HL4_STATUS_DETAIL_ID AS PARENT_STATUS_ID
         FROM HL5 Hl5
             INNER JOIN HL4 hl4 ON hl4.hl4_id=hl5.hl4_id AND hl4.enabled=1 AND hl4.deleted=0
             INNER JOIN hl5_status_detail hl5_status_detail ON hl5_status_detail.hl5_status_detail_id = hl5.hl5_status_detail_id
@@ -66,8 +68,11 @@ aux_out_result = SELECT DISTINCT
         , va_hl5.hl3_id
         , va_hl5.ACRONYM
         , va_hl5.HL5_STATUS_DETAIL_ID
+        , va_hl5.PARENT_STATUS_ID
     FROM :va_intermidate va_hl5
         LEFT JOIN HL6 hl6 ON hl6.HL5_ID = va_hl5.hl5_id AND hl6.enabled = 1 AND hl6.deleted = 0
+        --- This means that will be included those records that aren´t in Deleted In CRM ---
+                	  AND HL6.HL6_STATUS_DETAIL_ID != 10
 
 	GROUP BY
         va_hl5.HL5_ID
@@ -82,7 +87,8 @@ aux_out_result = SELECT DISTINCT
         , va_hl5.BUDGET_SPEND_REQUEST_STATUS
         , va_hl5.hl3_id
         , va_hl5.ACRONYM
-        , va_hl5.HL5_STATUS_DETAIL_ID;
+        , va_hl5.HL5_STATUS_DETAIL_ID
+        , va_hl5.PARENT_STATUS_ID;
 
 temp_l4_result =
     select hl4.hl4_id
@@ -97,6 +103,7 @@ out_result =
     select DISTINCT
           T2.HL4_ID
         , T2.HL4_PATH
+        , T.PARENT_STATUS_ID
         , T.HL5_ID
         , T.HL5_ACRONYM
         , T.STATUS_DETAIL

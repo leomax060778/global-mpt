@@ -20,6 +20,8 @@ BEGIN
 	HL5.enabled=1
 	AND HL5.deleted=0
 	AND HL5.hl4_id = in_hl4_id
+	--- This means that will be included those records that aren´t in Deleted In CRM ---
+      AND HL5.HL5_STATUS_DETAIL_ID != 10
 	GROUP BY HL5.hl4_id;
 
 	out_result:= ifnull(va_total_budget,0);

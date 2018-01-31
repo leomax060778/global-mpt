@@ -8,6 +8,8 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL6_BY_USER_
             , HL6_CRM_DESCRIPTION NVARCHAR(100)
             , HL6_ACRONYM NVARCHAR(25)
             , HL5_PATH NVARCHAR(255)
+            , PARENT_STATUS_ID INTEGER
+            , GRAN_PARENT_STATUS_ID INTEGER
             , IN_BUDGET Tinyint
             , STATUS_ID INTEGER
             , STATUS_DETAIL NVARCHAR(255)
@@ -71,6 +73,8 @@ va_intermidate = SELECT DISTINCT
     , hl3.ACRONYM AS HL3_ACRONYM
     , hl4.ACRONYM AS HL4_ACRONYM
     , hl5.ACRONYM AS HL5_ACRONYM
+    , hl5.HL5_STATUS_DETAIL_ID AS PARENT_STATUS_ID
+    , hl4.HL4_STATUS_DETAIL_ID AS GRAN_PARENT_STATUS_ID
     from HL5 hl5
     INNER JOIN HL4 hl4 ON hl4.hl4_id=hl5.hl4_id AND hl4.enabled=1 AND hl4.deleted=0
     INNER JOIN HL3 hl3 ON hl3.hl3_id=hl4.hl3_id AND hl3.enabled=1 AND hl3.deleted=0
@@ -87,6 +91,8 @@ out_result = SELECT
 		,va_hl6.HL6_CRM_DESCRIPTION
 		,va_hl6.HL6_ACRONYM
 		,va_hl5.HL5_PATH
+		,va_hl5.PARENT_STATUS_ID
+		,va_hl5.GRAN_PARENT_STATUS_ID
 		,va_hl6.IN_BUDGET
 		,va_hl6.STATUS_ID
 		,va_hl6.STATUS_DETAIL

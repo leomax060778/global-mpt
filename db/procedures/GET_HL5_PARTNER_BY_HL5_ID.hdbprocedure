@@ -86,7 +86,7 @@ BEGIN
         inner join currency c on c.euro_conversion_id = t.currency_id
         left join budget_spend_request bsr on bsr.budget_spend_request_id = t.budget_spend_request_id
         LEFT JOIN BUDGET_SPEND_REQUEST_STATUS BSRS ON bsr.BUDGET_SPEND_REQUEST_STATUS_ID = BSRS.BUDGET_SPEND_REQUEST_STATUS_ID
-        and (bsr.BUDGET_SPEND_REQUEST_STATUS_ID = 1 OR bsr.BUDGET_SPEND_REQUEST_STATUS_ID = 2);
+        WHERE bsr.BUDGET_SPEND_REQUEST_STATUS_ID != 3;
         
 	out_partner_attachment = SELECT
      							"HL5_PARTNER".PARTNER_ID,

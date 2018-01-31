@@ -64,10 +64,8 @@ function deleteL4ChangedFieldsByHl4Id(id) {
     }
     return null;
 }
+
 function massDeleteL4ChangedFieldsByHl4Id(ids) {
-    if (id) {
-        var rdo = db.executeScalarManual(spMassDelL4ChangedFieldsByHl4Id, {'in_hl4_ids': ids}, 'out_result');
-        return rdo;
-    }
-    return null;
+    var rdo = db.executeScalarManual(spMassDelL4ChangedFieldsByHl4Id, {'in_hl4_ids': ids}, 'out_result');
+    return rdo;
 }

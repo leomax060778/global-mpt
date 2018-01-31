@@ -1,25 +1,26 @@
 PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::HL4_MASS_CHANGE_STATUS" (
-	IN in_hl4_ids table (
-	   hl4_id bigint
-	),
-	IN in_status_id BIGINT,
-	IN in_user_id BIGINT,
-	OUT out_result INTEGER
-) 
-	LANGUAGE SQLSCRIPT
-	SQL SECURITY INVOKER 
-	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
-	AS
-BEGIN
+	IN hl4List table (
+    	   in_hl4_id bigint,
+            in_status_id BIGINT,
+            in_user_id BIGINT
+    	),
+    	OUT out_result INTEGER
+    )
+    	LANGUAGE SQLSCRIPT
+    	SQL SECURITY INVOKER
+    	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+    	AS
+    BEGIN
+    	-- Update current status in HL4
+    		UPDATE HL4
+    		SET hl4_status_detail_id = T.IN_STATUS_ID,
+    			modified_user_id = T.IN_USER_ID,
+    			modified_date_tz = CURRENT_TIMESTAMP
+            from HL4
+            INNER JOIN :hl4List T ON HL4.HL4_ID = T.IN_HL4_ID;
+    		--WHERE hl4_id in (SELECT hl4_id FROM :in_hl4_ids);
 
-	-- Update current status in HL4
-		UPDATE HL4
-		SET hl4_status_detail_id = in_status_id,
-			modified_user_id = in_user_id,
-			modified_date_tz = CURRENT_TIMESTAMP
-		WHERE hl4_id in (SELECT hl4_id FROM :in_hl4_ids);
-			
-		--Number of affected rows
-		SELECT ::ROWCOUNT into out_result FROM DUMMY;	  
+    		--Number of affected rows
+    		SELECT ::ROWCOUNT into out_result FROM DUMMY;
 
-END;
+    END;

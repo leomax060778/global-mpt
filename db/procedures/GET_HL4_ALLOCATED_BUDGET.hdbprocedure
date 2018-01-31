@@ -20,7 +20,9 @@ BEGIN
 	  AND HL5.hl5_id != in_hl5_id
 	  AND HL5.deleted = 0
 	  AND HL5.enabled = 1
-	  AND HL5.in_budget = 1;
+	  AND HL5.in_budget = 1
+	  --- This means that will be included those records that aren´t in Deleted In CRM ---
+                  AND HL5.HL5_STATUS_DETAIL_ID != 10;
 
 	out_hl4_allocated_budget := IFNULL(va_hl4_allocated_budget, 0);
 

@@ -37,9 +37,8 @@ BEGIN
              		WHERE
              		HL4.HL4_STATUS_DETAIL_ID IN (SELECT HL4_STATUS_DETAIL_ID
              					FROM "MKTG_PLANNING_TOOL".HL4_STATUS_DETAIL
-             					WHERE DETAIL IN ('Create In CRM',  'Update In CRM')) AND
+             					WHERE DETAIL IN ('Create In CRM',  'Update In CRM', 'Deletion Request')) AND
              		HL4.ENABLED = 1 AND
              		HL4.DELETED = 0
-             		ORDER BY hl4_modified_date ASC, hl4_path ASC;
-		
+             		ORDER BY hl4_modified_date ASC, hl4_path ASC;		
 END;

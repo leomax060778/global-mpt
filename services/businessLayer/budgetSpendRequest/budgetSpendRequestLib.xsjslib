@@ -233,9 +233,10 @@ function updateSalesBudgetSpendRequest(sales, id, level, conversionValue, automa
     var arrBudgetSpendRequestMessageToUpdate = [];
     var arrBudgetSpendRequestOtherBudgetApprover = [];
     var arrSaleHl = [];
-    var statusId = automaticBudgetApproval ? BUDGET_SPEND_REQUEST_STATUS.APPROVED : BUDGET_SPEND_REQUEST_STATUS.PENDING;
+    var statusId;
     sales
         .forEach(function (sale) {
+            statusId = automaticBudgetApproval ? BUDGET_SPEND_REQUEST_STATUS.APPROVED : BUDGET_SPEND_REQUEST_STATUS.PENDING;
             if (Number(sale.AMOUNT) && sale.MESSAGE) {
                 var budgetSpendRequestId = sale.BUDGET_SPEND_REQUEST_ID;
                 var insertMessage = false;
@@ -258,6 +259,9 @@ function updateSalesBudgetSpendRequest(sales, id, level, conversionValue, automa
                 } else {
                     var budgetSpendRequestList = getHlSalesByHlId(id, level);
                     var budgetSpendRequest = getBudgetRequestByIdFromList(sale.BUDGET_SPEND_REQUEST_ID, budgetSpendRequestList);
+                    if (budgetSpendRequest.length) {
+                        budgetSpendRequest = budgetSpendRequest[0];
+                    }
 
                     if (budgetSpendRequest && (Number(sale.AMOUNT) / conversionValue).toFixed(2) != Number(budgetSpendRequest.AMOUNT).toFixed(2)) {
                         insertMessage = true;
@@ -413,6 +417,9 @@ function updatePartnerBudgetSpendRequest(budgetSpendRequest, id, level, automati
     
     budgetSpendRequest.forEach(function (request) {
             var budgetSpendRequest = getBudgetRequestByIdFromList(request.in_budget_spend_request_id, budgetSpendRequestList);
+            if (budgetSpendRequest.length) {
+                budgetSpendRequest = budgetSpendRequest[0];
+            }
 
             if (budgetSpendRequest && Number(request.in_amount).toFixed(2) != Number(budgetSpendRequest.VALUE).toFixed(2)) {
                 updateMessage = true;
@@ -530,6 +537,37 @@ function checkCountBudgetSpendRequestByHlIdLevel(hlId, level) {
                 && request.BUDGET_SPEND_REQUEST_STATUS_ID != BUDGET_SPEND_REQUEST_STATUS.NO_LONGER_REQUESTED
                 && request.BUDGET_SPEND_REQUEST_STATUS_ID != BUDGET_SPEND_REQUEST_STATUS.REJECTED)
                 countCoFundingRequest = +1;
+        });
+    return !!countCoFundingRequest;
+}
+
+function countApprovedCoFundedBudgetSpendRequestByHlIdLevel(hlId, level) {
+    if (!hlId)
+        throw ErrorLib
+            .getErrors()
+            .BadRequest(
+                "The ID was not found",
+                "budgetSpendRequestServices/handleGet/checkCountBudgetSpendRequestByHlIdLevel",
+                L5_MSG_INITIATIVE_NOT_FOUND);
+
+    if (!level)
+        throw ErrorLib
+            .getErrors()
+            .BadRequest(
+                "The Level ID was not found",
+                "budgetSpendRequestServices/handleGet/checkCountBudgetSpendRequestByHlIdLevel",
+                L5_MSG_INITIATIVE_NOT_FOUND);
+
+    var budgetSpendRequests = dataBudgetSpendRequest
+        .getAllBudgetSpendRequestByHlIdAndLevel(hlId, level);
+
+    var countCoFundingRequest = 0;
+    budgetSpendRequests
+        .forEach(function (request) {
+            if (request.BUDGET_SPEND_REQUEST_TYPE_ID != BUDGET_SPEND_REQUEST_TYPE.OWN_MONEY
+                && request.BUDGET_SPEND_REQUEST_STATUS_ID == BUDGET_SPEND_REQUEST_STATUS.APPROVED) {
+                countCoFundingRequest = +1;
+            }
         });
     return !!countCoFundingRequest;
 }
