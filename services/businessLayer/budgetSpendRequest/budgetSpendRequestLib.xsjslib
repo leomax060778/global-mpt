@@ -541,6 +541,37 @@ function checkCountBudgetSpendRequestByHlIdLevel(hlId, level) {
     return !!countCoFundingRequest;
 }
 
+function countApprovedCoFundedBudgetSpendRequestByHlIdLevel(hlId, level) {
+    if (!hlId)
+        throw ErrorLib
+            .getErrors()
+            .BadRequest(
+                "The ID was not found",
+                "budgetSpendRequestServices/handleGet/checkCountBudgetSpendRequestByHlIdLevel",
+                L5_MSG_INITIATIVE_NOT_FOUND);
+
+    if (!level)
+        throw ErrorLib
+            .getErrors()
+            .BadRequest(
+                "The Level ID was not found",
+                "budgetSpendRequestServices/handleGet/checkCountBudgetSpendRequestByHlIdLevel",
+                L5_MSG_INITIATIVE_NOT_FOUND);
+
+    var budgetSpendRequests = dataBudgetSpendRequest
+        .getAllBudgetSpendRequestByHlIdAndLevel(hlId, level);
+
+    var countCoFundingRequest = 0;
+    budgetSpendRequests
+        .forEach(function (request) {
+            if (request.BUDGET_SPEND_REQUEST_TYPE_ID != BUDGET_SPEND_REQUEST_TYPE.OWN_MONEY
+                && request.BUDGET_SPEND_REQUEST_STATUS_ID == BUDGET_SPEND_REQUEST_STATUS.APPROVED) {
+                countCoFundingRequest = +1;
+            }
+        });
+    return !!countCoFundingRequest;
+}
+
 function getOwnMoneyBudgetSpendRequestStatusByHlIdLevel(hlId, level) {
     if (!hlId)
         throw ErrorLib

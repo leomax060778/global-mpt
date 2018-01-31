@@ -16,7 +16,8 @@ function parseChangedFields(HL, hlId, changedFields, changedOptions, hlList) {
             EXTERNAL_ID: "ACRONYM",
             DESCRIPTION: "HL4_CRM_DESCRIPTION",
             MARKETING_ORGANIZATION: "MKT_ORG_ID",
-            DISTRIBUTION_RULE: "DIS_CHANNEL_ID"
+            DISTRIBUTION_RULE: "DIS_CHANNEL_ID",
+            COST_CENTER: "COST_CENTER"
         }, HL5: {
             EXTERNAL_ID: "ACRONYM",
             DESCRIPTION: "HL5_CRM_DESCRIPTION",

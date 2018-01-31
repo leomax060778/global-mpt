@@ -16,6 +16,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL6_BY_HL5_I
             , IMPORTED tinyint
             , IMPORT_ID INTEGER
             , PARENT_STATUS_ID integer
+            , GRAN_PARENT_STATUS_ID INTEGER
         )
 )
 LANGUAGE SQLSCRIPT
@@ -42,6 +43,7 @@ va_intermidate = SELECT
         ,hl6.IMPORTED as IMPORTED
         ,hl6.IMPORT_ID as IMPORT_ID
         , HL5.HL5_STATUS_DETAIL_ID AS PARENT_STATUS_ID
+        , HL4.HL4_STATUS_DETAIL_ID AS GRAN_PARENT_STATUS_ID
     FROM HL6 Hl6
     INNER JOIN HL5 hl5 ON hl5.hl5_id=hl6.hl5_id AND hl5.enabled=1 AND hl5.deleted=0
     INNER JOIN HL4 hl4 ON hl4.hl4_id=hl5.hl4_id AND hl4.enabled=1 AND hl4.deleted=0
@@ -72,6 +74,7 @@ out_result = SELECT
 		,va_hl6.IMPORTED
         ,va_hl6.IMPORT_ID
         ,va_hl6.PARENT_STATUS_ID
+        ,va_hl6.GRAN_PARENT_STATUS_ID
 
     FROM :va_intermidate va_hl6;
 		

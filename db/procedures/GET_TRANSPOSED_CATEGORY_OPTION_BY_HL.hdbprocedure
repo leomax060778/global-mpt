@@ -112,6 +112,8 @@ IF(IN_LEVEL = 'HL4') THEN
                                               ON O.allocation_option_id = ACOL.allocation_option_id
                                 WHERE  C.processing_report_export_key = 'IMP'
                                        AND HCP.hl4_id = in_hl_id
+                                        AND HCP.ENABLED = 1
+                                        AND HCP.DELETED = 0
                                        ORDER BY HCP.AMOUNT DESC)
                         -- Padding with empty rows so the row count is always 5
                                 UNION ALL
@@ -155,6 +157,8 @@ IF(IN_LEVEL = 'HL4') THEN
                                                  ON O.allocation_option_id = ACOL.allocation_option_id
                                    WHERE  C.processing_report_export_key = 'MKTSEG'
                                           AND HCP.hl4_id = in_hl_id
+                                        AND HCP.ENABLED = 1
+                                        AND HCP.DELETED = 0
                                           ORDER BY HCP.AMOUNT DESC)
                           -- Padding with empty rows so the row count is always 5
                                    UNION ALL
@@ -198,6 +202,8 @@ IF(IN_LEVEL = 'HL4') THEN
                                                   ON O.allocation_option_id = ACOL.allocation_option_id
                                     WHERE  C.processing_report_export_key = 'INDUSTRY'
                                            AND HCP.hl4_id = in_hl_id
+                                        AND HCP.ENABLED = 1
+                                        AND HCP.DELETED = 0
                                            ORDER BY HCP.AMOUNT DESC)
                                     -- Padding with empty rows so the row count is always 5
                                     UNION ALL
@@ -241,6 +247,8 @@ IF(IN_LEVEL = 'HL4') THEN
                                                    ON O.allocation_option_id = ACOL.allocation_option_id
                                      WHERE  C.processing_report_export_key = 'SOLUTION'
                                             AND HCP.hl4_id = in_hl_id
+                                        AND HCP.ENABLED = 1
+                                        AND HCP.DELETED = 0
                                             ORDER BY HCP.AMOUNT DESC)
                                      -- Padding with empty rows so the row count is always 5
                                      UNION ALL
@@ -289,6 +297,8 @@ VA_HL_IMP_OPTIONS = SELECT TOP 5 option_name,
                                               ON O.allocation_option_id = ACOL.allocation_option_id
                                 WHERE  C.processing_report_export_key = 'IMP'
                                        AND HCP.hl5_id = in_hl_id
+                                        AND HCP.ENABLED = 1
+                                        AND HCP.DELETED = 0
                                        ORDER BY HCP.AMOUNT DESC)
                                -- Padding with empty rows so the row count is always 5
                                 UNION ALL
@@ -332,6 +342,8 @@ VA_HL_IMP_OPTIONS = SELECT TOP 5 option_name,
                                                  ON O.allocation_option_id = ACOL.allocation_option_id
                                    WHERE  C.processing_report_export_key = 'MKTSEG'
                                           AND HCP.hl5_id = in_hl_id
+                                        AND HCP.ENABLED = 1
+                                        AND HCP.DELETED = 0
                                           ORDER BY HCP.AMOUNT DESC)
                                   -- Padding with empty rows so the row count is always 5
                                    UNION ALL
@@ -376,6 +388,8 @@ VA_HL_IMP_OPTIONS = SELECT TOP 5 option_name,
                                                   ON O.allocation_option_id = ACOL.allocation_option_id
                                     WHERE  C.processing_report_export_key = 'INDUSTRY'
                                            AND HCP.hl5_id = in_hl_id
+                                        AND HCP.ENABLED = 1
+                                        AND HCP.DELETED = 0
                                            ORDER BY HCP.AMOUNT DESC)
                                     -- Padding with empty rows so the row count is always 5
                                     UNION ALL
@@ -419,6 +433,8 @@ VA_HL_IMP_OPTIONS = SELECT TOP 5 option_name,
                                                    ON O.allocation_option_id = ACOL.allocation_option_id
                                      WHERE  C.processing_report_export_key = 'SOLUTION'
                                             AND HCP.hl5_id = in_hl_id
+                                        AND HCP.ENABLED = 1
+                                        AND HCP.DELETED = 0
                                             ORDER BY HCP.AMOUNT DESC)
                                      UNION ALL
                                      SELECT '' AS OPTION_NAME,
@@ -464,6 +480,8 @@ VA_HL_IMP_OPTIONS = SELECT TOP 5 option_name,
                                           ON O.allocation_option_id = ACOL.allocation_option_id
                             WHERE  C.processing_report_export_key = 'IMP'
                                    AND HCP.hl6_id = in_hl_id
+                                    AND HCP.ENABLED = 1
+                                    AND HCP.DELETED = 0
                                    ORDER BY HCP.AMOUNT DESC)
                            -- Padding with empty rows so the row count is always 5
                             UNION ALL
@@ -507,6 +525,8 @@ VA_HL_MKTSEG_OPTIONS = SELECT TOP 5 option_name,
                                              ON O.allocation_option_id = ACOL.allocation_option_id
                                WHERE  C.processing_report_export_key = 'MKTSEG'
                                       AND HCP.hl6_id = in_hl_id
+                                        AND HCP.ENABLED = 1
+                                        AND HCP.DELETED = 0
                                       ORDER BY HCP.AMOUNT DESC)
                               -- Padding with empty rows so the row count is always 5
                                UNION ALL
@@ -550,6 +570,8 @@ VA_HL_INDUSTRY_OPTIONS = SELECT TOP 5 option_name,
                                               ON O.allocation_option_id = ACOL.allocation_option_id
                                 WHERE  C.processing_report_export_key = 'INDUSTRY'
                                        AND HCP.hl6_id = in_hl_id
+                                        AND HCP.ENABLED = 1
+                                        AND HCP.DELETED = 0
                                        ORDER BY HCP.AMOUNT DESC)
                                -- Padding with empty rows so the row count is always 5
                                 UNION ALL
@@ -593,6 +615,8 @@ VA_HL_SOLUTION_OPTIONS = SELECT TOP 5 option_name,
                                                ON O.allocation_option_id = ACOL.allocation_option_id
                                  WHERE  C.processing_report_export_key = 'SOLUTION'
                                         AND HCP.hl6_id = in_hl_id
+                                        AND HCP.ENABLED = 1
+                                        AND HCP.DELETED = 0
                                         ORDER BY HCP.AMOUNT DESC)
                                 -- Padding with empty rows so the row count is always 5
                                  UNION ALL

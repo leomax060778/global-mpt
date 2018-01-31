@@ -1015,14 +1015,14 @@ function setHl4Status(hl4_id, status_id, userId) {
     return updateOK;
 }
 
-function massSetHl4Status(hl4Ids, status_id, userId) {
-    var updateOK;
+function massSetHl4Status(hl4Ids, userId) {
+    // var updateOK;
     var hl4List = [];
     var hl4IdsInCrm = [];
     hl4Ids.forEach(function (hl4) {
         var newStatusId = (Number(dataHl4.getHl4StatusByHl4Id(hl4.hl4_id).HL4_STATUS_DETAIL_ID) === HL4_STATUS.DELETION_REQUEST)
             ? HL4_STATUS.DELETED_IN_CRM
-            : status_id;
+            : HL4_STATUS.IN_CRM;
         hl4List.push({
             "in_hl4_id": hl4.hl4_id
             , 'in_status_id': newStatusId
@@ -1033,19 +1033,11 @@ function massSetHl4Status(hl4Ids, status_id, userId) {
         }
     });
     dataHl4.massInsertHl4LogStatus(hl4Ids, userId);
-    var changeHL4tatus = dataHl4.massChangeStatusHl4(hl4List);//, newStatusId, userId).out_result_hl4;
-    updateOK = changeHL4tatus;
+    dataHl4.massChangeStatusHl4(hl4List);
+    level4DER.massDeleteL4ChangedFieldsByHl4Ids(hl4Ids);
+    massResetHl4CategoryOptionUpdated(hl4Ids, userId);
 
-    if (hl4IdsInCrm.length) {
-        // if (level4DER.massDeleteL4ChangedFieldsByHl4Ids(hl4Ids) !== null) {
-        level4DER.massDeleteL4ChangedFieldsByHl4Ids(hl4IdsInCrm);
-        massResetHl4CategoryOptionUpdated(hl4IdsInCrm, userId);
-        // } else {
-        //     updateOK = false;
-        // }
-    }
-
-    return updateOK;
+    return hl4IdsInCrm;
 }
 
 function resetHl4CategoryOptionUpdated(hl4Id, userId) {
@@ -1081,8 +1073,8 @@ function setHl4StatusInCRM(hl4_id, userId) {
     }
 
     if (hl4Ids.length) {
-        massSetHl4Status(hl4Ids, HL4_STATUS.IN_CRM, userId);
-        mail.massSendInCRMMail(hl4Ids, "hl4");
+        var hl4InCrm = massSetHl4Status(hl4Ids, userId);
+        mail.massSendInCRMMail(hl4InCrm, "hl4");
         hl4Ids.forEach(function (value) {
             dataL4Report.updateLevel4ReportForDownload(value.hl4_id);
         })
