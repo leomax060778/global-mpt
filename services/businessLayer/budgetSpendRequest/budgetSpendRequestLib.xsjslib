@@ -511,22 +511,6 @@ function validateApprovers(listApprovers) {
 }
 
 function checkCountBudgetSpendRequestByHlIdLevel(hlId, level) {
-    if (!hlId)
-        throw ErrorLib
-            .getErrors()
-            .BadRequest(
-                "The ID was not found",
-                "budgetSpendRequestServices/handleGet/checkCountBudgetSpendRequestByHlIdLevel",
-                L5_MSG_INITIATIVE_NOT_FOUND);
-
-    if (!level)
-        throw ErrorLib
-            .getErrors()
-            .BadRequest(
-                "The Level ID was not found",
-                "budgetSpendRequestServices/handleGet/checkCountBudgetSpendRequestByHlIdLevel",
-                L5_MSG_INITIATIVE_NOT_FOUND);
-
     var budgetSpendRequests = dataBudgetSpendRequest
         .getAllBudgetSpendRequestByHlIdAndLevel(hlId, level);
 
@@ -542,22 +526,6 @@ function checkCountBudgetSpendRequestByHlIdLevel(hlId, level) {
 }
 
 function countApprovedCoFundedBudgetSpendRequestByHlIdLevel(hlId, level) {
-    if (!hlId)
-        throw ErrorLib
-            .getErrors()
-            .BadRequest(
-                "The ID was not found",
-                "budgetSpendRequestServices/handleGet/checkCountBudgetSpendRequestByHlIdLevel",
-                L5_MSG_INITIATIVE_NOT_FOUND);
-
-    if (!level)
-        throw ErrorLib
-            .getErrors()
-            .BadRequest(
-                "The Level ID was not found",
-                "budgetSpendRequestServices/handleGet/checkCountBudgetSpendRequestByHlIdLevel",
-                L5_MSG_INITIATIVE_NOT_FOUND);
-
     var budgetSpendRequests = dataBudgetSpendRequest
         .getAllBudgetSpendRequestByHlIdAndLevel(hlId, level);
 
@@ -573,22 +541,6 @@ function countApprovedCoFundedBudgetSpendRequestByHlIdLevel(hlId, level) {
 }
 
 function getOwnMoneyBudgetSpendRequestStatusByHlIdLevel(hlId, level) {
-    if (!hlId)
-        throw ErrorLib
-            .getErrors()
-            .BadRequest(
-                "The ID was not found",
-                "budgetSpendRequestServices/handleGet/checkCountBudgetSpendRequestByHlIdLevel",
-                L5_MSG_INITIATIVE_NOT_FOUND);
-
-    if (!level)
-        throw ErrorLib
-            .getErrors()
-            .BadRequest(
-                "The Level ID was not found",
-                "budgetSpendRequestServices/handleGet/checkCountBudgetSpendRequestByHlIdLevel",
-                L5_MSG_INITIATIVE_NOT_FOUND);
-
     var budgetSpendRequests = dataBudgetSpendRequest
         .getAllBudgetSpendRequestByHlIdAndLevel(hlId, level);
 

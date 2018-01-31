@@ -964,7 +964,7 @@ function isComplete(data, fromChangeStatusOnDemand) {
                         if(!!Number(data.BUDGET)){
                             if(!!Number(data.IN_BUDGET) || fromChangeStatusOnDemand){
                                 var budgetSpendRequestStatus = budgetSpendRequest.getBudgetSpendRequestsStatus();
-                                var ownMoneyBudgetSpendRequestStatus = budgetSpendRequest.getOwnMoneyBudgetSpendRequestStatusByHlIdLevel(data.HL5_ID, 'HL5');
+                                var ownMoneyBudgetSpendRequestStatus = budgetSpendRequest.getOwnMoneyBudgetSpendRequestStatusByHlIdLevel(data.HL5_ID || 0, 'HL5');
                                 if (!ownMoneyBudgetSpendRequestStatus || (ownMoneyBudgetSpendRequestStatus && ownMoneyBudgetSpendRequestStatus != budgetSpendRequestStatus.APPROVED)) {
                                     if(Number(data.CO_FUNDED)){
                                         isComplete = (data.SALE_REQUESTS && data.SALE_REQUESTS.length) || (data.PARTNERS && data.PARTNERS.length);
