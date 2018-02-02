@@ -674,9 +674,8 @@ function validateHl4(data, userId) {
 
     var crmFieldsHasChanged = crmFieldsHasChangedResult.crmFieldsHaveChanged;
     if (data.hl4.in_hl4_id) {
-        existInCrm = dataHl4.existsInCrm(data.hl4.in_hl4_id);
-
         var objHL4 = dataHl4.getHl4ById(data.hl4.in_hl4_id);
+        existInCrm = dataHl4.existsInCrm(data.hl4.in_hl4_id) || objHL4.HL4_STATUS_DETAIL_ID == HL4_STATUS.IN_CRM;
         if (existInCrm && data.hl4.in_acronym.toUpperCase() != objHL4.ACRONYM.toUpperCase()) {
             throw ErrorLib.getErrors().CustomError("", "", L3_MSG_INITIATIVE_IN_CRM);
 
@@ -1095,10 +1094,6 @@ function changeHl4StatusOnDemand(hl4_id, userId) {
     if (hl4.HL4_STATUS_DETAIL_ID != HL4_STATUS.IN_CRM
         && hl4.HL4_STATUS_DETAIL_ID != HL4_STATUS.UPDATE_IN_CRM
         && hl4.HL4_STATUS_DETAIL_ID != HL4_STATUS.CREATE_IN_CRM) {
-        if (!dataL4DER.getL4ChangedFieldsByHl4Id(hl4_id) || !dataL4DER.getL4ChangedFieldsByHl4Id(hl4_id).length) {
-            throw ErrorLib.getErrors().CustomError("", "", L3_MSG_INITIATIVE_COULDNT_CHAGE_STATUS);
-        }
-
         var hl4_category = getHl4CategoryOption(hl4_id);
 
         var isComplete = isCategoryOptionComplete({

@@ -420,19 +420,22 @@ function updatePartnerBudgetSpendRequest(budgetSpendRequest, id, level, automati
             if (budgetSpendRequest.length) {
                 budgetSpendRequest = budgetSpendRequest[0];
             }
+            var statusAux = statusId;
 
             if (budgetSpendRequest && Number(request.in_amount).toFixed(2) != Number(budgetSpendRequest.VALUE).toFixed(2)) {
                 updateMessage = true;
-            } else {
-                statusId = budgetSpendRequest.BUDGET_SPEND_REQUEST_STATUS_ID
+            }else{
+                statusAux = budgetSpendRequest.BUDGET_SPEND_REQUEST_STATUS_ID;
             }
+
+
 
             if(updateMessage || (statusId == BUDGET_SPEND_REQUEST_STATUS.PENDING && request.in_message != budgetSpendRequest.MESSAGE)) {
                 arrBudgetSpendRequestToUpdate.push({
                     in_budget_spend_request_id: request.in_budget_spend_request_id,
                     in_amount: request.in_amount,
                     in_message: (request.in_message != budgetSpendRequest.MESSAGE) ? request.in_message || "" : budgetSpendRequest.MESSAGE,
-                    in_budget_spend_request_status_id: statusId,
+                    in_budget_spend_request_status_id: statusAux,
                     in_user_id: userId
                 });
 
