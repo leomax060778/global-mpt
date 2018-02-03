@@ -2015,6 +2015,7 @@ function updateExternalCoFunding(data, automaticBudgetApproval, userId) {
                     , in_amount: partner.AMOUNT / externalCoFundingCurrency
                     , in_message: partner.MESSAGE
                     , in_user_id: userId
+                    , in_status : partner.STATUS
                 });
 
                 arrPartnerToUpdate.push({
