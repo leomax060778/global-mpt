@@ -28,6 +28,7 @@ function getDetailedReport(hl1_id, hl2_id, hl3_id){
         map_hl5_cat[hl5_cat.HL5_ID] = map_hl5_cat[hl5_cat.HL5_ID] || {};
         map_hl5_cat[hl5_cat.HL5_ID]["category_"+hl5_cat.HL5_CATEGORY_NAME] = map_hl5_cat[hl5_cat.HL5_ID]["category_"+hl5_cat.HL5_CATEGORY_NAME]|| "";
         map_hl5_cat[hl5_cat.HL5_ID]["category_"+hl5_cat.HL5_CATEGORY_NAME] += hl5_cat.HL5_OPTION_NAME + ": " + hl5_cat.HL5_AMOUNT + "; ";
+        map_hl5_cat[hl5_cat.HL5_ID]["category_" + hl5_cat.HL5_CATEGORY_NAME + "_" + hl5_cat.HL5_OPTION_NAME] = hl5_cat.HL5_AMOUNT;
     });
 
     var map_hl6_cat = {};
@@ -35,6 +36,7 @@ function getDetailedReport(hl1_id, hl2_id, hl3_id){
         map_hl6_cat[hl6_cat.HL6_ID] =  map_hl6_cat[hl6_cat.HL6_ID] ||{};
         map_hl6_cat[hl6_cat.HL6_ID]["category_"+hl6_cat.HL6_CATEGORY_NAME] = map_hl6_cat[hl6_cat.HL6_ID]["category_"+hl6_cat.HL6_CATEGORY_NAME]|| "";
         map_hl6_cat[hl6_cat.HL6_ID]["category_"+hl6_cat.HL6_CATEGORY_NAME] += hl6_cat.HL6_OPTION_NAME + ": " + hl6_cat.HL6_AMOUNT + "; ";
+        map_hl6_cat[hl6_cat.HL6_ID]["category_" + hl6_cat.HL6_CATEGORY_NAME + "_" + hl6_cat.HL6_OPTION_NAME] = hl6_cat.HL6_AMOUNT;
     });
 
     var map_hl5_kpi = {};

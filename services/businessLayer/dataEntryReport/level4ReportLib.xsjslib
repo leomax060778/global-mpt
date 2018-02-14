@@ -34,7 +34,7 @@ function getAllL4CreateInCrmDEReportForDownload(userId) {
 
 function getAllHL4ChangedFields(userId) {
     var data = dataL4DER.getAllHL4ChangedFields(userId);
-    return utilReportLib.parseChangedFields("HL4", "HL4_ID", data.out_hl4_changed_fields, data.out_hl4_category_options, data.out_hl4);
+    return utilReportLib.parseChangedFields("HL4", "HL4_ID", data.out_hl4_changed_fields, data.out_hl4_category_options, data.out_hl4, data.out_hl4_extra_fields);
 }
 
 function getL4CrmBindingFieldsByHl4Id(hl4Id) {

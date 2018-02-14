@@ -84,6 +84,9 @@ var L6_MSG_INITIATIVE_ACTUAL_START_END_DATE_PARENT_RANGE = "The Marketing Sub Ta
 var L6_MSG_INITIATIVE_PLANNED_START_END_DATE_PARENT_RANGE = "The Marketing Sub Tactic planned start date and planned end date cannot be outside of the parent L5 date range.";
 var L6_PRIORITY_NOT_VALID = "Priority cannot be empty.";
 var L6_BUSINESS_OWNER_NOT_VALID = "Business Owner cannot be empty.";
+var L6_MSG_REQUIRE_SPEND_BUDGET_VALIDATION = "You have answered “YES” to the question “Does this tactic/sub-tactic require spend budget?”. \n " +
+    "You must enter a value greater than 0 under “MY BUDGET”,  “OTHER BUDGET” or “EXTERNAL FUNDING”.  \n" +
+    "If you do not require spend budget for your tactic/sub-tactic, please change your selection to “NO”.";
 
 var HL6_STATUS = {
     IN_PROGRESS: 1,
@@ -312,7 +315,7 @@ function insertHl6(data, userId) {
     if (!hasAdditionalFields(data.CAMPAIGN_TYPE_ID)) {
         data.VENUE = null;
         data.CITY = null;
-        data.COUNTRY = null;
+        data.COUNTRY_ID = null;
         data.URL = null;
         data.STREET = null;
         data.POSTAL_CODE = null;
@@ -548,7 +551,7 @@ function updateHl6(data, userId) {
     if (!hasAdditionalFields(data.CAMPAIGN_TYPE_ID)) {
         data.VENUE = null;
         data.CITY = null;
-        data.COUNTRY = null;
+        data.COUNTRY_ID = null;
         data.URL = null;
         data.STREET = null;
         data.POSTAL_CODE = null;
@@ -615,7 +618,7 @@ function updateHl6(data, userId) {
                 data.DISTRIBUTION_CHANNEL_ID || 0,
                 data.VENUE,
                 data.CITY,
-                data.COUNTRY,
+                data.COUNTRY_ID,
                 data.URL,
                 data.RESULTS_CAMPAIGN_Q1 || 0,
                 data.RESULTS_CAMPAIGN_Q2 || 0,
@@ -776,7 +779,7 @@ function isComplete(data, fromChangeStatusOnDemand) {
         , "VENUE"
         , "STREET"
         , "CITY"
-        , "COUNTRY"
+        , "COUNTRY_ID"
         , "POSTAL_CODE"
         , "REGION"
         , "EVENT_OWNER"
@@ -827,7 +830,10 @@ function isComplete(data, fromChangeStatusOnDemand) {
                                     if(Number(data.CO_FUNDED)){
                                         isComplete = (data.SALE_REQUESTS && data.SALE_REQUESTS.length) || (data.PARTNERS && data.PARTNERS.length);
                                     } else {
-                                        isComplete = false;
+                                        //isComplete = false;
+                                        var hasBudgetRequestApproved = !!Number(budgetSpendRequest.countApprovedBudgetRequestByHl6Id(data.HL6_ID || '0'));
+                                        var hasBudgetRequestPending = !Number(budgetSpendRequest.countPendingBudgetRequestByHl6Id(data.HL6_ID || '0'));
+                                        isComplete = hasBudgetRequestApproved && hasBudgetRequestPending;
                                     }
                                 } else {
                                     isComplete = true;
@@ -836,7 +842,10 @@ function isComplete(data, fromChangeStatusOnDemand) {
                                 if(Number(data.CO_FUNDED)){
                                     isComplete = (data.SALE_REQUESTS && data.SALE_REQUESTS.length) || (data.PARTNERS && data.PARTNERS.length);
                                 } else {
-                                    isComplete = false;
+                                    //isComplete = false;
+                                    var hasBudgetRequestApproved = !!Number(budgetSpendRequest.countApprovedBudgetRequestByHl6Id(data.HL6_ID || '0'));
+                                    var hasBudgetRequestPending = !Number(budgetSpendRequest.countPendingBudgetRequestByHl6Id(data.HL6_ID || '0'));
+                                    isComplete = hasBudgetRequestApproved && hasBudgetRequestPending;
                                 }
                             }
                         } else {
@@ -917,6 +926,12 @@ function validateHl6(data, userId) {
     var myBudgetComplete = false;
     var categoryOptionComplete = false;
     var categoryHasChanged = false;
+
+    if (!Number(data.ALLOW_BUDGET_ZERO) && Number(data.BUDGET) == 0
+        && (!data.CO_FUNDED || data.PARTNERS.length == 0 && data.SALE_REQUESTS.length == 0)){
+        throw ErrorLib.getErrors().CustomError("", "", L6_MSG_REQUIRE_SPEND_BUDGET_VALIDATION);
+    }
+
     if (!Number(data.ALLOW_BUDGET_ZERO) && data.CO_FUNDED) {
         if (data.PARTNERS && data.PARTNERS.length) {
             budgetSpendRequest.validateExternalCofunding(data.PARTNERS);
@@ -1422,7 +1437,7 @@ function crmFieldsHaveChanged(data, isComplete, userId, isNew) {
                         case "VENUE":
                         case "STREET":
                         case "CITY":
-                        case "COUNTRY":
+                        case "COUNTRY_ID":
                         case "POSTAL_CODE":
                         case "REGION":
                         case "EVENT_OWNER":
@@ -2138,7 +2153,7 @@ function insertData(data, validAcronym) {
         , data.DISTRIBUTION_CHANNEL_ID || 0
         , data.VENUE
         , data.CITY
-        , data.COUNTRY
+        , data.COUNTRY_ID
         , data.URL
         , data.RESULTS_CAMPAIGN_Q1 || 0
         , data.RESULTS_CAMPAIGN_Q2 || 0

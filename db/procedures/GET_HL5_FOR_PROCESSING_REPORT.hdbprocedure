@@ -54,6 +54,8 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL5_FOR_PROC
                 , PARENT_PATH NVARCHAR(255)
                 , CRM_ID NVARCHAR(255)
                 , CREATED_USER_ID INTEGER
+                , COUNTRY_ID INTEGER
+                ,MARKETING_ACTIVITY_DESCRIPTION nvarchar(255)
         		)
             ,OUT out_marketing_activity_id TABLE(
                 BUDGET_YEAR NVARCHAR(20)
@@ -78,7 +80,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL5_FOR_PROC
                         , HL5.show_on_dg_calendar
                         , MARKETING_PROGRAM.NAME AS MARKETING_PROGRAM
                         , MARKETING_PROGRAM.DESCRIPTION AS MARKETING_PROGRAM_DESCRIPTION
-                        , MARKETING_ACTIVITY.hl5_crm_description AS MARKETING_ACTIVITY
+                        , MARKETING_ACTIVITY.NAME AS MARKETING_ACTIVITY
                         , HL5.planned_start_date
                         , HL5.planned_end_date
                         , HL5.actual_start_date
@@ -89,7 +91,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL5_FOR_PROC
                         , HL5.venue
                         , HL5.street
                         , HL5.city
-                        , HL5.country
+                        , COU.NAME as country
                         , HL5.postal_code
                         , HL5.region
                         , HL5.event_owner
@@ -124,6 +126,8 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL5_FOR_PROC
                         , "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BGY.BUDGET_YEAR, HL1.ACRONYM, HL2.ORGANIZATION_ACRONYM, HL3.ACRONYM, HL4.ACRONYM, '', '') AS PARENT_PATH
                         , "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BGY.BUDGET_YEAR, HL1.ACRONYM, HL2.ORGANIZATION_ACRONYM, HL3.ACRONYM, HL4.ACRONYM, HL5.ACRONYM, '') AS CRM_ID
                         , HL5.CREATED_USER_ID
+                        , HL5.COUNTRY_ID
+                        , MARKETING_ACTIVITY.DESCRIPTION AS MARKETING_ACTIVITY_DESCRIPTION
                          FROM HL5
                          INNER JOIN HL4 ON HL4.HL4_ID = HL5.HL4_ID
                          INNER JOIN HL3 ON HL4.HL3_ID = HL3.HL3_ID
@@ -131,7 +135,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL5_FOR_PROC
                          INNER JOIN HL1 ON HL1.HL1_ID = HL2.HL1_ID
                          INNER JOIN BUDGET_YEAR BGY ON HL1.BUDGET_YEAR_ID = BGY.BUDGET_YEAR_ID
                          LEFT JOIN MARKETING_PROGRAM ON MARKETING_PROGRAM.MARKETING_PROGRAM_ID = HL5.MARKETING_PROGRAM_ID
-                         LEFT JOIN HL5 MARKETING_ACTIVITY ON MARKETING_ACTIVITY.HL5_ID = HL5.MARKETING_ACTIVITY_ID
+                         LEFT JOIN MARKETING_ACTIVITY ON MARKETING_ACTIVITY.MARKETING_ACTIVITY_ID = HL5.MARKETING_ACTIVITY_ID
                          LEFT JOIN DISTRIBUTION_CHANNEL ON DISTRIBUTION_CHANNEL.DISTRIBUTION_CHANNEL_ID = HL5.DISTRIBUTION_CHANNEL_ID
                          LEFT JOIN PRIORITY ON PRIORITY.PRIORITY_ID = HL5.PRIORITY_ID
                          LEFT JOIN CAMPAIGN_TYPE ON CAMPAIGN_TYPE.CAMPAIGN_TYPE_ID = HL5.CAMPAIGN_TYPE_ID
@@ -142,6 +146,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL5_FOR_PROC
                          LEFT JOIN EMPLOYEE_RESPONSIBLE ON EMPLOYEE_RESPONSIBLE.EMPLOYEE_RESPONSIBLE_ID = HL5.EMPLOYEE_RESPONSIBLE_ID
                          LEFT JOIN BUSINESS_OWNER ON BUSINESS_OWNER.BUSINESS_OWNER_ID = HL5.BUSINESS_OWNER_ID
                          LEFT JOIN ROUTE_TO_MARKET ON ROUTE_TO_MARKET.ROUTE_TO_MARKET_ID = HL5.ROUTE_TO_MARKET_ID
+                         LEFT JOIN COUNTRY COU ON COU.COUNTRY_ID = HL5.COUNTRY_ID
 
                          WHERE HL5.HL5_ID = in_hl5_id;
 

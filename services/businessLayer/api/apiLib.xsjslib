@@ -146,3 +146,104 @@ function getReportExportData(filter) {
 
     return result;
 }
+
+
+function getReportExportDataRegion(filter) {
+
+    /**
+     * Initialize variables
+     * @type {[string,string,string]}
+     */
+    var scopeValues = ['ALL', 'KPI', 'BUDGET'];
+    var result = [];
+
+    var commonFiels = [
+        'HIERARCHY_LEVEL_ID'
+        , 'CRM_ID'
+    ];
+
+    var budgetFields = [
+        , 'PERCENTAGE_ALLOCATION'
+        , 'REGION_ID'
+        , 'REGION_DESC'
+    ];
+
+    var kpiFields = [
+    ];
+
+    if(!filter.SCOPE){
+        filter.SCOPE = 'ALL';
+    }
+
+    if (scopeValues.indexOf(filter.SCOPE.toUpperCase()) < 0) {
+        throw ErrorLib.getErrors().CustomError("", "", "The parameter SCOPE is invalid");
+    }
+
+
+    var filterParameter = {
+        IN_MODE: (filter.IN_IS_FULL_DOWNLOAD === 1 ? 1 : 2),
+        IN_FILTER_CRITERIA: "SCOPE=" + filter.SCOPE
+    };
+    if (!filter.IN_IS_FULL_DOWNLOAD) {
+        filter.IN_HIERARCHY_LEVEL = filter.IN_HIERARCHY_LEVEL.toUpperCase();
+        if (!filter.IN_HIERARCHY_LEVEL) {
+            throw ErrorLib.getErrors().CustomError("", "", "The parameter HIERARCHY_LEVEL is invalid");
+        }
+
+
+        filterParameter.IN_FILTER_CRITERIA += "&" + "HIERARCHY_LEVEL=" + filter.IN_HIERARCHY_LEVEL + "&" + "DELTA_TIME_LAST_UPDATE=" + filter.IN_DELTA_TIME_LAST_UPDATE;
+        var levelFilter = filter.IN_HIERARCHY_LEVEL.split(",");
+        var aux = levelFilter.reduce(function (res, elem) {
+            if (hierarchyLevel[elem]) {
+                res[hierarchyLevel[elem]] = {HIERARCHY_LEVEL_ID: hierarchyLevel[elem]};
+            }
+            return res;
+        }, {});
+        filter.IN_HIERARCHY_LEVEL = Object.keys(aux).map(function (elem) {
+            return aux[elem];
+        });
+        if (!filter.IN_HIERARCHY_LEVEL.length) {
+            throw ErrorLib.getErrors().CustomError("", "", "The parameter HIERARCHY_LEVEL is invalid");
+        }
+    }
+
+    if (!(new Date(filter.IN_DELTA_TIME_LAST_UPDATE).valueOf())) {
+        var now = new Date();
+
+        /**
+         * config.getConfigurationByName("deltaTimeLastUpdate")[0].VALUE === 24 hs
+         *
+         */
+
+        filter.IN_DELTA_TIME_LAST_UPDATE = new Date(now.setDate(now.getDate() - 1));
+    }
+
+    api.insertLogReportExportData(filterParameter);
+    var spResult = api.getReportExportDataRegion({
+        IN_IS_FULL_DOWNLOAD: filter.IN_IS_FULL_DOWNLOAD
+        , IN_DELTA_TIME_LAST_UPDATE: filter.IN_DELTA_TIME_LAST_UPDATE
+        , IN_HIERARCHY_LEVEL: filter.IN_HIERARCHY_LEVEL
+    });
+
+   /* if (spResult && spResult.length && filter.SCOPE.toUpperCase() != 'ALL') {
+        var outputFields = filter.SCOPE.toUpperCase() == 'BUDGET' ? budgetFields : kpiFields;*/
+
+    var outputFields = budgetFields;
+        for (var i = 0; i < spResult.length; i++) {
+            var elem = {};
+            commonFiels.forEach(function (field) {
+                elem[field] = spResult[i][field];
+            });
+
+            outputFields.forEach(function (field) {
+                elem[field] = spResult[i][field];
+            });
+            result.push(elem);
+        }
+
+    /*} else {
+        result = spResult;
+    }*/
+
+    return result;
+}

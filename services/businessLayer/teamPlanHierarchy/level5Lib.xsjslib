@@ -105,6 +105,9 @@ var L5_MSG_INITIATIVE_CAMPAIGN_OBJECTIVE = "The Marketing Tactic campaign object
 var L5_MSG_INITIATIVE_CAMPAIGN_TYPE = "The Marketing Tactic campaign type cannot be found.";
 var L5_MSG_INITIATIVE_CAMPAIGN_SUBTYPE = "The Marketing Tactic campaign subtype cannot be found.";
 var L5_MSG_INITIATIVE_SALES_ORGANIZATION = "The Marketing Tactic marketing organization cannot be found.";
+var L5_MSG_REQUIRE_SPEND_BUDGET_VALIDATION = "You have answered “YES” to the question “Does this tactic/sub-tactic require spend budget?”. \n " +
+    "You must enter a value greater than 0 under “MY BUDGET”,  “OTHER BUDGET” or “EXTERNAL FUNDING”.  \n" +
+    "If you do not require spend budget for your tactic/sub-tactic, please change your selection to “NO”.";
 
 var HL5_STATUS = {
     IN_PROGRESS: 1,
@@ -352,7 +355,7 @@ function insertHl5(data, userId) {
     if (!hasAdditionalFields(data.CAMPAIGN_TYPE_ID)) {
         data.VENUE = null;
         data.CITY = null;
-        data.COUNTRY = null;
+        data.COUNTRY_ID = null;
         data.URL = null;
         data.STREET = null;
         data.POSTAL_CODE = null;
@@ -453,7 +456,7 @@ function insertDataHl5(acronym, data) {
         , data.ROUTE_TO_MARKET_ID || 0
         , data.VENUE
         , data.CITY
-        , data.COUNTRY
+        , data.COUNTRY_ID
         , data.URL
         , data.SALES_ORGANIZATION_ID || 0
         , data.PLANNED_START_DATE || null
@@ -697,7 +700,7 @@ function updateHl5(data, userId) {
     if (!hasAdditionalFields(data.CAMPAIGN_TYPE_ID)) {
         data.VENUE = null;
         data.CITY = null;
-        data.COUNTRY = null;
+        data.COUNTRY_ID = null;
         data.URL = null;
         data.STREET = null;
         data.POSTAL_CODE = null;
@@ -779,7 +782,7 @@ function updateHl5(data, userId) {
             , data.ROUTE_TO_MARKET_ID || 0
             , data.VENUE
             , data.CITY
-            , data.COUNTRY
+            , data.COUNTRY_ID
             , data.URL
             , data.SALES_ORGANIZATION_ID || 0
             , data.PLANNED_START_DATE || null
@@ -918,7 +921,7 @@ function isComplete(data, fromChangeStatusOnDemand) {
         , "VENUE"
         , "STREET"
         , "CITY"
-        , "COUNTRY"
+        , "COUNTRY_ID"
         , "POSTAL_CODE"
         , "REGION"
         , "EVENT_OWNER"
@@ -969,7 +972,10 @@ function isComplete(data, fromChangeStatusOnDemand) {
                                     if(Number(data.CO_FUNDED)){
                                         isComplete = (data.SALE_REQUESTS && data.SALE_REQUESTS.length) || (data.PARTNERS && data.PARTNERS.length);
                                     } else {
-                                        isComplete = false;
+                                        var hasBudgetRequestApproved = !!Number(budgetSpendRequest.countApprovedBudgetRequestByHl5Id(data.HL5_ID || '0'));
+                                        var hasBudgetRequestPending = !Number(budgetSpendRequest.countPendingBudgetRequestByHl5Id(data.HL5_ID || '0'));
+                                        isComplete = hasBudgetRequestApproved && hasBudgetRequestPending;
+                                        //isComplete = false;
                                     }
                                 } else {
                                     isComplete = true;
@@ -978,7 +984,10 @@ function isComplete(data, fromChangeStatusOnDemand) {
                                 if(Number(data.CO_FUNDED)){
                                     isComplete = (data.SALE_REQUESTS && data.SALE_REQUESTS.length) || (data.PARTNERS && data.PARTNERS.length);
                                 } else {
-                                    isComplete = false;
+                                    //isComplete = false;
+                                    var hasBudgetRequestApproved = !!Number(budgetSpendRequest.countApprovedBudgetRequestByHl5Id(data.HL5_ID || '0'));
+                                    var hasBudgetRequestPending = !Number(budgetSpendRequest.countPendingBudgetRequestByHl5Id(data.HL5_ID || '0'));
+                                    isComplete = hasBudgetRequestApproved && hasBudgetRequestPending;
                                 }
                             }
                         } else {
@@ -1037,6 +1046,11 @@ function validateHl5(data, userId) {
     var myBudgetComplete = false;
     var categoryOptionComplete = false;
     var categoryHasChanged = false;
+
+    if (!Number(data.ALLOW_BUDGET_ZERO) && Number(data.BUDGET) == 0
+        && (!data.CO_FUNDED || data.PARTNERS.length == 0 && data.SALE_REQUESTS.length == 0)){
+        throw ErrorLib.getErrors().CustomError("", "", L5_MSG_REQUIRE_SPEND_BUDGET_VALIDATION);
+    }
 
     if (!Number(data.ALLOW_BUDGET_ZERO) && data.CO_FUNDED) {
         if (data.PARTNERS && data.PARTNERS.length) {
@@ -1605,7 +1619,7 @@ function crmFieldsHaveChanged(data, isComplete, userId, isNew) {
                         case "VENUE":
                         case "STREET":
                         case "CITY":
-                        case "COUNTRY":
+                        case "COUNTRY_ID":
                         case "POSTAL_CODE":
                         case "REGION":
                         case "EVENT_OWNER":

@@ -1,4 +1,4 @@
-PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL5_BY_ID" ( 
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL5_BY_ID" (
 	in in_hl5_id BIGINT
 	,OUT out_result TABLE (
 		hl5_id integer
@@ -35,7 +35,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL5_BY_ID" (
 		, route_to_market_id integer
         , venue nvarchar(255)
         , city nvarchar(255)
-        , country nvarchar(255)
+        , country_id integer
         , url nvarchar(255)
         , sales_organization_id integer
         , planned_start_date timestamp
@@ -113,7 +113,7 @@ out_result = select
                 , HL5.route_to_market_id
                 , HL5.venue
                 , HL5.city
-                , HL5.country
+                , HL5.country_id as country_id
                 , HL5.url
                 , HL5.sales_organization_id
                 , HL5.planned_start_date

@@ -413,6 +413,7 @@ function insertHl5(hl5CrmDescription,acronym,distributionChannelId,budget,hl4Id
 		, 'in_person_responsible' : person_responsible || null
 		, 'in_is_complete': is_complete
 		, 'in_forecast_at_l5': multiTactic ? 1:0
+		, 'in_country_id': country
 	};
 
 	var rdo;
@@ -543,6 +544,7 @@ function updateHl5(hl5Id,hl5CrmDescription,inAcronym,distributionChannelId,budge
 		, 'in_person_responsible' : person_responsible
         , 'in_is_complete': is_complete
 		, 'in_forecast_at_l5': multiTactic ? 1:0
+        , 'in_country_id': country
 
 	};
 

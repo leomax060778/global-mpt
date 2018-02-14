@@ -1,0 +1,614 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Calculation:scenario xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:Calculation="http://www.sap.com/ndb/BiModelCalculation.ecore" schemaVersion="2.3" id="CV_REPORT_EXPORT_DATA_REGION" applyPrivilegeType="ANALYTIC_PRIVILEGE" checkAnalyticPrivileges="true" defaultClient="$$client$$" defaultLanguage="$$language$$" hierarchiesSQLEnabled="false" translationRelevant="true" visibility="internal" calculationScenarioType="SCRIPT_BASED" dataCategory="DEFAULT" enforceSqlExecution="false" executionSemantic="UNDEFINED" scriptParametersCaseSensitive="true">
+  <descriptions defaultDescription="CV_PLAN_USER"/>
+  <localVariables/>
+  <variableMappings/>
+  <informationModelLayout relativeWidthScenario="27"/>
+  <dataSources/>
+  <calculationViews>
+    <calculationView xsi:type="Calculation:SqlScriptView" id="Script_View">
+      <descriptions/>
+      <viewAttributes>
+        <viewAttribute datatype="INTEGER" id="HIERARCHY_LEVEL_ID"/>
+        <viewAttribute datatype="NVARCHAR" id="CRM_ID" length="30"/>
+        <viewAttribute datatype="NVARCHAR" id="CAMP_OBJ_TYPE" length="25"/>
+        <viewAttribute datatype="DECIMAL" id="BUDGET" length="19" scale="2"/>
+        <viewAttribute datatype="NVARCHAR" id="BUDGET_Q1" length="25"/>
+        <viewAttribute datatype="NVARCHAR" id="BUDGET_Q2" length="25"/>
+        <viewAttribute datatype="NVARCHAR" id="BUDGET_Q3" length="25"/>
+        <viewAttribute datatype="NVARCHAR" id="BUDGET_Q4" length="25"/>
+        <viewAttribute datatype="NVARCHAR" id="INTERNAL_FUNDING" length="25"/>
+        <viewAttribute datatype="NVARCHAR" id="PARTNER_CONTRIBUTION" length="25"/>
+        <viewAttribute datatype="NVARCHAR" id="CURRENCY" length="25"/>
+        <viewAttribute datatype="NVARCHAR" id="BUDGET_YEAR" length="25"/>
+        <viewAttribute datatype="NVARCHAR" id="ON_PREM" length="25"/>
+        <viewAttribute datatype="NVARCHAR" id="CLOUD" length="25"/>
+        <viewAttribute datatype="TIMESTAMP" id="MODIFIED_DATE"/>
+        <viewAttribute datatype="DECIMAL" id="PERCENTAGE_ALLOCATION" length="19" scale="2"/>
+        <viewAttribute datatype="BIGINT" id="REGION_ID"/>
+        <viewAttribute datatype="VARCHAR" id="REGION_DESC" length="25"/>
+      </viewAttributes>
+      <calculatedViewAttributes/>
+      <definition>/****** Begin Procedure Script ************/ 
+ BEGIN 
+ 
+ va_l1 = SELECT HL1_ID
+			, &quot;MKTG_PLANNING_TOOL&quot;.&quot;mktgplanningtool.db.functions::GET_CRM_ID&quot;(
+				BY.BUDGET_YEAR
+			    , HL1.ACRONYM
+			    , ''
+			    , ''
+			    , ''
+			    , ''
+			    , '') AS CRM_ID
+			, 'MPL' AS CAMP_OBJ_TYPE
+			, (SELECT HIERARCHY_LEVEL_ID FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HIERARCHY_LEVEL&quot; HIERARCHY_LEVEL WHERE DESCRIPTION = 'HL1') AS HIERARCHY_LEVEL_ID
+			, HL1.BUDGET
+			, 0 AS BUDGET_Q1
+			, 0 AS BUDGET_Q2
+			, 0 AS BUDGET_Q3
+			, 0 AS BUDGET_Q4
+			, '' AS INTERNAL_FUNDING
+			, '' AS PARTNER_CONTRIBUTION
+			, 'EUR' AS CURRENCY
+			, BY.BUDGET_YEAR
+			, '' AS ON_PREM
+			, '' AS CLOUD
+			, COALESCE(HL1.MODIFIED_DATE_TZ, HL1.CREATED_DATE_TZ) AS MODIFIED_DATE
+			FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL1&quot; HL1
+			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_BUDGET_YEAR&quot; BY ON BY.BUDGET_YEAR_ID = HL1.BUDGET_YEAR_ID
+			WHERE HL1.ENABLED = 1 AND HL1.DELETED = 0;
+			
+			
+va_l1_result = SELECT HL1.HL1_ID AS HL_ID
+				, HL1.HIERARCHY_LEVEL_ID
+				, HL1.CRM_ID
+				, HL1.CAMP_OBJ_TYPE
+				, HL1.BUDGET
+				, HL1.BUDGET_Q1
+				, HL1.BUDGET_Q2
+				, HL1.BUDGET_Q3
+				, HL1.BUDGET_Q4
+				, HL1.INTERNAL_FUNDING
+				, HL1.PARTNER_CONTRIBUTION
+				, HL1.CURRENCY
+				, HL1.BUDGET_YEAR
+				, HL1.ON_PREM
+				, HL1.CLOUD
+				, HL1.MODIFIED_DATE
+				, 0 AS REGION_ID
+				, '' AS REGION_DESC
+				, 0 AS PERCENTAGE_ALLOCATION				
+				FROM :va_l1 HL1				
+				ORDER BY HL1.CRM_ID;
+				
+va_l2 = SELECT HL2_ID
+			, &quot;MKTG_PLANNING_TOOL&quot;.&quot;mktgplanningtool.db.functions::GET_CRM_ID&quot;(
+				BY.BUDGET_YEAR
+			    , HL1.ACRONYM
+			    , HL2.ORGANIZATION_ACRONYM
+			    , ''
+			    , ''
+			    , ''
+			    , '') AS CRM_ID
+			, 'MPL' AS CAMP_OBJ_TYPE
+			, (SELECT HIERARCHY_LEVEL_ID FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HIERARCHY_LEVEL&quot; HIERARCHY_LEVEL WHERE DESCRIPTION = 'HL2') AS HIERARCHY_LEVEL_ID
+			, HL2.HL2_BUDGET_TOTAL AS BUDGET
+			, 0 AS BUDGET_Q1
+			, 0 AS BUDGET_Q2
+			, 0 AS BUDGET_Q3
+			, 0 AS BUDGET_Q4
+			, '' AS INTERNAL_FUNDING
+			, '' AS PARTNER_CONTRIBUTION
+			, 'EUR' AS CURRENCY
+			, BY.BUDGET_YEAR
+			, '' AS ON_PREM
+			, '' AS CLOUD
+			, COALESCE(HL2.MODIFIED_DATE_TZ, HL2.CREATED_DATE_TZ) AS MODIFIED_DATE
+			FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL2&quot; HL2
+			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL1&quot; HL1 ON HL1.HL1_ID = HL2.HL1_ID
+			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_BUDGET_YEAR&quot; BY ON BY.BUDGET_YEAR_ID = HL1.BUDGET_YEAR_ID
+			WHERE HL2.ENABLED = 1 AND HL2.DELETED = 0;
+			
+
+			
+va_l2_result = SELECT HL2.HL2_ID AS HL_ID
+				, HL2.HIERARCHY_LEVEL_ID
+				, HL2.CRM_ID
+				, HL2.CAMP_OBJ_TYPE
+				, HL2.BUDGET
+				, HL2.BUDGET_Q1
+				, HL2.BUDGET_Q2
+				, HL2.BUDGET_Q3
+				, HL2.BUDGET_Q4
+				, HL2.INTERNAL_FUNDING
+				, HL2.PARTNER_CONTRIBUTION
+				, HL2.CURRENCY
+				, HL2.BUDGET_YEAR
+				, HL2.ON_PREM
+				, HL2.CLOUD
+				, HL2.MODIFIED_DATE
+				, 0 AS REGION_ID
+				, '' AS REGION_DESC
+				, 0 AS PERCENTAGE_ALLOCATION
+				FROM :va_l2 HL2				
+				ORDER BY HL2.CRM_ID;
+				
+va_l3 = SELECT HL3_ID
+			, &quot;MKTG_PLANNING_TOOL&quot;.&quot;mktgplanningtool.db.functions::GET_CRM_ID&quot;(
+				BY.BUDGET_YEAR
+			    , HL1.ACRONYM
+			    , HL2.ORGANIZATION_ACRONYM
+			    , HL3.ACRONYM
+			    , ''
+			    , ''
+			    , '') AS CRM_ID
+			, 'MPL' AS CAMP_OBJ_TYPE
+			, (SELECT HIERARCHY_LEVEL_ID FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HIERARCHY_LEVEL&quot; HIERARCHY_LEVEL WHERE DESCRIPTION = 'HL3') AS HIERARCHY_LEVEL_ID
+			, HL3.HL3_FNC_BUDGET_TOTAL AS BUDGET
+			, 0 AS BUDGET_Q1
+			, 0 AS BUDGET_Q2
+			, 0 AS BUDGET_Q3
+			, 0 AS BUDGET_Q4
+			, '' AS INTERNAL_FUNDING
+			, '' AS PARTNER_CONTRIBUTION
+			, 'EUR' AS CURRENCY
+			, BY.BUDGET_YEAR
+			, '' AS ON_PREM
+			, '' AS CLOUD
+			, COALESCE(HL3.MODIFIED_DATE_TZ, HL3.CREATED_DATE_TZ) AS MODIFIED_DATE
+			FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL3&quot; HL3
+			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL2&quot; HL2 ON HL2.HL2_ID = HL3.HL2_ID
+			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL1&quot; HL1 ON HL1.HL1_ID = HL2.HL1_ID
+			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_BUDGET_YEAR&quot; BY ON BY.BUDGET_YEAR_ID = HL1.BUDGET_YEAR_ID
+			WHERE HL3.ENABLED = 1 AND HL3.DELETED = 0;
+			
+
+
+			
+va_l3_result = SELECT HL3.HL3_ID AS HL_ID
+				, HL3.HIERARCHY_LEVEL_ID
+				, HL3.CRM_ID
+				, HL3.CAMP_OBJ_TYPE
+				, HL3.BUDGET
+				, HL3.BUDGET_Q1
+				, HL3.BUDGET_Q2
+				, HL3.BUDGET_Q3
+				, HL3.BUDGET_Q4
+				, HL3.INTERNAL_FUNDING
+				, HL3.PARTNER_CONTRIBUTION
+				, HL3.CURRENCY
+				, HL3.BUDGET_YEAR
+				, HL3.ON_PREM
+				, HL3.CLOUD
+				, HL3.MODIFIED_DATE
+				, 0 AS REGION_ID
+				, '' AS REGION_DESC
+				, 0 AS PERCENTAGE_ALLOCATION
+				FROM :va_l3 HL3			
+				ORDER BY HL3.CRM_ID;
+
+va_l4 = SELECT HL4_ID
+			, &quot;MKTG_PLANNING_TOOL&quot;.&quot;mktgplanningtool.db.functions::GET_CRM_ID&quot;(
+				BY.BUDGET_YEAR
+			    , HL1.ACRONYM
+			    , HL2.ORGANIZATION_ACRONYM
+			    , HL3.ACRONYM
+			    , HL4.ACRONYM
+			    , ''
+			    , '') AS CRM_ID
+			, 'MPL' AS CAMP_OBJ_TYPE
+			, (SELECT HIERARCHY_LEVEL_ID FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HIERARCHY_LEVEL&quot; HIERARCHY_LEVEL WHERE DESCRIPTION = 'HL4') AS HIERARCHY_LEVEL_ID
+			, HL4.HL4_FNC_BUDGET_TOTAL_MKT AS BUDGET
+			, 0 AS BUDGET_Q1
+			, 0 AS BUDGET_Q2
+			, 0 AS BUDGET_Q3
+			, 0 AS BUDGET_Q4
+			, '' AS INTERNAL_FUNDING
+			, '' AS PARTNER_CONTRIBUTION
+			, 'EUR' AS CURRENCY
+			, BY.BUDGET_YEAR
+			, '' AS ON_PREM
+			, '' AS CLOUD
+			, COALESCE(HL4.MODIFIED_DATE_TZ, HL4.CREATED_DATE_TZ) AS MODIFIED_DATE
+			FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL4&quot; HL4
+			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL3&quot; HL3 ON HL3.HL3_ID = HL4.HL3_ID
+			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL2&quot; HL2 ON HL2.HL2_ID = HL3.HL2_ID
+			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL1&quot; HL1 ON HL1.HL1_ID = HL2.HL1_ID
+			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_BUDGET_YEAR&quot; BY ON BY.BUDGET_YEAR_ID = HL1.BUDGET_YEAR_ID
+			WHERE HL4.ENABLED = 1 AND HL4.DELETED = 0
+			AND HL4.HL4_STATUS_DETAIL_ID = 3; --HL4_STATUS_DETAIL_ID 3 = In CRM;
+
+
+va_l4_result = SELECT HL4.HL4_ID AS HL_ID
+				, HL4.HIERARCHY_LEVEL_ID
+				, HL4.CRM_ID
+				, HL4.CAMP_OBJ_TYPE
+				, HL4.BUDGET
+				, HL4.BUDGET_Q1
+				, HL4.BUDGET_Q2
+				, HL4.BUDGET_Q3
+				, HL4.BUDGET_Q4
+				, HL4.INTERNAL_FUNDING
+				, HL4.PARTNER_CONTRIBUTION
+				, HL4.CURRENCY
+				, HL4.BUDGET_YEAR
+				, HL4.ON_PREM
+				, HL4.CLOUD
+				, HL4.MODIFIED_DATE
+				, 0 AS REGION_ID
+				, '' AS REGION_DESC
+				, 0 AS PERCENTAGE_ALLOCATION
+				FROM :va_l4 HL4
+				ORDER BY HL4.CRM_ID;
+
+va_l5 = SELECT HL5.HL5_ID
+			, &quot;MKTG_PLANNING_TOOL&quot;.&quot;mktgplanningtool.db.functions::GET_CRM_ID&quot;(
+				BY.BUDGET_YEAR
+			    , HL1.ACRONYM
+			    , HL2.ORGANIZATION_ACRONYM
+			    , HL3.ACRONYM
+			    , HL4.ACRONYM
+			    , HL5.ACRONYM
+			    , '') AS CRM_ID
+			, 'CPG' AS CAMP_OBJ_TYPE
+			, HL5.BUDGET
+			, (SELECT HIERARCHY_LEVEL_ID FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HIERARCHY_LEVEL&quot; HIERARCHY_LEVEL WHERE DESCRIPTION = 'HL5') AS HIERARCHY_LEVEL_ID
+			, (HL5.BUDGET * HL5.BUDGET_SPEND_Q1 / 100) AS BUDGET_Q1
+			, (HL5.BUDGET * HL5.BUDGET_SPEND_Q2 / 100) AS BUDGET_Q2
+			, (HL5.BUDGET * HL5.BUDGET_SPEND_Q3 / 100) AS BUDGET_Q3
+			, (HL5.BUDGET * HL5.BUDGET_SPEND_Q4 / 100) AS BUDGET_Q4
+			, '' AS INTERNAL_FUNDING
+			, '' AS PARTNER_CONTRIBUTION
+			, 'EUR' AS CURRENCY
+			, BY.BUDGET_YEAR
+			, '' AS ON_PREM
+			, '' AS CLOUD
+			, COALESCE(HL5.MODIFIED_DATE_TZ, HL5.CREATED_DATE_TZ) AS MODIFIED_DATE
+			, B.PERCENTAGE AS PERCENTAGE_ALLOCATION
+			, R.REGION_ID AS REGION_ID
+			, R.REGION_NAME AS REGION_DESC
+			FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL5&quot; HL5
+			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL4&quot; HL4 ON HL4.HL4_ID = HL5.HL4_ID
+			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL3&quot; HL3 ON HL3.HL3_ID = HL4.HL3_ID
+			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL2&quot; HL2 ON HL2.HL2_ID = HL3.HL2_ID
+			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL1&quot; HL1 ON HL1.HL1_ID = HL2.HL1_ID
+			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_BUDGET_YEAR&quot; BY ON BY.BUDGET_YEAR_ID = HL1.BUDGET_YEAR_ID
+			INNER JOIN &quot;MKTG_PLANNING_TOOL&quot;.&quot;HL5_BUDGET&quot; B ON B.HL5_ID = HL5.HL5_ID
+			INNER JOIN &quot;MKTG_PLANNING_TOOL&quot;.&quot;REGION&quot; R on B.ORGANIZATION_ID = R.REGION_ID
+			WHERE HL5.ENABLED = 1 AND HL5.DELETED = 0
+			AND	B.ORGANIZATION_TYPE = 1 AND B.PERCENTAGE &lt;> 0
+			AND HL5.HL5_STATUS_DETAIL_ID = 3; --HL5_STATUS_DETAIL_ID 3 = In CRM;
+
+
+
+
+va_l5_result = SELECT HL5.HL5_ID AS HL_ID
+				, HL5.HIERARCHY_LEVEL_ID
+				, HL5.CRM_ID
+				, HL5.CAMP_OBJ_TYPE
+				, HL5.BUDGET
+				, HL5.BUDGET_Q1
+				, HL5.BUDGET_Q2
+				, HL5.BUDGET_Q3
+				, HL5.BUDGET_Q4
+				, HL5.INTERNAL_FUNDING
+				, HL5.PARTNER_CONTRIBUTION
+				, HL5.CURRENCY
+				, HL5.BUDGET_YEAR
+				, HL5.ON_PREM
+				, HL5.CLOUD
+				, HL5.MODIFIED_DATE
+				, HL5.PERCENTAGE_ALLOCATION
+				, HL5.REGION_ID
+				, HL5.REGION_DESC
+				FROM :va_l5 HL5
+				ORDER BY HL5.CRM_ID;
+
+va_l6 = SELECT HL6.HL6_ID
+			, &quot;MKTG_PLANNING_TOOL&quot;.&quot;mktgplanningtool.db.functions::GET_CRM_ID&quot;(
+				BY.BUDGET_YEAR
+			    , HL1.ACRONYM
+			    , HL2.ORGANIZATION_ACRONYM
+			    , HL3.ACRONYM
+			    , HL4.ACRONYM
+			    , HL5.ACRONYM
+			    , HL6.ACRONYM) AS CRM_ID
+			, 'CPG' AS CAMP_OBJ_TYPE
+			, (SELECT HIERARCHY_LEVEL_ID FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HIERARCHY_LEVEL&quot; HIERARCHY_LEVEL WHERE DESCRIPTION = 'HL6') AS HIERARCHY_LEVEL_ID
+			, HL6.BUDGET
+			, (HL6.BUDGET * HL6.BUDGET_SPEND_Q1 / 100) AS BUDGET_Q1
+			, (HL6.BUDGET * HL6.BUDGET_SPEND_Q2 / 100) AS BUDGET_Q2
+			, (HL6.BUDGET * HL6.BUDGET_SPEND_Q3 / 100) AS BUDGET_Q3
+			, (HL6.BUDGET * HL6.BUDGET_SPEND_Q4 / 100) AS BUDGET_Q4
+			, '' AS INTERNAL_FUNDING
+			, '' AS PARTNER_CONTRIBUTION
+			, 'EUR' AS CURRENCY
+			, BY.BUDGET_YEAR
+			, '' AS ON_PREM
+			, '' AS CLOUD
+			, COALESCE(HL6.MODIFIED_DATE_TZ, HL6.CREATED_DATE_TZ) AS MODIFIED_DATE
+			, B.PERCENTAGE AS PERCENTAGE_ALLOCATION
+			, R.REGION_ID AS REGION_ID
+			, R.REGION_NAME AS REGION_DESC
+			FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL6&quot; HL6
+			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL5&quot; HL5 ON HL5.HL5_ID = HL6.HL5_ID
+			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL4&quot; HL4 ON HL4.HL4_ID = HL5.HL4_ID
+			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL3&quot; HL3 ON HL3.HL3_ID = HL4.HL3_ID
+			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL2&quot; HL2 ON HL2.HL2_ID = HL3.HL2_ID
+			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL1&quot; HL1 ON HL1.HL1_ID = HL2.HL1_ID
+			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_BUDGET_YEAR&quot; BY ON BY.BUDGET_YEAR_ID = HL1.BUDGET_YEAR_ID
+			INNER JOIN &quot;MKTG_PLANNING_TOOL&quot;.&quot;HL6_BUDGET&quot; B ON B.HL6_ID = HL6.HL6_ID
+			INNER JOIN &quot;MKTG_PLANNING_TOOL&quot;.&quot;REGION&quot; R on B.ORGANIZATION_ID = R.REGION_ID
+			WHERE HL6.ENABLED = 1 AND HL6.DELETED = 0
+			AND	B.ORGANIZATION_TYPE = 1 AND B.PERCENTAGE &lt;> 0
+			AND HL6.HL6_STATUS_DETAIL_ID = 3; --HL6_STATUS_DETAIL_ID 3 = In CRM;
+
+
+va_l6_result = SELECT HL6.HL6_ID AS HL_ID
+				, HL6.HIERARCHY_LEVEL_ID
+				, HL6.CRM_ID
+				, HL6.CAMP_OBJ_TYPE
+				, HL6.BUDGET
+				, HL6.BUDGET_Q1
+				, HL6.BUDGET_Q2
+				, HL6.BUDGET_Q3
+				, HL6.BUDGET_Q4
+				, HL6.INTERNAL_FUNDING
+				, HL6.PARTNER_CONTRIBUTION
+				, HL6.CURRENCY
+				, HL6.BUDGET_YEAR
+				, HL6.ON_PREM
+				, HL6.CLOUD
+				, HL6.MODIFIED_DATE
+				, HL6.PERCENTAGE_ALLOCATION
+				, HL6.REGION_ID
+				, HL6.REGION_DESC
+				FROM :va_l6 HL6
+				ORDER BY HL6.CRM_ID;
+
+var_out = SELECT HIERARCHY_LEVEL_ID
+            , CRM_ID
+            , CAMP_OBJ_TYPE
+            , BUDGET
+            , BUDGET_Q1
+            , BUDGET_Q2
+            , BUDGET_Q3
+            , BUDGET_Q4
+            , INTERNAL_FUNDING
+            , PARTNER_CONTRIBUTION
+            , CURRENCY
+            , BUDGET_YEAR
+            , ON_PREM
+            , CLOUD
+            , MODIFIED_DATE
+            , PERCENTAGE_ALLOCATION
+			, REGION_ID
+			, REGION_DESC
+FROM ((SELECT HL_ID
+				, HIERARCHY_LEVEL_ID
+				, CRM_ID
+				, CAMP_OBJ_TYPE
+				, BUDGET
+				, BUDGET_Q1
+				, BUDGET_Q2
+				, BUDGET_Q3
+				, BUDGET_Q4
+				, INTERNAL_FUNDING
+				, PARTNER_CONTRIBUTION
+				, CURRENCY
+				, BUDGET_YEAR
+				, ON_PREM
+				, CLOUD
+				, MODIFIED_DATE
+				, PERCENTAGE_ALLOCATION
+				, REGION_ID
+				, REGION_DESC
+from :va_l1_result HL1)
+UNION
+(SELECT HL_ID
+				, HIERARCHY_LEVEL_ID
+				, CRM_ID
+				, CAMP_OBJ_TYPE
+				, BUDGET
+				, BUDGET_Q1
+				, BUDGET_Q2
+				, BUDGET_Q3
+				, BUDGET_Q4
+				, INTERNAL_FUNDING
+				, PARTNER_CONTRIBUTION
+				, CURRENCY
+				, BUDGET_YEAR
+				, ON_PREM
+				, CLOUD
+				, MODIFIED_DATE
+				, PERCENTAGE_ALLOCATION
+				, REGION_ID
+				, REGION_DESC
+from :va_l2_result HL2)
+UNION
+(SELECT HL_ID
+				, HIERARCHY_LEVEL_ID
+				, CRM_ID
+				, CAMP_OBJ_TYPE
+				, BUDGET
+				, BUDGET_Q1
+				, BUDGET_Q2
+				, BUDGET_Q3
+				, BUDGET_Q4
+				, INTERNAL_FUNDING
+				, PARTNER_CONTRIBUTION
+				, CURRENCY
+				, BUDGET_YEAR
+				, ON_PREM
+				, CLOUD
+				, MODIFIED_DATE
+				, PERCENTAGE_ALLOCATION
+				, REGION_ID
+				, REGION_DESC
+from :va_l3_result HL3)
+UNION
+(SELECT HL_ID
+				, HIERARCHY_LEVEL_ID
+				, CRM_ID
+				, CAMP_OBJ_TYPE
+				, BUDGET
+				, BUDGET_Q1
+				, BUDGET_Q2
+				, BUDGET_Q3
+				, BUDGET_Q4
+				, INTERNAL_FUNDING
+				, PARTNER_CONTRIBUTION
+				, CURRENCY
+				, BUDGET_YEAR
+				, ON_PREM
+				, CLOUD
+				, MODIFIED_DATE
+				, PERCENTAGE_ALLOCATION
+				, REGION_ID
+				, REGION_DESC
+from :va_l4_result HL4)
+UNION
+(SELECT HL_ID
+				, HIERARCHY_LEVEL_ID
+				, CRM_ID
+				, CAMP_OBJ_TYPE
+				, BUDGET
+				, BUDGET_Q1
+				, BUDGET_Q2
+				, BUDGET_Q3
+				, BUDGET_Q4
+				, INTERNAL_FUNDING
+				, PARTNER_CONTRIBUTION
+				, CURRENCY
+				, BUDGET_YEAR
+				, ON_PREM
+				, CLOUD
+				, MODIFIED_DATE
+				, PERCENTAGE_ALLOCATION
+				, REGION_ID
+				, REGION_DESC
+from :va_l5_result HL5)
+UNION
+(SELECT HL_ID
+				, HIERARCHY_LEVEL_ID
+				, CRM_ID
+				, CAMP_OBJ_TYPE
+				, BUDGET
+				, BUDGET_Q1
+				, BUDGET_Q2
+				, BUDGET_Q3
+				, BUDGET_Q4
+				, INTERNAL_FUNDING
+				, PARTNER_CONTRIBUTION
+				, CURRENCY
+				, BUDGET_YEAR
+				, ON_PREM
+				, CLOUD
+				, MODIFIED_DATE
+				, PERCENTAGE_ALLOCATION
+				, REGION_ID
+				, REGION_DESC
+from :va_l6_result HL6));
+
+END /********* End Procedure Script ************/</definition>
+    </calculationView>
+  </calculationViews>
+  <logicalModel id="Script_View">
+    <descriptions/>
+    <attributes>
+      <attribute id="HIERARCHY_LEVEL_ID" order="1">
+        <descriptions defaultDescription="HL2_ID"/>
+        <keyMapping columnObjectName="Script_View" columnName="HIERARCHY_LEVEL_ID"/>
+      </attribute>
+      <attribute id="CRM_ID" order="2">
+        <descriptions defaultDescription="USER_ID"/>
+        <keyMapping columnObjectName="Script_View" columnName="CRM_ID"/>
+      </attribute>
+      <attribute id="CAMP_OBJ_TYPE" order="3">
+        <descriptions defaultDescription="USER_ID"/>
+        <keyMapping columnObjectName="Script_View" columnName="CAMP_OBJ_TYPE"/>
+      </attribute>
+      <attribute id="BUDGET" order="4">
+        <descriptions/>
+        <keyMapping columnObjectName="Script_View" columnName="BUDGET"/>
+      </attribute>
+      <attribute id="BUDGET_Q1" order="5">
+        <descriptions/>
+        <keyMapping columnObjectName="Script_View" columnName="BUDGET_Q1"/>
+      </attribute>
+      <attribute id="BUDGET_Q2" order="6">
+        <descriptions/>
+        <keyMapping columnObjectName="Script_View" columnName="BUDGET_Q2"/>
+      </attribute>
+      <attribute id="BUDGET_Q3" order="7">
+        <descriptions/>
+        <keyMapping columnObjectName="Script_View" columnName="BUDGET_Q3"/>
+      </attribute>
+      <attribute id="BUDGET_Q4" order="8">
+        <descriptions/>
+        <keyMapping columnObjectName="Script_View" columnName="BUDGET_Q4"/>
+      </attribute>
+      <attribute id="INTERNAL_FUNDING" order="9">
+        <descriptions/>
+        <keyMapping columnObjectName="Script_View" columnName="INTERNAL_FUNDING"/>
+      </attribute>
+      <attribute id="PARTNER_CONTRIBUTION" order="10">
+        <descriptions/>
+        <keyMapping columnObjectName="Script_View" columnName="PARTNER_CONTRIBUTION"/>
+      </attribute>
+      <attribute id="CURRENCY" order="11">
+        <descriptions/>
+        <keyMapping columnObjectName="Script_View" columnName="CURRENCY"/>
+      </attribute>
+      <attribute id="BUDGET_YEAR" order="12">
+        <descriptions/>
+        <keyMapping columnObjectName="Script_View" columnName="BUDGET_YEAR"/>
+      </attribute>
+      <attribute id="ON_PREM" order="13">
+        <descriptions/>
+        <keyMapping columnObjectName="Script_View" columnName="ON_PREM"/>
+      </attribute>
+      <attribute id="CLOUD" order="14">
+        <descriptions/>
+        <keyMapping columnObjectName="Script_View" columnName="CLOUD"/>
+      </attribute>
+      <attribute id="MODIFIED_DATE" order="15">
+        <descriptions/>
+        <keyMapping columnObjectName="Script_View" columnName="MODIFIED_DATE"/>
+      </attribute>
+      <attribute id="REGION_DESC" order="18">
+        <descriptions defaultDescription="REGION_DESC"/>
+        <keyMapping columnObjectName="Script_View" columnName="REGION_DESC"/>
+      </attribute>
+    </attributes>
+    <calculatedAttributes/>
+    <privateDataFoundation>
+      <tableProxies/>
+      <joins/>
+      <layout>
+        <shapes/>
+      </layout>
+    </privateDataFoundation>
+    <baseMeasures>
+      <measure id="PERCENTAGE_ALLOCATION" order="16" aggregationType="sum" measureType="simple">
+        <descriptions defaultDescription="PERCENTAGE_ALLOCATION"/>
+        <measureMapping columnObjectName="Script_View" columnName="PERCENTAGE_ALLOCATION"/>
+      </measure>
+      <measure id="REGION_ID" order="17" aggregationType="sum" measureType="simple">
+        <descriptions defaultDescription="REGION_ID"/>
+        <measureMapping columnObjectName="Script_View" columnName="REGION_ID"/>
+      </measure>
+    </baseMeasures>
+    <calculatedMeasures/>
+    <restrictedMeasures/>
+    <localDimensions/>
+  </logicalModel>
+  <layout>
+    <shapes>
+      <shape modelObjectName="Output" modelObjectNameSpace="MeasureGroup">
+        <upperLeftCorner x="40" y="85"/>
+      </shape>
+    </shapes>
+  </layout>
+</Calculation:scenario>

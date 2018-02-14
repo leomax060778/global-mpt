@@ -35,7 +35,8 @@ function getAllHL5ChangedFields() {
     return {
         out_hl5_changed_fields: db.extractArray(data.out_hl5_changed_fields),
         out_hl5: db.extractArray(data.out_hl5),
-        out_hl5_category_options: db.extractArray(data.out_hl5_category_options)
+        out_hl5_category_options: db.extractArray(data.out_hl5_category_options),
+        out_hl5_extra_fields: db.extractArray(data.out_hl5_extra_fields)
     };
 }
 

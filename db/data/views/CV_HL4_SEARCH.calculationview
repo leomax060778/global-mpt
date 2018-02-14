@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Calculation:scenario xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:Calculation="http://www.sap.com/ndb/BiModelCalculation.ecore" schemaVersion="2.3" id="CV_HL4_SEARCH" applyPrivilegeType="ANALYTIC_PRIVILEGE" checkAnalyticPrivileges="true" defaultClient="$$client$$" defaultLanguage="$$language$$" hierarchiesSQLEnabled="false" translationRelevant="true" visibility="reportingEnabled" calculationScenarioType="SCRIPT_BASED" dataCategory="CUBE" enforceSqlExecution="false" executionSemantic="UNDEFINED" scriptParametersCaseSensitive="true">
+  <descriptions defaultDescription="CV_HL4_SEARCH"/>
+  <localVariables/>
+  <variableMappings/>
+  <informationModelLayout relativeWidthScenario="27"/>
+  <dataSources/>
+  <calculationViews>
+    <calculationView xsi:type="Calculation:SqlScriptView" id="Script_View">
+      <descriptions/>
+      <viewAttributes>
+        <viewAttribute datatype="BIGINT" id="HL4_ID"/>
+        <viewAttribute datatype="NVARCHAR" id="ACRONYM" length="255"/>
+        <viewAttribute datatype="NVARCHAR" id="PATH" length="255"/>
+        <viewAttribute datatype="BIGINT" id="REGION_ID"/>
+        <viewAttribute datatype="NVARCHAR" id="REGION_NAME" length="255"/>
+        <viewAttribute datatype="BIGINT" id="SUBREGION_ID"/>
+        <viewAttribute datatype="NVARCHAR" id="SUBREGION_NAME" length="255"/>
+        <viewAttribute datatype="NVARCHAR" id="STATUS" length="255"/>
+        <viewAttribute datatype="NVARCHAR" id="DESCRIPTION" length="255"/>
+        <viewAttribute datatype="TINYINT" id="ENABLED"/>
+        <viewAttribute datatype="TINYINT" id="DELETED"/>
+      </viewAttributes>
+      <calculatedViewAttributes/>
+      <definition>/********* Begin Procedure Script ************/
+BEGIN
+var_out =
+SELECT
+ATHS.HL4_ID,
+ATHS.ACRONYM_2 AS ACRONYM, --ACRONYM_2 belongs to HL4
+ATHS.PATH,
+ATHS.REGION_ID,
+ATHS.REGION_NAME,
+ATHS.SUBREGION_ID,
+ATHS.SUBREGION_NAME,
+ATHS.DETAIL AS STATUS,
+ATHS.HL4_CRM_DESCRIPTION AS DESCRIPTION,
+ATHS.ENABLED,
+ATHS.DELETED
+FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL4_SEARCH&quot; ATHS
+WHERE
+ATHS.DELETED = 0 AND ATHS.ENABLED = 1;
+
+
+END
+/********* End Procedure Script ************/</definition>
+    </calculationView>
+  </calculationViews>
+  <logicalModel id="Script_View">
+    <descriptions/>
+    <attributes>
+      <attribute id="ACRONYM" order="2">
+        <descriptions defaultDescription="ACRONYM"/>
+        <keyMapping columnObjectName="Script_View" columnName="ACRONYM"/>
+      </attribute>
+      <attribute id="PATH" order="3">
+        <descriptions defaultDescription="PATH"/>
+        <keyMapping columnObjectName="Script_View" columnName="PATH"/>
+      </attribute>
+      <attribute id="REGION_NAME" order="5">
+        <descriptions defaultDescription="REGION_NAME"/>
+        <keyMapping columnObjectName="Script_View" columnName="REGION_NAME"/>
+      </attribute>
+      <attribute id="SUBREGION_NAME" order="7">
+        <descriptions defaultDescription="SUBREGION_NAME"/>
+        <keyMapping columnObjectName="Script_View" columnName="SUBREGION_NAME"/>
+      </attribute>
+      <attribute id="STATUS" order="8">
+        <descriptions defaultDescription="STATUS"/>
+        <keyMapping columnObjectName="Script_View" columnName="STATUS"/>
+      </attribute>
+      <attribute id="DESCRIPTION" order="9">
+        <descriptions defaultDescription="DESCRIPTION"/>
+        <keyMapping columnObjectName="Script_View" columnName="DESCRIPTION"/>
+      </attribute>
+    </attributes>
+    <calculatedAttributes/>
+    <privateDataFoundation>
+      <tableProxies/>
+      <joins/>
+      <layout>
+        <shapes/>
+      </layout>
+    </privateDataFoundation>
+    <baseMeasures>
+      <measure id="HL4_ID" order="1" aggregationType="sum" measureType="simple">
+        <descriptions defaultDescription="HL4_ID"/>
+        <measureMapping columnObjectName="Script_View" columnName="HL4_ID"/>
+      </measure>
+      <measure id="REGION_ID" order="4" aggregationType="sum" measureType="simple">
+        <descriptions defaultDescription="REGION_ID"/>
+        <measureMapping columnObjectName="Script_View" columnName="REGION_ID"/>
+      </measure>
+      <measure id="SUBREGION_ID" order="6" aggregationType="sum" measureType="simple">
+        <descriptions defaultDescription="SUBREGION_ID"/>
+        <measureMapping columnObjectName="Script_View" columnName="SUBREGION_ID"/>
+      </measure>
+      <measure id="ENABLED" order="10" aggregationType="sum" measureType="simple">
+        <descriptions defaultDescription="ENABLED"/>
+        <measureMapping columnObjectName="Script_View" columnName="ENABLED"/>
+      </measure>
+      <measure id="DELETED" order="11" aggregationType="sum" measureType="simple">
+        <descriptions defaultDescription="DELETED"/>
+        <measureMapping columnObjectName="Script_View" columnName="DELETED"/>
+      </measure>
+    </baseMeasures>
+    <calculatedMeasures/>
+    <restrictedMeasures/>
+    <localDimensions/>
+  </logicalModel>
+  <layout>
+    <shapes>
+      <shape modelObjectName="Output" modelObjectNameSpace="MeasureGroup">
+        <upperLeftCorner x="40" y="85"/>
+      </shape>
+    </shapes>
+  </layout>
+</Calculation:scenario>

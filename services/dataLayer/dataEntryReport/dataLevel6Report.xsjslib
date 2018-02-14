@@ -29,7 +29,8 @@ function getAllHL6ChangedFields() {
     return {
         out_hl6_changed_fields: db.extractArray(data.out_hl6_changed_fields),
         out_hl6: db.extractArray(data.out_hl6),
-        out_hl6_category_options: db.extractArray(data.out_hl6_category_options)
+        out_hl6_category_options: db.extractArray(data.out_hl6_category_options),
+        out_hl6_extra_fields: db.extractArray(data.out_hl6_extra_fields)
     };
 }
 

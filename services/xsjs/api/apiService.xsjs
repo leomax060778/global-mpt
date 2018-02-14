@@ -12,6 +12,7 @@ var id = "id";
 var GET_WBS_BY_ID = "WBS_ID";
 var GET_WBS_BY_PATH = "WBS_PATH";
 var GET_REPORT_EXPORT_DATA = "GET_REPORT_EXPORT_DATA";
+var GET_REPORT_EXPORT_DATA_REGION = "GET_REPORT_EXPORT_DATA_REGION";
 
 function processRequest() {
 	httpUtil.processRequest(handleGet, handlePost, handlePut, handleDelete,
@@ -40,6 +41,19 @@ function handleGet(parameters, userSessionID) {
                     filter.IN_DELTA_TIME_LAST_UPDATE = deltaTimeLastUpdate || 0;
                     filter.SCOPE = scope || null;
                     rdo = apiLib.getReportExportData(filter);
+                } else {
+                    throw ErrorLib.getErrors().BadRequest("", "",
+                        "invalid parameter method");
+				}
+                break;
+			case GET_REPORT_EXPORT_DATA_REGION:
+				var filter = {};
+				if (method === "FULL" || method === "DELTA") {
+                    filter.IN_IS_FULL_DOWNLOAD = (method.toUpperCase() === "FULL") ? 1 : 0;
+                    filter.IN_HIERARCHY_LEVEL = filter.IN_IS_FULL_DOWNLOAD ? [] : levelFilter;
+                    filter.IN_DELTA_TIME_LAST_UPDATE = deltaTimeLastUpdate || 0;
+                    filter.SCOPE = scope || null;
+                    rdo = apiLib.getReportExportDataRegion(filter);
                 } else {
                     throw ErrorLib.getErrors().BadRequest("", "",
                         "invalid parameter method");
