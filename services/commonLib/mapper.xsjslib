@@ -99,15 +99,23 @@ function getCampaignSubTypeLib(){
     $.import("mktgplanningtool.services.businessLayer.settings","campaignSubTypeLib");
     return $.mktgplanningtool.services.businessLayer.settings.campaignSubTypeLib;
 }
+
 function getMarketingProgramLib(){
     $.import("mktgplanningtool.services.businessLayer.settings","marketingProgramLib");
     return $.mktgplanningtool.services.businessLayer.settings.marketingProgramLib;
+}
+
+
+function getMarketingActivityLib(){
+    $.import("mktgplanningtool.services.businessLayer.settings","marketingActivityLib");
+    return $.mktgplanningtool.services.businessLayer.settings.marketingActivityLib;
 }
 
 function getObjectiveLib(){
     $.import("mktgplanningtool.services.businessLayer.settings","objectivesLib");
     return $.mktgplanningtool.services.businessLayer.settings.objectivesLib;
 }
+
 function getCampaignObjectiveLib(){
     $.import("mktgplanningtool.services.businessLayer.settings","campaignObjectiveLib");
     return $.mktgplanningtool.services.businessLayer.settings.campaignObjectiveLib;
@@ -307,6 +315,10 @@ function getApi(){
 function getCurrency(){
     $.import("mktgplanningtool.services.businessLayer.settings","currencyLib");
     return $.mktgplanningtool.services.businessLayer.settings.currencyLib;
+}
+function getCountry(){
+    $.import("mktgplanningtool.services.businessLayer.settings","countryLib");
+    return $.mktgplanningtool.services.businessLayer.settings.countryLib;
 }
 
 function getMeasure(){
@@ -577,6 +589,10 @@ function getDataCurrency(){
     $.import("mktgplanningtool.services.dataLayer.settings","dataCurrency");
     return $.mktgplanningtool.services.dataLayer.settings.dataCurrency;
 }
+function getDataCountry(){
+    $.import("mktgplanningtool.services.dataLayer.settings","dataCountry");
+    return $.mktgplanningtool.services.dataLayer.settings.dataCountry;
+}
 
 function getDataOption(){
     $.import("mktgplanningtool.services.dataLayer.settings","dataCategoryOption");
@@ -728,6 +744,11 @@ function getDataApi(){
 function getDataMarketingProgram(){
     $.import("mktgplanningtool.services.dataLayer.settings","dataMarketingProgram");
     return $.mktgplanningtool.services.dataLayer.settings.dataMarketingProgram;
+}
+
+function getDataMarketingActivity(){
+    $.import("mktgplanningtool.services.dataLayer.settings","dataMarketingActivity");
+    return $.mktgplanningtool.services.dataLayer.settings.dataMarketingActivity;
 }
 
 function getDataBusinessOwner(){

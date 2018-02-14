@@ -126,6 +126,7 @@ function insertHl6(hl6CrmDescription,hl6Acronym,budget,hl5Id, routeToMarket
         , 'in_employee_responsible_user': employeeResponsible || null
         , 'in_person_responsible' : personResponsible || null
         , 'in_is_complete': is_complete
+        , 'in_country_id': country
     };
 
     var rdo;
@@ -469,6 +470,7 @@ function updateHl6(hl6Id,acronym, hl6CrmDescription,budget, routeToMarket
         , 'in_employee_responsible_user' : employee_responsible_user
         , 'in_person_responsible' : person_responsible
         , 'in_is_complete': is_complete
+        , 'in_country_id': country
     };
 
     var rdo = db.executeScalarManual(spUpdHl6,params,'out_result');

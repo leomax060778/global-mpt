@@ -37,7 +37,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL6_BY_ID"(
 			distribution_channel_id INTEGER,
 			VENUE NVARCHAR(255),
 			CITY NVARCHAR(255),
-			COUNTRY NVARCHAR(255),
+			COUNTRY_ID INTEGER,
 			URL NVARCHAR(255),
 			results_campaign_q1 DECIMAL(19, 2),
 			results_campaign_q2 DECIMAL(19, 2),
@@ -120,7 +120,7 @@ va_own_money_budget_request = SELECT TOP 1 BSRS.budget_spend_request_status_id
 				, HL6.DISTRIBUTION_CHANNEL_ID
 				, HL6.VENUE
 				, HL6.CITY
-				, HL6.COUNTRY
+				, HL6.COUNTRY_ID
 				, HL6.URL
 				, HL6.RESULTS_CAMPAIGN_Q1
 				, HL6.RESULTS_CAMPAIGN_Q2

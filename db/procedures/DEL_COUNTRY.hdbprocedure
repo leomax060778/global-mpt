@@ -1,0 +1,22 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::DEL_COUNTRY" (
+	IN in_country_id bigint,
+	IN in_user_id bigint,
+	OUT out_result bigint
+)
+	
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	AS
+BEGIN
+
+	UPDATE COUNTRY
+	SET
+		deleted = 1,
+	    enabled = 0,
+	    modified_user_id = in_user_id,
+	    modified_date_tz = CURRENT_TIMESTAMP
+    WHERE country_id = in_country_id;
+
+	SELECT ::ROWCOUNT INTO out_result FROM DUMMY;
+END;

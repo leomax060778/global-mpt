@@ -108,14 +108,9 @@ function getL5ChangedFieldsByHl5Id(hl5Id, userId) {
                             var saleOrganization = dataMarketingOrganization.getMarketingOrganizationById(hl5.SALES_ORGANIZATION_ID)[0];
                             object.value = saleOrganization.NAME;
                         }
-
-                        //object.value = hl5.SALE_ORGANIZATION;
                         break;
-                    //TODO:
                     case "MARKETING_ACTIVITY_ID":
-                        if (processingReportData.marketing_activity_id) {
-                            object.value = processingReportData.marketing_activity_id.CRM_ID;
-                        }
+                            object.value = hl5.MARKETING_ACTIVITY;
                         break;
                     case "SHOW_ON_DG_CALENDAR":
                         object.value = hl5.SHOW_ON_DG_CALENDAR ? "Yes" : "No";
@@ -130,7 +125,7 @@ function getL5ChangedFieldsByHl5Id(hl5Id, userId) {
                         object.value = hl5.MARKETING_PROGRAM_DESCRIPTION;
                         break;
                     case "MARKETING_ACTIVITY_DESC":
-                        object.value = hl5.MARKETING_ACTIVITY;
+                        object.value = hl5.MARKETING_ACTIVITY_DESCRIPTION;
                         break;
                     case "DISTRIBUTION_CHANNEL_DESC":
                         object.value = hl5.DISTRIBUTION_CHANNEL;
@@ -152,6 +147,9 @@ function getL5ChangedFieldsByHl5Id(hl5Id, userId) {
                         break;
                     case "PRIORITY_ID":
                         object.value = hl5.PRIORITY;
+                        break;
+                    case "COUNTRY_ID":
+                        object.value = hl5.COUNTRY;
                         break;
                     default:
                         object.value = hl5[field];
@@ -224,7 +222,7 @@ function getProcessingReportFields(){
         , "VENUE": "Venue"
         , "STREET": "Street"
         , "CITY": "City"
-        , "COUNTRY": "Country"
+        , "COUNTRY_ID": "Country"
         , "POSTAL_CODE": "Postal Code"
         , "REGION": "Region"
         , "EVENT_OWNER": "Event Owner"

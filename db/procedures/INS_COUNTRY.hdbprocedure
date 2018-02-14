@@ -1,0 +1,23 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_COUNTRY" (
+	IN in_name nvarchar(50),
+	IN in_crm_key nvarchar(3),
+  	IN in_created_user_id bigint,
+  	OUT out_result bigint
+ )
+ LANGUAGE SQLSCRIPT
+ SQL SECURITY INVOKER
+ DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+ AS
+BEGIN
+ 	INSERT INTO COUNTRY (	NAME,
+ 	                        CRM_KEY,
+                            CREATED_USER_ID
+                        )
+ 	VALUES (
+ 			in_name,
+ 			in_crm_key,
+ 			in_created_user_id
+ 			);
+ 
+ SELECT 1 into out_result FROM DUMMY;
+END;

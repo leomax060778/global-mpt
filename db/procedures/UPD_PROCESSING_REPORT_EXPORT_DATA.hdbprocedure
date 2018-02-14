@@ -223,12 +223,12 @@ BEGIN
                         --SELECT TOP 1 CONCAT('CRM-',CONCAT(L1_ACRONYM,CONCAT(BUDGET_YEAR,CONCAT('-',CONCAT(L3_ACRONYM,CONCAT('-',CONCAT(L4_ACRONYM,'')))))))
                         SELECT TOP 1 "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BUDGET_YEAR, L1_ACRONYM, L2_ACRONYM, L3_ACRONYM, L4_ACRONYM, '', '') INTO VA_PATH FROM :VA_PATH_TABLE; --BUILD PARENT ACRONYM
                         --GET MARKETING ACTIVITY FOR HL5
-                        SELECT MARKETING_ACTIVITY_ID INTO VA_MA_HL FROM HL5 WHERE HL5_ID = IN_HL_ID;
-                        IF(:VA_MA_HL <> 0) THEN
-                        CALL "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_MARKETING_ACTIVITY_BY_HL5_ID" (:VA_MA_HL,VA_MA_PATH );
-                        ELSE
-                        VA_MA_PATH := '';
-                        END IF;
+                        --SELECT MARKETING_ACTIVITY_ID INTO VA_MA_HL FROM HL5 WHERE HL5_ID = IN_HL_ID;
+                        --IF(:VA_MA_HL <> 0) THEN
+                        --CALL "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_MARKETING_ACTIVITY_BY_HL5_ID" (:VA_MA_HL,VA_MA_PATH );
+                        --ELSE
+                        --VA_MA_PATH := '';
+                        --END IF;
                         CALL "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_TRANSPOSED_CATEGORY_OPTION_BY_HL"(IN_HL_ID, 'HL5', VA_CATEGORY_OPTION);
                         -- GET BUYING CLASSIFICATION CRM_KEY
                         CALL "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_PROCESSING_REPORT_BUYING_CLASSIFICATION"(IN_HL_ID, 'HL5', VA_BUYING_CLASSIFICATION);
@@ -243,7 +243,8 @@ BEGIN
                                     CT.CRM_KEY AS CAMP_TYPE,
                                     CST.CRM_KEY AS SUB_TYPE,
                                     4 AS MKT_PROG_TYPE, --SHOULD ALWAYS BE 4
-                                    :VA_MA_PATH AS MARKETING_ACTIVITYID,
+                                    --:VA_MA_PATH AS MARKETING_ACTIVITYID,
+                                    MARKETING_ACTIVITY.NAME AS MARKETING_ACTIVITYID,
                                     BO.CRM_KEY AS BUSINESS_OWNER,
                                     PR.CRM_KEY AS PRIORITY,
                                     HL5.PLANNED_START_DATE AS PLANSTART,
@@ -301,7 +302,7 @@ BEGIN
                                     HL5.NUMBER_OF_PARTICIPANTS AS NO_OF_PARTICIPANTS,
                                     HL5.STREET AS STREET,
                                     HL5.CITY AS CITY,
-                                    HL5.COUNTRY AS COUNTRY,
+                                    COUNTRY.CRM_KEY AS COUNTRY,
                                     :VA_BUYING_CLASSIFICATION AS BUYING_CLASSIFICATION,
                                     'ZMMKTKR' AS PARTNER_FCT,
                                     '' AS PARTNER_NO,
@@ -318,6 +319,8 @@ BEGIN
                                     LEFT JOIN COST_CENTER CC ON CC.COST_CENTER_ID = HL5.COST_CENTER_ID
                                     LEFT JOIN MARKETING_PROGRAM ON MARKETING_PROGRAM.MARKETING_PROGRAM_ID = HL5.MARKETING_PROGRAM_ID
                                     LEFT JOIN :VA_CATEGORY_OPTION CO ON 1=1
+                                    LEFT JOIN MARKETING_ACTIVITY MARKETING_ACTIVITY ON MARKETING_ACTIVITY.MARKETING_ACTIVITY_ID = HL5.MARKETING_ACTIVITY_ID
+                                    LEFT JOIN COUNTRY COUNTRY ON COUNTRY.COUNTRY_ID = HL5.COUNTRY_ID
                                     WHERE HL5_ID = IN_HL_ID;
 
                     ELSE --GET FROM HL6
@@ -326,12 +329,12 @@ BEGIN
                             --SELECT TOP 1 CONCAT('CRM-',CONCAT(L1_ACRONYM,CONCAT(BUDGET_YEAR,CONCAT('-',CONCAT(L3_ACRONYM,CONCAT('-',CONCAT(L4_ACRONYM,CONCAT('',CONCAT(L5_ACRONYM,''))))))))) INTO VA_PATH FROM :VA_PATH_TABLE;--BUILD PARENT ACRONYM
                             SELECT TOP 1 "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BUDGET_YEAR, L1_ACRONYM, L2_ACRONYM, L3_ACRONYM, L4_ACRONYM, L5_ACRONYM, '') INTO VA_PATH FROM :VA_PATH_TABLE; --BUILD PARENT ACRONYM
                             --GET MARKETING ACTIVITY FOR HL6
-                            SELECT MARKETING_ACTIVITY_ID INTO VA_MA_HL FROM HL6 WHERE HL6_ID = IN_HL_ID;
-                            IF(:VA_MA_HL <> 0) THEN
-                            CALL "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_MARKETING_ACTIVITY_BY_HL5_ID" (:VA_MA_HL,VA_MA_PATH );
-                            ELSE
-                            VA_MA_PATH := '';
-                            END IF;
+                            --SELECT MARKETING_ACTIVITY_ID INTO VA_MA_HL FROM HL6 WHERE HL6_ID = IN_HL_ID;
+                            --IF(:VA_MA_HL <> 0) THEN
+                            --CALL "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_MARKETING_ACTIVITY_BY_HL5_ID" (:VA_MA_HL,VA_MA_PATH );
+                            --ELSE
+                            --VA_MA_PATH := '';
+                            --END IF;
                             CALL "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_TRANSPOSED_CATEGORY_OPTION_BY_HL"(IN_HL_ID, 'HL6', VA_CATEGORY_OPTION);
                             -- GET BUYING CLASSIFICATION CRM_KEY
                             CALL "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_PROCESSING_REPORT_BUYING_CLASSIFICATION"(IN_HL_ID, 'HL6', VA_BUYING_CLASSIFICATION);
@@ -346,7 +349,8 @@ BEGIN
                                         CT.CRM_KEY AS CAMP_TYPE,
                                         CST.CRM_KEY AS SUB_TYPE,
                                         4 AS MKT_PROG_TYPE, --SHOULD ALWAYS BE 4
-                                        :VA_MA_PATH AS MARKETING_ACTIVITYID,
+                                        --:VA_MA_PATH AS MARKETING_ACTIVITYID,
+                                        MARKETING_ACTIVITY.NAME AS MARKETING_ACTIVITYID,
                                         BO.CRM_KEY AS BUSINESS_OWNER,
                                         PR.CRM_KEY AS PRIORITY,
                                         HL6.PLANNED_START_DATE AS PLANSTART,
@@ -404,7 +408,7 @@ BEGIN
                                         HL6.NUMBER_OF_PARTICIPANTS AS NO_OF_PARTICIPANTS,
                                         HL6.STREET AS STREET,
                                         HL6.CITY AS CITY,
-                                        HL6.COUNTRY AS COUNTRY,
+                                        COUNTRY.CRM_KEY AS COUNTRY,
                                         :VA_BUYING_CLASSIFICATION AS BUYING_CLASSIFICATION,
                                         'ZMMKTKR' AS PARTNER_FCT,
                                         '' AS PARTNER_NO
@@ -421,6 +425,8 @@ BEGIN
                                         LEFT JOIN COST_CENTER CC ON CC.COST_CENTER_ID = HL6.COST_CENTER_ID
                                         LEFT JOIN MARKETING_PROGRAM ON MARKETING_PROGRAM.MARKETING_PROGRAM_ID = HL6.MARKETING_PROGRAM_ID
                                         LEFT JOIN :VA_CATEGORY_OPTION CO ON 1=1
+                                        LEFT JOIN MARKETING_ACTIVITY MARKETING_ACTIVITY ON MARKETING_ACTIVITY.MARKETING_ACTIVITY_ID = HL6.MARKETING_ACTIVITY_ID
+                                        LEFT JOIN COUNTRY COUNTRY ON COUNTRY.COUNTRY_ID = HL6.COUNTRY_ID
                                         WHERE HL6_ID = IN_HL_ID;
             END IF;
 

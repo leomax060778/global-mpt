@@ -50,7 +50,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_HL6"
     ,IN in_employee_responsible_user nvarchar(7)
     ,IN in_person_responsible nvarchar(7)
     , IN in_is_complete TINYINT
-
+    , IN in_country_id bigint
 	,OUT out_hl6_id bigint 
 	) 
 	LANGUAGE SQLSCRIPT
@@ -109,6 +109,7 @@ BEGIN
 , employee_responsible_user
 , person_responsible
 , is_complete
+,country_id
 	)
 	VALUES (
  in_hl6_crm_description
@@ -161,6 +162,7 @@ BEGIN
 , in_employee_responsible_user
 , in_person_responsible
 , in_is_complete
+, in_country_id
 );
 	
 	SELECT TOP 1 CURRENT_IDENTITY_VALUE() INTO out_hl6_id FROM "MKTG_PLANNING_TOOL"."HL6";

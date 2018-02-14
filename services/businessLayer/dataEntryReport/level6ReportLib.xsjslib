@@ -113,9 +113,7 @@ function getL6ChangedFieldsByHl6Id(hl6Id, userId) {
                         break;
 
                     case "MARKETING_ACTIVITY_ID":
-                        if (processingReportData.marketing_activity_id) {
-                            object.value = processingReportData.marketing_activity_id.CRM_ID;
-                        }
+                            object.value = hl6.MARKETING_ACTIVITY;
                         break;
                     case "SHOW_ON_DG_CALENDAR":
                         object.value = hl6.SHOW_ON_DG_CALENDAR ? "Yes" : "No";
@@ -127,7 +125,7 @@ function getL6ChangedFieldsByHl6Id(hl6Id, userId) {
                         object.value = hl6.MARKETING_PROGRAM_DESCRIPTION;
                         break;
                     case "MARKETING_ACTIVITY_DESC":
-                        object.value = hl6.MARKETING_ACTIVITY;
+                        object.value = hl6.MARKETING_ACTIVITY_DESCRIPTION;
                         break;
                     case "DISTRIBUTION_CHANNEL_DESC":
                         object.value = hl6.DISTRIBUTION_CHANNEL;
@@ -155,6 +153,9 @@ function getL6ChangedFieldsByHl6Id(hl6Id, userId) {
                         break;
                     case "PRIORITY_ID":
                         object.value = hl6.PRIORITY;
+                        break;
+                    case "COUNTRY_ID":
+                        object.value = hl6.COUNTRY;
                         break;
                     default:
                         object.value = hl6[field];
@@ -229,7 +230,7 @@ function getProcessingReportFields() {
         , "VENUE": "Venue"
         , "STREET": "Street"
         , "CITY": "City"
-        , "COUNTRY": "Country"
+        , "COUNTRY_ID": "Country"
         , "POSTAL_CODE": "Postal Code"
         , "REGION": "Region"
         , "EVENT_OWNER": "Event Owner"

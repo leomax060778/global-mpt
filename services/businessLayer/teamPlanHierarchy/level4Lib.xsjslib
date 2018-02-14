@@ -771,16 +771,16 @@ function CompareCategoryOption(Category1, Category1_id, ListCategories, existInC
 
 function CompareCategories(ListCategories1, ListCategories2, existInCrm, hl4Id) {
     var flag = false;
-    // var mapFields = {};
+    var mapFields = {};
     var categories = util.getCategoryById('hl4', hl4Id);
-    /*    if (!categories || !categories.length) {
-            categories = AllocationCategory.getCategoryOptionByHierarchyLevelId(HIERARCHY_LEVEL.HL4);
-            for (var i = 0; i < categories.length; i++) {
-                var obj = categories[i];
-                mapFields[obj.CATEGORY_ID] = obj;
-            }
-            categories = mapFields;
-        }*/
+    if (!categories || !Object.keys(categories).length) {
+        categories = AllocationCategory.getCategoryOptionByHierarchyLevelId(HIERARCHY_LEVEL.HL4);
+        for (var i = 0; i < categories.length; i++) {
+            var obj = categories[i];
+            mapFields[obj.CATEGORY_ID] = obj;
+        }
+        categories = mapFields;
+    }
     for (var j = 0; j < ListCategories1.length; j++) {
         var category = ListCategories1[j];
         if (categories[category.in_category_id].IN_PROCESSING_REPORT) {
@@ -1278,7 +1278,8 @@ function crmFieldsHaveChanged(data, isComplete, userId) {
                 var oldParentPath = '';
                 var parentPath = '';
                 if (field == "PARENT_PATH") {
-                    oldParentPath = dataPath.getCrmParentPathByIdLevelId('hl4', data.hl4.in_hl4_id)[0].PARENT_PATH;
+                    var oldParentPathByIdLevelId = dataPath.getCrmParentPathByIdLevelId('hl4', data.hl4.in_hl4_id);
+                    oldParentPath = oldParentPathByIdLevelId[0] ? oldParentPathByIdLevelId[0].PARENT_PATH: null;
                     parentPath = pathBL.getPathByLevelParentForCrm('hl4', data.hl4.in_hl3_id);
                 }
                 var parameters = {

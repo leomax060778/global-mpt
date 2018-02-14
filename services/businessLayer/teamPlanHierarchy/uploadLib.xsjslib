@@ -12,6 +12,7 @@ var blLevel3 = mapper.getLevel3();
 var blLevel2 = mapper.getLevel2();
 var blcurrency = mapper.getCurrency();
 var blUser = mapper.getUser();
+var blMarketingActivity = mapper.getMarketingActivityLib();
 var dataL4 = mapper.getDataLevel4();
 var dataL5 = mapper.getDataLevel5();
 var blObjectives = mapper.getObjectiveLib();
@@ -61,12 +62,14 @@ var mapCampaignObjetveLib = {
     , UPLOAD_CAMPAIGN_SUB_TYPE: blCampaignSubType
     , UPLOAD_CAMPAIGN_TYPE: blCampaignType
     , UPLOAD_USER : blUser
+    , UPLOAD_MARKETING_ACTIVITY: blMarketingActivity
 };
 
 var mapFieldIdName = {
     UPLOAD_OBJECTIVE: "OBJECTIVE_ID"
     , UPLOAD_CAMPAIGN_SUB_TYPE: "CAMPAIGN_SUB_TYPE_ID"
     , UPLOAD_CAMPAIGN_TYPE: "CAMPAIGN_TYPE_ID"
+    , UPLOAD_MARKETING_ACTIVITY: "MARKETING_ACTIVITY_ID"
 };
 
 var mapCampaignObjetveGetList = {
@@ -74,6 +77,8 @@ var mapCampaignObjetveGetList = {
     , UPLOAD_CAMPAIGN_SUB_TYPE: dataCampaignSubType.getAllCampaignSubType
     , UPLOAD_CAMPAIGN_TYPE: dataCampaignType.getAllCampaignType
     , UPLOAD_USER: blUser.getAll
+    , UPLOAD_MARKETING_ACTIVITY: blMarketingActivity.getAllMarketingActivity
+
 };
 
 //get map excel upload file configuration for static relation between field on database tables and excel column header
