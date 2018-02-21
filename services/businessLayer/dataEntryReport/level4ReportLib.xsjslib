@@ -158,3 +158,7 @@ function getProcessingReportFields() {
 
     return processingReportFields
 }
+
+function getAllHL4DeletionRequest(level){
+    return dataL4DER.getAllHL4DeletionRequest(level);
+}

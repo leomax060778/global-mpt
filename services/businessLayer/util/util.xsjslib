@@ -123,9 +123,11 @@ function isSuperAdmin(userId){
     return isSA;
 }
 
-function getMapCategoryOption(level){
+function getMapCategoryOption(level, hl2Id){
 	var mapCategoryOption = {};
-	var sp_result = dataCategoryOptionLevel.getAllocationCategoryOptionLevelByLevelId(level);
+	var sp_result = Number(hl2Id)
+		? dataCategoryOptionLevel.getAllocationCountryCategoryOptionLevelByLevelId(level, hl2Id)
+		: dataCategoryOptionLevel.getAllocationCategoryOptionLevelByLevelId(level);
 
 	for (var i = 0; i < sp_result.length; i++) {
 		var obj = sp_result[i];
@@ -137,6 +139,10 @@ function getMapCategoryOption(level){
 
 	}
 	return mapCategoryOption;
+}
+
+function getMapCountryCategoryOption(level, hl2Id){
+    return getMapCategoryOption(level, hl2Id);
 }
 
 function getMapAvailableCategoryOptionByLevel(level){
@@ -250,4 +256,42 @@ function getEnableEdit(statusId, statusLevel, userId, superAdmin, parentStatusId
 	return  Number(statusId) !== statusLevel.DELETED_IN_CRM && Number(parentStatusId || 0) !== statusLevel.DELETED_IN_CRM
 		&& Number(granParentStatusId || 0) !== statusLevel.DELETED_IN_CRM
 		&& (superAdmin || (Number(statusId) !== statusLevel.CREATE_IN_CRM && Number(statusId) !== statusLevel.UPDATE_IN_CRM));
+}
+
+/**
+ * 
+ * @param headers - list of fields to use as headers for CSV content
+ * @param rdo - array of objects to be separated by commas
+ * @returns {string} - comma separated values to use as the CSV content
+ */
+function convertToCSV(headers, rdo) {
+	
+	var str = '';
+	var j = 0;
+	var line = '';
+        
+	//iterate object to generate the headers
+	if(headers && headers.length){
+	    for (j = 0; j < headers.length; j++) { 
+	        if (line != '') line += ','
+	            line += headers[j];
+	     }
+	     str += line + '\r\n';
+	     var j = 0;
+	}
+  	              
+	//iterate object to generate the lines
+    for (j = 0; j < rdo.length; j++) { 
+      
+       var rs = rdo[j];
+       var i = 0;
+       var line = '';
+       for (i = 0; i < rs.length; i++) {
+           if (line != '') line += ','
+               line += rs[i];
+       }
+       str += line + '\r\n';
+    }
+
+    return str;
 }

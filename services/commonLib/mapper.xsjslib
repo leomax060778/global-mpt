@@ -352,6 +352,11 @@ function getAllocationOptionLib(){
     return $.mktgplanningtool.services.businessLayer.settings.allocationOptionLib;
 }
 
+function getCountryCategoryOptionLib(){
+    $.import("mktgplanningtool.services.businessLayer.settings","countryCategoryOptionLib");
+    return $.mktgplanningtool.services.businessLayer.settings.countryCategoryOptionLib;
+}
+
 function getAllocationCategoryOptionLevelLib(){
     $.import("mktgplanningtool.services.businessLayer.settings","allocationCategoryOptionLevelLib");
     return $.mktgplanningtool.services.businessLayer.settings.allocationCategoryOptionLevelLib;
@@ -452,6 +457,10 @@ function getSearch(){
     return $.mktgplanningtool.services.businessLayer.search.searchLib;
 }
 
+function getHierarchyCategoryCountry(){
+	$.import("mktgplanningtool.services.businessLayer.settings","hierarchyCategoryCountryLib");
+    return $.mktgplanningtool.services.businessLayer.settings.hierarchyCategoryCountryLib;
+}
 /************Data Layer Mapper*****************/
 
 function getdbHelper(){
@@ -602,6 +611,11 @@ function getDataCountry(){
 function getDataOption(){
     $.import("mktgplanningtool.services.dataLayer.settings","dataCategoryOption");
     return $.mktgplanningtool.services.dataLayer.settings.dataCategoryOption;
+}
+
+function getDataCountryCategoryOption(){
+    $.import("mktgplanningtool.services.dataLayer.settings","dataCountryCategoryOption");
+    return $.mktgplanningtool.services.dataLayer.settings.dataCountryCategoryOption;
 }
 
 function getDataCategoryOptionLevel(){
@@ -847,4 +861,9 @@ function getDataNews(){
 function getDataSearch(){
     $.import("mktgplanningtool.services.dataLayer.search","dataSearch");
     return $.mktgplanningtool.services.dataLayer.search.dataSearch;
+}
+
+function getDataHierarchyCategoryCountry(){
+	$.import("mktgplanningtool.services.dataLayer.settings","dataHierarchyCategoryCountry");
+    return $.mktgplanningtool.services.dataLayer.settings.dataHierarchyCategoryCountry;
 }

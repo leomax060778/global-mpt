@@ -13,6 +13,7 @@ var spDelL4ChangedFieldsByHl4Id = "DEL_HL4_CRM_BINDING";
 var spMassDelL4ChangedFieldsByHl4Id = "DEL_MASS_HL4_CRM_BINDING";
 var UPD_PROCESSING_REPORT_EXPORT_DATA = "UPD_PROCESSING_REPORT_EXPORT_DATA";
 var UPD_MASS_PROCESSING_REPORT_EXPORT_DATA = "UPD_MASS_PROCESSING_REPORT_EXPORT_DATA";
+var GET_REPORT_DELETION_REQUEST = "GET_REPORT_DELETION_REQUEST";
 
 /*********** END LIST OF PROCEDURES ***************/
 
@@ -69,4 +70,10 @@ function deleteL4ChangedFieldsByHl4Id(id) {
 function massDeleteL4ChangedFieldsByHl4Id(ids) {
     var rdo = db.executeScalarManual(spMassDelL4ChangedFieldsByHl4Id, {'in_hl4_ids': ids}, 'out_result');
     return rdo;
+}
+
+
+function getAllHL4DeletionRequest(level){
+    var rdo = db.executeProcedureManual(GET_REPORT_DELETION_REQUEST, {'IN_LEVEL': level});
+    return db.extractArray(rdo.out_result);
 }

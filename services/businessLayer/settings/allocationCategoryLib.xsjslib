@@ -7,33 +7,52 @@ var dbCategoryOption = mapper.getDataOption();
 var dataCategoryOptionLevel = mapper.getDataCategoryOptionLevel();
 var util = mapper.getUtil();
 var dbMeasure = mapper.getDataMeasure();
+var dataHl2 = mapper.getDataLevel2();
+var hierarchyCategoryCountryLib = mapper.getHierarchyCategoryCountry();
 /*************************************************/
+
+var CATEGORY_TYPE = {
+	COUNTRY: 1,
+	OPTION: 2
+};
+
+var HIERARCHY_LEVEL = util.getHierarchyLevelEnum();
 
 function getAllocationCategoryByName(name){
 	return dbCategory.getAllocationCategoryByName(name);
 }
 
-function insertAllocationCategoryForUpload(name, description, measure_id, single_option_only, userId){
-	return insertAllocationCategory({NAME: name, DESCRIPTION: description, MEASURE_ID: measure_id, SINGLE_OPTION_ONLY: single_option_only}, userId);
+function insertAllocationCategoryForUpload(name, description, measure_id, single_option_only, categoryTypeId, userId){
+	return insertAllocationCategory({NAME: name, DESCRIPTION: description, MEASURE_ID: measure_id, SINGLE_OPTION_ONLY: single_option_only, CATEGORY_TYPE_ID: categoryTypeId}, userId);
 }
 
 function insertAllocationCategory(data, userId) {
-
 	//validate if exists another category with same name
 	var objAllocationCat = dbCategory.getAllocationCategoryByName(data.NAME);
 	if(objAllocationCat)
 		throw ErrorLib.getErrors().CustomError("","AllocationCategoryService", "Cannot create the category beacause exists another with same name");
 
+    if(Number(data.CATEGORY_TYPE_ID) == CATEGORY_TYPE.COUNTRY){
+        //find and delete relationships for all other category with country type
+        hierarchyCategoryCountryLib.deleteCountryCategoryOptionLevel(null, userId);
+        dbCategory.deleteAllocationCountryCategory(0, userId);
+    }
+
 	var result = dbCategory.insertAllocationCategory(data.DESCRIPTION,
 		data.NAME,
 		data.MEASURE_ID,
 		data.SINGLE_OPTION_ONLY ? 1 : 0,
+		data.CATEGORY_TYPE_ID,
 		userId);
 	return result;
 }
 
 function getAllocationCategory(){
 	return dbCategory.getAllocationCategory();
+}
+
+function getAllocationCategoryType(){
+	return dbCategory.getAllocationCategoryType();
 }
 
 //return Categories with filtering by enable = 1 or deleted = 0
@@ -51,8 +70,9 @@ function getCategoryInUseByCategoryId(categoryId){
 
 }
 
-function getCategoryOptionByHierarchyLevelId(hierarchy_level_id){
-	var spResult = dbCategory.getCategoryOptionByHierarchyLevelId(hierarchy_level_id);
+function getCategoryOptionByHierarchyLevelId(hierarchy_level_id, hl4Id){
+    var hl2 = hl4Id ? dataHl2.getHl2ByHl4Id(hl4Id) : {};
+	var spResult = dbCategory.getCategoryOptionByHierarchyLevelId(hierarchy_level_id, hl2.HL2_ID || 0);
 	var result = {};
     spResult.forEach(function(categoryOption){
         if(!result[categoryOption.CATEGORY_NAME]){
@@ -61,6 +81,7 @@ function getCategoryOptionByHierarchyLevelId(hierarchy_level_id){
                 CATEGORY_ID: categoryOption.CATEGORY_ID
                 , MAKE_CATEGORY_MANDATORY: categoryOption.MAKE_CATEGORY_MANDATORY
 				, SINGLE_OPTION_ONLY: categoryOption.SINGLE_OPTION_ONLY
+                , CATEGORY_TYPE_ID: categoryOption.CATEGORY_TYPE_ID
                 ,OPTIONS: [{
                     OPTION_ID: categoryOption.OPTION_ID
                     , OPTION_NAME: categoryOption.OPTION_NAME
@@ -93,11 +114,19 @@ function getCategoryByHierarchyLevelId(hierarchy_level_id){
 }
 
 function updateAllocationCategory(data, userId) {
-	return dbCategory.updateAllocationCategory(data.CATEGORY_ID,
-		data.DESCRIPTION, data.NAME, data.MEASURE_ID, data.SINGLE_OPTION_ONLY ? 1 : 0,
-		userId);
-}
+	if(Number(data.CATEGORY_TYPE_ID) == CATEGORY_TYPE.COUNTRY){
+        dbCategory.deleteAllocationCountryCategory(data.CATEGORY_ID, userId);
+	}
 
+	return dbCategory.updateAllocationCategory(
+		data.CATEGORY_ID
+		, data.DESCRIPTION
+		, data.NAME
+		, data.MEASURE_ID
+		, data.SINGLE_OPTION_ONLY ? 1 : 0
+		, data.CATEGORY_TYPE_ID
+		, userId);
+}
 
 function deleteAllocationCategory(categoryId, userId, confirm){
     if (!categoryId)
@@ -107,14 +136,14 @@ function deleteAllocationCategory(categoryId, userId, confirm){
 
 	if(confirm){
         dataCategoryOptionLevel.deleteAllocationCategoryOptionLevelByCategory(categoryId, userId);
+        hierarchyCategoryCountryLib.deleteCountryCategoryOptionLevel(null, userId);
         return dbCategory.deleteAllocationCategory(categoryId, userId);
 	}
 
     var countRegisters = dataCategoryOptionLevel.checkInUseAllocationCategoryById(categoryId);
-	if (countRegisters) {
-        throw ErrorLib.getErrors().ConfirmDelete("",
-            "AllocationCategoryService/handleDelete/checkInUseAllocationCategoryById",
-            countRegisters);
+    var countAllocationCountryRegisters = hierarchyCategoryCountryLib.checkInUseAllocationCountryCategoryById(categoryId);
+	if (countRegisters || countAllocationCountryRegisters) {
+        throw ErrorLib.getErrors().ConfirmDelete("","",countRegisters);
     } else {
         return dbCategory.deleteAllocationCategory(categoryId, userId);
     }
@@ -129,22 +158,43 @@ function uploadAllocationCategory(data, userId) {
 	var allocationCategoryUpdated = 0;
 	var allocationCategoryCreated = 0;
 	var categoryId;
+    var countriesCategory = {};
 	allocationCategoryList.forEach(function(allocationCategory){
-		var ac = getAllocationCategoryByName(allocationCategory.in_categoryName);
+        var ac = {};
 
-		var measure = dbMeasure.getMeasureBySymbol(allocationCategory.in_measure);
-		//if (!measure)
-		//	throw ErrorLib.getErrors().CustomError("", "allocationCategoryService/handlePost/UPLOAD", "Measure is not found");
+		var categoryTypeId = allocationCategory.in_category_type && allocationCategory.in_category_type.trim()
+								&& CATEGORY_TYPE[(allocationCategory.in_category_type.trim()).toUpperCase()]
+			? CATEGORY_TYPE[(allocationCategory.in_category_type.trim()).toUpperCase()]
+			: CATEGORY_TYPE.OPTION;
 
-		if(!ac || !ac.CATEGORY_ID){
-			categoryId = insertAllocationCategoryForUpload(allocationCategory.in_categoryName, allocationCategory.in_categoryDescription, measure.MEASURE_ID,
-				allocationCategory.in_oneSelectionOnly, userId);
-			allocationCategoryCreated++;
+        if(!countriesCategory.ALLOCATION_CATEGORY_ID && categoryTypeId == CATEGORY_TYPE.COUNTRY){
+            countriesCategory = dbCategory.getCategoryByType(CATEGORY_TYPE.COUNTRY) || {};
+        } else {
+            ac = getAllocationCategoryByName(allocationCategory.in_categoryName) || {};
+		}
+
+        var measure = dbMeasure.getMeasureBySymbol(allocationCategory.in_measure);
+
+		if(countriesCategory.ALLOCATION_CATEGORY_ID || ac.CATEGORY_ID){
+            dbCategory.updateAllocationCategory(
+                countriesCategory.ALLOCATION_CATEGORY_ID || ac.CATEGORY_ID
+                , allocationCategory.in_categoryDescription
+                , allocationCategory.in_categoryName
+                , measure.MEASURE_ID
+                , allocationCategory.in_oneSelectionOnly ? 1 : 0
+                , categoryTypeId
+                , userId);
+            allocationCategoryUpdated++;
 		} else {
-			dbCategory.updateAllocationCategory(ac.CATEGORY_ID,
-				allocationCategory.in_categoryDescription, allocationCategory.in_categoryName, measure.MEASURE_ID,
-				allocationCategory.in_oneSelectionOnly ? 1 : 0, userId);
-			allocationCategoryUpdated++;
+            categoryId = insertAllocationCategoryForUpload(
+                allocationCategory.in_categoryName
+                , allocationCategory.in_categoryDescription
+                , measure.MEASURE_ID
+                , allocationCategory.in_oneSelectionOnly
+                , categoryTypeId
+                , userId
+            );
+            allocationCategoryCreated++;
 		}
 	});
 	return {allocationCategoryCreated: allocationCategoryCreated, allocationCategoryUpdated: allocationCategoryUpdated};
@@ -154,12 +204,22 @@ function checkAllocationCategory(data){
 	var allocationCategoryList = data.check;
 	var allocationCategoryToUpdate = 0;
 	var allocationCategoryToInsert = 0;
+    var countriesCategory = {};
 	allocationCategoryList.forEach(function(category){
-		if(getAllocationCategoryByName(category.in_categoryName)){
-			allocationCategoryToUpdate++;
-		} else {
-			allocationCategoryToInsert++;
+        var categoryTypeId = category.in_category_type && category.in_category_type.trim()
+        && CATEGORY_TYPE[(category.in_category_type.trim()).toUpperCase()]
+            ? CATEGORY_TYPE[(category.in_category_type.trim()).toUpperCase()]
+            : CATEGORY_TYPE.OPTION;
+
+        if(!countriesCategory.ALLOCATION_CATEGORY_ID && categoryTypeId == CATEGORY_TYPE.COUNTRY){
+            countriesCategory = dbCategory.getCategoryByType(CATEGORY_TYPE.COUNTRY) || {};
 		}
+
+		if(countriesCategory.ALLOCATION_CATEGORY_ID || getAllocationCategoryByName(category.in_categoryName)){
+            allocationCategoryToUpdate++;
+        } else {
+            allocationCategoryToInsert++;
+        }
 	});
 
 	return {allocationCategoryToCreate: allocationCategoryToInsert, allocationCategoryToUpdate: allocationCategoryToUpdate};
@@ -167,4 +227,8 @@ function checkAllocationCategory(data){
 
 function getCategoryByProcessingReportExportKey(exportKey){
     return dbCategory.getCategoryByProcessingReportExportKey(exportKey);
+}
+
+function getCategoryType() {
+    return CATEGORY_TYPE;
 }

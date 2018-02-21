@@ -9,12 +9,21 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_CATEGORY_BY_
 BEGIN
 
 	out_result =
-	SELECT distinct
+	(SELECT distinct
       ac.allocation_category_id as category_id
     , acol.in_processing_report
     FROM allocation_category ac
     inner join allocation_category_option_level acol on acol.allocation_category_id = ac.allocation_category_id
     inner join hl6_category_option hl6_co on acol.allocation_category_option_level_id = hl6_co.allocation_category_option_level_id
     WHERE hl6_co.hl6_id = in_hl_id
-    and hl6_co.enabled = 1 and hl6_co.deleted = 0;
+    and hl6_co.enabled = 1 and hl6_co.deleted = 0)
+     UNION ALL
+     (SELECT distinct
+       ac.allocation_category_id as category_id
+     , acol.in_processing_report
+     FROM allocation_category ac
+     inner join ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL acol on acol.allocation_category_id = ac.allocation_category_id
+     inner join HL6_COUNTRY_CATEGORY_OPTION hl6_co on acol.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID = hl6_co.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID
+     WHERE hl6_co.hl6_id = in_hl_id
+     and hl6_co.enabled = 1 and hl6_co.deleted = 0);
 END;

@@ -37,11 +37,37 @@ function getL6ByWBSPath(wbs_path) {
     return api.getL6ByWBSPath(wbs_path);
 }
 
-function getReportExportData(filter) {
+function getReportExportData(filter, method) {
     var scopeValues = ['ALL', 'KPI', 'BUDGET'];
     var result = [];
 
-    var commonFiels = [
+    var defaultFields = [
+        'HIERARCHY_LEVEL_ID'
+        , 'CRM_ID'
+        , 'CAMP_OBJ_TYPE'
+        , 'BUDGET'
+        , 'BUDGET_Q1'
+        , 'BUDGET_Q2'
+        , 'BUDGET_Q3'
+        , 'BUDGET_Q4'
+        , 'INTERNAL_FUNDING'
+        , 'PARTNER_CONTRIBUTION'
+        , 'CURRENCY'
+        , 'MNP_VALUE'
+        , 'MNP_VOLUME'
+        , 'MTP_VALUE'
+        , 'MTP_VOLUME'
+        , 'MIP_VALUE'
+        , 'MIP_VOLUME'
+        , 'LEAD_VOLUME_VALUE'
+        , 'LEAD_VOLUME_VOLUME'
+        , 'BUDGET_YEAR'
+        , 'ON_PREM'
+        , 'CLOUD'
+        , 'MODIFIED_DATE'
+    ];
+
+    var commonFields = [
         'HIERARCHY_LEVEL_ID'
         , 'CRM_ID'
         , 'CAMP_OBJ_TYPE'
@@ -73,7 +99,7 @@ function getReportExportData(filter) {
         , 'CLOUD'
     ];
 
-    if(!filter.SCOPE){
+    if (!filter.SCOPE) {
         filter.SCOPE = 'ALL';
     }
 
@@ -130,7 +156,7 @@ function getReportExportData(filter) {
 
         for (var i = 0; i < spResult.length; i++) {
             var elem = {};
-            commonFiels.forEach(function (field) {
+            commonFields.forEach(function (field) {
                 elem[field] = spResult[i][field];
             });
 
@@ -144,11 +170,14 @@ function getReportExportData(filter) {
         result = spResult;
     }
 
+    if (filter.FORMAT === "CSV") {
+        result = parseToCSV(result, filter, method, defaultFields, commonFields, budgetFields, kpiFields);
+    }
+
     return result;
 }
 
-
-function getReportExportDataRegion(filter) {
+function getReportExportDataRegion(filter, method) {
 
     /**
      * Initialize variables
@@ -157,7 +186,7 @@ function getReportExportDataRegion(filter) {
     var scopeValues = ['ALL', 'KPI', 'BUDGET'];
     var result = [];
 
-    var commonFiels = [
+    var commonFields = [
         'HIERARCHY_LEVEL_ID'
         , 'CRM_ID'
     ];
@@ -168,17 +197,13 @@ function getReportExportDataRegion(filter) {
         , 'REGION_DESC'
     ];
 
-    var kpiFields = [
-    ];
-
-    if(!filter.SCOPE){
+    if (!filter.SCOPE) {
         filter.SCOPE = 'ALL';
     }
 
     if (scopeValues.indexOf(filter.SCOPE.toUpperCase()) < 0) {
         throw ErrorLib.getErrors().CustomError("", "", "The parameter SCOPE is invalid");
     }
-
 
     var filterParameter = {
         IN_MODE: (filter.IN_IS_FULL_DOWNLOAD === 1 ? 1 : 2),
@@ -225,25 +250,42 @@ function getReportExportDataRegion(filter) {
         , IN_HIERARCHY_LEVEL: filter.IN_HIERARCHY_LEVEL
     });
 
-   /* if (spResult && spResult.length && filter.SCOPE.toUpperCase() != 'ALL') {
-        var outputFields = filter.SCOPE.toUpperCase() == 'BUDGET' ? budgetFields : kpiFields;*/
-
     var outputFields = budgetFields;
-        for (var i = 0; i < spResult.length; i++) {
-            var elem = {};
-            commonFiels.forEach(function (field) {
-                elem[field] = spResult[i][field];
-            });
+    for (var i = 0; i < spResult.length; i++) {
+        var elem = {};
+        commonFields.forEach(function (field) {
+            elem[field] = spResult[i][field];
+        });
 
-            outputFields.forEach(function (field) {
-                elem[field] = spResult[i][field];
-            });
-            result.push(elem);
-        }
+        outputFields.forEach(function (field) {
+            elem[field] = spResult[i][field];
+        });
+        result.push(elem);
+    }
 
-    /*} else {
-        result = spResult;
-    }*/
+    if (filter.FORMAT === "CSV") {
+        result = parseToCSV(result, filter, method, null, commonFields, budgetFields, null);
+    }
 
     return result;
+}
+
+function parseToCSV(rdo, filter, method, defaultHeaders, commonHeaders, budgetHeaders, kpiHeaders) {
+    var outputHeaders = [];
+    if (method == GET_REPORT_EXPORT_DATA) {
+        //get the list of headers to use
+        outputHeaders = defaultHeaders;
+
+        if (filter.SCOPE.toUpperCase() != 'ALL') {
+            outputHeaders = filter.SCOPE.toUpperCase() == 'BUDGET' ? commonHeaders.concat(budgetHeaders) : commonHeaders.concat(kpiHeaders);
+        }
+    }
+
+    if (method == GET_REPORT_EXPORT_DATA_REGION) {
+        //get the list of headers to use
+        outputHeaders = commonHeaders.concat(budgetHeaders);
+    }
+
+    //return the output as CSV
+    return utilLib.convertToCSV(outputHeaders, rdo);
 }

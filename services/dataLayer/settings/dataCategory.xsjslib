@@ -16,7 +16,9 @@ var spUPD_HL5_CATEGORY = "UPD_HL5_CATEGORY";
 var spUPD_HL6_CATEGORY = "UPD_HL6_CATEGORY";
 
 var spDEL_CATEGORY = "DEL_CATEGORY";
+var DEL_COUNTRY_CATEGORY = "DEL_COUNTRY_CATEGORY";
 var spGET_CATEGORY_BY_ID = "GET_CATEGORY_BY_ID";
+var GET_CATEGORY_TYPE = 'GET_CATEGORY_TYPE';
 
 
 
@@ -28,6 +30,7 @@ var GET_ALLOCATION_CATEGORY_BY_NAME = "GET_ALLOCATION_CATEGORY_BY_NAME";
 var GET_ALLOCATION_CATEGORY_IN_USE_BY_CATGEORY_ID = "GET_ALLOCATION_CATEGORY_IN_USE_BY_CATGEORY_ID";
 var GET_ALLOCATION_CATEGORY_COUNT_BY_HL_ID = "GET_ALLOCATION_CATEGORY_COUNT_BY_HL_ID";
 var GET_ALLOCATION_CATEGORY_BY_EXPORT_KEY = "GET_ALLOCATION_CATEGORY_BY_EXPORT_KEY";
+var GET_ALLOCATION_CATEGORY_BY_TYPE = "GET_ALLOCATION_CATEGORY_BY_TYPE";
 var UPD_ALLOCATION_CATEGORY = "UPD_ALLOCATION_CATEGORY";
 var DEL_ALLOCATION_CATEGORY = "DEL_ALLOCATION_CATEGORY";
 /******************************************************/
@@ -59,10 +62,16 @@ function getCategoryByLevelHlId(level, hlId){
 	return db.extractArray(result.out_result);
 }
 
+function getAllocationCategoryType(){
+	var result = db.executeProcedureManual(GET_CATEGORY_TYPE, {});
+	return db.extractArray(result.out_result);
+}
 
-function getCategoryOptionByHierarchyLevelId(hierarchy_level_id){
+
+function getCategoryOptionByHierarchyLevelId(hierarchy_level_id, hl2Id){
 	var params = {
-		'in_hierarchy_level_id' : hierarchy_level_id
+		'in_hierarchy_level_id' : hierarchy_level_id,
+		'in_hl2_id' : hl2Id
 	};
 	var result = db.executeProcedure(GET_CATEGORY_OPTION_BY_HIERARCHY_LEVEL_ID, params);
 
@@ -169,13 +178,22 @@ function delCategory(categoryId, userId, autoCommit){
 	return rdo;
 }
 
+function deleteAllocationCountryCategory(categoryId, userId){
+    var params = {
+        'in_category_id' : categoryId,
+        'in_user_id': userId
+    };
+    return db.executeScalarManual(DEL_COUNTRY_CATEGORY,params,'out_result');
+}
+
 /*********************************************************************************************************/
-function insertAllocationCategory(description, name, measureId, singleOptionOnly, userId, autoCommit) {
+function insertAllocationCategory(description, name, measureId, singleOptionOnly, categoryTypeId, userId, autoCommit) {
 	var params = {
 		'in_description': description,
 		'in_name': name,
 		'in_measure_id': measureId,
 		'in_single_option_only': singleOptionOnly,
+        'in_category_type_id': categoryTypeId,
 		'in_user_id': userId
 	};
 	var rdo;
@@ -232,13 +250,14 @@ function getAllocationCategoryCountByHlId(hl){
 	return null;
 }
 
-function updateAllocationCategory(categoryId,description, name, measureId, singleOptionOnly, userId, autoCommit) {
+function updateAllocationCategory(categoryId,description, name, measureId, singleOptionOnly, categoryTypeId, userId, autoCommit) {
 	var params = {
 		'in_category_id': categoryId,
 		'in_description': description,
 		'in_name': name,
 		'in_measure_id': measureId,
         'in_single_option_only': singleOptionOnly,
+        'in_category_type_id': categoryTypeId,
 		'in_user_id': userId
 	};
 	var rdo;
@@ -269,5 +288,13 @@ function getCategoryByProcessingReportExportKey(exportKey){
         'in_export_key' : exportKey
     };
     var result = db.executeProcedureManual(GET_ALLOCATION_CATEGORY_BY_EXPORT_KEY, params);
+    return db.extractArray(result.out_result)[0];
+}
+
+function getCategoryByType(categoryTypeId) {
+    var params = {
+        'in_category_type_id' : categoryTypeId
+    };
+    var result = db.executeProcedureManual(GET_ALLOCATION_CATEGORY_BY_TYPE, params);
     return db.extractArray(result.out_result)[0];
 }

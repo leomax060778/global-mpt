@@ -1,7 +1,7 @@
 PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::UPD_PROCESSING_REPORT_EXPORT_DATA" (
-	IN IN_HL_ID BIGINT,
+	IN IN_HL_ID integer, --set Integer to prevent Error: (dberror) TypeError: pstmt.getBigInt(...) is null*
 	IN IN_HIERARCHY_LEVEL NVARCHAR(3),
-	OUT out_result bigint
+	OUT out_result integer
 	)
 	LANGUAGE SQLSCRIPT
 	SQL SECURITY INVOKER

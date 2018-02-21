@@ -11,28 +11,27 @@
       <viewAttributes>
         <viewAttribute datatype="INTEGER" id="HIERARCHY_LEVEL_ID"/>
         <viewAttribute datatype="NVARCHAR" id="CRM_ID" length="30"/>
-      
-        <viewAttribute id="CAMP_OBJ_TYPE" datatype="NVARCHAR" length="25"/>
-        <viewAttribute id="BUDGET" datatype="DECIMAL" length="19" scale="2"/>
-        <viewAttribute id="BUDGET_Q1" datatype="NVARCHAR" length="25"/>
-        <viewAttribute id="BUDGET_Q2" datatype="NVARCHAR" length="25"/>
-        <viewAttribute id="BUDGET_Q3" datatype="NVARCHAR" length="25"/>
-        <viewAttribute id="BUDGET_Q4" datatype="NVARCHAR" length="25"/>
-        <viewAttribute id="INTERNAL_FUNDING" datatype="NVARCHAR" length="25"/>
-        <viewAttribute id="PARTNER_CONTRIBUTION" datatype="NVARCHAR" length="25"/>
-        <viewAttribute id="CURRENCY" datatype="NVARCHAR" length="25"/>
-        <viewAttribute id="MNP_VALUE" datatype="DECIMAL" length="19" scale="2"/>
-        <viewAttribute id="MNP_VOLUME" datatype="DECIMAL" length="19" scale="2"/>
-        <viewAttribute id="MTP_VALUE" datatype="DECIMAL" length="19" scale="2"/>
-        <viewAttribute id="MTP_VOLUME" datatype="DECIMAL" length="19" scale="2"/>
-        <viewAttribute id="MIP_VALUE" datatype="DECIMAL" length="19" scale="2"/>
-        <viewAttribute id="MIP_VOLUME" datatype="DECIMAL" length="19" scale="2"/>
-        <viewAttribute id="LEAD_VOLUME_VALUE" datatype="DECIMAL" length="19" scale="2"/>
-        <viewAttribute id="LEAD_VOLUME_VOLUME" datatype="DECIMAL" length="19" scale="2"/>
-        <viewAttribute id="BUDGET_YEAR" datatype="NVARCHAR" length="25"/>
-        <viewAttribute id="ON_PREM" datatype="NVARCHAR" length="25"/>
-        <viewAttribute id="CLOUD" datatype="NVARCHAR" length="25"/>
-        <viewAttribute id="MODIFIED_DATE" datatype="TIMESTAMP"/>
+        <viewAttribute datatype="NVARCHAR" id="CAMP_OBJ_TYPE" length="25"/>
+        <viewAttribute datatype="DECIMAL" id="BUDGET" length="19" scale="2"/>
+        <viewAttribute datatype="NVARCHAR" id="BUDGET_Q1" length="25"/>
+        <viewAttribute datatype="NVARCHAR" id="BUDGET_Q2" length="25"/>
+        <viewAttribute datatype="NVARCHAR" id="BUDGET_Q3" length="25"/>
+        <viewAttribute datatype="NVARCHAR" id="BUDGET_Q4" length="25"/>
+        <viewAttribute datatype="NVARCHAR" id="INTERNAL_FUNDING" length="25"/>
+        <viewAttribute datatype="NVARCHAR" id="PARTNER_CONTRIBUTION" length="25"/>
+        <viewAttribute datatype="NVARCHAR" id="CURRENCY" length="25"/>
+        <viewAttribute datatype="DECIMAL" id="MNP_VALUE" length="19" scale="2"/>
+        <viewAttribute datatype="DECIMAL" id="MNP_VOLUME" length="19" scale="2"/>
+        <viewAttribute datatype="DECIMAL" id="MTP_VALUE" length="19" scale="2"/>
+        <viewAttribute datatype="DECIMAL" id="MTP_VOLUME" length="19" scale="2"/>
+        <viewAttribute datatype="DECIMAL" id="MIP_VALUE" length="19" scale="2"/>
+        <viewAttribute datatype="DECIMAL" id="MIP_VOLUME" length="19" scale="2"/>
+        <viewAttribute datatype="DECIMAL" id="LEAD_VOLUME_VALUE" length="19" scale="2"/>
+        <viewAttribute datatype="DECIMAL" id="LEAD_VOLUME_VOLUME" length="19" scale="2"/>
+        <viewAttribute datatype="NVARCHAR" id="BUDGET_YEAR" length="25"/>
+        <viewAttribute datatype="NVARCHAR" id="ON_PREM" length="25"/>
+        <viewAttribute datatype="NVARCHAR" id="CLOUD" length="25"/>
+        <viewAttribute datatype="TIMESTAMP" id="MODIFIED_DATE"/>
       </viewAttributes>
       <calculatedViewAttributes/>
       <definition> 
@@ -437,7 +436,7 @@ va_l4 = SELECT HL4_ID
 			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL1&quot; HL1 ON HL1.HL1_ID = HL2.HL1_ID
 			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_BUDGET_YEAR&quot; BY ON BY.BUDGET_YEAR_ID = HL1.BUDGET_YEAR_ID
 			WHERE HL4.ENABLED = 1 AND HL4.DELETED = 0
-			AND HL4.HL4_STATUS_DETAIL_ID = 3; --HL4_STATUS_DETAIL_ID 3 = In CRM;
+			AND (HL4.HL4_STATUS_DETAIL_ID = 3 OR HL4.HL4_STATUS_DETAIL_ID = 4); --HL4_STATUS_DETAIL_ID 3 = In CRM and HL4_STATUS_DETAIL_ID 4 = Update In CRM;
 
 va_l4_mnp = SELECT HL4_EO.HL4_ID
 			, HL4_EOD.EURO_VALUE AS MNP_VALUE
@@ -564,7 +563,7 @@ va_l5 = SELECT HL5_ID
 			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL1&quot; HL1 ON HL1.HL1_ID = HL2.HL1_ID
 			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_BUDGET_YEAR&quot; BY ON BY.BUDGET_YEAR_ID = HL1.BUDGET_YEAR_ID
 			WHERE HL5.ENABLED = 1 AND HL5.DELETED = 0
-			AND HL5.HL5_STATUS_DETAIL_ID = 3; --HL5_STATUS_DETAIL_ID 3 = In CRM;
+			AND (HL5.HL5_STATUS_DETAIL_ID = 3 OR HL5.HL5_STATUS_DETAIL_ID = 4); --HL5_STATUS_DETAIL_ID 3 = In CRM and HL5_STATUS_DETAIL_ID 4 = Update In CRM;
 
 va_l5_mnp = SELECT HL5_EO.HL5_ID
 			, HL5_EOD.EURO_VALUE AS MNP_VALUE
@@ -692,7 +691,7 @@ va_l6 = SELECT HL6_ID
 			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL1&quot; HL1 ON HL1.HL1_ID = HL2.HL1_ID
 			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_BUDGET_YEAR&quot; BY ON BY.BUDGET_YEAR_ID = HL1.BUDGET_YEAR_ID
 			WHERE HL6.ENABLED = 1 AND HL6.DELETED = 0
-			AND HL6.HL6_STATUS_DETAIL_ID = 3; --HL6_STATUS_DETAIL_ID 3 = In CRM;
+			AND (HL6.HL6_STATUS_DETAIL_ID = 3 OR HL6.HL6_STATUS_DETAIL_ID = 4); --HL6_STATUS_DETAIL_ID 3 = In CRM and HL6_STATUS_DETAIL_ID 4 = Update In CRM;
 
 va_l6_mnp = SELECT HL6_EO.HL6_ID
 			, HL6_EOD.EURO_VALUE AS MNP_VALUE
@@ -978,75 +977,92 @@ END /********* End Procedure Script ************/</definition>
         <descriptions defaultDescription="HL2_ID"/>
         <keyMapping columnObjectName="Script_View" columnName="HIERARCHY_LEVEL_ID"/>
       </attribute>
-    
       <attribute id="CRM_ID" order="2">
         <descriptions defaultDescription="USER_ID"/>
-    
         <keyMapping columnObjectName="Script_View" columnName="CRM_ID"/>
-    
       </attribute>
       <attribute id="CAMP_OBJ_TYPE" order="3">
         <descriptions defaultDescription="USER_ID"/>
         <keyMapping columnObjectName="Script_View" columnName="CAMP_OBJ_TYPE"/>
       </attribute>
       <attribute id="BUDGET" order="4">
+        <descriptions/>
         <keyMapping columnObjectName="Script_View" columnName="BUDGET"/>
       </attribute>
       <attribute id="BUDGET_Q1" order="5">
+        <descriptions/>
         <keyMapping columnObjectName="Script_View" columnName="BUDGET_Q1"/>
       </attribute>
       <attribute id="BUDGET_Q2" order="6">
+        <descriptions/>
         <keyMapping columnObjectName="Script_View" columnName="BUDGET_Q2"/>
       </attribute>
       <attribute id="BUDGET_Q3" order="7">
+        <descriptions/>
         <keyMapping columnObjectName="Script_View" columnName="BUDGET_Q3"/>
       </attribute>
       <attribute id="BUDGET_Q4" order="8">
+        <descriptions/>
         <keyMapping columnObjectName="Script_View" columnName="BUDGET_Q4"/>
       </attribute>
       <attribute id="INTERNAL_FUNDING" order="9">
+        <descriptions/>
         <keyMapping columnObjectName="Script_View" columnName="INTERNAL_FUNDING"/>
       </attribute>
       <attribute id="PARTNER_CONTRIBUTION" order="10">
+        <descriptions/>
         <keyMapping columnObjectName="Script_View" columnName="PARTNER_CONTRIBUTION"/>
       </attribute>
       <attribute id="CURRENCY" order="11">
+        <descriptions/>
         <keyMapping columnObjectName="Script_View" columnName="CURRENCY"/>
       </attribute>
       <attribute id="MNP_VALUE" order="12">
+        <descriptions/>
         <keyMapping columnObjectName="Script_View" columnName="MNP_VALUE"/>
       </attribute>
       <attribute id="MNP_VOLUME" order="13">
+        <descriptions/>
         <keyMapping columnObjectName="Script_View" columnName="MNP_VOLUME"/>
       </attribute>
       <attribute id="MTP_VALUE" order="14">
+        <descriptions/>
         <keyMapping columnObjectName="Script_View" columnName="MTP_VALUE"/>
       </attribute>
       <attribute id="MTP_VOLUME" order="15">
+        <descriptions/>
         <keyMapping columnObjectName="Script_View" columnName="MTP_VOLUME"/>
       </attribute>
       <attribute id="MIP_VALUE" order="16">
+        <descriptions/>
         <keyMapping columnObjectName="Script_View" columnName="MIP_VALUE"/>
       </attribute>
       <attribute id="MIP_VOLUME" order="17">
+        <descriptions/>
         <keyMapping columnObjectName="Script_View" columnName="MIP_VOLUME"/>
       </attribute>
       <attribute id="LEAD_VOLUME_VALUE" order="18">
+        <descriptions/>
         <keyMapping columnObjectName="Script_View" columnName="LEAD_VOLUME_VALUE"/>
       </attribute>
       <attribute id="LEAD_VOLUME_VOLUME" order="19">
+        <descriptions/>
         <keyMapping columnObjectName="Script_View" columnName="LEAD_VOLUME_VOLUME"/>
       </attribute>
       <attribute id="BUDGET_YEAR" order="20">
+        <descriptions/>
         <keyMapping columnObjectName="Script_View" columnName="BUDGET_YEAR"/>
       </attribute>
       <attribute id="ON_PREM" order="21">
+        <descriptions/>
         <keyMapping columnObjectName="Script_View" columnName="ON_PREM"/>
       </attribute>
       <attribute id="CLOUD" order="22">
+        <descriptions/>
         <keyMapping columnObjectName="Script_View" columnName="CLOUD"/>
       </attribute>
       <attribute id="MODIFIED_DATE" order="23">
+        <descriptions/>
         <keyMapping columnObjectName="Script_View" columnName="MODIFIED_DATE"/>
       </attribute>
     </attributes>

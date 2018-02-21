@@ -8,17 +8,14 @@ var config = mapper.getDataConfig();
 /******************************************/
 
 function processRequest(){
-	return httpUtil.processRequest(handleGet,handlePost,handlePut,handleDelete,true, "", true);
+	return httpUtil.processRequest(handleGet,handlePost,handlePut,handleDelete,false, "", true);
 }
 
 function handleGet(parameters, userSessionID){
-	var hl = httpUtil.getUrlParameterByName("HL");
-	var searchString = httpUtil.getUrlParameterByName("SEARCH_STRING");
-	var regionId = httpUtil.getUrlParameterByName("REGION_ID");
-	var subregionId = httpUtil.getUrlParameterByName("SUBREGION_ID");
+	var params = httpUtil.getUrlParameters();
 	var rdo;
 	
-	rdo = searchLib.getHLBySearch(hl, searchString, regionId, subregionId);
+	rdo = searchLib.getHLBySearch(params, userSessionID);
 	httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
 };
 

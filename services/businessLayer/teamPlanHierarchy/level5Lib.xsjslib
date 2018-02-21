@@ -2,6 +2,7 @@
 $.import("mktgplanningtool.services.commonLib", "mapper");
 var mapper = $.mktgplanningtool.services.commonLib.mapper;
 var dataL5DER = mapper.getDataLevel5Report();
+var dataHl2 = mapper.getDataLevel2();
 var dataHl3 = mapper.getDataLevel3();
 var dataHl4 = mapper.getDataLevel4();
 
@@ -49,6 +50,7 @@ var dataCT = mapper.getDataCampaignType();
 var dataObj = mapper.getDataObjectives();
 var dataMO = mapper.getDataMarketingOrganization();
 var uploadLib = mapper.getUploadLib();
+var allocationCategory = mapper.getAllocationCategoryLib();
 /*************************************************/
 
 var levelCampaign = "Marketing Tactic ";
@@ -137,6 +139,10 @@ var PARTNER_TYPE = {
 var HIERARCHY_LEVEL = util.getHierarchyLevelEnum();
 
 var DRAFT_PEFIX = 'DRAFT';
+
+var CATEGORY_TYPE = allocationCategory.getCategoryType();
+
+var LEVEL_STRING = 'HL5';
 
 var map = {
     "REGION_ID": "ORGANIZATION_ID",
@@ -401,10 +407,11 @@ function insertHl5(data, userId) {
         hl5_id = insertDataHl5(acronym, data);
 
         if (hl5_id) {
+            data.HL2_ID = dataHl2.getHl2ByHl4Id(data.HL4_ID).HL2_ID;
             // var automaticApproval = blLevel2.getHl2AllowAutomaticBudgetApprovalByHl4Id(data.HL4_ID);
-            budgetSpendRequest.insertOwnMoneyBudgetSpendRequest(data.BUDGET, hl5_id, 'HL5', userId, automaticApproval && data.IN_BUDGET);
+            budgetSpendRequest.insertOwnMoneyBudgetSpendRequest(data.BUDGET, hl5_id, LEVEL_STRING, userId, automaticApproval && data.IN_BUDGET);
             insertInCrmBinding(validationResult.crmBindingChangedFields, validationResult.crmBindingChangedFieldsUpdate, hl5_id);
-            pathBL.insParentPath('hl5', hl5_id, data.HL4_ID, userId);
+            pathBL.insParentPath(LEVEL_STRING.toLowerCase(), hl5_id, data.HL4_ID, userId);
             data.HL5_ID = hl5_id;
             // setStatus(hl5_id, data.STATUS_DETAIL_ID, userId);
             insertExpectedOutcomes(data, userId);
@@ -420,7 +427,7 @@ function insertHl5(data, userId) {
         if (data.ACRONYM) {
             return hl5_id;
         } else {
-            return {CRM_ID: dataPath.getPathByLevelHlId('hl5', hl5_id)}
+            return {CRM_ID: dataPath.getPathByLevelHlId(LEVEL_STRING.toLowerCase(), hl5_id)}
         }
     }
 
@@ -505,7 +512,7 @@ function insertHl5RequestCategoryOption(hl5Id, requestCategoryOption, userId) {
 }
 
 function updateHl5RequestCategoryOption(hl5Id, requestCategoryOption, userId) {
-    var serviceRequestCategoryOptionList = dataServiceRequest.getServiceRequestCategoryOptionByHlId(hl5Id, 'HL5');
+    var serviceRequestCategoryOptionList = dataServiceRequest.getServiceRequestCategoryOptionByHlId(hl5Id, LEVEL_STRING);
     var optionToDelete = [];
 
     serviceRequestCategoryOptionList = JSON.parse(JSON.stringify(serviceRequestCategoryOptionList));
@@ -550,7 +557,7 @@ function insertHl5FromUpload(data, userId) {
     var hl5_id = 0;
 
     if (validateHl5Upload(data)) {
-        var mapCOL = util.getMapCategoryOption('hl5');//Set Map for Category Option Level
+        var mapCOL = util.getMapCategoryOption(LEVEL_STRING.toLowerCase());//Set Map for Category Option Level
         data.BUDGET = (data.BUDGET == "" || !data.BUDGET) ? 0 : data.BUDGET;
         data.EMPLOYEE_RESPONSIBLE_USER = JSON.parse(JSON.stringify(data.EMPLOYEE_RESPONSIBLE_ID));
         data.EMPLOYEE_RESPONSIBLE_ID = null;
@@ -577,8 +584,8 @@ function insertHl5FromUpload(data, userId) {
             //         hl5CategoryOption.AMOUNT = Number(hl5CategoryOption.VALUE) || 0;
             //         hl5CategoryOption.UPDATED = Number(hl5CategoryOption.VALUE) ? 1 : 0;
             //         hl5Category.categoryOptionLevelId = mapCOL[hl5Category.CATEGORY][hl5CategoryOption.OPTION_ID];
-            //         // hl5Category.categoryOptionLevelId = dataCategoryOptionLevel.getAllocationOptionLevelByCategoryAndLevelId(hl5Category.CATEGORY, 'hl5', hl5CategoryOption.OPTION_ID).ALLOCATION_CATEGORY_OPTION_LEVEL_ID;
-            //         // dataCategoryOptionLevel.insertCategoryOption(hl5_id, hl5Category.categoryOptionLevelId, hl5CategoryOption.AMOUNT, userId, hl5CategoryOption.UPDATED, 'HL5');
+            //         // hl5Category.categoryOptionLevelId = dataCategoryOptionLevel.getAllocationOptionLevelByCategoryAndLevelId(hl5Category.CATEGORY, LEVEL_STRING.toLowerCase(), hl5CategoryOption.OPTION_ID).ALLOCATION_CATEGORY_OPTION_LEVEL_ID;
+            //         // dataCategoryOptionLevel.insertCategoryOption(hl5_id, hl5Category.categoryOptionLevelId, hl5CategoryOption.AMOUNT, userId, hl5CategoryOption.UPDATED, LEVEL_STRING);
             //         categoryOptionBulk.push({
             //             in_hl5_id: hl5_id
             //             , in_category_option_level_id: hl5Category.categoryOptionLevelId
@@ -588,7 +595,7 @@ function insertHl5FromUpload(data, userId) {
             //         });
             //     });
             // });
-            // dataCategoryOptionLevel.insertCategoryOption(categoryOptionBulk, 'hl5');
+            // dataCategoryOptionLevel.insertCategoryOption(categoryOptionBulk, LEVEL_STRING.toLowerCase());
             //
             // var outcome = {};
             // outcome.CREATED_USER_ID = userId;
@@ -720,12 +727,12 @@ function updateHl5(data, userId) {
         data.IN_BUDGET = checkBudgetStatus(data.HL4_ID, data.HL5_ID, data.BUDGET);
     }
 
-    var ownMoneyBudgetSpendRequestStatus = budgetSpendRequest.getOwnMoneyBudgetSpendRequestStatusByHlIdLevel(data.HL5_ID, 'HL5');
+    var ownMoneyBudgetSpendRequestStatus = budgetSpendRequest.getOwnMoneyBudgetSpendRequestStatusByHlIdLevel(data.HL5_ID, LEVEL_STRING);
     if (!ownMoneyBudgetSpendRequestStatus) {
-        budgetSpendRequest.insertOwnMoneyBudgetSpendRequest(data.BUDGET, data.HL5_ID, 'HL5', userId, automaticApproval && data.IN_BUDGET);
+        budgetSpendRequest.insertOwnMoneyBudgetSpendRequest(data.BUDGET, data.HL5_ID, LEVEL_STRING, userId, automaticApproval && data.IN_BUDGET);
     } else {
         if (Number(objHL5.BUDGET).toFixed(2) != Number(data.BUDGET).toFixed(2)) {
-            budgetSpendRequest.updateOwnMoneyBudgetSpendRequestByHlIdLevel(data.HL5_ID, 'HL5', data.BUDGET, automaticApproval && data.IN_BUDGET, userId);
+            budgetSpendRequest.updateOwnMoneyBudgetSpendRequestByHlIdLevel(data.HL5_ID, LEVEL_STRING, data.BUDGET, automaticApproval && data.IN_BUDGET, userId);
         }
         level6Lib.checkBudgetStatus(data);
     }
@@ -808,16 +815,16 @@ function updateHl5(data, userId) {
             dataHl5.insertHl5LogStatus(data.HL5_ID, objHL5.HL5_STATUS_DETAIL_ID, userId);
             dataHl5.updateDeletionReason(data.HL5_ID, null, userId);
         }
-
+        data.HL2_ID = dataHl2.getHl2ByHl4Id(data.HL4_ID).HL2_ID;
         updateExpectedOutcomes(data, userId);
         updateBudgetDistribution(data, userId);
         updateCategoryOption(data, userId);
         updateHl5RequestCategoryOption(hl5_id, data.SERVICE_REQUEST_CATEGORIES, userId);
 
         if (Number(data.ALLOW_BUDGET_ZERO)) {
-            budgetSpendRequest.setBudgetSpendRequestStatusNoLongerRequested(hl5_id, 'HL5', userId);
+            budgetSpendRequest.setBudgetSpendRequestStatusNoLongerRequested(hl5_id, LEVEL_STRING, userId);
         } else if (!Number(data.CO_FUNDED)) {
-            budgetSpendRequest.disableCoFundedBudgetSpendRequests(hl5_id, 'HL5', userId);
+            budgetSpendRequest.disableCoFundedBudgetSpendRequests(hl5_id, LEVEL_STRING, userId);
         } else {
             updateInternalCofunding(data, automaticApproval, userId);
             updateExternalCoFunding(data, automaticApproval, userId);
@@ -827,7 +834,7 @@ function updateHl5(data, userId) {
         if (data.ACRONYM) {
             return data;
         } else {
-            return {CRM_ID: dataPath.getPathByLevelHlId('hl5', hl5_id)}
+            return {CRM_ID: dataPath.getPathByLevelHlId(LEVEL_STRING.toLowerCase(), hl5_id)}
         }
     }
 }
@@ -883,20 +890,21 @@ function deleteHl5(hl5, userId, rollBack, isCascadeDeletion) {
             dataExOut.deleteHl5ExpectedOutcomes(hl5Id, userId);
             level5DER.deleteL5ChangedFieldsByHl5Id(hl5Id, userId);
 
-            dataCategoryOptionLevel.deleteCategoryOption(hl5Id, userId, 'HL5');
+            dataCategoryOptionLevel.deleteCategoryOption(hl5Id, userId, LEVEL_STRING);
+            dataCategoryOptionLevel.deleteCountryCategoryOption(hl5Id, userId, LEVEL_STRING);
 
             dataHl5.deleteHl5Budget(hl5Id, userId);
 
             //delete HL5_SALE_BUDGET_SPEND_REQUEST
-            databudgetSpendRequest.delAllHlSaleBudgetSpendRequestByHlId(hl5Id, userId, 'HL5'); //ready
+            databudgetSpendRequest.delAllHlSaleBudgetSpendRequestByHlId(hl5Id, userId, LEVEL_STRING); //ready
             dataHl5.deleteHl5Sale(hl5Id, userId);
             //BUDGET_SPEND_REQUEST_LOG_STATUS
-            databudgetSpendRequest.delAllBudgetSpendRequestLogStatusByHlId(hl5Id, userId, 'HL5');//ready
+            databudgetSpendRequest.delAllBudgetSpendRequestLogStatusByHlId(hl5Id, userId, LEVEL_STRING);//ready
             //BUDGET_SPEND_REQUEST_MESSAGE
-            databudgetSpendRequest.delAllBudgetSpendRequestMessageByHlId(hl5Id, userId, 'HL5');
+            databudgetSpendRequest.delAllBudgetSpendRequestMessageByHlId(hl5Id, userId, LEVEL_STRING);
             //DEL_ALL_BUDGET_SPEND_REQUEST_BY_HL5_ID
-            databudgetSpendRequest.delAllBudgetSpendRequestByHlId(hl5Id, userId, 'HL5');//ready
-            dataPath.delParentPath('hl5', hl5Id);
+            databudgetSpendRequest.delAllBudgetSpendRequestByHlId(hl5Id, userId, LEVEL_STRING);//ready
+            dataPath.delParentPath(LEVEL_STRING.toLowerCase(), hl5Id);
             dataHl5.deleteHl5RequestCategoryOption(hl5Id, userId);
             blSegmentation.deleteSegmentationForm(hl5Id, userId);
             dataHl5.deleteHl5(hl5Id, userId);
@@ -931,7 +939,7 @@ function isComplete(data, fromChangeStatusOnDemand) {
         var crmBindingField = crmBindingFields[i];
         switch (crmBindingField) {
             case 'CATEGORY':
-                isComplete = !data.HL5_ID ? data.CATEGORIES.length === dataCategory.getAllocationCategoryCountByHlId("hl5") : isComplete;
+                isComplete = !data.HL5_ID ? data.CATEGORIES.length === dataCategory.getAllocationCategoryCountByHlId(LEVEL_STRING.toLowerCase()) : isComplete;
 
                 if (isComplete) {
                     for (var j = 0; j < data.CATEGORIES.length; j++) {
@@ -939,7 +947,7 @@ function isComplete(data, fromChangeStatusOnDemand) {
                         var percentagePerOption = 0;
 
                         isComplete = isComplete && !!(hl5Category.CATEGORY_ID && Number(hl5Category.CATEGORY_ID));
-                        var countOptions = dataOption.getAllocationOptionCountByCategoryIdLevelId(hl5Category.CATEGORY_ID, 'hl5');
+                        var countOptions = dataOption.getAllocationOptionCountByCategoryIdLevelId(hl5Category.CATEGORY_ID, LEVEL_STRING.toLowerCase());
                         isComplete = isComplete && (!data.HL5_ID ?
                             hl5Category.OPTIONS.length === countOptions
                             : isComplete);
@@ -967,7 +975,7 @@ function isComplete(data, fromChangeStatusOnDemand) {
                         if(!!Number(data.BUDGET)){
                             if(!!Number(data.IN_BUDGET) || fromChangeStatusOnDemand){
                                 var budgetSpendRequestStatus = budgetSpendRequest.getBudgetSpendRequestsStatus();
-                                var ownMoneyBudgetSpendRequestStatus = budgetSpendRequest.getOwnMoneyBudgetSpendRequestStatusByHlIdLevel(data.HL5_ID || 0, 'HL5');
+                                var ownMoneyBudgetSpendRequestStatus = budgetSpendRequest.getOwnMoneyBudgetSpendRequestStatusByHlIdLevel(data.HL5_ID || 0, LEVEL_STRING);
                                 if (!ownMoneyBudgetSpendRequestStatus || (ownMoneyBudgetSpendRequestStatus && ownMoneyBudgetSpendRequestStatus != budgetSpendRequestStatus.APPROVED)) {
                                     if(Number(data.CO_FUNDED)){
                                         isComplete = (data.SALE_REQUESTS && data.SALE_REQUESTS.length) || (data.PARTNERS && data.PARTNERS.length);
@@ -1206,7 +1214,7 @@ function categoryChanged(data, existInCrm) {
     //obtain the CATEGORY options in bd
     var hl5_categoryBD = getCategoryOption(data.HL5_ID);
 
-    var optionChange = CompareCategories(data.CATEGORIES, hl5_categoryBD, existInCrm);
+    var optionChange = CompareCategories(data.CATEGORIES, hl5_categoryBD, existInCrm, data.HL5_ID);
 
     return optionChange;
 }
@@ -1274,9 +1282,11 @@ function CompareCategoryOption(Category1, Category1_id, ListCategories, existInC
 
 function CompareCategories(ListCategories1, ListCategories2, existInCrm, hl5Id) {
     var flag = false;
-    var actualCategory = util.getCategoryById('hl5', hl5Id);
+    var actualCategory = util.getCategoryById(LEVEL_STRING.toLowerCase(), hl5Id);
+
     for (var i = 0; i < ListCategories1.length; i++) {
         var category = ListCategories1[i];
+        // throw JSON.stringify({hl5Id: hl5Id, actualCategory: actualCategory, ListCategories1: ListCategories1});
         if (actualCategory[category.CATEGORY_ID].IN_PROCESSING_REPORT)
             flag = CompareCategoryOption(category, category.CATEGORY_ID, ListCategories2, existInCrm) || flag;
     }
@@ -1315,7 +1325,7 @@ function isCategoryOptionComplete(data) {
         //TODO review. Workaround for empty categories on edit
         //throw ErrorLib.getErrors().CustomError("","hl5Services/handlePost/insertHl5", L5_CATEGORY_OPTIONS_NOT_EMPTY);
 
-        if (!data.HL5_ID && hl5Category.OPTIONS.length !== dataOption.getAllocationOptionCountByCategoryIdLevelId(hl5Category.CATEGORY_ID, 'hl5'))
+        if (!data.HL5_ID && hl5Category.OPTIONS.length !== dataOption.getAllocationOptionCountByCategoryIdLevelId(hl5Category.CATEGORY_ID, LEVEL_STRING.toLowerCase()))
             throw ErrorLib.getErrors().CustomError("", "", L5_CATEGORY_OPTIONS_INCORRECT_NUMBER);
 
         hl5Category.OPTIONS.forEach(function (option) {
@@ -1433,12 +1443,12 @@ function massSetHl5Status(hl5Ids, userId) {
 }
 
 function massResetHl5CategoryOptionUpdated(hl5Id, userId) {
-    dataCategoryOptionLevel.massResetHl5CategoryOptionUpdated(hl5Id, 'hl5', userId);
+    dataCategoryOptionLevel.massResetHl5CategoryOptionUpdated(hl5Id, LEVEL_STRING.toLowerCase(), userId);
     return true;
 }
 
 function resetHl5CategoryOptionUpdated(hl5Id, userId) {
-    return dataCategoryOptionLevel.resetHl4CategoryOptionUpdated(hl5Id, 'hl5', userId);
+    return dataCategoryOptionLevel.resetHl4CategoryOptionUpdated(hl5Id, LEVEL_STRING.toLowerCase(), userId);
 }
 
 function setStatusInCRM(hl5_id, userId) {
@@ -1454,7 +1464,7 @@ function setStatusInCRM(hl5_id, userId) {
 
     if (hl5Ids.length) {
         var hl5InCrm = massSetHl5Status(hl5Ids, userId);
-        mail.massSendInCRMMail(hl5InCrm, "hl5");
+        mail.massSendInCRMMail(hl5InCrm, LEVEL_STRING.toLowerCase());
         hl5Ids.forEach(function (value) {
             dataL5Report.updateLevel5ReportForDownload(value.hl5_id);
         })
@@ -1464,7 +1474,7 @@ function setStatusInCRM(hl5_id, userId) {
                 throw ErrorLib.getErrors().CustomError("", "", L3_MSG_INITIATIVE_NOT_FOUND);
             result = setStatus(hl5_id, HL5_STATUS.IN_CRM, userId);
             if (result) {
-                mail.sendInCRMMail(hl5_id, "hl5");
+                mail.sendInCRMMail(hl5_id, LEVEL_STRING.toLowerCase());
             }
         }*/
     return 1;
@@ -1495,9 +1505,9 @@ function changeStatusOnDemand(hl5_id, userId, cancelConfirmation) {
         if (!hl5.ALLOW_BUDGET_ZERO) {
             var budgetSpendRequestStatus = budgetSpendRequest.getBudgetSpendRequestsStatus();
 
-            var ownMoneyBudgetSpendRequestStatus = budgetSpendRequest.getOwnMoneyBudgetSpendRequestStatusByHlIdLevel(hl5_id, 'HL5');
+            var ownMoneyBudgetSpendRequestStatus = budgetSpendRequest.getOwnMoneyBudgetSpendRequestStatusByHlIdLevel(hl5_id, LEVEL_STRING);
             if ((!ownMoneyBudgetSpendRequestStatus || (ownMoneyBudgetSpendRequestStatus && ownMoneyBudgetSpendRequestStatus != budgetSpendRequestStatus.APPROVED)
-                    && !budgetSpendRequest.countApprovedCoFundedBudgetSpendRequestByHlIdLevel(hl5_id, 'HL5'))) {
+                    && !budgetSpendRequest.countApprovedCoFundedBudgetSpendRequestByHlIdLevel(hl5_id, LEVEL_STRING))) {
                 throw ErrorLib.getErrors().CustomError("", "", L5_MSG_COULDNT_CHANGE_STATUS_DUE_OWN_MONEY_BUDGET_SPEND_REQUEST_STATUS);
             }
         }
@@ -1523,6 +1533,7 @@ function changeStatusOnDemand(hl5_id, userId, cancelConfirmation) {
 
         if (statusId == HL5_STATUS.CREATE_IN_CRM) {
             level5DER.deleteL5ChangedFieldsByHl5Id(hl5_id);
+            data.HL2_ID = dataHl2.getHl2ByHl4Id(data.HL4_ID).HL2_ID;
             updateCategoryOption(data, hl5_id, userId, true);
             var aux = crmFieldsHaveChanged(data, 1, userId, true);
             insertInCrmBinding(aux.crmBindingChangedFields, [], hl5_id);
@@ -1535,7 +1546,7 @@ function changeStatusOnDemand(hl5_id, userId, cancelConfirmation) {
 
 function getServiceRequestCategoryOptionByHl5Id(hl5Id) {
     var result = {};
-    var serviceRequestCategoryOptionList = dataServiceRequest.getServiceRequestCategoryOptionByHlId(hl5Id, 'HL5');
+    var serviceRequestCategoryOptionList = dataServiceRequest.getServiceRequestCategoryOptionByHlId(hl5Id, LEVEL_STRING);
 
     if (serviceRequestCategoryOptionList && serviceRequestCategoryOptionList.length) {
         var segmentationForms = blSegmentation.getSegmentationFormByHl5Id(hl5Id);
@@ -1600,8 +1611,8 @@ function crmFieldsHaveChanged(data, isComplete, userId, isNew) {
                 var oldParentPath = '';
                 var parentPath = '';
                 if (field == "PARENT_PATH") {
-                    oldParentPath = dataPath.getCrmParentPathByIdLevelId('hl5', data.HL5_ID)[0].PARENT_PATH;
-                    parentPath = pathBL.getPathByLevelParentForCrm('hl5', data.HL4_ID);
+                    oldParentPath = dataPath.getCrmParentPathByIdLevelId(LEVEL_STRING.toLowerCase(), data.HL5_ID)[0].PARENT_PATH;
+                    parentPath = pathBL.getPathByLevelParentForCrm(LEVEL_STRING.toLowerCase(), data.HL4_ID);
                 }
                 var parameters = {
                     "in_hl5_id": data.HL5_ID,
@@ -1656,10 +1667,10 @@ function crmFieldsHaveChanged(data, isComplete, userId, isNew) {
                     if (field == "PARENT_PATH") {
                         if (oldParentPath) {
                             if (oldParentPath != parentPath) {
-                                pathBL.updParentPath('hl5', data.HL5_ID, parentPath, userId);
+                                pathBL.updParentPath(LEVEL_STRING.toLowerCase(), data.HL5_ID, parentPath, userId);
                             }
                         } else {
-                            pathBL.insParentPath('hl5', data.HL5_ID, data.HL4_ID, userId);
+                            pathBL.insParentPath(LEVEL_STRING.toLowerCase(), data.HL5_ID, data.HL4_ID, userId);
                         }
                     }
 
@@ -1784,51 +1795,96 @@ function getNewSerialAcronym(Hl4_id) {
 
 function insertCategoryOption(data, userId) {
     var categoryOptionBulk = [];
-    var mapCOL = util.getMapCategoryOption('hl5');
+    var countryCategoryOptionBulk = [];
+    var mapCOL = util.getMapCategoryOption(LEVEL_STRING.toLowerCase());
+    var mapCCOL = util.getMapCountryCategoryOption(LEVEL_STRING.toLowerCase(), data.HL2_ID);
+    data.CATEGORIES.forEach(function (category) {
+        category.OPTIONS.forEach(function (option) {
+            var categoryOptionLevelId = category.CATEGORY_TYPE_ID == CATEGORY_TYPE.COUNTRY
+                ? mapCCOL[category.CATEGORY_ID][option.OPTION_ID]
+                : mapCOL[category.CATEGORY_ID][option.OPTION_ID];
 
-    data.CATEGORIES.forEach(function (hl1Category) {
-        hl1Category.OPTIONS.forEach(function (hl1CategoryOption) {
-            categoryOptionBulk.push({
+            var categoryOption = {
                 in_hl5_id: data.HL5_ID
-                , in_category_option_level_id: mapCOL[hl1Category.CATEGORY_ID][hl1CategoryOption.OPTION_ID]
-                , in_amount: Number(hl1CategoryOption.AMOUNT) || 0
+                , in_category_option_level_id: categoryOptionLevelId
+                , in_amount: Number(option.AMOUNT) || 0
                 , in_user_id: userId
-                , in_updated: !!Number(hl1CategoryOption.AMOUNT) ? 1 : 0
-            });
+                , in_updated: !!Number(option.AMOUNT) ? 1 : 0
+            };
+
+            if(category.CATEGORY_TYPE_ID == CATEGORY_TYPE.COUNTRY){
+                countryCategoryOptionBulk.push(categoryOption);
+            } else {
+                categoryOptionBulk.push(categoryOption);
+            }
         });
     });
-    dataCategoryOptionLevel.insertCategoryOption(categoryOptionBulk, 'hl5');
+
+    if (categoryOptionBulk.length) {
+        dataCategoryOptionLevel.insertCategoryOption(categoryOptionBulk, LEVEL_STRING.toLowerCase());
+    }
+    if (countryCategoryOptionBulk.length) {
+        dataCategoryOptionLevel.insertCountryCategoryOption(countryCategoryOptionBulk, LEVEL_STRING.toLowerCase());
+    }
 
     return true;
 }
 
 function updateCategoryOption(data, userId, fromChangeStatusOnDemand) {
     var insertBulk = [];
+    var insertCountryCategoryBulk = [];
     var updateBulk = [];
-    var mapCOL = util.getMapCategoryOption('hl5');
-    data.CATEGORIES.forEach(function (hl5Category) {
-        hl5Category.OPTIONS.forEach(function (option) {
+    var updateCountryCategoryBulk = [];
+    var mapCOL = util.getMapCategoryOption(LEVEL_STRING.toLowerCase());
+    var mapCCOL = util.getMapCountryCategoryOption(LEVEL_STRING.toLowerCase(), data.HL2_ID);
+    data.CATEGORIES.forEach(function (category) {
+        category.OPTIONS.forEach(function (option) {
+            var categoryOptionLevelId = category.CATEGORY_TYPE_ID == CATEGORY_TYPE.COUNTRY
+                ? mapCCOL[category.CATEGORY_ID][option.OPTION_ID]
+                : mapCOL[category.CATEGORY_ID][option.OPTION_ID];
+
             var categoryOption = {
-                in_category_option_level_id: mapCOL[hl5Category.CATEGORY_ID][option.OPTION_ID]
+                in_category_option_level_id: categoryOptionLevelId
                 , in_amount: Number(option.AMOUNT) || 0
                 , in_user_id: userId
                 , in_updated: fromChangeStatusOnDemand && !!Number(option.AMOUNT) ? 1 : (option.UPDATED || 0)
                 , in_hl5_id: data.HL5_ID
             };
+
             if (!option.CATEGORY_OPTION_ID) {
-                categoryOption.in_hl5_id = data.HL5_ID;
-                insertBulk.push(categoryOption);
+                // categoryOption.in_hl5_id = data.HL5_ID;
+                // insertBulk.push(categoryOption);
+                if(category.CATEGORY_TYPE_ID == CATEGORY_TYPE.COUNTRY){
+                    insertCountryCategoryBulk.push(categoryOption);
+                } else {
+                    insertBulk.push(categoryOption);
+                }
             } else {
-                updateBulk.push(categoryOption);
+                // updateBulk.push(categoryOption);
+                if(category.CATEGORY_TYPE_ID == CATEGORY_TYPE.COUNTRY){
+                    updateCountryCategoryBulk.push(categoryOption);
+                } else {
+                    updateBulk.push(categoryOption);
+                }
             }
         });
     });
 
-    if (updateBulk && updateBulk.length)
-        dataCategoryOptionLevel.updateCategoryOption(updateBulk, 'hl5');
+    if (updateBulk.length) {
+        dataCategoryOptionLevel.updateCategoryOption(updateBulk, LEVEL_STRING.toLowerCase());
+    }
 
-    if (insertBulk && insertBulk.length)
-        dataCategoryOptionLevel.insertCategoryOption(insertBulk, 'hl5');
+    if (insertBulk.length) {
+        dataCategoryOptionLevel.insertCategoryOption(insertBulk, LEVEL_STRING.toLowerCase());
+    }
+
+    if (updateCountryCategoryBulk.length) {
+        dataCategoryOptionLevel.updateCountryCategoryOption(updateCountryCategoryBulk, LEVEL_STRING.toLowerCase());
+    }
+
+    if (insertCountryCategoryBulk.length) {
+        dataCategoryOptionLevel.insertCountryCategoryOption(insertCountryCategoryBulk, LEVEL_STRING.toLowerCase());
+    }
 
     return true;
 }
@@ -1900,7 +1956,7 @@ function insertInternalCofunding(data, automaticBudgetApproval, userId) {
 
 
         if (data.CO_FUNDED && data.SALE_REQUESTS && data.SALE_REQUESTS.length)
-            budgetSpendRequest.insertSalesBudgetSpendRequest(data.SALE_REQUESTS, data.HL5_ID, 'HL5', internalCoFundingCurrency, automaticBudgetApproval, userId);
+            budgetSpendRequest.insertSalesBudgetSpendRequest(data.SALE_REQUESTS, data.HL5_ID, LEVEL_STRING, internalCoFundingCurrency, automaticBudgetApproval, userId);
     }
 }
 
@@ -1929,7 +1985,7 @@ function updateInternalCofunding(data, automaticBudgetApproval, userId) {
         });
 
         if (data.SALE_REQUESTS && data.SALE_REQUESTS.length) {
-            budgetSpendRequest.updateSalesBudgetSpendRequest(data.SALE_REQUESTS, data.HL5_ID, 'HL5', internalCoFundingCurrency, automaticBudgetApproval, userId);
+            budgetSpendRequest.updateSalesBudgetSpendRequest(data.SALE_REQUESTS, data.HL5_ID, LEVEL_STRING, internalCoFundingCurrency, automaticBudgetApproval, userId);
         }
     }
 
@@ -1937,7 +1993,7 @@ function updateInternalCofunding(data, automaticBudgetApproval, userId) {
         var saleBudgetSpendRquestToDelete = data.REMOVED_SALES_IDS.map(function (id) {
             return {in_budget_spend_request_id: id, in_user_id: userId};
         });
-        budgetSpendRequest.deleteBudgetSpendRequestBySale(saleBudgetSpendRquestToDelete, 'HL5');
+        budgetSpendRequest.deleteBudgetSpendRequestBySale(saleBudgetSpendRquestToDelete, LEVEL_STRING);
     }
     return true;
 }
@@ -1947,7 +2003,7 @@ function insertExternalCoFunding(data, automaticBudgetApproval, userId) {
         var arrPartner = [];
         var externalCoFundingCurrency = dataCurrency.getCurrencyValueId(data.PARTNER_CURRENCY_ID);
         data.PARTNERS.forEach(function (partner) {
-            var budgetSpendRequestId = budgetSpendRequest.insertPartnerBudgetSpendRequest(partner.AMOUNT, partner.MESSAGE, data.HL5_ID, 'HL5', externalCoFundingCurrency, automaticBudgetApproval, userId);
+            var budgetSpendRequestId = budgetSpendRequest.insertPartnerBudgetSpendRequest(partner.AMOUNT, partner.MESSAGE, data.HL5_ID, LEVEL_STRING, externalCoFundingCurrency, automaticBudgetApproval, userId);
             arrPartner.push({
                 in_hl5_id: data.HL5_ID
                 ,
@@ -1992,7 +2048,7 @@ function updateExternalCoFunding(data, automaticBudgetApproval, userId) {
         var externalCoFundingCurrency = dataCurrency.getCurrencyValueId(data.PARTNER_CURRENCY_ID);
         data.PARTNERS.forEach(function (partner) {
             if (!partner.PARTNER_ID) {
-                var budgetSpendRequestId = budgetSpendRequest.insertPartnerBudgetSpendRequest(partner.AMOUNT, partner.MESSAGE, data.HL5_ID, 'HL5', externalCoFundingCurrency, automaticBudgetApproval, userId);
+                var budgetSpendRequestId = budgetSpendRequest.insertPartnerBudgetSpendRequest(partner.AMOUNT, partner.MESSAGE, data.HL5_ID, LEVEL_STRING, externalCoFundingCurrency, automaticBudgetApproval, userId);
                 arrPartnerToInsert.push({
                     in_hl5_id: data.HL5_ID
                     ,
@@ -2062,7 +2118,7 @@ function updateExternalCoFunding(data, automaticBudgetApproval, userId) {
             }
             if (partner.ATTACHMENTS && partner.BUDGET_SPEND_REQUEST_ID) {
                 partner.ATTACHMENTS = partner.attachments || partner.ATTACHMENTS;
-                partnerLib.updateAttachmentPartner(partner, 'HL5', userId);
+                partnerLib.updateAttachmentPartner(partner, LEVEL_STRING, userId);
             }
         });
 
@@ -2071,11 +2127,11 @@ function updateExternalCoFunding(data, automaticBudgetApproval, userId) {
         }
 
         if (arrPartnerToUpdate.length) {
-            dataPartner.updatePartner(arrPartnerToUpdate, 'HL5');
+            dataPartner.updatePartner(arrPartnerToUpdate, LEVEL_STRING);
         }
 
         if (budgetSpendRequestToUpdate.length)
-            budgetSpendRequest.updatePartnerBudgetSpendRequest(budgetSpendRequestToUpdate, data.HL5_ID, 'HL5', automaticBudgetApproval, userId);
+            budgetSpendRequest.updatePartnerBudgetSpendRequest(budgetSpendRequestToUpdate, data.HL5_ID, LEVEL_STRING, automaticBudgetApproval, userId);
     }
 
     if (data.REMOVED_PARTNER_IDS && data.REMOVED_PARTNER_IDS.length) {
@@ -2083,7 +2139,7 @@ function updateExternalCoFunding(data, automaticBudgetApproval, userId) {
         var arrPartnerToDelete = data.REMOVED_PARTNER_IDS.map(function (id) {
             return {in_partner_id: id, in_user_id: userId};
         });
-        var pendingPartner = dataPartner.getPendingPartnerByPartnerId(arrPartnerToDelete, "HL5");
+        var pendingPartner = dataPartner.getPendingPartnerByPartnerId(arrPartnerToDelete, LEVEL_STRING);
         arrPartnerToDelete = [];
 
         pendingPartner.forEach(function (elem) {
@@ -2094,7 +2150,7 @@ function updateExternalCoFunding(data, automaticBudgetApproval, userId) {
             });
         });
         if (arrPartnerToDelete && arrPartnerToDelete.length) {
-            dataPartner.deleteHlPartnerByPartnerId(arrPartnerToDelete, "HL5");
+            dataPartner.deleteHlPartnerByPartnerId(arrPartnerToDelete, LEVEL_STRING);
             budgetSpendRequest.deleteBudgetSpendRequest(arrBudgetSpendRequestToDelete);
         }
     }
@@ -2143,7 +2199,7 @@ function validateCategoryOption(data) {
     if (!data.CATEGORIES)
         throw ErrorLib.getErrors().CustomError("", "hl5Services/handlePost/insertHl5", L5_CATEGORY_NOT_EMPTY);
 
-    if (!data.HL5_ID && data.CATEGORIES.length !== dataCategory.getAllocationCategoryCountByHlId("hl5"))
+    if (!data.HL5_ID && data.CATEGORIES.length !== dataCategory.getAllocationCategoryCountByHlId(LEVEL_STRING.toLowerCase()))
         throw ErrorLib.getErrors().CustomError("", "hl5Services/handlePost/insertHl5", L5_CATEGORY_INCORRECT_NUMBER);
 
     return isCategoryOptionComplete(data);
@@ -2180,7 +2236,7 @@ function updateExpectedOutcomes(data, userId) {
 
 function getInternalCofunding(hl5Id) {
     var sale = JSON.parse(JSON.stringify(dataHl5.getHl5SalesByHl5Id(hl5Id)));
-    var saleRequests = budgetSpendRequest.getHlSalesByHlId(hl5Id, 'HL5');
+    var saleRequests = budgetSpendRequest.getHlSalesByHlId(hl5Id, LEVEL_STRING);
     var saleCurrencyValue = (Number(sale[0].CURRENCY_VALUE || 1)).toFixed(2);
 
     var saleRequestsFiltered = saleRequests.filter(function (request) {
@@ -2218,7 +2274,7 @@ function getExternalCofunding(hl5Id) {
 }
 
 function getCategoryOption(hl5Id) {
-    return allocationCategoryOptionLevelLib.getHlCategoryOptionByLevelHlId('HL5', hl5Id);
+    return allocationCategoryOptionLevelLib.getHlCategoryOptionByLevelHlId(LEVEL_STRING, hl5Id);
 }
 
 function uiToServerParser(object) {
@@ -2348,13 +2404,14 @@ function clone(cloneHl5Id, userId) {
     data.EURO_CONVERSION_ID = currencyId;
     data.SALE_CURRENCY_ID = currencyId;
     var hl5_id = insertDataHl5(acronym, data);
-    pathBL.insParentPath('hl5', hl5_id, data.HL4_ID, userId);
+    pathBL.insParentPath(LEVEL_STRING.toLowerCase(), hl5_id, data.HL4_ID, userId);
     data.HL5_ID = hl5_id;
+    data.HL2_ID = dataHl2.getHl2ByHl4Id(data.HL4_ID).HL2_ID;
     insertExpectedOutcomes(data, userId);
     insertBudgetDistribution(data, userId, true);
     insertInternalCofunding(data, null, userId);
     insertCategoryOption(data, userId);
-    return {CRM_ID: dataPath.getPathByLevelHlId('hl5', hl5_id)};
+    return {CRM_ID: dataPath.getPathByLevelHlId(LEVEL_STRING.toLowerCase(), hl5_id)};
 }
 
 function addChildPermission(id) {

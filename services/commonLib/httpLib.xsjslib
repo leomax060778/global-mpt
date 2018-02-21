@@ -30,8 +30,13 @@ function handleResponse(body, code, type) {
 	$.response.setBody(JSON.stringify(body));
 }
 
-
-
+//return a csv file with status 200 (OK)
+function handleResponseCSV(body, filename){
+	$.response.status = $.net.http.OK;
+	$.response.contentType = 'application/vnd.ms-excel; charset=utf-16le';
+	$.response.headers.set('Content-Disposition','attachment;filename= ' + filename + '.csv');
+	$.response.setBody(body);
+}
 
 //return object whit all Get's parameters. example  myService.HttpLib.getUrlParameters().myParam
 function getUrlParameters(){

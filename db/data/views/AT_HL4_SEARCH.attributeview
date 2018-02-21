@@ -75,6 +75,10 @@
       <descriptions defaultDescription="SUBREGION_NAME"/>
       <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="SUBREGION" columnName="SUBREGION_NAME"/>
     </attribute>
+    <attribute id="BUDGET_YEAR_ID" order="20" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="BUDGET_YEAR_ID"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="BUDGET_YEAR" columnName="BUDGET_YEAR_ID"/>
+    </attribute>
   </attributes>
   <calculatedAttributes>
     <calculatedAttribute id="PATH" hidden="false" order="19" semanticType="empty" attributeHierarchyActive="false" displayAttribute="false">

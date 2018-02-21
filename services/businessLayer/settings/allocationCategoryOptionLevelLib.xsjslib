@@ -161,8 +161,8 @@ function updateCategoryOptionLevel(data, userId) {
     return (data.IN_LEVEL.length * data.IN_OPTION_LIST.length);
 }
 
-function getHlCategoryOptionByLevelHlId(level, hlId) {
-    var categoryOptionList = dataCategoryOptionLevel.getHlCategoryOptionByLevelHlId(level, hlId);
+function getHlCategoryOptionByLevelHlId(level, hlId, hl2Id) {
+    var categoryOptionList = dataCategoryOptionLevel.getHlCategoryOptionByLevelHlId(level, hlId, hl2Id);
     var result = {};
     categoryOptionList.forEach(function (categoryOption) {
         if (!result[categoryOption.CATEGORY_NAME]) {
@@ -171,6 +171,7 @@ function getHlCategoryOptionByLevelHlId(level, hlId) {
                 CATEGORY_NAME: categoryOption.CATEGORY_NAME,
                 MAKE_CATEGORY_MANDATORY: categoryOption.MAKE_CATEGORY_MANDATORY || 0,
                 SINGLE_OPTION_ONLY: categoryOption.SINGLE_OPTION_ONLY || 0,
+                CATEGORY_TYPE_ID: categoryOption.CATEGORY_TYPE_ID,
                 OPTIONS: []
             }
         }

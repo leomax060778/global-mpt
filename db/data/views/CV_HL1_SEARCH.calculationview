@@ -15,6 +15,7 @@
         <viewAttribute datatype="NVARCHAR" id="PATH" length="255"/>
         <viewAttribute datatype="BIGINT" id="REGION_ID"/>
         <viewAttribute datatype="NVARCHAR" id="REGION_NAME" length="255"/>
+        <viewAttribute datatype="BIGINT" id="BUDGET_YEAR_ID"/>
         <viewAttribute datatype="TINYINT" id="ENABLED"/>
         <viewAttribute datatype="TINYINT" id="DELETED"/>
       </viewAttributes>
@@ -29,6 +30,7 @@
  	 			ATL1.PATH,
  	 			ATL1.REGION_ID,
  	 			ATL1.REGION_NAME,
+ 	 			ATL1.BUDGET_YEAR_ID,
  	 			ATL1.ENABLED,
  	 			ATL1.DELETED
  	 	FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL1_SEARCH&quot; ATL1
@@ -74,11 +76,15 @@ END /********* End Procedure Script ************/</definition>
         <descriptions defaultDescription="REGION_ID"/>
         <measureMapping columnObjectName="Script_View" columnName="REGION_ID"/>
       </measure>
-      <measure id="ENABLED" order="7" aggregationType="sum" measureType="simple">
+      <measure id="BUDGET_YEAR_ID" order="7" aggregationType="sum" measureType="simple">
+        <descriptions defaultDescription="BUDGET_YEAR_ID"/>
+        <measureMapping columnObjectName="Script_View" columnName="BUDGET_YEAR_ID"/>
+      </measure>
+      <measure id="ENABLED" order="8" aggregationType="sum" measureType="simple">
         <descriptions defaultDescription="ENABLED"/>
         <measureMapping columnObjectName="Script_View" columnName="ENABLED"/>
       </measure>
-      <measure id="DELETED" order="8" aggregationType="sum" measureType="simple">
+      <measure id="DELETED" order="9" aggregationType="sum" measureType="simple">
         <descriptions defaultDescription="DELETED"/>
         <measureMapping columnObjectName="Script_View" columnName="DELETED"/>
       </measure>

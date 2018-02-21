@@ -77,7 +77,7 @@ BEGIN
     va_hl5_changed_fields = select distinct hl5_id from :out_hl5_changed_fields;
 
         out_hl5_category_options =
-        SELECT
+        (SELECT
          hl5CO.hl5_id
          ,option.allocation_option_id as option_id
          ,option.name as option_name
@@ -92,7 +92,24 @@ BEGIN
         inner join allocation_option option on ACOL.allocation_option_id = option.allocation_option_id
         inner join allocation_category category on category.allocation_category_id = ACOL.allocation_category_id
         inner join :var_hl5 T on T.hl5_id = hl5CO.hl5_id
-        where hl5CO.deleted = 0 and hl5CO.enabled = 1 and hl5CO.updated = 1;
+        where hl5CO.deleted = 0 and hl5CO.enabled = 1 and hl5CO.updated = 1)
+        UNION ALL
+        (SELECT
+         hl5CO.hl5_id
+         ,option.ALLOCATION_COUNTRY_CATEGORY_OPTION_ID as option_id
+         ,option.name as option_name
+         ,ACOL.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID as category_option_level_id
+         ,hl5CO.amount
+         ,category.name as category_name
+         ,ACOL.allocation_category_id
+         ,category.processing_report_export_key
+         ,option.crm_key
+        FROM HL5_COUNTRY_CATEGORY_OPTION hl5CO
+        inner join ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL ACOL ON ACOL.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID = hl5CO.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID
+        inner join ALLOCATION_COUNTRY_CATEGORY_OPTION option on ACOL.ALLOCATION_COUNTRY_CATEGORY_OPTION_ID = option.ALLOCATION_COUNTRY_CATEGORY_OPTION_ID
+        inner join allocation_category category on category.allocation_category_id = ACOL.allocation_category_id
+        inner join :var_hl5 T on T.hl5_id = hl5CO.hl5_id
+        where hl5CO.deleted = 0 and hl5CO.enabled = 1 and hl5CO.updated = 1);
 
 
     va_out_hl5 = SELECT

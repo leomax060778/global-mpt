@@ -1,0 +1,40 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_ASSIGNED_COUNTRY_CATEGORY_OPTION_BY_CATEGORY_ID_BY_LEVEL_ID" (
+    IN in_category_id BIGINT,
+    IN in_level_id BIGINT,
+    IN in_hl2_id BIGINT,
+	OUT out_result TABLE (
+	allocation_category_id INTEGER
+    , option_id INTEGER
+	, option_name NVARCHAR(60)
+	, make_category_mandatory TINYINT
+	, in_processing_report TINYINT
+	, SINGLE_OPTION_ONLY TINYINT
+	, crm_key NVARCHAR(255)
+ 	)
+ 	)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER 
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	READS SQL DATA AS
+BEGIN
+
+		out_result =
+		SELECT distinct ACOL.allocation_category_id
+		, AO.ALLOCATION_COUNTRY_CATEGORY_OPTION_ID as option_id
+		, AO.name as option_name
+		, ACOL.make_category_mandatory
+		, ACOL.in_processing_report
+		, AC.SINGLE_OPTION_ONLY
+		, AO.crm_key
+		FROM ALLOCATION_COUNTRY_CATEGORY_OPTION AO
+		INNER JOIN ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL ACOL ON AO.ALLOCATION_COUNTRY_CATEGORY_OPTION_ID = ACOL.ALLOCATION_COUNTRY_CATEGORY_OPTION_ID
+		INNER JOIN ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_HL2 ACCOL_HL2
+            ON ACCOL_HL2.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID = ACOL.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID
+            AND ACCOL_HL2.HL2_ID = in_hl2_id
+		INNER JOIN ALLOCATION_CATEGORY AC ON AC.allocation_category_id = ACOL.allocation_category_id
+		WHERE ACOL.allocation_category_id = in_category_id AND ACOL.hierarchy_level_id = in_level_id
+            AND ACOL.enabled = 1 AND ACOL.deleted = 0
+            AND AO.enabled = 1 AND AO.deleted = 0
+		ORDER BY AO.name;
+
+END;

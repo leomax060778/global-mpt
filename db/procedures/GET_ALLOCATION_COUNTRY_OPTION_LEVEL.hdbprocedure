@@ -1,0 +1,26 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_ALLOCATION_COUNTRY_OPTION_LEVEL" (
+    IN in_hl2_id bigint,
+    IN in_hierarchy_level_id bigint,
+    IN in_option_id bigint,
+	OUT out_result TABLE (
+	allocation_country_category_option_level_id integer
+	)
+ 	)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	READS SQL DATA AS
+BEGIN
+
+		out_result =
+		 SELECT ACOL.allocation_country_category_option_level_id
+		 FROM ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL ACOL
+		 INNER JOIN ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_HL2 ACOL2 ON ACOL2.allocation_country_category_option_level_id = ACOL.allocation_country_category_option_level_id
+		    AND ACOL2.HL2_ID = in_hl2_id
+		 INNER JOIN HIERARCHY_LEVEL HL ON HL.hierarchy_level_id = ACOL.hierarchy_level_id
+		WHERE HL.hierarchy_level_id = in_hierarchy_level_id
+		AND ACOL.allocation_country_category_option_id = in_option_id
+		AND ACOL2.ENABLED = 1 AND ACOL2.DELETED = 0
+		AND ACOL.ENABLED = 1 AND ACOL.DELETED = 0;
+
+END;

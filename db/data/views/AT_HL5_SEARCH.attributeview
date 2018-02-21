@@ -83,72 +83,72 @@
       <descriptions defaultDescription="ACRONYM"/>
       <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL1" columnName="ACRONYM"/>
     </attribute>
-    <attribute id="ACRONYM_1" order="21" attributeHierarchyActive="false" displayAttribute="false">
-      <descriptions defaultDescription="ACRONYM_1"/>
-      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL2" columnName="ACRONYM"/>
-    </attribute>
-    <attribute id="ACRONYM_2" order="22" attributeHierarchyActive="false" displayAttribute="false">
+    <attribute id="ACRONYM_2" order="21" attributeHierarchyActive="false" displayAttribute="false">
       <descriptions defaultDescription="ACRONYM_2"/>
       <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL3" columnName="ACRONYM"/>
     </attribute>
-    <attribute id="ACRONYM_3" order="23" attributeHierarchyActive="false" displayAttribute="false">
+    <attribute id="ACRONYM_3" order="22" attributeHierarchyActive="false" displayAttribute="false">
       <descriptions defaultDescription="ACRONYM_3"/>
       <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL4" columnName="ACRONYM"/>
     </attribute>
-    <attribute id="ACRONYM_4" order="24" attributeHierarchyActive="false" displayAttribute="false">
+    <attribute id="ACRONYM_4" order="23" attributeHierarchyActive="false" displayAttribute="false">
       <descriptions defaultDescription="ACRONYM_4"/>
       <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL5" columnName="ACRONYM"/>
     </attribute>
-    <attribute id="BUDGET_YEAR" order="25" attributeHierarchyActive="false" displayAttribute="false">
+    <attribute id="BUDGET_YEAR" order="24" attributeHierarchyActive="false" displayAttribute="false">
       <descriptions defaultDescription="BUDGET_YEAR"/>
       <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="BUDGET_YEAR" columnName="BUDGET_YEAR"/>
     </attribute>
-    <attribute id="REGION" order="27" attributeHierarchyActive="false" displayAttribute="false">
+    <attribute id="REGION" order="26" attributeHierarchyActive="false" displayAttribute="false">
       <descriptions defaultDescription="REGION"/>
       <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL5" columnName="REGION"/>
     </attribute>
-    <attribute id="BUDGET_YEAR_ID" order="28" attributeHierarchyActive="false" displayAttribute="false">
+    <attribute id="BUDGET_YEAR_ID" order="27" attributeHierarchyActive="false" displayAttribute="false">
       <descriptions defaultDescription="BUDGET_YEAR_ID"/>
       <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL1" columnName="BUDGET_YEAR_ID"/>
     </attribute>
-    <attribute id="BUDGET_YEAR_ID_1" order="29" attributeHierarchyActive="false" displayAttribute="false">
+    <attribute id="BUDGET_YEAR_ID_1" order="28" attributeHierarchyActive="false" displayAttribute="false">
       <descriptions defaultDescription="BUDGET_YEAR_ID_1"/>
       <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="BUDGET_YEAR" columnName="BUDGET_YEAR_ID"/>
     </attribute>
-    <attribute id="SUBREGION_NAME" order="30" attributeHierarchyActive="false" displayAttribute="false">
+    <attribute id="SUBREGION_NAME" order="29" attributeHierarchyActive="false" displayAttribute="false">
       <descriptions defaultDescription="SUBREGION_NAME"/>
       <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="SUBREGION" columnName="SUBREGION_NAME"/>
     </attribute>
-    <attribute id="SUBREGION_ID" order="31" attributeHierarchyActive="false" displayAttribute="false">
+    <attribute id="SUBREGION_ID" order="30" attributeHierarchyActive="false" displayAttribute="false">
       <descriptions defaultDescription="SUBREGION_ID"/>
       <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="SUBREGION" columnName="SUBREGION_ID"/>
     </attribute>
-    <attribute id="REGION_ID" order="32" attributeHierarchyActive="false" displayAttribute="false">
+    <attribute id="REGION_ID" order="31" attributeHierarchyActive="false" displayAttribute="false">
       <descriptions defaultDescription="REGION_ID"/>
       <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="REGION" columnName="REGION_ID"/>
     </attribute>
-    <attribute id="REGION_NAME" order="33" attributeHierarchyActive="false" displayAttribute="false">
+    <attribute id="REGION_NAME" order="32" attributeHierarchyActive="false" displayAttribute="false">
       <descriptions defaultDescription="REGION_NAME"/>
       <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="REGION" columnName="REGION_NAME"/>
     </attribute>
-    <attribute id="HL5_STATUS_DETAIL_ID" order="34" attributeHierarchyActive="false" displayAttribute="false">
+    <attribute id="HL5_STATUS_DETAIL_ID" order="33" attributeHierarchyActive="false" displayAttribute="false">
       <descriptions defaultDescription="HL5_STATUS_DETAIL_ID"/>
       <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL5_STATUS_DETAIL" columnName="HL5_STATUS_DETAIL_ID"/>
     </attribute>
-    <attribute id="DETAIL" order="35" attributeHierarchyActive="false" displayAttribute="false">
+    <attribute id="DETAIL" order="34" attributeHierarchyActive="false" displayAttribute="false">
       <descriptions defaultDescription="DETAIL"/>
       <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL5_STATUS_DETAIL" columnName="DETAIL"/>
     </attribute>
-    <attribute id="HL5_CRM_DESCRIPTION" order="36" attributeHierarchyActive="false" displayAttribute="false">
+    <attribute id="HL5_CRM_DESCRIPTION" order="35" attributeHierarchyActive="false" displayAttribute="false">
       <descriptions defaultDescription="HL5_CRM_DESCRIPTION"/>
       <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL5" columnName="HL5_CRM_DESCRIPTION"/>
     </attribute>
+    <attribute id="ORGANIZATION_ACRONYM" order="36" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="ORGANIZATION_ACRONYM"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL2" columnName="ORGANIZATION_ACRONYM"/>
+    </attribute>
   </attributes>
   <calculatedAttributes>
-    <calculatedAttribute id="PATH" hidden="false" order="26" semanticType="empty" attributeHierarchyActive="false" displayAttribute="false">
+    <calculatedAttribute id="PATH" hidden="false" order="25" semanticType="empty" attributeHierarchyActive="false" displayAttribute="false">
       <descriptions defaultDescription="PATH"/>
       <keyCalculation datatype="NVARCHAR" expressionLanguage="COLUMN_ENGINE" length="255">
-        <formula>'CRM-'+&quot;ACRONYM_1&quot;+ midstr(string(&quot;BUDGET_YEAR&quot;), 3, strlen(string(&quot;BUDGET_YEAR&quot;))) +'-'+&quot;ACRONYM_3&quot;+'-'+&quot;ACRONYM_4&quot;</formula>
+        <formula>'CRM-'+&quot;ORGANIZATION_ACRONYM&quot;+ midstr(string(&quot;BUDGET_YEAR&quot;), 3, strlen(string(&quot;BUDGET_YEAR&quot;))) +'-'+&quot;ACRONYM_3&quot;+'-'+&quot;ACRONYM_4&quot;</formula>
       </keyCalculation>
     </calculatedAttribute>
   </calculatedAttributes>

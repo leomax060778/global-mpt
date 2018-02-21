@@ -5,6 +5,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_ALLOCATION_C
 	, single_option_only TINYINT
 	, name NVARCHAR(60)
 	, description NVARCHAR(255)
+	, category_type_id INTEGER
 	)
  	) 
 	LANGUAGE SQLSCRIPT
@@ -17,7 +18,8 @@ BEGIN
 			   measure_id,
 			   single_option_only,
 			   name,
-			   description
+			   description,
+			   category_type_id
 		FROM ALLOCATION_CATEGORY
 		WHERE enabled = 1 AND deleted = 0
 		ORDER BY upper(name);

@@ -238,3 +238,8 @@ function getProcessingReportFields() {
         , "CATEGORY": ""
     };
 }
+
+
+function getAllHL6DeletionRequest(level){
+    return dataL6DER.getAllHL6DeletionRequest(level);
+}

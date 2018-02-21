@@ -230,3 +230,8 @@ function getProcessingReportFields(){
         , "CATEGORY": ""
     };
 }
+
+
+function getAllHL5DeletionRequest(level){
+    return dataL5DER.getAllHL5DeletionRequest(level);
+}
