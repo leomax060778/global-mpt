@@ -1,0 +1,79 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_REPORT_EXPORT_DATA_REGION" (
+		IN IN_IS_FULL_DOWNLOAD TINYINT
+		, IN IN_DELTA_TIME_LAST_UPDATE TIMESTAMP
+		, IN IN_HIERARCHY_LEVEL TABLE (
+			HIERARCHY_LEVEL_ID INTEGER
+		)
+		, OUT out_result TABLE (
+			HIERARCHY_LEVEL_ID INTEGER
+            , CRM_ID NVARCHAR(30)
+            , CAMP_OBJ_TYPE NVARCHAR(30)
+            , BUDGET NVARCHAR(30)
+            , BUDGET_Q1 NVARCHAR(30)
+            , BUDGET_Q2 NVARCHAR(30)
+            , BUDGET_Q3 NVARCHAR(30)
+            , BUDGET_Q4 NVARCHAR(30)
+            , INTERNAL_FUNDING NVARCHAR(30)
+            , PARTNER_CONTRIBUTION NVARCHAR(30)
+            , CURRENCY NVARCHAR(30)
+            , BUDGET_YEAR NVARCHAR(30)
+            , ON_PREM NVARCHAR(30)
+            , CLOUD NVARCHAR(30)
+            , MODIFIED_DATE TIMESTAMP
+            , PERCENTAGE_ALLOCATION DECIMAL(19,2)
+            , REGION_ID INTEGER
+            , REGION_DESC NVARCHAR(30)
+		)
+	)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	AS
+BEGIN
+
+	out_result = SELECT HIERARCHY_LEVEL_ID
+	                    , CRM_ID
+                        , CAMP_OBJ_TYPE
+                        , BUDGET
+                        , BUDGET_Q1
+                        , BUDGET_Q2
+                        , BUDGET_Q3
+                        , BUDGET_Q4
+                        , INTERNAL_FUNDING
+                        , PARTNER_CONTRIBUTION
+                        , CURRENCY
+                        , BUDGET_YEAR
+                        , ON_PREM
+                        , CLOUD
+                        , MODIFIED_DATE
+                        , PERCENTAGE_ALLOCATION
+                        , REGION_ID
+                        , REGION_DESC
+    FROM "_SYS_BIC"."mktgplanningtool.db.data.views/CV_REPORT_EXPORT_DATA_REGION";
+
+    IF IN_IS_FULL_DOWNLOAD <> 1 THEN
+        out_result = SELECT HIERARCHY_LEVEL_ID
+        					, CRM_ID
+                            , CAMP_OBJ_TYPE
+                            , BUDGET
+                            , BUDGET_Q1
+                            , BUDGET_Q2
+                            , BUDGET_Q3
+                            , BUDGET_Q4
+                            , INTERNAL_FUNDING
+                            , PARTNER_CONTRIBUTION
+                            , CURRENCY
+                            , BUDGET_YEAR
+                            , ON_PREM
+                            , CLOUD
+                            , MODIFIED_DATE
+                            , PERCENTAGE_ALLOCATION
+                            , REGION_ID
+                            , REGION_DESC
+        FROM :out_result T
+        WHERE HIERARCHY_LEVEL_ID IN (SELECT HIERARCHY_LEVEL_ID FROM :IN_HIERARCHY_LEVEL)
+        AND IN_DELTA_TIME_LAST_UPDATE <= MODIFIED_DATE;
+        --AND ADD_SECONDS(CURRENT_TIMESTAMP, (-3600 * IN_DELTA_TIME_LAST_UPDATE)) <= MODIFIED_DATE;
+    END IF;
+
+END;

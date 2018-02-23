@@ -247,7 +247,46 @@ function getHierarchyLevelEnum() {
 function getEnableEdit(statusId, statusLevel, userId, superAdmin, parentStatusId, granParentStatusId) {
     superAdmin = superAdmin == undefined ? isSuperAdmin(userId) : superAdmin;
 	//TODO: Super admin validation added because of SAP new requirements, refactor this
-	return  Number(statusId) !== statusLevel.DELETED_IN_CRM && Number(parentStatusId || 0) !== statusLevel.DELETED_IN_CRM
-		&& Number(granParentStatusId || 0) !== statusLevel.DELETED_IN_CRM
-		&& (superAdmin || (Number(statusId) !== statusLevel.CREATE_IN_CRM && Number(statusId) !== statusLevel.UPDATE_IN_CRM));
+    return  Number(statusId) !== statusLevel.DELETED_IN_CRM && Number(parentStatusId || 0) !== statusLevel.DELETED_IN_CRM
+        && Number(granParentStatusId || 0) !== statusLevel.DELETED_IN_CRM
+        && (superAdmin || (Number(statusId) !== statusLevel.CREATE_IN_CRM && Number(statusId) !== statusLevel.UPDATE_IN_CRM));
+}
+
+/**
+ *
+ * @param headers - list of fields to use as headers for CSV content
+ * @param rdo - array of objects to be separated by commas
+ * @returns {string} - comma separated values to use as the CSV content
+ */
+function convertToCSV(headers, rdo) {
+
+    var str = '';
+    var j = 0;
+    var line = '';
+
+    //iterate object to generate the headers
+    if(headers && headers.length){
+        for (j = 0; j < headers.length; j++) {
+            if (line != '') line += ','
+            line += headers[j];
+        }
+        str += line + '\r\n';
+    }
+
+    //iterate object to generate the lines
+    for (j = 0; j < rdo.length; j++) {
+        var rs = rdo[j];
+        line = '';
+
+        for (var k = 0; k < headers.length; k++) {
+            var header = headers[k];
+            if (line != '') {
+                line += ','
+            }
+            line += rs[header];
+}
+        str += line + '\r\n';
+    }
+
+    return str;
 }

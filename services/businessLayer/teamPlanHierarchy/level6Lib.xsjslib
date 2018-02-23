@@ -615,7 +615,7 @@ function updateHl6(data, userId) {
                 data.DISTRIBUTION_CHANNEL_ID || 0,
                 data.VENUE,
                 data.CITY,
-                data.COUNTRY_ID,
+                data.COUNTRY_ID || null,
                 data.URL,
                 data.RESULTS_CAMPAIGN_Q1 || 0,
                 data.RESULTS_CAMPAIGN_Q2 || 0,
@@ -2144,7 +2144,7 @@ function insertData(data, validAcronym) {
         , data.DISTRIBUTION_CHANNEL_ID || 0
         , data.VENUE
         , data.CITY
-        , data.COUNTRY_ID
+        , data.COUNTRY_ID || null
         , data.URL
         , data.RESULTS_CAMPAIGN_Q1 || 0
         , data.RESULTS_CAMPAIGN_Q2 || 0

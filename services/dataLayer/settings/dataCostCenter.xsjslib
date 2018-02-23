@@ -195,8 +195,8 @@ function updCostCenter(costCenterId, name, description, userId, code, salesOrgan
 		in_description: description,
 		in_user_id: userId,
 		in_code: code,
-        in_sales_organization_id: salesOrganizationId,
-		in_person_responsible: personResponsible
+        in_sales_organization_id: salesOrganizationId || null,
+		in_person_responsible: personResponsible || null
 	};
 	return db.executeScalarManual(UPD_COST_CENTER, parameters, 'out_result');
 }

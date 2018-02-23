@@ -453,7 +453,7 @@ function insertDataHl5(acronym, data) {
         , data.ROUTE_TO_MARKET_ID || 0
         , data.VENUE
         , data.CITY
-        , data.COUNTRY_ID
+        , data.COUNTRY_ID || null
         , data.URL
         , data.SALES_ORGANIZATION_ID || 0
         , data.PLANNED_START_DATE || null
@@ -779,7 +779,7 @@ function updateHl5(data, userId) {
             , data.ROUTE_TO_MARKET_ID || 0
             , data.VENUE
             , data.CITY
-            , data.COUNTRY_ID
+            , data.COUNTRY_ID || null
             , data.URL
             , data.SALES_ORGANIZATION_ID || 0
             , data.PLANNED_START_DATE || null
