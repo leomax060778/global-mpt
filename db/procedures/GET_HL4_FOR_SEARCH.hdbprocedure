@@ -8,12 +8,11 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL4_FOR_SEAR
         , IN in_isSA tinyint
         , OUT total_rows INTEGER
 		, OUT out_result TABLE (
-			HL_ID bigint,
+			id bigint,
             HL4_STATUS_DETAIL_ID bigint,
             STATUS_DETAIL nvarchar(20),
 			parent_id bigint,
 			BUDGET_YEAR BIGINT,
-			hl1_acronym NVARCHAR(25),
 			acronym NVARCHAR(25),
 			organization_acronym NVARCHAR(25), 
 			region_name NVARCHAR(255),
@@ -32,8 +31,7 @@ BEGIN
                 , STATUS.DETAIL AS STATUS_DETAIL
         		, HL4.hl3_id as parent_id
         		, BGY.BUDGET_YEAR
-        		, HL1.acronym as hl1_acronym
-        		, HL4.acronym
+        		, HL1.acronym
         		, REPLACE(HL2.organization_acronym, 'N/A', '') AS organization_acronym
         		, REGION.region_name
         		, SUBREGION.subregion_name
@@ -58,8 +56,7 @@ BEGIN
                 , STATUS.DETAIL AS STATUS_DETAIL
         		, HL4.hl3_id as parent_id
         		, BGY.BUDGET_YEAR
-        		, HL1.acronym as hl1_acronym
-        		, HL4.acronym
+        		, HL1.acronym
         		, REPLACE(HL2.organization_acronym, 'N/A', '') AS organization_acronym
         		, REGION.region_name
         		, SUBREGION.subregion_name
@@ -88,7 +85,6 @@ BEGIN
                     			  , T.STATUS_DETAIL
                                   ,T.PARENT_ID
                                   ,T.BUDGET_YEAR
-                                  ,T.HL1_ACRONYM
                                   ,T.ACRONYM
                                   ,T.ORGANIZATION_ACRONYM
                                   ,T.REGION_NAME
@@ -103,7 +99,6 @@ BEGIN
                     	   , T.STATUS_DETAIL
                            ,T.PARENT_ID
                            ,T.BUDGET_YEAR
-                           ,T.HL1_ACRONYM
                            ,T.ACRONYM
                            ,T.ORGANIZATION_ACRONYM
                            ,T.REGION_NAME
@@ -117,12 +112,11 @@ BEGIN
         SELECT COALESCE(COUNT(T.ID),0) INTO total_rows FROM :va_subresult T;
 
 if(in_limit = -1) then 
-out_result = SELECT T.ID AS HL_ID
+out_result = SELECT T.ID
                             , T.HL4_STATUS_DETAIL_ID
                     	    , T.STATUS_DETAIL
                             ,T.PARENT_ID
                             ,T.BUDGET_YEAR
-                            ,T.HL1_ACRONYM
                             ,T.ACRONYM
                             ,T.ORGANIZATION_ACRONYM
                             ,T.REGION_NAME
@@ -130,12 +124,11 @@ out_result = SELECT T.ID AS HL_ID
                             ,T.PATH
                            from :va_subresult T;
 else                         
-        out_result = SELECT T.ID as HL_ID
+        out_result = SELECT T.ID
                             , T.HL4_STATUS_DETAIL_ID
                     		, T.STATUS_DETAIL
                             ,T.PARENT_ID
                             ,T.BUDGET_YEAR
-                            ,T.HL1_ACRONYM
                             ,T.ACRONYM
                             ,T.ORGANIZATION_ACRONYM
                             ,T.REGION_NAME

@@ -1,6 +1,5 @@
 PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_CATEGORY_OPTION_BY_HIERARCHY_LEVEL_ID" (
 	IN in_hierarchy_level_id BIGINT,
-	IN in_hl2_id BIGINT,
 	OUT out_result TABLE (
         category_id integer
         , hierarchy_level_id integer
@@ -12,7 +11,6 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_CATEGORY_OPT
         , option_name nvarchar(60)
         , make_category_mandatory TINYINT
         , single_option_only TINYINT
-        , CATEGORY_TYPE_ID integer
         )
 	) 
 	LANGUAGE SQLSCRIPT
@@ -20,8 +18,8 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_CATEGORY_OPT
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
 	READS SQL DATA AS
 BEGIN
-	va_allocation_category_option =
-    (SELECT AC.ALLOCATION_CATEGORY_ID AS CATEGORY_ID
+	out_result =
+    SELECT AC.ALLOCATION_CATEGORY_ID AS CATEGORY_ID
     ,ACOL.HIERARCHY_LEVEL_ID
     ,AC.MEASURE_ID
     ,AC.NAME AS CATEGORY_NAME
@@ -31,7 +29,6 @@ BEGIN
     ,AO.NAME AS OPTION_NAME
     ,ACOL.make_category_mandatory
     ,AC.SINGLE_OPTION_ONLY
-    ,AC.CATEGORY_TYPE_ID
     from allocation_category_option_level acol
     inner join allocation_category ac on acol.allocation_category_id = ac.allocation_category_id
     inner join allocation_option ao on acol.allocation_option_id = ao.allocation_option_id
@@ -43,51 +40,6 @@ BEGIN
     and acol.enabled = 1
     and acol.deleted = 0
     order by upper(ac.name)
-    , upper(ao.name))
-    UNION ALL
-    (
-        SELECT AC.ALLOCATION_CATEGORY_ID AS CATEGORY_ID
-            ,ACOL.HIERARCHY_LEVEL_ID
-            ,AC.MEASURE_ID
-            ,AC.NAME AS CATEGORY_NAME
-            ,AC.DESCRIPTION
-            ,ACOL.IN_PROCESSING_REPORT
-            ,AO.ALLOCATION_COUNTRY_CATEGORY_OPTION_ID AS OPTION_ID
-            ,AO.NAME AS OPTION_NAME
-            ,ACOL.make_category_mandatory
-            ,AC.SINGLE_OPTION_ONLY
-            ,AC.CATEGORY_TYPE_ID
-            from ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL acol
-            inner join allocation_category ac on acol.allocation_category_id = ac.allocation_category_id
-            inner join ALLOCATION_COUNTRY_CATEGORY_OPTION ao on acol.ALLOCATION_COUNTRY_CATEGORY_OPTION_ID = ao.ALLOCATION_COUNTRY_CATEGORY_OPTION_ID
-            INNER JOIN ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_HL2 hl2_acol
-                on hl2_acol.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID = acol.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID
-                and hl2_acol.HL2_ID = in_hl2_id
-            where acol.hierarchy_level_id = in_hierarchy_level_id
-            and ac.enabled = 1
-            and ac.deleted = 0
-            and ao.enabled = 1
-            and ao.deleted = 0
-            and acol.enabled = 1
-            and acol.deleted = 0
-            order by upper(ac.name)
-            , upper(ao.name)
-    )
-    ;
-
-
-    out_result = SELECT CATEGORY_ID
-                        , HIERARCHY_LEVEL_ID
-                        , MEASURE_ID
-                        , CATEGORY_NAME
-                        , DESCRIPTION
-                        , IN_PROCESSING_REPORT
-                        , OPTION_ID
-                        , OPTION_NAME
-                        , make_category_mandatory
-                        , SINGLE_OPTION_ONLY
-                        , CATEGORY_TYPE_ID
-                        FROM :va_allocation_category_option
-                         ORDER BY CATEGORY_NAME, OPTION_NAME;
+    , upper(ao.name);
 
 END;

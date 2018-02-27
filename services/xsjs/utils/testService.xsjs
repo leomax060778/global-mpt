@@ -5,10 +5,11 @@ var httpUtil = mapper.getHttp();
 var ErrorLib = mapper.getErrors();
 var validationLib = mapper.getValidationLib();
 var config = mapper.getDataConfig();
+var db = mapper.getdbHelper();
 /******************************************/
 
 function processRequest(){
-	return httpUtil.processRequest(handleGet,handlePost,handlePut,handleDelete,false, "",true);
+	return httpUtil.processRequest(handleGet,handlePost,handlePut,handleDelete,false, config.getResourceIdByName(config.level1()), false);
 }
 
 //Implementation of GET call -- GET HL1
@@ -18,16 +19,14 @@ function handleGet(){
 
 function handlePost(reqBody) {
 
-	var method = httpUtil.getUrlParameters().get("method");
-	// var method = reqBody.METHOD;
-    switch (method){
-        case 'ACTUAL_DATES_RANGE':
-            var rdo = validationLib.validateActualDatesRange(reqBody.CAMPAIGN_TYPE_ID, reqBody.CAMPAIGN_SUBTYPE_ID, reqBody.ACTUAL_START_DATE, reqBody.ACTUAL_END_DATE);
-            httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
-            break;
-        default:
-            throw ErrorLib.getErrors().BadRequest("","validationServices/handleGet","Invalid parameter name");
-    }
+    var parameters = {
+        IN_ACRONYM: reqBody.IN_ACRONYM,
+        IN_HL3_ID : reqBody.IN_HL3_ID
+    };
+    var list = db.executeProcedureManual("INS_TOBEDELETE", parameters);
+
+    var result = db.extractArray(list.out_result);
+    return httpUtil.handleResponse(result,httpUtil.OK,httpUtil.AppJson);
 }
 
 function handlePut(){

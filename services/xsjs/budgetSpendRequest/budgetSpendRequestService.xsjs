@@ -27,9 +27,6 @@ function handleGet(param){
             var hash = httpUtil.getUrlParameters().get("HASH");
             result = budgetReportLib.getSpendBudgetReportByHash(hash);
             break;
-        case 'GET_REMAINING':
-            result = budgetSpendRequest.getBudgetRemaining(hlId, level);
-            break;
 		default:
             throw ErrorLib.getErrors().BadRequest("","BudgetSpendRequestService/handleGet","Invalid parameter name");
 	}

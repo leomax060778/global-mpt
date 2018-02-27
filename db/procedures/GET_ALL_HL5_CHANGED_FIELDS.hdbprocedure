@@ -26,23 +26,6 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_ALL_HL5_CHAN
             	COST_CENTER NVARCHAR(25),
             	MARKETING_ORGANIZATION NVARCHAR(100)
             	),
-            OUT out_hl5_extra_fields TABLE (
-                        HL5_ID BIGINT,
-                        EXTERNAL_ID nvarchar(255),
-                        PARENT_PATH nvarchar(255),
-                        BUDGET nvarchar(255),
-                        PLANNED_START_DATE nvarchar(255),
-                        PLANNED_END_DATE nvarchar(255),
-                        ACTUAL_START_DATE nvarchar(255),
-                        ACTUAL_END_DATE nvarchar(255),
-                        URL nvarchar(255),
-                        STREET nvarchar(255),
-                        POSTAL_CODE nvarchar(255),
-                        REGION nvarchar(255),
-                        EVENT_OWNER nvarchar(255),
-                        CAMPAIGN_DETAIL nvarchar(255),
-                        BUSINESS_VALUE nvarchar(255)
-                    ),
             OUT out_hl5_category_options TABLE (
                  HL5_ID BIGINT,
                  OPTION_ID BIGINT,
@@ -69,15 +52,14 @@ BEGIN
                     FROM HL5_STATUS_DETAIL
                     WHERE DETAIL IN ('Update In CRM'));
 
-	out_hl5_changed_fields = SELECT HL5_CRM_BINDING.hl5_id, column_name, display_name from HL5_CRM_BINDING
-	                        INNER JOIN :var_hl5 HL5 ON HL5.HL5_ID = HL5_CRM_BINDING.HL5_ID
+	out_hl5_changed_fields = SELECT hl5_id, column_name, display_name from HL5_CRM_BINDING
 							WHERE column_changed = 1
 							AND deleted = 0 and enabled = 1;
 
     va_hl5_changed_fields = select distinct hl5_id from :out_hl5_changed_fields;
 
         out_hl5_category_options =
-        (SELECT
+        SELECT
          hl5CO.hl5_id
          ,option.allocation_option_id as option_id
          ,option.name as option_name
@@ -92,27 +74,10 @@ BEGIN
         inner join allocation_option option on ACOL.allocation_option_id = option.allocation_option_id
         inner join allocation_category category on category.allocation_category_id = ACOL.allocation_category_id
         inner join :var_hl5 T on T.hl5_id = hl5CO.hl5_id
-        where hl5CO.deleted = 0 and hl5CO.enabled = 1 and hl5CO.updated = 1)
-        UNION ALL
-        (SELECT
-         hl5CO.hl5_id
-         ,option.ALLOCATION_COUNTRY_CATEGORY_OPTION_ID as option_id
-         ,option.name as option_name
-         ,ACOL.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID as category_option_level_id
-         ,hl5CO.amount
-         ,category.name as category_name
-         ,ACOL.allocation_category_id
-         ,category.processing_report_export_key
-         ,option.crm_key
-        FROM HL5_COUNTRY_CATEGORY_OPTION hl5CO
-        inner join ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL ACOL ON ACOL.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID = hl5CO.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID
-        inner join ALLOCATION_COUNTRY_CATEGORY_OPTION option on ACOL.ALLOCATION_COUNTRY_CATEGORY_OPTION_ID = option.ALLOCATION_COUNTRY_CATEGORY_OPTION_ID
-        inner join allocation_category category on category.allocation_category_id = ACOL.allocation_category_id
-        inner join :var_hl5 T on T.hl5_id = hl5CO.hl5_id
-        where hl5CO.deleted = 0 and hl5CO.enabled = 1 and hl5CO.updated = 1);
+        where hl5CO.deleted = 0 and hl5CO.enabled = 1 and hl5CO.updated = 1;
 
 
-    va_out_hl5 = SELECT
+    out_hl5 = SELECT
         HL5.HL5_ID
         ,"MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BUDGET_YEAR.BUDGET_YEAR, HL1.ACRONYM, HL2.ORGANIZATION_ACRONYM, HL3.ACRONYM, HL4.ACRONYM, HL5.ACRONYM, '') AS EXTERNAL_ID
         ,HL5.HL5_CRM_DESCRIPTION AS DESCRIPTION
@@ -134,21 +99,8 @@ BEGIN
         ,HL5.city AS CITY
         ,COUNTRY.CRM_KEY AS COUNTRY
         , HL5.EMPLOYEE_RESPONSIBLE_USER AS EMPLOYEE
-        ,COST_CENTER.COST_CENTER_CODE as COST_CENTER
+        ,HL4.COST_CENTER
         ,SALE_ORGANIZATION.CRM_KEY AS MARKETING_ORGANIZATION
-        ,"MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BUDGET_YEAR.BUDGET_YEAR, HL1.ACRONYM, HL2.ORGANIZATION_ACRONYM, HL3.ACRONYM, HL4.ACRONYM, '', '') AS PARENT_PATH
-        ,HL5.BUDGET
-        ,HL5.PLANNED_START_DATE
-        ,HL5.PLANNED_END_DATE
-        ,HL5.ACTUAL_START_DATE
-        ,HL5.ACTUAL_END_DATE
-        ,HL5.URL
-        ,HL5.STREET
-        ,HL5.POSTAL_CODE
-        ,HL5.REGION
-        ,HL5.EVENT_OWNER
-        ,'' AS CAMPAIGN_DETAIL
-        ,'' AS BUSINESS_VALUE
         FROM HL5
         INNER JOIN :var_hl5 T ON T.HL5_ID = HL5.hl5_id
         INNER JOIN HL4 ON HL5.HL4_ID = HL4.HL4_ID
@@ -176,49 +128,6 @@ BEGIN
             select T2.hl5_id
             from :out_hl5_category_options T2
         );
-
-
-        out_hl5 = SELECT HL5_ID
-                             , EXTERNAL_ID
-                             , DESCRIPTION
-                             , OBJECTIVE
-                             , TYPE
-                             , SUB_TYPE
-                             , PRIORITY
-                             , DISTRIBUTION_RULE
-                             , MKT_PROGRAM_ID
-                             , MARKETING_ACTIVITYID
-                             , BUSINESS_OWNER
-                             , SHOW_CALENDAR
-                             , CERTIFICATION_LEVEL
-                             , ROUTE_TO_MARKET
-                             , BUYING_CLASSIFICATION
-                             , VENUE
-                             , NO_OF_PARTICIPANTS
-                             , PHONE_FOLLOWUP
-                             , CITY
-                             , COUNTRY
-                             , EMPLOYEE
-                             , COST_CENTER
-                             , MARKETING_ORGANIZATION
-                        FROM :va_out_hl5;
-
-            out_hl5_extra_fields = SELECT HL5_ID
-                                            , EXTERNAL_ID
-                                            , PARENT_PATH
-                                          , BUDGET
-                                          , PLANNED_START_DATE
-                                          , PLANNED_END_DATE
-                                          , ACTUAL_START_DATE
-                                          , ACTUAL_END_DATE
-                                          , URL
-                                          , STREET
-                                          , POSTAL_CODE
-                                          , REGION
-                                          , EVENT_OWNER
-                                          , CAMPAIGN_DETAIL
-                                          , BUSINESS_VALUE
-                            FROM :va_out_hl5;
 
 
 

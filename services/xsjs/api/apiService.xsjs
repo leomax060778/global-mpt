@@ -17,18 +17,18 @@ var GET_REPORT_EXPORT_DATA_REGION = "GET_REPORT_EXPORT_DATA_REGION";
 var DEFAULT_FORMAT = 'JSON';
 
 function processRequest() {
-    httpUtil.processRequest(handleGet, handlePost, handlePut, handleDelete,
-        true, "", true);
+	httpUtil.processRequest(handleGet, handlePost, handlePut, handleDelete,
+			true, "", true);
 }
 
 function handleGet(parameters, userSessionID) {
-    var rdo = null;
+	var rdo = null;
     var method = httpUtil.getUrlParameters().get("method").toUpperCase();
     var deltaTimeLastUpdate = httpUtil.getUrlParameters().get("DELTA_TIME_LAST_UPDATE");
     var levelFilter = httpUtil.getUrlParameters().get("HIERARCHY_LEVEL");
     var scope = httpUtil.getUrlParameters().get("SCOPE");
     var format = httpUtil.getUrlParameters().get("FORMAT");
-    if (parameters.length > 0) {
+	if (parameters.length > 0) {
         var filter = {};
         if (method === "FULL" || method === "DELTA") {
             filter.IN_IS_FULL_DOWNLOAD = (method.toUpperCase() === "FULL") ? 1 : 0;
@@ -37,14 +37,14 @@ function handleGet(parameters, userSessionID) {
             filter.SCOPE = scope || null;
             filter.FORMAT = format || DEFAULT_FORMAT;
         }
-        switch (parameters[0].name) {
-            case GET_WBS_BY_ID:
-                rdo = apiLib.getL6ById(parameters[0].value);
-                break;
-            case GET_WBS_BY_PATH:
-                rdo = apiLib.getL6ByWBSPath(parameters[0].value);
-                break;
-            case GET_REPORT_EXPORT_DATA:
+		switch (parameters[0].name) {
+			case GET_WBS_BY_ID:
+				rdo = apiLib.getL6ById(parameters[0].value);
+				break;
+			case GET_WBS_BY_PATH: 
+				rdo = apiLib.getL6ByWBSPath(parameters[0].value);
+				break;
+			case GET_REPORT_EXPORT_DATA:
                 if (method === "FULL" || method === "DELTA") {
                     rdo = apiLib.getReportExportData(filter, GET_REPORT_EXPORT_DATA);
                 } else {
@@ -53,37 +53,37 @@ function handleGet(parameters, userSessionID) {
                 }
                 break;
             case GET_REPORT_EXPORT_DATA_REGION:
-                if (method === "FULL" || method === "DELTA") {
+				if (method === "FULL" || method === "DELTA") {
                     rdo = apiLib.getReportExportDataRegion(filter, GET_REPORT_EXPORT_DATA_REGION);
                 } else {
                     throw ErrorLib.getErrors().BadRequest("", "",
                         "invalid parameter method");
-                }
-                break;
-            default:
-                throw ErrorLib.getErrors().BadRequest("", "",
-                    "invalid parameter name");
-        }
-    }
+				}
+				break;
+			default:
+				throw ErrorLib.getErrors().BadRequest("", "",
+						"invalid parameter name");
+		}
+	}
 
     if (format === "CSV") {
         var reportTitle = "API_" + new Date();
         httpUtil.handleResponseCSV(rdo, reportTitle);
     } else {
-        httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
-    }
+	httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
+}
 }
 
 function handlePost() {
-    httpUtil.notImplementedMethod();
+	httpUtil.notImplementedMethod();
 }
 
 function handlePut() {
-    httpUtil.notImplementedMethod();
+	httpUtil.notImplementedMethod();
 }
 
 function handleDelete() {
-    httpUtil.notImplementedMethod();
+	httpUtil.notImplementedMethod();
 }
 
 processRequest();

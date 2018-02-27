@@ -26,7 +26,6 @@ var allocationCategory = mapper.getAllocationCategoryLib();
 var expectedOutcomesLevelLib = mapper.getExpectedOutcomesLevelLib();
 var blLevel1 = mapper.getLevel1();
 var dataSubRegion = mapper.getDataSubRegion();
-var hierarchyCategoryCountryLib = mapper.getHierarchyCategoryCountry();
 /** ***********END INCLUDE LIBRARIES*************** */
 
 
@@ -418,7 +417,6 @@ function deleteHl2(objLevel2, userId) {
     dataExOut.deleteHl2ExpectedOutcomesDetail(objLevel2.HL2_ID, userId);
     dataExOut.deleteHl2ExpectedOutcomes(objLevel2.HL2_ID, userId);
     dataCategoryOptionLevel.deleteCategoryOption(objLevel2.HL2_ID, userId, 'HL2');
-    hierarchyCategoryCountryLib.deleteCountryCategoryOptionLevel(objLevel2.HL2_ID, userId);
     return dataHl2.deleteHl2(objLevel2.HL2_ID, userId);
 }
 
@@ -786,6 +784,7 @@ function validateLevel2Version(data) {
         'HL2_BUDGET_TOTAL',
         'CRT_RELATED',
         'IMPLEMENT_EXECUTION_LEVEL',
+        'ACRONYM',
         'ORGANIZATION_NAME',
         'IN_BUDGET',
         'ALLOW_AUTOMATIC_BUDGET_APPROVAL',

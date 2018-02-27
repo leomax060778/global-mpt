@@ -16,7 +16,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL6_ALLOCATI
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL" AS
 BEGIN
 	out_option =
-    (SELECT option.allocation_option_id as option_id
+    SELECT option.allocation_option_id as option_id
 	, option.name as option_name
 	, ACOL.allocation_category_option_level_id as category_option_level_id
 	, hl6CO.amount
@@ -31,22 +31,5 @@ BEGIN
 	where
 	--ACOL.allocation_category_id = in_allocation_category_id
 	hl6_id = in_hl_id
-	AND hl6CO.deleted = 0 and hl6CO.enabled = 1)
-	UNION ALL
-	(SELECT option.ALLOCATION_COUNTRY_CATEGORY_OPTION_ID as option_id
-    	, option.name as option_name
-    	, ACOL.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_id as category_option_level_id
-    	, hl6CO.amount
-    	, category.name as category_name
-    	, hl6CO.updated
-    	, ACOL.allocation_category_id
-
-    	FROM HL6_COUNTRY_CATEGORY_OPTION hl6CO
-    	inner join ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL ACOL ON ACOL.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_id = hl6CO.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_id
-    	inner join ALLOCATION_COUNTRY_CATEGORY_OPTION option on ACOL.ALLOCATION_COUNTRY_CATEGORY_OPTION_ID = option.ALLOCATION_COUNTRY_CATEGORY_OPTION_ID
-    	inner join allocation_category category on category.allocation_category_id = ACOL.allocation_category_id
-    	where
-    	--ACOL.allocation_category_id = in_allocation_category_id
-    	hl6_id = in_hl_id
-    	AND hl6CO.deleted = 0 and hl6CO.enabled = 1);
+	AND hl6CO.deleted = 0 and hl6CO.enabled = 1;
 END;

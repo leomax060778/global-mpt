@@ -8,7 +8,6 @@ var GET_ALLOCATION_OPTION_LEVEL = "GET_ALLOCATION_OPTION_LEVEL";
 var GET_ALLOCATION_CATEGORY_OPTION = "GET_ALLOCATION_CATEGORY_OPTION";
 var GET_ALLOCATION_CATEGORY_BY_CAT_ID_LEVEL_ID = "GET_ALLOCATION_CATEGORY_BY_CAT_ID_LEVEL_ID";
 var GET_ALLOCATION_CATEGORY_OPTION_LEVEL_BY_LEVEL = "GET_ALLOCATION_CATEGORY_OPTION_LEVEL_BY_LEVEL";
-var GET_ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_BY_LEVEL = "GET_ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_BY_LEVEL";
 var GET_ALLOCATION_CATEGORY_OPTION_LEVEL_COUNT_BY_CATEGORY = "GET_ALLOCATION_CATEGORY_OPTION_LEVEL_COUNT_BY_CATEGORY";
 var GET_ALLOCATION_CATEGORY_OPTION_LEVEL_TO_DELETE = "GET_ALLOCATION_CATEGORY_OPTION_LEVEL_TO_DELETE";
 var INS_ALLOCATION_CATEGORY_OPTION_LEVEL = "INS_ALLOCATION_CATEGORY_OPTION_LEVEL";
@@ -30,18 +29,6 @@ var hierarchyLevel = {
 function getAllocationCategoryOptionLevelByLevelId(level){
     if(level){
         var rdo = db.executeProcedureManual(GET_ALLOCATION_CATEGORY_OPTION_LEVEL_BY_LEVEL,{'in_hierarchy_level_id': hierarchyLevel[level]});
-        return db.extractArray(rdo.out_result);
-    }
-    return null;
-}
-
-function getAllocationCountryCategoryOptionLevelByLevelId(level, hl2Id){
-    if(level){
-        var param = {
-        	'in_hierarchy_level_id': hierarchyLevel[level],
-			'in_hl2_id': hl2Id
-        };
-        var rdo = db.executeProcedureManual(GET_ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_BY_LEVEL,param);
         return db.extractArray(rdo.out_result);
     }
     return null;
@@ -177,7 +164,7 @@ function getAllocationOptionByCategoryAndLevelId(level, hlId){
 function getHlCategoryOptionByLevelHlId(level, hlId){
     if(hlId && level){
         var storedProcedure = "GET_"+ level.toUpperCase() +"_CATEGORY_OPTION";
-        var rdo = db.executeProcedureManual(storedProcedure,{'in_hl_id': hlId});
+        var rdo = db.executeProcedureManual(storedProcedure,{'in_hl_id': hlId });
         return db.extractArray(rdo.out_result);
     }
     return null;
@@ -228,22 +215,12 @@ function insertCategoryOption(data, level){
 	return rdo;
 }
 
-function insertCountryCategoryOption(data, level){
-    var storedProcedure = "INS_"+ level.toUpperCase() +"_ALLOCATION_COUNTRY_CATEGORY_OPTION";
-    var rdo = db.executeScalarManual(storedProcedure, data, 'out_result_id');
-    return rdo;
-}
-
 function updateCategoryOption(data, level){
-	var storedProcedure = "UPD_"+ level.toUpperCase() +"_ALLOCATION_CATEGORY_OPTION";
-	var rdo = db.executeScalarManual(storedProcedure, data, 'out_result');
-	return rdo;
-}
-
-function updateCountryCategoryOption(data, level){
-	var storedProcedure = "UPD_"+ level.toUpperCase() +"_ALLOCATION_COUNTRY_CATEGORY_OPTION";
-	var rdo = db.executeScalarManual(storedProcedure, data, 'out_result');
-	return rdo;
+	if(level){
+		var storedProcedure = "UPD_"+ level.toUpperCase() +"_ALLOCATION_CATEGORY_OPTION";
+		var rdo = db.executeScalarManual(storedProcedure, data, 'out_result');
+		return rdo;
+	}return null;
 }
 
 function deleteCategoryOption(id, userId, level){
@@ -252,16 +229,6 @@ function deleteCategoryOption(id, userId, level){
 		'in_user_id': userId
 	};
 	var storedProcedure = "DEL_"+ level.toUpperCase() +"_ALLOCATION_CATEGORY_OPTION";
-	var rdo = db.executeScalarManual(storedProcedure, parameters, 'out_result');
-	return rdo;
-}
-
-function deleteCountryCategoryOption(id, userId, level){
-	var parameters = {
-		'in_id': id,
-		'in_user_id': userId
-	};
-	var storedProcedure = "DEL_"+ level.toUpperCase() +"_ALLOCATION_COUNTRY_CATEGORY_OPTION";
 	var rdo = db.executeScalarManual(storedProcedure, parameters, 'out_result');
 	return rdo;
 }

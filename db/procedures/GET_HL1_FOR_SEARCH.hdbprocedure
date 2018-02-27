@@ -7,7 +7,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL1_FOR_SEAR
 		, IN in_isSA tinyint
 		, OUT total_rows INTEGER
 		, OUT out_result TABLE (
-			hl_id bigint
+			id bigint
 			,budget_year bigint
 			,acronym nvarchar(25)
 			,region_name nvarchar(255)
@@ -70,7 +70,7 @@ BEGIN
 
     SELECT COALESCE(COUNT(T.ID),0) INTO total_rows FROM :va_subresult T;
 
-    out_result = SELECT T.ID as HL_ID
+    out_result = SELECT T.ID
                   , T.BUDGET_YEAR
                   , T.ACRONYM
                   , T.REGION_NAME

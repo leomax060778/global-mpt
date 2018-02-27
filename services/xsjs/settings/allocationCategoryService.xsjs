@@ -14,21 +14,11 @@ function processRequest(){
 
 function handleGet(){
 	var result = [];
-	var parameters = httpUtil.getUrlParameters();
-	var hierarchy_level_id = parameters.get("HIERARCHY_LEVEL_ID");
-	var hl4_id = parameters.get("HL4_ID");
-	var method = parameters.get("METHOD");
-	var categoryType = parameters.get("CATEGORY_TYPE");
-	if(method && method == 'CATEGORY_TYPE'){
-        result = AllocationCategory.getAllocationCategoryType();
-	} else {
-        if(hierarchy_level_id) {
-            result = AllocationCategory.getCategoryOptionByHierarchyLevelId(hierarchy_level_id, hl4_id);
-        } else {
-            result = AllocationCategory.getAllocationCategory(categoryType);
-        }
-	}
-
+	var hierarchy_level_id = httpUtil.getUrlParameters().get("HIERARCHY_LEVEL_ID");
+	if(hierarchy_level_id)
+		result = AllocationCategory.getCategoryOptionByHierarchyLevelId(hierarchy_level_id);
+	else
+		result = AllocationCategory.getAllocationCategory();
 	return httpUtil.handleResponse(result,httpUtil.OK,httpUtil.AppJson);
 }
 

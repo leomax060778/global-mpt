@@ -46,7 +46,7 @@ function getAllL5CreateInCrmDEReportForDownload(userId) {
 }
 function getAllHL5ChangedFields(userId) {
     var data = dataL5DER.getAllHL5ChangedFields(userId);
-    return utilReportLib.parseChangedFields("HL5", "HL5_ID", data.out_hl5_changed_fields, data.out_hl5_category_options, data.out_hl5, data.out_hl5_extra_fields);
+    return utilReportLib.parseChangedFields("HL5", "HL5_ID", data.out_hl5_changed_fields, data.out_hl5_category_options, data.out_hl5);
 
 }
 
@@ -229,9 +229,4 @@ function getProcessingReportFields(){
         , "NUMBER_OF_PARTICIPANTS": "Number Of Participants"
         , "CATEGORY": ""
     };
-}
-
-
-function getAllHL5DeletionRequest(level){
-    return dataL5DER.getAllHL5DeletionRequest(level);
 }

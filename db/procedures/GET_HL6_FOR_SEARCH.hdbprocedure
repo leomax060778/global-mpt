@@ -8,11 +8,10 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL6_FOR_SEAR
         , IN in_limit integer
         , IN in_offset integer
 		, OUT out_result TABLE (
-			HL_ID bigint,
+			id bigint,
             HL6_STATUS_DETAIL_ID bigint,
             STATUS_DETAIL nvarchar(20),
 			parent_id bigint,
-			acronym NVARCHAR(25),
 			organization_acronym NVARCHAR(25),
 			region_name NVARCHAR(255),
 			subregion_name NVARCHAR(255),
@@ -146,11 +145,10 @@ END IF;
 
 if(in_limit = -1) then
 out_result =
-SELECT   id AS HL_ID
+SELECT   id
         , HL6_STATUS_DETAIL_ID
         , STATUS_DETAIL
 		, parent_id
-		, hl6_acronym as acronym
 		, organization_acronym
 		, region_name
 		, subregion_name
@@ -159,12 +157,11 @@ SELECT   id AS HL_ID
 , "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BUDGET_YEAR, hl1_acronym, organization_acronym, hl3_acronym, hl4_acronym, hl5_acronym, hl6_acronym) AS path
 		    from :TEMP_OUT_RESULT;
 else
-out_result = 
-SELECT   id AS HL_ID
+out_result =
+SELECT   id
         , HL6_STATUS_DETAIL_ID
         , STATUS_DETAIL
 		, parent_id
-		, hl6_acronym as acronym
 		, organization_acronym
 		, region_name
 		, subregion_name

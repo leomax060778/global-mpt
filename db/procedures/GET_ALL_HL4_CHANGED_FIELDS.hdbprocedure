@@ -1,6 +1,7 @@
 PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_ALL_HL4_CHANGED_FIELDS" (
         OUT out_hl4_changed_fields TABLE (hl4_id bigint, column_name nvarchar(255), display_name nvarchar(255)),
         OUT out_hl4 TABLE(
+
         	HL4_ID BIGINT,
         	EXTERNAL_ID nvarchar(255),
         	DESCRIPTION NVARCHAR(100),
@@ -25,23 +26,6 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_ALL_HL4_CHAN
         	COST_CENTER NVARCHAR(25),
         	MARKETING_ORGANIZATION NVARCHAR(100)
         	),
-        OUT out_hl4_extra_fields TABLE (
-        HL4_ID BIGINT,
-        EXTERNAL_ID nvarchar(255),
-            PARENT_PATH nvarchar(255),
-            BUDGET nvarchar(255),
-            PLANNED_START_DATE nvarchar(255),
-            PLANNED_END_DATE nvarchar(255),
-            ACTUAL_START_DATE nvarchar(255),
-            ACTUAL_END_DATE nvarchar(255),
-            URL nvarchar(255),
-            STREET nvarchar(255),
-            POSTAL_CODE nvarchar(255),
-            REGION nvarchar(255),
-            EVENT_OWNER nvarchar(255),
-            CAMPAIGN_DETAIL nvarchar(255),
-            BUSINESS_VALUE nvarchar(255)
-        ),
         OUT out_hl4_category_options TABLE (
              HL4_ID BIGINT
              ,OPTION_ID BIGINT
@@ -67,8 +51,7 @@ BEGIN
                 FROM HL4_STATUS_DETAIL
                 WHERE DETAIL IN ('Update In CRM'));
 
-	out_hl4_changed_fields = SELECT HL4_CRM_BINDING.hl4_id, column_name, display_name from HL4_CRM_BINDING
-	                        INNER JOIN :var_hl4 HL4 ON HL4.HL4_ID = HL4_CRM_BINDING.HL4_ID
+	out_hl4_changed_fields = SELECT hl4_id, column_name, display_name from HL4_CRM_BINDING
 							WHERE column_changed = 1
 							AND deleted = 0 and enabled = 1;
 
@@ -93,7 +76,7 @@ out_hl4_category_options =
     inner join :var_hl4 T on T.hl4_id = hl4CO.hl4_id
     where hl4CO.deleted = 0 and hl4CO.enabled = 1 and hl4CO.updated = 1;
 
-    va_out_hl4 = SELECT
+    out_hl4 = SELECT
     HL4.HL4_ID,
     "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BUDGET_YEAR.BUDGET_YEAR, HL1.ACRONYM, HL2.ORGANIZATION_ACRONYM, HL3.ACRONYM, HL4.ACRONYM, '', '') AS EXTERNAL_ID,
     HL4.HL4_CRM_DESCRIPTION AS DESCRIPTION,
@@ -114,22 +97,9 @@ out_hl4_category_options =
     '' AS PHONE_FOLLOWUP,
     '' AS CITY,
     '' AS COUNTRY,
-    HL4.SHOPPING_CART_APPROVER AS EMPLOYEE,
+    '' AS EMPLOYEE,
     HL4.COST_CENTER,
     SALE_ORGANIZATION.CRM_KEY AS MARKETING_ORGANIZATION
-    ,"MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BUDGET_YEAR.BUDGET_YEAR, HL1.ACRONYM, HL2.ORGANIZATION_ACRONYM, HL3.ACRONYM, HL4.ACRONYM, '', '') AS PARENT_PATH
-    ,HL4.HL4_FNC_BUDGET_TOTAL_MKT AS BUDGET
-    ,'' AS PLANNED_START_DATE
-    ,'' AS PLANNED_END_DATE
-    ,'' AS ACTUAL_START_DATE
-    ,'' AS ACTUAL_END_DATE
-    ,'' AS URL
-    ,'' AS STREET
-    ,'' AS POSTAL_CODE
-    ,'' AS REGION
-    ,'' AS EVENT_OWNER
-    ,HL4.HL4_DETAILS AS CAMPAIGN_DETAIL
-    ,HL4.HL4_BUSINESS_DETAILS AS BUSINESS_VALUE
     FROM HL4
     INNER JOIN :var_hl4 T ON T.HL4_ID = HL4.hl4_id
     INNER JOIN HL3 ON HL3.HL3_ID = HL4.HL3_ID
@@ -145,48 +115,6 @@ out_hl4_category_options =
         select T2.hl4_id
         from :out_hl4_category_options T2
         );
-
-    out_hl4 = SELECT HL4_ID
-                     , EXTERNAL_ID
-                     , DESCRIPTION
-                     , OBJECTIVE
-                     , TYPE
-                     , SUB_TYPE
-                     , PRIORITY
-                     , DISTRIBUTION_RULE
-                     , MKT_PROGRAM_ID
-                     , MARKETING_ACTIVITYID
-                     , BUSINESS_OWNER
-                     , SHOW_CALENDAR
-                     , CERTIFICATION_LEVEL
-                     , ROUTE_TO_MARKET
-                     , BUYING_CLASSIFICATION
-                     , VENUE
-                     , NO_OF_PARTICIPANTS
-                     , PHONE_FOLLOWUP
-                     , CITY
-                     , COUNTRY
-                     , EMPLOYEE
-                     , COST_CENTER
-                     , MARKETING_ORGANIZATION
-                FROM :va_out_hl4;
-
-    out_hl4_extra_fields = SELECT HL4_ID
-                                    , EXTERNAL_ID
-                               , PARENT_PATH
-                                  , BUDGET
-                                  , PLANNED_START_DATE
-                                  , PLANNED_END_DATE
-                                  , ACTUAL_START_DATE
-                                  , ACTUAL_END_DATE
-                                  , URL
-                                  , STREET
-                                  , POSTAL_CODE
-                                  , REGION
-                                  , EVENT_OWNER
-                                  , CAMPAIGN_DETAIL
-                                  , BUSINESS_VALUE
-                    FROM :va_out_hl4;
 
 
 END;

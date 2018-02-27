@@ -29,9 +29,9 @@
         <viewAttribute datatype="VARCHAR" id="REGION_DESC" length="25"/>
       </viewAttributes>
       <calculatedViewAttributes/>
-      <definition>/****** Begin Procedure Script ************/ 
- BEGIN 
- 
+      <definition>/****** Begin Procedure Script ************/
+ BEGIN
+
  va_l1 = SELECT HL1_ID
 			, &quot;MKTG_PLANNING_TOOL&quot;.&quot;mktgplanningtool.db.functions::GET_CRM_ID&quot;(
 				BY.BUDGET_YEAR
@@ -58,8 +58,8 @@
 			FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL1&quot; HL1
 			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_BUDGET_YEAR&quot; BY ON BY.BUDGET_YEAR_ID = HL1.BUDGET_YEAR_ID
 			WHERE HL1.ENABLED = 1 AND HL1.DELETED = 0;
-			
-			
+
+
 va_l1_result = SELECT HL1.HL1_ID AS HL_ID
 				, HL1.HIERARCHY_LEVEL_ID
 				, HL1.CRM_ID
@@ -78,10 +78,10 @@ va_l1_result = SELECT HL1.HL1_ID AS HL_ID
 				, HL1.MODIFIED_DATE
 				, 0 AS REGION_ID
 				, '' AS REGION_DESC
-				, 0 AS PERCENTAGE_ALLOCATION				
-				FROM :va_l1 HL1				
+				, 0 AS PERCENTAGE_ALLOCATION
+				FROM :va_l1 HL1
 				ORDER BY HL1.CRM_ID;
-				
+
 va_l2 = SELECT HL2_ID
 			, &quot;MKTG_PLANNING_TOOL&quot;.&quot;mktgplanningtool.db.functions::GET_CRM_ID&quot;(
 				BY.BUDGET_YEAR
@@ -109,9 +109,9 @@ va_l2 = SELECT HL2_ID
 			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL1&quot; HL1 ON HL1.HL1_ID = HL2.HL1_ID
 			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_BUDGET_YEAR&quot; BY ON BY.BUDGET_YEAR_ID = HL1.BUDGET_YEAR_ID
 			WHERE HL2.ENABLED = 1 AND HL2.DELETED = 0;
-			
 
-			
+
+
 va_l2_result = SELECT HL2.HL2_ID AS HL_ID
 				, HL2.HIERARCHY_LEVEL_ID
 				, HL2.CRM_ID
@@ -131,9 +131,9 @@ va_l2_result = SELECT HL2.HL2_ID AS HL_ID
 				, 0 AS REGION_ID
 				, '' AS REGION_DESC
 				, 0 AS PERCENTAGE_ALLOCATION
-				FROM :va_l2 HL2				
+				FROM :va_l2 HL2
 				ORDER BY HL2.CRM_ID;
-				
+
 va_l3 = SELECT HL3_ID
 			, &quot;MKTG_PLANNING_TOOL&quot;.&quot;mktgplanningtool.db.functions::GET_CRM_ID&quot;(
 				BY.BUDGET_YEAR
@@ -162,10 +162,10 @@ va_l3 = SELECT HL3_ID
 			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL1&quot; HL1 ON HL1.HL1_ID = HL2.HL1_ID
 			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_BUDGET_YEAR&quot; BY ON BY.BUDGET_YEAR_ID = HL1.BUDGET_YEAR_ID
 			WHERE HL3.ENABLED = 1 AND HL3.DELETED = 0;
-			
 
 
-			
+
+
 va_l3_result = SELECT HL3.HL3_ID AS HL_ID
 				, HL3.HIERARCHY_LEVEL_ID
 				, HL3.CRM_ID
@@ -185,7 +185,7 @@ va_l3_result = SELECT HL3.HL3_ID AS HL_ID
 				, 0 AS REGION_ID
 				, '' AS REGION_DESC
 				, 0 AS PERCENTAGE_ALLOCATION
-				FROM :va_l3 HL3			
+				FROM :va_l3 HL3
 				ORDER BY HL3.CRM_ID;
 
 va_l4 = SELECT HL4_ID

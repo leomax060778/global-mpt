@@ -39,7 +39,6 @@ var GET_OTHER_BUDGET_APPROVER_BY_OTHER_BUDGET_APPROVER_ID = "GET_OTHER_BUDGET_AP
 var GET_BUDGET_SPEND_REQUEST_BY_HASH = "GET_BUDGET_SPEND_REQUEST_BY_HASH";
 var DEL_BUDGET_SPEND_REQUEST_OTHER_BUDGET_APPROVER = "DEL_BUDGET_SPEND_REQUEST_OTHER_BUDGET_APPROVER";
 var GET_OTHER_BUDGET_APPROVERS_BY_BUDGET_SPEND_REQUEST_ID = "GET_OTHER_BUDGET_APPROVERS_BY_BUDGET_SPEND_REQUEST_ID";
-var GET_BUDGET_REMAINING = "GET_BUDGET_REMAINING";
 
 var HIERARCHY_LEVEL = {
     HL2: 5,
@@ -305,8 +304,4 @@ function getBudgetSpendRequestByHash(hash){
 
 function deleteBudgetSpendRequestOtherBudgetApprover(otherBudgetApprovers) {
     return db.executeScalarManual(DEL_BUDGET_SPEND_REQUEST_OTHER_BUDGET_APPROVER, {otherBudgetApprovers: otherBudgetApprovers}, 'out_result');
-}
-
-function getBudgetRemaining(hlId, level){
-    return db.executeProcedureManual(GET_BUDGET_REMAINING, {in_hl_id: hlId, in_level: level},'BUDGET_SPEND_REQUEST_REMAING');
 }

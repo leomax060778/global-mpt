@@ -977,9 +977,12 @@ END /********* End Procedure Script ************/</definition>
         <descriptions defaultDescription="HL2_ID"/>
         <keyMapping columnObjectName="Script_View" columnName="HIERARCHY_LEVEL_ID"/>
       </attribute>
+    
       <attribute id="CRM_ID" order="2">
         <descriptions defaultDescription="USER_ID"/>
+    
         <keyMapping columnObjectName="Script_View" columnName="CRM_ID"/>
+    
       </attribute>
       <attribute id="CAMP_OBJ_TYPE" order="3">
         <descriptions defaultDescription="USER_ID"/>

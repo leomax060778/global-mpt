@@ -8,9 +8,9 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL3_FOR_SEAR
 		, IN in_limit integer
 		, OUT total_row integer
 		, OUT out_result TABLE (
-			HL_ID bigint,
+			id bigint,
 			parent_id bigint,
-			acronym NVARCHAR(25),
+			organization_acronym NVARCHAR(25),
 			region_name NVARCHAR(255),
 			subregion_name NVARCHAR(255),
 			path NVARCHAR(255)
@@ -109,9 +109,9 @@ if in_region_id = -1 then
 
 
 my_results =
-SELECT  id as HL_ID
+SELECT  id
 		, parent_id
-		, organization_acronym as acronym
+		, organization_acronym
 		, region_name
 		, subregion_name
 		--, CONCAT(CONCAT(CONCAT(organization_acronym, SUBSTRING(TO_NVARCHAR(BUDGET_YEAR), 3, 2)), '-'), hl3_acronym) AS path
@@ -119,7 +119,7 @@ SELECT  id as HL_ID
 
 from :temp_out_result;
 
-SELECT COALESCE(COUNT(T.HL_ID),0) INTO total_row FROM :my_results T;
+SELECT COALESCE(COUNT(T.ID),0) INTO total_row FROM :my_results T;
 
 if(in_limit = -1) then
 out_result = select * from :my_results;
