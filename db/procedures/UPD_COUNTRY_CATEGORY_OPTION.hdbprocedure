@@ -1,0 +1,21 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::UPD_COUNTRY_CATEGORY_OPTION" (
+	IN in_option_id BIGINT,
+	IN in_name NVARCHAR(255),
+	IN in_crm_key NVARCHAR(50),
+	IN in_user_id BIGINT,
+	OUT out_result BIGINT
+)
+   LANGUAGE SQLSCRIPT
+   SQL SECURITY INVOKER
+   DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+   AS
+BEGIN
+        UPDATE ALLOCATION_COUNTRY_CATEGORY_OPTION
+        SET name = trim(in_name),
+        CRM_KEY = trim(in_crm_key),
+            modified_date_tz = CURRENT_TIMESTAMP,
+            modified_user_id = in_user_id
+        WHERE ALLOCATION_COUNTRY_CATEGORY_OPTION_ID = in_option_id;
+        
+        SELECT ::ROWCOUNT INTO out_result FROM DUMMY;
+END

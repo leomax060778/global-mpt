@@ -778,3 +778,7 @@ function getBudgetRequestByIdFromList(budgetSpendRequestId, budgetSpendRequestLi
     return budgetSpendRequest;
 
 }
+
+function getBudgetRemaining(hlId, level){
+    return dataBudgetSpendRequest.getBudgetRemaining(hlId, level);
+}

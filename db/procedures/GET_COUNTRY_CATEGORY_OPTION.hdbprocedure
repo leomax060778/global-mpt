@@ -1,0 +1,18 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_COUNTRY_CATEGORY_OPTION" (
+	OUT out_result TABLE (
+	allocation_country_category_option_id BIGINT
+	, name NVARCHAR(60)
+	, CRM_KEY NVARCHAR(50)
+ 	)
+ 	)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER 
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	READS SQL DATA AS
+BEGIN
+		out_result = SELECT allocation_country_category_option_id,
+			   name,CRM_KEY
+		FROM ALLOCATION_COUNTRY_CATEGORY_OPTION
+		WHERE enabled = 1 AND deleted = 0
+		ORDER BY upper(name);
+END;

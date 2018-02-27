@@ -9,26 +9,26 @@ var dataCategory = mapper.getDataCategory();
 // var dataUtil = mapper.getDataUtil();
 /** ***********END INCLUDE LIBRARIES*************** */
 function validateIsNumber(value){
-	return !isNaN(value);
+    return !isNaN(value);
 }
 
 function validateIsNatural(value){
-	return (validateIsNumber(value) && value >= 0);
+    return (validateIsNumber(value) && value >= 0);
 }
 
 function validateIsEmail(value){
-	var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-	 return re.test(value);
+    var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    return re.test(value);
 }
 
 function validateBudget(value){
-	if(!value) return false;
-	return value !== 0;
+    if(!value) return false;
+    return value !== 0;
 }
 
 function validateIsSapEmail(email){
-	var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@sap.com$/;
-	return re.test(email);
+    var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@sap.com$/;
+    return re.test(email);
 }
 
 /********************another options**********************************/
@@ -46,39 +46,39 @@ function validateIsSapEmail(email){
 /**************************************************************************/
 function validateIsPassword(value){
 //Minimum 6 characters at least 1 Alphabet and 1 Number:
-	var re = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/;
-	if(! re.test(value)){
-		throw ErrorLib.getErrors()
-		.CustomError("", "util/validateIsPassword",
-				"The PASSWORD should have minimum 6 characters at least, 1 alphabet and 1 number.");
-	};
-	return true;
+    var re = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/;
+    if(! re.test(value)){
+        throw ErrorLib.getErrors()
+            .CustomError("", "util/validateIsPassword",
+                "The PASSWORD should have minimum 6 characters at least, 1 alphabet and 1 number.");
+    };
+    return true;
 }
 
 function validateIsDecimal(value){
-	return isNumeric(value);
+    return isNumeric(value);
 }
 
 function validateLength(value, max, min, field){
-	if(!field){
-		field = "";
-	}
-	if(max)
-		if(value.length > max) throw ErrorLib.getErrors()
-		.CustomError("", "util/validateLength",
-		"The "+field+" value should have between "+min+" and "+max+" characters");
+    if(!field){
+        field = "";
+    }
+    if(max)
+        if(value.length > max) throw ErrorLib.getErrors()
+            .CustomError("", "util/validateLength",
+                "The "+field+" value should have between "+min+" and "+max+" characters");
 
-	if(min)
-		if(value.length < min) throw ErrorLib.getErrors()
-		.CustomError("", "util/validateLength",
-				"The "+field+" value should have between "+min+" and "+max+" characters");
-		
-		
-	return true;
+    if(min)
+        if(value.length < min) throw ErrorLib.getErrors()
+            .CustomError("", "util/validateLength",
+                "The "+field+" value should have between "+min+" and "+max+" characters");
+
+
+    return true;
 }
 
 function validateIsString(value){
-	return (typeof value == "string");
+    return (typeof value == "string");
 }
 
 function objectToArray(object){
@@ -92,27 +92,27 @@ function objectToArray(object){
 }
 
 function extractObject(object) {
-	var aux = {};
-		if(object){
-		Object.keys(object).forEach(function(key){
-			aux[key] = object[key];
-		});
-	}
-	return aux;
+    var aux = {};
+    if(object){
+        Object.keys(object).forEach(function(key){
+            aux[key] = object[key];
+        });
+    }
+    return aux;
 }
 
 function validateDateEndMayorStart(dateStart,dateEnd)
 {
-	if(dateStart>dateEnd)
-	{
-		return true;
-	}
-	return false;
+    if(dateStart>dateEnd)
+    {
+        return true;
+    }
+    return false;
 }
 
 function isAdmin(userId){
-	var isA = userbl.isAdmin(userId);
-	return isA;
+    var isA = userbl.isAdmin(userId);
+    return isA;
 }
 
 function isSuperAdmin(userId){
@@ -123,20 +123,26 @@ function isSuperAdmin(userId){
     return isSA;
 }
 
-function getMapCategoryOption(level){
-	var mapCategoryOption = {};
-	var sp_result = dataCategoryOptionLevel.getAllocationCategoryOptionLevelByLevelId(level);
+function getMapCategoryOption(level, hl2Id){
+    var mapCategoryOption = {};
+    var sp_result = Number(hl2Id)
+        ? dataCategoryOptionLevel.getAllocationCountryCategoryOptionLevelByLevelId(level, hl2Id)
+        : dataCategoryOptionLevel.getAllocationCategoryOptionLevelByLevelId(level);
 
-	for (var i = 0; i < sp_result.length; i++) {
-		var obj = sp_result[i];
-		
-		if(!mapCategoryOption[obj.CATEGORY_ID])
-			mapCategoryOption[obj.CATEGORY_ID] = {};
-		
-		mapCategoryOption[obj.CATEGORY_ID][obj.OPTION_ID] = obj.CATEGORY_OPTION_LEVEL_ID
+    for (var i = 0; i < sp_result.length; i++) {
+        var obj = sp_result[i];
 
-	}
-	return mapCategoryOption;
+        if(!mapCategoryOption[obj.CATEGORY_ID])
+            mapCategoryOption[obj.CATEGORY_ID] = {};
+
+        mapCategoryOption[obj.CATEGORY_ID][obj.OPTION_ID] = obj.CATEGORY_OPTION_LEVEL_ID
+
+    }
+    return mapCategoryOption;
+}
+
+function getMapCountryCategoryOption(level, hl2Id){
+    return getMapCategoryOption(level, hl2Id);
 }
 
 function getMapAvailableCategoryOptionByLevel(level){
@@ -150,67 +156,67 @@ function getMapAvailableCategoryOptionByLevel(level){
                 mapCategoryOption[obj.CATEGORY_ID] = {};
 
             mapCategoryOption[obj.CATEGORY_ID][obj.OPTION_ID] = obj.CATEGORY_OPTION_LEVEL_ID
-		}
+        }
     }
     return mapCategoryOption;
 }
 
 function getAllocationOptionByCategoryAndLevelId(level, hlId){
-	var mapCategoryOption = {};
-	var sp_result = dataCategoryOptionLevel.getAllocationOptionByCategoryAndLevelId(level, hlId);
-	for (var i = 0; i < sp_result.length; i++) {
-		var obj = sp_result[i];
+    var mapCategoryOption = {};
+    var sp_result = dataCategoryOptionLevel.getAllocationOptionByCategoryAndLevelId(level, hlId);
+    for (var i = 0; i < sp_result.length; i++) {
+        var obj = sp_result[i];
 
-		if(!mapCategoryOption[obj.ALLOCATION_CATEGORY_ID])
-			mapCategoryOption[obj.ALLOCATION_CATEGORY_ID] = [];
+        if(!mapCategoryOption[obj.ALLOCATION_CATEGORY_ID])
+            mapCategoryOption[obj.ALLOCATION_CATEGORY_ID] = [];
 
-		mapCategoryOption[obj.ALLOCATION_CATEGORY_ID].push(obj);
+        mapCategoryOption[obj.ALLOCATION_CATEGORY_ID].push(obj);
 
-	}
-	return mapCategoryOption;
+    }
+    return mapCategoryOption;
 }
 
 function getMapHl6ChangedFieldsByHl6Id(hl6_id){
-	var mapFields = {};
-	var sp_result = dataL6DER.getL6ChangedFieldsByHl6Id(hl6_id);
-	for (var i = 0; i < sp_result.length; i++) {
-		var obj = sp_result[i];
+    var mapFields = {};
+    var sp_result = dataL6DER.getL6ChangedFieldsByHl6Id(hl6_id);
+    for (var i = 0; i < sp_result.length; i++) {
+        var obj = sp_result[i];
 
-		if(!mapFields[obj.column_name])
-			mapFields[obj.column_name] = {};
+        if(!mapFields[obj.column_name])
+            mapFields[obj.column_name] = {};
 
-		mapFields[obj.column_name] = [obj.hl6_crm_binding_id];
-	}
-	return mapFields;
+        mapFields[obj.column_name] = [obj.hl6_crm_binding_id];
+    }
+    return mapFields;
 }
 
 function getMapHl5ChangedFieldsByHl5Id(hl5_id){
-	var mapFields = {};
-	var sp_result = dataL5DER.getL5ChangedFieldsByHl5Id(hl5_id);
-	for (var i = 0; i < sp_result.length; i++) {
-		var obj = sp_result[i];
+    var mapFields = {};
+    var sp_result = dataL5DER.getL5ChangedFieldsByHl5Id(hl5_id);
+    for (var i = 0; i < sp_result.length; i++) {
+        var obj = sp_result[i];
 
-		if(!mapFields[obj.column_name])
-			mapFields[obj.column_name] = {};
+        if(!mapFields[obj.column_name])
+            mapFields[obj.column_name] = {};
 
-		mapFields[obj.column_name] = [obj.hl5_crm_binding_id];
-	}
-	return mapFields;
+        mapFields[obj.column_name] = [obj.hl5_crm_binding_id];
+    }
+    return mapFields;
 }
 
 function getCategoryById(level, hlId){
-	var mapFields = {};
-	var sp_result = !hlId ? dataCategory.getCategoryById(level) : dataCategory.getCategoryByLevelHlId(level, hlId);
-	
-	for (var i = 0; i < sp_result.length; i++) {
-		var obj = sp_result[i];
+    var mapFields = {};
+    var sp_result = !hlId ? dataCategory.getCategoryById(level) : dataCategory.getCategoryByLevelHlId(level, hlId);
 
-		if(!mapFields[obj.CATEGORY_ID])
-			mapFields[obj.CATEGORY_ID] = {};
+    for (var i = 0; i < sp_result.length; i++) {
+        var obj = sp_result[i];
 
-		mapFields[obj.CATEGORY_ID] = obj;
-	}
-	return mapFields;
+        if(!mapFields[obj.CATEGORY_ID])
+            mapFields[obj.CATEGORY_ID] = {};
+
+        mapFields[obj.CATEGORY_ID] = obj;
+    }
+    return mapFields;
 
 
 }
@@ -246,7 +252,7 @@ function getHierarchyLevelEnum() {
  */
 function getEnableEdit(statusId, statusLevel, userId, superAdmin, parentStatusId, granParentStatusId) {
     superAdmin = superAdmin == undefined ? isSuperAdmin(userId) : superAdmin;
-	//TODO: Super admin validation added because of SAP new requirements, refactor this
+    //TODO: Super admin validation added because of SAP new requirements, refactor this
     return  Number(statusId) !== statusLevel.DELETED_IN_CRM && Number(parentStatusId || 0) !== statusLevel.DELETED_IN_CRM
         && Number(granParentStatusId || 0) !== statusLevel.DELETED_IN_CRM
         && (superAdmin || (Number(statusId) !== statusLevel.CREATE_IN_CRM && Number(statusId) !== statusLevel.UPDATE_IN_CRM));
@@ -284,7 +290,7 @@ function convertToCSV(headers, rdo) {
                 line += ','
             }
             line += rs[header];
-}
+        }
         str += line + '\r\n';
     }
 

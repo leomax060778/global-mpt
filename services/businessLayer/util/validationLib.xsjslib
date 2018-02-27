@@ -1,4 +1,4 @@
-$.import("mktgplanningtool.services.commonLib", "mapper");
+/**/$.import("mktgplanningtool.services.commonLib", "mapper");
 var mapper = $.mktgplanningtool.services.commonLib.mapper;
 var dataValidation = mapper.getDataValidation();
 
@@ -40,4 +40,13 @@ function validateActualDatesRange(campaignTypeId, campaignSubTypeId, Actual_Star
 
 	}
 	return false;
+}
+
+function getMinMaxDateByIdAndLevel(HlId, Level){
+	var bYear = dataValidation.getBudgetYearByIdLevel(HlId, Level);
+    var minDate = new Date(bYear[0].BUDGET_YEAR, 0, 1);
+    var maxDate = new Date(bYear[0].BUDGET_YEAR, 11, 31);
+   
+
+    return {MIN_DATE : minDate, MAX_DATE: maxDate};
 }

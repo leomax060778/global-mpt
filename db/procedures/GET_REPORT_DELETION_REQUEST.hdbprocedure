@@ -1,0 +1,120 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_REPORT_DELETION_REQUEST" (
+		IN IN_LEVEL NVARCHAR(3)
+		, OUT out_result TABLE (
+		OBJECT_TYPE NVARCHAR(3),
+		PARENT_CRM_ID NVARCHAR(255),
+		CRM_ID NVARCHAR(255),
+		CRM_DESCRIPTION NVARCHAR(500)
+		)
+	)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	AS
+BEGIN
+
+	IF(IN_LEVEL = 'HL4') THEN
+	    out_result = SELECT
+	        'MPL' AS OBJECT_TYPE,
+	        "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(
+            BYEAR.BUDGET_YEAR, HL1.ACRONYM, hl2.ORGANIZATION_ACRONYM, HL3.ACRONYM,'', '', '') AS PARENT_CRM_ID,
+            "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(
+            BYEAR.BUDGET_YEAR, HL1.ACRONYM, hl2.ORGANIZATION_ACRONYM, HL3.ACRONYM, HL4.ACRONYM, '', '') AS CRM_ID,
+            HL4_CRM_DESCRIPTION AS CRM_DESCRIPTION
+            FROM HL4
+             INNER JOIN HL3 ON HL4.HL3_ID = HL3.HL3_ID
+             INNER JOIN HL2 ON HL3.HL2_ID = HL2.HL2_ID
+             INNER JOIN HL1 ON HL2.HL1_ID = HL1.HL1_ID
+             INNER JOIN BUDGET_YEAR BYEAR ON BYEAR.BUDGET_YEAR_ID = HL1.BUDGET_YEAR_ID
+            WHERE
+             HL4.HL4_STATUS_DETAIL_ID = 9
+             AND HL4.DELETED = 0 AND HL4.ENABLED = 1;
+
+	ELSEIF(IN_LEVEL = 'HL5') THEN --CPG
+	 out_result = SELECT
+    	        'CPG' AS OBJECT_TYPE,
+    	        "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(
+                BYEAR.BUDGET_YEAR, HL1.ACRONYM, hl2.ORGANIZATION_ACRONYM, HL3.ACRONYM,HL4.ACRONYM, '', '') AS PARENT_CRM_ID,
+                "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(
+                BYEAR.BUDGET_YEAR, HL1.ACRONYM, hl2.ORGANIZATION_ACRONYM, HL3.ACRONYM, HL4.ACRONYM, HL5.ACRONYM, '') AS CRM_ID,
+                HL5_CRM_DESCRIPTION AS CRM_DESCRIPTION
+                FROM HL5
+                 INNER JOIN HL4 ON HL5.HL4_ID = HL4.HL4_ID
+                 INNER JOIN HL3 ON HL4.HL3_ID = HL3.HL3_ID
+                 INNER JOIN HL2 ON HL3.HL2_ID = HL2.HL2_ID
+                 INNER JOIN HL1 ON HL2.HL1_ID = HL1.HL1_ID
+                 INNER JOIN BUDGET_YEAR BYEAR ON BYEAR.BUDGET_YEAR_ID = HL1.BUDGET_YEAR_ID
+                WHERE
+                 HL5.HL5_STATUS_DETAIL_ID = 9
+                 AND HL4.DELETED = 0 AND HL4.ENABLED = 1;
+	ELSEIF(IN_LEVEL = 'HL6')THEN --CPT
+	out_result = SELECT
+        	        'CPT' AS OBJECT_TYPE,
+        	        "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(
+                    BYEAR.BUDGET_YEAR, HL1.ACRONYM, hl2.ORGANIZATION_ACRONYM, HL3.ACRONYM,HL4.ACRONYM, HL5.ACRONYM, '') AS PARENT_CRM_ID,
+                    "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(
+                    BYEAR.BUDGET_YEAR, HL1.ACRONYM, hl2.ORGANIZATION_ACRONYM, HL3.ACRONYM, HL4.ACRONYM, HL5.ACRONYM, HL6.ACRONYM) AS CRM_ID,
+                    HL6_CRM_DESCRIPTION AS CRM_DESCRIPTION
+                    FROM HL6
+                     INNER JOIN HL5 ON HL6.HL5_ID = HL5.HL5_ID
+                     INNER JOIN HL4 ON HL5.HL4_ID = HL4.HL4_ID
+                     INNER JOIN HL3 ON HL4.HL3_ID = HL3.HL3_ID
+                     INNER JOIN HL2 ON HL3.HL2_ID = HL2.HL2_ID
+                     INNER JOIN HL1 ON HL2.HL1_ID = HL1.HL1_ID
+                     INNER JOIN BUDGET_YEAR BYEAR ON BYEAR.BUDGET_YEAR_ID = HL1.BUDGET_YEAR_ID
+                    WHERE
+                     HL6.HL6_STATUS_DETAIL_ID = 9
+                     AND HL4.DELETED = 0 AND HL4.ENABLED = 1;
+	ELSE --ALL
+	out_result = SELECT
+    	        'MPL' AS OBJECT_TYPE,
+    	        "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(
+                BYEAR.BUDGET_YEAR, HL1.ACRONYM, hl2.ORGANIZATION_ACRONYM, HL3.ACRONYM,'', '', '') AS PARENT_CRM_ID,
+                "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(
+                BYEAR.BUDGET_YEAR, HL1.ACRONYM, hl2.ORGANIZATION_ACRONYM, HL3.ACRONYM, HL4.ACRONYM, '', '') AS CRM_ID,
+                HL4_CRM_DESCRIPTION AS CRM_DESCRIPTION
+                FROM HL4
+                 INNER JOIN HL3 ON HL4.HL3_ID = HL3.HL3_ID
+                 INNER JOIN HL2 ON HL3.HL2_ID = HL2.HL2_ID
+                 INNER JOIN HL1 ON HL2.HL1_ID = HL1.HL1_ID
+                 INNER JOIN BUDGET_YEAR BYEAR ON BYEAR.BUDGET_YEAR_ID = HL1.BUDGET_YEAR_ID
+                WHERE
+                 HL4.HL4_STATUS_DETAIL_ID = 9
+                 AND HL4.DELETED = 0 AND HL4.ENABLED = 1
+                 UNION ALL
+                 SELECT
+                'CPG' AS OBJECT_TYPE,
+                "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(
+                 BYEAR.BUDGET_YEAR, HL1.ACRONYM, hl2.ORGANIZATION_ACRONYM, HL3.ACRONYM,HL4.ACRONYM, '', '') AS PARENT_CRM_ID,
+                 "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(
+                 BYEAR.BUDGET_YEAR, HL1.ACRONYM, hl2.ORGANIZATION_ACRONYM, HL3.ACRONYM, HL4.ACRONYM, HL5.ACRONYM, '') AS CRM_ID,
+                 HL4_CRM_DESCRIPTION AS CRM_DESCRIPTION
+                 FROM HL5
+                  INNER JOIN HL4 ON HL5.HL4_ID = HL4.HL4_ID
+                  INNER JOIN HL3 ON HL4.HL3_ID = HL3.HL3_ID
+                  INNER JOIN HL2 ON HL3.HL2_ID = HL2.HL2_ID
+                  INNER JOIN HL1 ON HL2.HL1_ID = HL1.HL1_ID
+                  INNER JOIN BUDGET_YEAR BYEAR ON BYEAR.BUDGET_YEAR_ID = HL1.BUDGET_YEAR_ID
+                 WHERE
+                  HL5.HL5_STATUS_DETAIL_ID = 9
+                  AND HL4.DELETED = 0 AND HL4.ENABLED = 1
+                  UNION ALL
+                  SELECT
+                    'CPT' AS OBJECT_TYPE,
+                    "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(
+                      BYEAR.BUDGET_YEAR, HL1.ACRONYM, hl2.ORGANIZATION_ACRONYM, HL3.ACRONYM,HL4.ACRONYM, HL5.ACRONYM, '') AS PARENT_CRM_ID,
+                      "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(
+                      BYEAR.BUDGET_YEAR, HL1.ACRONYM, hl2.ORGANIZATION_ACRONYM, HL3.ACRONYM, HL4.ACRONYM, HL5.ACRONYM, HL6.ACRONYM) AS CRM_ID,
+                      HL4_CRM_DESCRIPTION AS CRM_DESCRIPTION
+                      FROM HL6
+                       INNER JOIN HL5 ON HL6.HL5_ID = HL5.HL5_ID
+                       INNER JOIN HL4 ON HL5.HL4_ID = HL4.HL4_ID
+                       INNER JOIN HL3 ON HL4.HL3_ID = HL3.HL3_ID
+                       INNER JOIN HL2 ON HL3.HL2_ID = HL2.HL2_ID
+                       INNER JOIN HL1 ON HL2.HL1_ID = HL1.HL1_ID
+                       INNER JOIN BUDGET_YEAR BYEAR ON BYEAR.BUDGET_YEAR_ID = HL1.BUDGET_YEAR_ID
+                      WHERE
+                       HL6.HL6_STATUS_DETAIL_ID = 9
+                       AND HL4.DELETED = 0 AND HL4.ENABLED = 1;
+	END IF;
+END;

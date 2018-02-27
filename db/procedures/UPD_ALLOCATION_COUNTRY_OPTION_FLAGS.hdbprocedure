@@ -1,0 +1,20 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::UPD_ALLOCATION_COUNTRY_OPTION_FLAGS" (
+	IN in_category_id INTEGER,
+	IN in_hierarchy_level_id INTEGER,
+	IN in_make_category_mandatory TINYINT,
+	IN in_in_processing_report TINYINT,
+	OUT out_result INTEGER
+)
+   LANGUAGE SQLSCRIPT
+   SQL SECURITY INVOKER
+   DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+   AS
+BEGIN
+        UPDATE ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL
+        SET make_category_mandatory = in_make_category_mandatory,
+            in_processing_report = in_in_processing_report
+        WHERE ALLOCATION_CATEGORY_ID = in_category_id
+            AND HIERARCHY_LEVEL_ID = in_hierarchy_level_id;
+
+        SELECT ::ROWCOUNT INTO out_result FROM DUMMY;
+END

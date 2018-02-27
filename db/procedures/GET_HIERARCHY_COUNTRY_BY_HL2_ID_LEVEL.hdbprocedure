@@ -1,0 +1,54 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HIERARCHY_COUNTRY_BY_HL2_ID_LEVEL" (
+    IN IN_HL2_ID BIGINT,
+    IN IN_HIERARCHY_LEVEL_ID BIGINT,
+	OUT out_result_available TABLE (
+        ALLOCATION_COUNTRY_CATEGORY_OPTION_ID BIGINT,
+        OPTION_NAME NVARCHAR(255)
+	),
+ 	OUT out_result_assigned TABLE (
+    	allocation_category_id BIGINT,
+    	ALLOCATION_COUNTRY_CATEGORY_OPTION_ID BIGINT,
+    	OPTION_NAME NVARCHAR(255),
+    	make_category_mandatory TINYINT,
+    	SINGLE_OPTION_ONLY TINYINT
+    ),
+    OUT out_result TABLE (
+        IN_PROCESSING_REPORT TINYINT,
+        MAKE_CATEGORY_MANDATORY TINYINT
+    )
+)
+
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	READS SQL DATA AS
+BEGIN
+        out_result_assigned =
+                                SELECT distinct ACCOL.allocation_category_id, CT.ALLOCATION_COUNTRY_CATEGORY_OPTION_ID, CT.name AS OPTION_NAME, ACCOL.make_category_mandatory, AC.SINGLE_OPTION_ONLY
+                                FROM ALLOCATION_COUNTRY_CATEGORY_OPTION CT
+                                    INNER JOIN ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL ACCOL ON CT.ALLOCATION_COUNTRY_CATEGORY_OPTION_ID = ACCOL.ALLOCATION_COUNTRY_CATEGORY_OPTION_ID
+                                    INNER JOIN ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_HL2 ACCOL_HL2 ON ACCOL.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID = ACCOL_HL2.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID
+                                    INNER JOIN ALLOCATION_CATEGORY AC ON AC.allocation_category_id = ACCOL.allocation_category_id
+                                WHERE ACCOL.hierarchy_level_id = IN_HIERARCHY_LEVEL_ID
+                                    AND ACCOL.enabled = 1 AND ACCOL.deleted = 0
+                                    AND ACCOL_HL2.DELETED = 0 AND ACCOL_HL2.ENABLED = 1
+                                    AND ACCOL_HL2.HL2_ID = IN_HL2_ID
+                                    AND CT.enabled = 1 AND CT.deleted = 0
+                                ORDER BY CT.name;
+
+		out_result_available =
+                                SELECT CT.ALLOCATION_COUNTRY_CATEGORY_OPTION_ID, CT.NAME AS OPTION_NAME
+                                FROM ALLOCATION_COUNTRY_CATEGORY_OPTION CT
+                                WHERE CT.enabled = 1 AND CT.deleted = 0
+                                    AND CT.ALLOCATION_COUNTRY_CATEGORY_OPTION_ID NOT IN (SELECT ALLOCATION_COUNTRY_CATEGORY_OPTION_ID FROM :out_result_assigned);
+
+        out_result =
+                         SELECT TOP 1   ACCOL.IN_PROCESSING_REPORT,
+                                        ACCOL.MAKE_CATEGORY_MANDATORY
+                         FROM ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL ACCOL
+                         INNER JOIN ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_HL2 ACCOL_HL2 ON ACCOL.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID = ACCOL_HL2.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID
+                         	AND ACCOL_HL2.HL2_ID = IN_HL2_ID
+                         WHERE ACCOL.hierarchy_level_id = IN_HIERARCHY_LEVEL_ID
+                            AND ACCOL.DELETED = 0 AND ACCOL.ENABLED = 1
+                            AND ACCOL_HL2.DELETED = 0 AND ACCOL_HL2.ENABLED = 1;
+END;

@@ -1,0 +1,273 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL_BY_SEARCH" (
+ 	IN IN_HL NVARCHAR(3),
+ 	IN IN_SEARCH_STRING NVARCHAR(255),
+ 	IN IN_REGION_ID BIGINT,
+ 	IN IN_SUBREGION_ID BIGINT,
+ 	IN IN_BUDGET_YEAR_ID BIGINT,
+ 	IN IN_LIMIT INTEGER,
+ 	IN IN_OFFSET INTEGER,
+ 	OUT OUT_RESULT TABLE(
+ 		HL_ID BIGINT,
+ 		PARENT_ID BIGINT,
+ 		ACRONYM NVARCHAR(255),
+ 		PATH NVARCHAR(255),
+ 		DESCRIPTION NVARCHAR(255),
+ 		STATUS_ID BIGINT,
+ 		STATUS_DETAIL NVARCHAR(255),
+ 		REGION_NAME NVARCHAR(255),
+ 		SUBREGION_NAME NVARCHAR(255)	
+ 	),
+ 	OUT TOTAL_ROWS INTEGER
+ ) 
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER 
+	--DEFAULT SCHEMA <default_schema_name>
+	READS SQL DATA AS
+BEGIN			
+		
+			IF IN_HL = 'L1'
+				THEN
+					SEARCH_RESULT =	(
+									SELECT 
+										CVHS.HL1_ID AS HL_ID,
+										0 AS PARENT_ID,
+								 		CVHS.ACRONYM,
+								 		CVHS.PATH,
+								 		CVHS.DESCRIPTION,
+								 		0 AS STATUS_ID,
+								 		'' AS STATUS_DETAIL,
+								 		CVHS.REGION_NAME,
+								 		'' AS SUBREGION_NAME
+									FROM "_SYS_BIC"."mktgplanningtool.db.data.views/CV_HL1_SEARCH" CVHS
+							 		WHERE	(CVHS.REGION_ID = IN_REGION_ID OR IN_REGION_ID = 0)
+							 				AND (CVHS.BUDGET_YEAR_ID = IN_BUDGET_YEAR_ID)
+							 				AND CONTAINS((ACRONYM, DESCRIPTION), IN_SEARCH_STRING)
+							 		)
+				
+									UNION
+						 	
+									(
+									SELECT CVHS.HL1_ID AS HL_ID,
+										0 AS PARENT_ID,
+								 		CVHS.ACRONYM,
+								 		CVHS.PATH,
+								 		CVHS.DESCRIPTION,
+								 		0 AS STATUS_ID,
+								 		'' AS STATUS_DETAIL,
+								 		CVHS.REGION_NAME,
+								 		'' AS SUBREGION_NAME
+								 		FROM "_SYS_BIC"."mktgplanningtool.db.data.views/CV_HL1_SEARCH" CVHS
+									WHERE  	(CVHS.REGION_ID = IN_REGION_ID OR IN_REGION_ID = 0)
+											AND (CVHS.BUDGET_YEAR_ID = IN_BUDGET_YEAR_ID)
+						 					AND CVHS.PATH LIKE_REGEXPR IN_SEARCH_STRING
+									);
+			ELSEIF IN_HL = 'L2'
+				THEN
+					SEARCH_RESULT =	(
+									SELECT 
+										CVHS.HL2_ID AS HL_ID,
+										CVHS.PARENT_ID,
+								 		CVHS.ACRONYM,
+								 		CVHS.PATH,
+								 		CVHS.DESCRIPTION,
+								 		0 AS STATUS_ID,
+								 		'' AS STATUS_DETAIL,
+								 		CVHS.REGION_NAME,
+								 		CVHS.SUBREGION_NAME
+									FROM "_SYS_BIC"."mktgplanningtool.db.data.views/CV_HL2_SEARCH" CVHS
+							 		WHERE	(CVHS.REGION_ID = IN_REGION_ID OR IN_REGION_ID = 0)
+							 				AND (CVHS.SUBREGION_ID = IN_SUBREGION_ID OR IN_SUBREGION_ID = 0)
+							 				AND (CVHS.BUDGET_YEAR_ID = IN_BUDGET_YEAR_ID)
+							 				AND CONTAINS((ACRONYM, DESCRIPTION), IN_SEARCH_STRING)
+							 		)
+				
+									UNION
+						 	
+									(
+									SELECT CVHS.HL2_ID AS HL_ID,
+										CVHS.PARENT_ID,
+								 		CVHS.ACRONYM,
+								 		CVHS.PATH,
+								 		CVHS.DESCRIPTION,
+								 		0 AS STATUS_ID,
+								 		'' AS STATUS_DETAIL,
+								 		CVHS.REGION_NAME,
+								 		CVHS.SUBREGION_NAME
+								 		FROM "_SYS_BIC"."mktgplanningtool.db.data.views/CV_HL2_SEARCH" CVHS
+									WHERE  	(CVHS.REGION_ID = IN_REGION_ID OR IN_REGION_ID = 0)
+						 					AND (CVHS.SUBREGION_ID = IN_SUBREGION_ID OR IN_SUBREGION_ID = 0)
+						 					AND (CVHS.BUDGET_YEAR_ID = IN_BUDGET_YEAR_ID)
+						 					AND CVHS.PATH LIKE_REGEXPR IN_SEARCH_STRING
+									);
+			ELSEIF IN_HL = 'L3'
+				THEN
+					SEARCH_RESULT =	(
+									SELECT 
+										CVHS.HL3_ID AS HL_ID,
+										CVHS.PARENT_ID,
+								 		CVHS.ACRONYM,
+								 		CVHS.PATH,
+								 		CVHS.DESCRIPTION,
+								 		0 AS STATUS_ID,
+								 		'' AS STATUS_DETAIL,
+								 		CVHS.REGION_NAME,
+								 		CVHS.SUBREGION_NAME
+									FROM "_SYS_BIC"."mktgplanningtool.db.data.views/CV_HL3_SEARCH" CVHS
+							 		WHERE	(CVHS.REGION_ID = IN_REGION_ID OR IN_REGION_ID = 0)
+							 				AND (CVHS.SUBREGION_ID = IN_SUBREGION_ID OR IN_SUBREGION_ID = 0)
+							 				AND (CVHS.BUDGET_YEAR_ID = IN_BUDGET_YEAR_ID)
+							 				AND CONTAINS((ACRONYM, DESCRIPTION), IN_SEARCH_STRING)
+							 		)
+				
+									UNION
+						 	
+									(
+									SELECT CVHS.HL3_ID AS HL_ID,
+										CVHS.PARENT_ID,
+								 		CVHS.ACRONYM,
+								 		CVHS.PATH,
+								 		CVHS.DESCRIPTION,
+								 		0 AS STATUS_ID,
+								 		'' AS STATUS_DETAIL,
+								 		CVHS.REGION_NAME,
+								 		CVHS.SUBREGION_NAME
+								 		FROM "_SYS_BIC"."mktgplanningtool.db.data.views/CV_HL3_SEARCH" CVHS
+									WHERE  	(CVHS.REGION_ID = IN_REGION_ID OR IN_REGION_ID = 0)
+						 					AND (CVHS.SUBREGION_ID = IN_SUBREGION_ID OR IN_SUBREGION_ID = 0)
+						 					AND (CVHS.BUDGET_YEAR_ID = IN_BUDGET_YEAR_ID)
+						 					AND CVHS.PATH LIKE_REGEXPR IN_SEARCH_STRING
+									);
+									
+			ELSEIF IN_HL = 'L4' 
+				THEN
+					SEARCH_RESULT =	(
+									SELECT 
+										CVHS.HL4_ID AS HL_ID,
+										CVHS.PARENT_ID,
+								 		CVHS.ACRONYM,
+								 		CVHS.PATH,
+								 		CVHS.DESCRIPTION,
+								 		CVHS.STATUS_ID,
+								 		CVHS.STATUS AS STATUS_DETAIL,
+								 		CVHS.REGION_NAME,
+								 		CVHS.SUBREGION_NAME	
+									FROM "_SYS_BIC"."mktgplanningtool.db.data.views/CV_HL4_SEARCH" CVHS
+						 			WHERE 	(CVHS.REGION_ID = IN_REGION_ID OR IN_REGION_ID = 0)
+						 					AND (CVHS.SUBREGION_ID = IN_SUBREGION_ID OR IN_SUBREGION_ID = 0)
+						 					AND (CVHS.BUDGET_YEAR_ID = IN_BUDGET_YEAR_ID)
+						 					AND CONTAINS((STATUS, ACRONYM, DESCRIPTION), IN_SEARCH_STRING)
+						 			)
+						 					UNION
+						 	
+									(
+									SELECT CVHS.HL4_ID AS HL_ID,
+										CVHS.PARENT_ID,
+								 		CVHS.ACRONYM,
+								 		CVHS.PATH,
+								 		CVHS.DESCRIPTION,
+								 		CVHS.STATUS_ID,
+								 		CVHS.STATUS AS STATUS_DETAIL,
+								 		CVHS.REGION_NAME,
+								 		CVHS.SUBREGION_NAME	 
+								 		FROM "_SYS_BIC"."mktgplanningtool.db.data.views/CV_HL4_SEARCH" CVHS
+									WHERE  (CVHS.REGION_ID = IN_REGION_ID OR IN_REGION_ID = 0)
+						 					AND (CVHS.SUBREGION_ID = IN_SUBREGION_ID OR IN_SUBREGION_ID = 0)
+						 					AND (CVHS.BUDGET_YEAR_ID = IN_BUDGET_YEAR_ID)
+						 					AND CVHS.PATH LIKE_REGEXPR IN_SEARCH_STRING
+									);
+									
+			ELSEIF IN_HL = 'L5' 
+				THEN
+					SEARCH_RESULT =	(
+									SELECT 
+										CVHS.HL5_ID AS HL_ID,
+										CVHS.PARENT_ID,
+								 		CVHS.ACRONYM,
+								 		CVHS.PATH,
+								 		CVHS.DESCRIPTION,
+								 		CVHS.STATUS_ID,
+								 		CVHS.STATUS AS STATUS_DETAIL,
+								 		CVHS.REGION_NAME,
+								 		CVHS.SUBREGION_NAME	
+									FROM "_SYS_BIC"."mktgplanningtool.db.data.views/CV_HL5_SEARCH" CVHS
+						 			WHERE	(CVHS.REGION_ID = IN_REGION_ID OR IN_REGION_ID = 0)
+						 					AND (CVHS.SUBREGION_ID = IN_SUBREGION_ID OR IN_SUBREGION_ID = 0)
+						 					AND (CVHS.BUDGET_YEAR_ID = IN_BUDGET_YEAR_ID)
+						 					AND CONTAINS((STATUS, ACRONYM, DESCRIPTION), IN_SEARCH_STRING)
+						 			)
+						 					UNION
+						 	
+									(
+									SELECT CVHS.HL5_ID AS HL_ID,
+										CVHS.PARENT_ID,
+								 		CVHS.ACRONYM,
+								 		CVHS.PATH,
+								 		CVHS.DESCRIPTION,
+								 		CVHS.STATUS_ID,
+								 		CVHS.STATUS AS STATUS_DETAIL,
+								 		CVHS.REGION_NAME,
+								 		CVHS.SUBREGION_NAME	 
+								 		FROM "_SYS_BIC"."mktgplanningtool.db.data.views/CV_HL5_SEARCH" CVHS
+									WHERE	(CVHS.REGION_ID = IN_REGION_ID OR IN_REGION_ID = 0)
+						 					AND (CVHS.SUBREGION_ID = IN_SUBREGION_ID OR IN_SUBREGION_ID = 0)
+						 					AND (CVHS.BUDGET_YEAR_ID = IN_BUDGET_YEAR_ID)
+						 					AND CVHS.PATH LIKE_REGEXPR IN_SEARCH_STRING
+									);
+									
+			ELSEIF IN_HL = 'L6'
+				THEN
+					SEARCH_RESULT =	(
+									SELECT 
+										CVHS.HL6_ID AS HL_ID,
+										CVHS.PARENT_ID,
+								 		CVHS.ACRONYM,
+								 		CVHS.PATH,
+								 		CVHS.DESCRIPTION,
+								 		CVHS.STATUS_ID,
+								 		CVHS.STATUS AS STATUS_DETAIL,
+								 		CVHS.REGION_NAME,
+								 		CVHS.SUBREGION_NAME	
+									FROM "_SYS_BIC"."mktgplanningtool.db.data.views/CV_HL6_SEARCH" CVHS
+						 			WHERE 	(CVHS.REGION_ID = IN_REGION_ID OR IN_REGION_ID = 0)
+						 					AND (CVHS.SUBREGION_ID = IN_SUBREGION_ID OR IN_SUBREGION_ID = 0)
+						 					AND (CVHS.BUDGET_YEAR_ID = IN_BUDGET_YEAR_ID)
+						 					AND CONTAINS((STATUS, ACRONYM, DESCRIPTION), IN_SEARCH_STRING)
+						 			)
+						 					UNION
+						 	
+									(
+									SELECT 	CVHS.HL6_ID AS HL_ID,
+											CVHS.PARENT_ID,
+									 		CVHS.ACRONYM,
+									 		CVHS.PATH,
+									 		CVHS.DESCRIPTION,
+									 		CVHS.STATUS_ID,
+									 		CVHS.STATUS AS STATUS_DETAIL,
+									 		CVHS.REGION_NAME,
+									 		CVHS.SUBREGION_NAME	 
+									 		FROM "_SYS_BIC"."mktgplanningtool.db.data.views/CV_HL6_SEARCH" CVHS
+										WHERE   (CVHS.REGION_ID = IN_REGION_ID OR IN_REGION_ID = 0)
+							 					AND (CVHS.SUBREGION_ID = IN_SUBREGION_ID OR IN_SUBREGION_ID = 0)
+							 					AND (CVHS.BUDGET_YEAR_ID = IN_BUDGET_YEAR_ID)
+							 					AND CVHS.PATH LIKE_REGEXPR IN_SEARCH_STRING
+										);	
+			END IF;
+
+			OUT_RESULT =    SELECT
+                                SR.HL_ID,
+                                SR.PARENT_ID,
+                                SR.ACRONYM,
+                                SR.PATH,
+                                SR.DESCRIPTION,
+                                SR.STATUS_ID,
+                                SR.STATUS_DETAIL,
+                                SR.REGION_NAME,
+                                SR.SUBREGION_NAME
+                            FROM :SEARCH_RESULT SR
+                            LIMIT :IN_LIMIT
+                            OFFSET :IN_OFFSET;
+
+            SELECT COALESCE(COUNT(T.HL_ID),0) INTO TOTAL_ROWS FROM :SEARCH_RESULT T;
+			
+					
+END;

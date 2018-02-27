@@ -6,6 +6,8 @@ var ErrorLib = mapper.getErrors();
 var validationLib = mapper.getValidationLib();
 var config = mapper.getDataConfig();
 /******************************************/
+var MIN_MAX_DATE = "MIN_MAX_DATE";
+/********************************************/
 
 function processRequest(){
 	return httpUtil.processRequest(handleGet,handlePost,handlePut,handleDelete,false, "",true);
@@ -13,7 +15,19 @@ function processRequest(){
 
 //Implementation of GET call -- GET HL1
 function handleGet(){
-    throw ErrorLib.getErrors().NotImplemented();
+    var method = httpUtil.getUrlParameters().get("method").toUpperCase();
+    var HL_ID = httpUtil.getUrlParameterByName("HL_ID").toUpperCase();
+    var LEVEL = httpUtil.getUrlParameterByName("LEVEL").toUpperCase();
+    switch (method){
+        case MIN_MAX_DATE:
+            var rdo = validationLib.getMinMaxDateByIdAndLevel(HL_ID, LEVEL);
+            httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
+            break;
+        default:
+            throw ErrorLib.getErrors().BadRequest("","validationServices/handleGet","Invalid parameter name");
+    }
+
+
 }
 
 function handlePost(reqBody) {
@@ -26,7 +40,7 @@ function handlePost(reqBody) {
             httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
             break;
         default:
-            throw ErrorLib.getErrors().BadRequest("","validationServices/handleGet","Invalid parameter name");
+            throw ErrorLib.getErrors().BadRequest("","validationServices/handlePost","Invalid parameter name");
     }
 }
 

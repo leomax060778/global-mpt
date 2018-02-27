@@ -1,0 +1,66 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_BUDGET_YEAR_BY_HL_ID_BY_LEVEL" (
+	  IN in_hl_id BIGINT
+	, IN in_level NVARCHAR(3)
+	, OUT out_result TABLE (BUDGET_YEAR_ID INTEGER, BUDGET_YEAR INT)
+	)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	READS SQL DATA AS
+BEGIN
+
+    IF in_level = 'HL1' THEN
+        out_result =
+        		SELECT BUY.BUDGET_YEAR_ID, BUY.BUDGET_YEAR
+                FROM HL1
+                INNER JOIN BUDGET_YEAR BUY ON BUY.BUDGET_YEAR_ID = HL1.BUDGET_YEAR_ID
+                WHERE HL1.HL1_ID = in_hl_id;
+    ELSEIF in_level = 'HL2' THEN
+        out_result =
+                    SELECT BUY.BUDGET_YEAR_ID, BUY.BUDGET_YEAR
+                    FROM HL2
+                    INNER JOIN HL1 ON HL1.HL1_ID = HL2.HL1_ID
+                    INNER JOIN BUDGET_YEAR BUY ON BUY.BUDGET_YEAR_ID = HL1.BUDGET_YEAR_ID
+                    WHERE HL2.HL2_ID = in_hl_id;
+    ELSEIF in_level = 'HL3' THEN
+        out_result =
+                            SELECT BUY.BUDGET_YEAR_ID, BUY.BUDGET_YEAR
+                            FROM HL3
+                            INNER JOIN HL2 ON HL2.HL2_ID = HL3.HL2_ID
+                            INNER JOIN HL1 ON HL1.HL1_ID = HL2.HL1_ID
+                            INNER JOIN BUDGET_YEAR BUY ON BUY.BUDGET_YEAR_ID = HL1.BUDGET_YEAR_ID
+                            WHERE HL3.HL3_ID = in_hl_id;
+    ELSEIF in_level = 'HL4' THEN
+        out_result =
+        	                SELECT BUY.BUDGET_YEAR_ID, BUY.BUDGET_YEAR
+                            FROM HL4
+                            INNER JOIN HL3 ON HL4.HL3_ID = HL3.HL3_ID
+                            INNER JOIN HL2 ON HL2.HL2_ID = HL3.HL2_ID
+                            INNER JOIN HL1 ON HL1.HL1_ID = HL2.HL1_ID
+                            INNER JOIN BUDGET_YEAR BUY ON BUY.BUDGET_YEAR_ID = HL1.BUDGET_YEAR_ID
+                            WHERE HL4.HL4_ID = in_hl_id;
+    ELSEIF in_level = 'HL5' THEN
+        out_result =
+                        SELECT BUY.BUDGET_YEAR_ID, BUY.BUDGET_YEAR
+                        FROM HL5
+                        INNER JOIN HL4 ON HL5.HL4_ID = HL4.HL4_ID
+                        INNER JOIN HL3 ON HL4.HL3_ID = HL3.HL3_ID
+                        INNER JOIN HL2 ON HL2.HL2_ID = HL3.HL2_ID
+                        INNER JOIN HL1 ON HL1.HL1_ID = HL2.HL1_ID
+                        INNER JOIN BUDGET_YEAR BUY ON BUY.BUDGET_YEAR_ID = HL1.BUDGET_YEAR_ID
+                        WHERE HL5.HL5_ID = in_hl_id;
+    ELSEIF in_level = 'HL6' THEN
+        out_result =
+                                SELECT BUY.BUDGET_YEAR_ID, BUY.BUDGET_YEAR
+                                FROM HL6
+                                INNER JOIN HL5 ON HL6.HL5_ID = HL5.HL5_ID
+                                INNER JOIN HL4 ON HL5.HL4_ID = HL4.HL4_ID
+                                INNER JOIN HL3 ON HL4.HL3_ID = HL3.HL3_ID
+                                INNER JOIN HL2 ON HL2.HL2_ID = HL3.HL2_ID
+                                INNER JOIN HL1 ON HL1.HL1_ID = HL2.HL1_ID
+                                INNER JOIN BUDGET_YEAR BUY ON BUY.BUDGET_YEAR_ID = HL1.BUDGET_YEAR_ID
+                                WHERE HL6.HL6_ID = in_hl_id;
+    END IF;
+
+END;
+

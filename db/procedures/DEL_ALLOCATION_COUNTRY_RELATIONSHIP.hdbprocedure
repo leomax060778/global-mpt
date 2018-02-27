@@ -1,0 +1,51 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::DEL_ALLOCATION_COUNTRY_RELATIONSHIP" (
+	IN in_level_id integer,
+	IN in_l2_id integer,
+	in in_user_id integer,
+	IN optionList TABLE(
+                    in_allocation_country_category_option_id integer
+            		),
+	OUT out_result integer)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	AS
+BEGIN
+
+DECLARE levelName nvarchar(255);
+    levelName := '';
+
+    select description into levelName from hierarchy_level where hierarchy_level_id = in_level_id;
+
+     IF levelName = 'HL5' THEN
+        UPDATE ACOL
+        SET ACOL.DELETED = 1
+        , ACOL.ENABLED = 0
+        , ACOL.modified_user_id = in_user_id
+        , ACOL.modified_date_tz = CURRENT_TIMESTAMP
+        FROM ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL ACOL
+        INNER JOIN ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_HL2 ACOL2 ON ACOL2.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID = ACOL.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID
+            AND ACOL2.HL2_ID = in_l2_id
+
+        WHERE ACOL.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID NOT IN (SELECT ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID FROM HL5_COUNTRY_CATEGORY_OPTION WHERE DELETED = 0 AND ENABLED = 1) --not referenced
+        AND ACOL.HIERARCHY_LEVEL_ID = in_level_id
+        AND ACOL.ALLOCATION_COUNTRY_CATEGORY_OPTION_ID NOT IN (SELECT in_allocation_country_category_option_id FROM :optionList);
+
+     ELSEIF levelName = 'HL6' THEN
+        UPDATE ACOL
+                SET ACOL.DELETED = 1
+                , ACOL.ENABLED = 0
+                , ACOL.modified_user_id = in_user_id
+                , ACOL.modified_date_tz = CURRENT_TIMESTAMP
+                FROM ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL ACOL
+                INNER JOIN ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_HL2 ACOL2 ON ACOL2.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID = ACOL.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID
+                    AND ACOL2.HL2_ID = in_l2_id
+
+                WHERE ACOL.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID NOT IN (SELECT ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID FROM HL6_COUNTRY_CATEGORY_OPTION WHERE DELETED = 0 AND ENABLED = 1) --not referenced
+                AND ACOL.HIERARCHY_LEVEL_ID = in_level_id
+                AND ACOL.ALLOCATION_COUNTRY_CATEGORY_OPTION_ID NOT IN (SELECT in_allocation_country_category_option_id FROM :optionList);
+     END IF;
+
+    SELECT ::ROWCOUNT INTO out_result FROM DUMMY;
+
+END;

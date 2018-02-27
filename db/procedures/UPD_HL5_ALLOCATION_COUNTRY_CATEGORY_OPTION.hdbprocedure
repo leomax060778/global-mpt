@@ -1,0 +1,27 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::UPD_HL5_ALLOCATION_COUNTRY_CATEGORY_OPTION" (
+    IN categoryOption TABLE(
+    	    in_category_option_level_id bigint,
+    	    in_amount DECIMAL(19, 2),
+    	    in_user_id bigint,
+    	    in_updated TINYINT,
+    	    in_hl5_id bigint
+    		),
+    	OUT out_result int
+    )
+    	LANGUAGE SQLSCRIPT
+    	SQL SECURITY INVOKER
+    	DEFAULT SCHEMA "MKTG_PLANNING_TOOL" AS
+    BEGIN
+    		UPDATE HL5_COUNTRY_CATEGORY_OPTION SET
+    		amount = T.IN_AMOUNT,
+    		modified_user_id = T.IN_USER_ID,
+    		modified_date_tz = CURRENT_TIMESTAMP,
+    		updated = T.IN_UPDATED
+    		from HL5_COUNTRY_CATEGORY_OPTION, (
+    		    select IN_AMOUNT, IN_USER_ID, IN_UPDATED, IN_CATEGORY_OPTION_LEVEL_ID, IN_HL5_ID from :categoryOption
+    		) T
+    		where ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID = T.IN_CATEGORY_OPTION_LEVEL_ID
+    		AND HL5_ID = IN_HL5_ID;
+
+            SELECT ::ROWCOUNT INTO out_result FROM DUMMY;
+END;

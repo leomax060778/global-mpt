@@ -1,0 +1,17 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_HL2" (
+    IN list TABLE(
+                in_hl2_id integer,
+                in_allocation_country_category_option_level_id integer,
+                in_user_id integer
+        		),
+	OUT out_result BIGINT
+)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	AS
+BEGIN
+		INSERT INTO "MKTG_PLANNING_TOOL"."ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_HL2"(hl2_id, allocation_country_category_option_level_id, created_user_id)
+		select in_hl2_id, in_allocation_country_category_option_level_id, in_user_id from :list;
+
+		SELECT TOP 1 CURRENT_IDENTITY_VALUE() INTO out_result FROM "MKTG_PLANNING_TOOL"."ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_HL2";
+END;
