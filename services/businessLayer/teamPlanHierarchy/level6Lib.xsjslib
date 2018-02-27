@@ -581,9 +581,9 @@ function updateHl6(data, userId) {
     if (!ownMoneyBudgetSpendRequestStatus) {
         budgetSpendRequest.insertOwnMoneyBudgetSpendRequest(data.BUDGET, data.HL6_ID, LEVEL_STRING, userId, automaticApproval && data.IN_BUDGET);
     } else {
-        if (Number(objHL6.BUDGET).toFixed(2) != Number(data.BUDGET).toFixed(2)) {
-            budgetSpendRequest.updateOwnMoneyBudgetSpendRequestByHlIdLevel(data.HL6_ID, LEVEL_STRING, data.BUDGET, automaticApproval && data.IN_BUDGET, userId);
-        }
+
+        budgetSpendRequest.updateOwnMoneyBudgetSpendRequestByHlIdLevel(data.HL6_ID, LEVEL_STRING, data.BUDGET, automaticApproval && data.IN_BUDGET, userId);
+
     }
 
     var validationResult = validateHl6(data, userId);
@@ -624,7 +624,7 @@ function updateHl6(data, userId) {
                 data.DISTRIBUTION_CHANNEL_ID || 0,
                 data.VENUE,
                 data.CITY,
-                data.COUNTRY_ID,
+                data.COUNTRY_ID || null,
                 data.URL,
                 data.RESULTS_CAMPAIGN_Q1 || 0,
                 data.RESULTS_CAMPAIGN_Q2 || 0,
@@ -791,7 +791,8 @@ function isComplete(data, fromChangeStatusOnDemand) {
         , "REGION"
         , "EVENT_OWNER"
         , "NUMBER_OF_PARTICIPANTS"
-        , "SHOW_ON_DG_CALENDAR"];
+        , "SHOW_ON_DG_CALENDAR"
+        , "BUDGET"];
     for (var i = 0; i < crmBindingFields.length; i++) {
         var crmBindingField = crmBindingFields[i];
         switch (crmBindingField) {
@@ -824,56 +825,6 @@ function isComplete(data, fromChangeStatusOnDemand) {
                 }
 
                 break;
-            case "BUDGET":
-                if (Number(data.ALLOW_BUDGET_ZERO)) {
-                    isComplete = true;
-                } else {
-                    if (data.AUTOMATIC_APPROVAL) {
-                        if(!!Number(data.BUDGET)){
-                            if(!!Number(data.IN_BUDGET) || fromChangeStatusOnDemand){
-                                var budgetSpendRequestStatus = budgetSpendRequest.getBudgetSpendRequestsStatus();
-                                var ownMoneyBudgetSpendRequestStatus = budgetSpendRequest.getOwnMoneyBudgetSpendRequestStatusByHlIdLevel(data.HL6_ID || 0, LEVEL_STRING);
-                                if (!ownMoneyBudgetSpendRequestStatus || (ownMoneyBudgetSpendRequestStatus && ownMoneyBudgetSpendRequestStatus != budgetSpendRequestStatus.APPROVED)) {
-                                    if(Number(data.CO_FUNDED)){
-                                        isComplete = (data.SALE_REQUESTS && data.SALE_REQUESTS.length) || (data.PARTNERS && data.PARTNERS.length);
-                                    } else {
-                                        //isComplete = false;
-                                        var hasBudgetRequestApproved = !!Number(budgetSpendRequest.countApprovedBudgetRequestByHl6Id(data.HL6_ID || '0'));
-                                        var hasBudgetRequestPending = !Number(budgetSpendRequest.countPendingBudgetRequestByHl6Id(data.HL6_ID || '0'));
-                                        isComplete = hasBudgetRequestApproved && hasBudgetRequestPending;
-                                    }
-                                } else {
-                                    isComplete = true;
-                                }
-                            } else {
-                                if(Number(data.CO_FUNDED)){
-                                    isComplete = (data.SALE_REQUESTS && data.SALE_REQUESTS.length) || (data.PARTNERS && data.PARTNERS.length);
-                                } else {
-                                    //isComplete = false;
-                                    var hasBudgetRequestApproved = !!Number(budgetSpendRequest.countApprovedBudgetRequestByHl6Id(data.HL6_ID || '0'));
-                                    var hasBudgetRequestPending = !Number(budgetSpendRequest.countPendingBudgetRequestByHl6Id(data.HL6_ID || '0'));
-                                    isComplete = hasBudgetRequestApproved && hasBudgetRequestPending;
-                                }
-                            }
-                        } else {
-                            if(Number(data.CO_FUNDED)){
-                                isComplete = (data.SALE_REQUESTS && data.SALE_REQUESTS.length) || (data.PARTNERS && data.PARTNERS.length);
-                            } else {
-                                isComplete = false;
-                            }
-                        }
-                    } else {
-                        if (!!Number(data.BUDGET)) {
-                            isComplete = true;
-                        } else {
-                            var hasBudgetRequestApproved = !!Number(budgetSpendRequest.countApprovedBudgetRequestByHl6Id(data.HL6_ID || '0'));
-                            var hasBudgetRequestPending = !Number(budgetSpendRequest.countPendingBudgetRequestByHl6Id(data.HL6_ID || '0'));
-                            isComplete = hasBudgetRequestApproved && hasBudgetRequestPending;
-                        }
-                    }
-                    isComplete = isComplete && validateBudgetDistribution(data);
-                }
-                break;
             case "HL6_CRM_DESCRIPTION":
                 isComplete = fromChangeStatusOnDemand ? !!data.HL6_CRM_DESCRIPTION : !!data.CRM_DESCRIPTION;
                 break;
@@ -902,6 +853,59 @@ function isComplete(data, fromChangeStatusOnDemand) {
                 && data.TARGET_KPIS.KPIS && data.TARGET_KPIS.KPIS.length)
                 || data.TARGET_KPIS.COMMENTS.trim());
         }
+    }
+    return isComplete;
+}
+
+function validateBudget(data, fromChangeStatusOnDemand) {
+    var isComplete = false;
+    if (Number(data.ALLOW_BUDGET_ZERO)) {
+        isComplete = true;
+    } else {
+        if (data.AUTOMATIC_APPROVAL) {
+            if(!!Number(data.BUDGET)){
+                if(!!Number(data.IN_BUDGET) || fromChangeStatusOnDemand){
+                    var budgetSpendRequestStatus = budgetSpendRequest.getBudgetSpendRequestsStatus();
+                    var ownMoneyBudgetSpendRequestStatus = budgetSpendRequest.getOwnMoneyBudgetSpendRequestStatusByHlIdLevel(data.HL6_ID || 0, LEVEL_STRING);
+                    if (!ownMoneyBudgetSpendRequestStatus || (ownMoneyBudgetSpendRequestStatus && ownMoneyBudgetSpendRequestStatus != budgetSpendRequestStatus.APPROVED)) {
+                        if(Number(data.CO_FUNDED)){
+                            isComplete = (data.SALE_REQUESTS && data.SALE_REQUESTS.length) || (data.PARTNERS && data.PARTNERS.length);
+                        } else {
+                            //isComplete = false;
+                            var hasBudgetRequestApproved = !!Number(budgetSpendRequest.countApprovedBudgetRequestByHl6Id(data.HL6_ID || '0'));
+                            var hasBudgetRequestPending = !Number(budgetSpendRequest.countPendingBudgetRequestByHl6Id(data.HL6_ID || '0'));
+                            isComplete = hasBudgetRequestApproved && hasBudgetRequestPending;
+                        }
+                    } else {
+                        isComplete = true;
+                    }
+                } else {
+                    if(Number(data.CO_FUNDED)){
+                        isComplete = (data.SALE_REQUESTS && data.SALE_REQUESTS.length) || (data.PARTNERS && data.PARTNERS.length);
+                    } else {
+                        //isComplete = false;
+                        var hasBudgetRequestApproved = !!Number(budgetSpendRequest.countApprovedBudgetRequestByHl6Id(data.HL6_ID || '0'));
+                        var hasBudgetRequestPending = !Number(budgetSpendRequest.countPendingBudgetRequestByHl6Id(data.HL6_ID || '0'));
+                        isComplete = hasBudgetRequestApproved && hasBudgetRequestPending;
+                    }
+                }
+            } else {
+                if(Number(data.CO_FUNDED)){
+                    isComplete = (data.SALE_REQUESTS && data.SALE_REQUESTS.length) || (data.PARTNERS && data.PARTNERS.length);
+                } else {
+                    isComplete = false;
+                }
+            }
+        } else {
+            if (!!Number(data.BUDGET)) {
+                isComplete = true;
+            } else {
+                var hasBudgetRequestApproved = !!Number(budgetSpendRequest.countApprovedBudgetRequestByHl6Id(data.HL6_ID || '0'));
+                var hasBudgetRequestPending = !Number(budgetSpendRequest.countPendingBudgetRequestByHl6Id(data.HL6_ID || '0'));
+                isComplete = hasBudgetRequestApproved && hasBudgetRequestPending;
+            }
+        }
+        isComplete = isComplete && validateBudgetDistribution(data);
     }
     return isComplete;
 }
@@ -1031,15 +1035,7 @@ function validateHl6(data, userId) {
         crmBindingChangedFields = crmFieldsHasChangedResult.crmBindingChangedFields;
         crmBindingChangedFieldsUpdate = crmFieldsHasChangedResult.crmBindingChangedFieldsUpdate;
         if (data.HL6_ID) {
-            /*existInCrm = dataHl6.hl6ExistsInCrm(data.HL6_ID);
-
-            var categoryHasChanged = categoryChanged(data, existInCrm);*/
-
-            /*if (!crmFieldsHasChanged && !categoryHasChanged
-                && !Number(budgetSpendRequest.countPendingBudgetRequestByHl6Id(data.HL6_ID))){
-                statusId = hl6.HL6_STATUS_DETAIL_ID;
-            }*/
-            if (!crmFieldsHasChanged && !categoryHasChanged) {
+            if (!crmFieldsHasChanged && !categoryHasChanged && validateBudget(data)) {
                 if (data.STATUS_DETAIL_ID == HL6_STATUS.IN_CRM
                     && !data.AUTOMATIC_APPROVAL
                     && ((data.SALE_REQUESTS && data.SALE_REQUESTS.length)
@@ -1370,7 +1366,7 @@ function changeStatusOnDemand(hl6_id, userId, cancelConfirmation) {
             isDataComplete = isComplete(data, true);
         }
 
-        if (!isDataComplete) {
+        if (!isDataComplete || !validateBudget(data, true)) {
             throw ErrorLib.getErrors().CustomError("", "", L6_MSG_COULDNT_CHANGE_STATUS);
         }
 
@@ -2210,7 +2206,7 @@ function insertData(data, validAcronym) {
         , data.DISTRIBUTION_CHANNEL_ID || 0
         , data.VENUE
         , data.CITY
-        , data.COUNTRY_ID
+        , data.COUNTRY_ID || null
         , data.URL
         , data.RESULTS_CAMPAIGN_Q1 || 0
         , data.RESULTS_CAMPAIGN_Q2 || 0

@@ -153,7 +153,7 @@ function insCostCenterTeams(costCenterId, costCenterTeams, userId, marketingOrga
 }
 
 function existCostCentermarketingOrganizationTeams(marketingOrganizationId, teamIdsCollection, costCenterId){
-	var rdo = dataCostCenter.getCostCenterTeamByMarketingOrganizationIdTeamId(marketingOrganizationId, teamIdsCollection);
+	var rdo = Number(marketingOrganizationId) ? dataCostCenter.getCostCenterTeamByMarketingOrganizationIdTeamId(marketingOrganizationId, teamIdsCollection) : null;
 	if(rdo && rdo.COST_CENTER_ID && rdo.COST_CENTER_ID != costCenterId){
 		throw ErrorLib.getErrors().CustomError("",
 			"costCenterServices/handlePost/insCostCenterTeams/existCostCenterTeams",

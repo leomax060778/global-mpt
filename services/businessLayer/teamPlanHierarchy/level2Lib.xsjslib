@@ -786,7 +786,6 @@ function validateLevel2Version(data) {
         'HL2_BUDGET_TOTAL',
         'CRT_RELATED',
         'IMPLEMENT_EXECUTION_LEVEL',
-        'ACRONYM',
         'ORGANIZATION_NAME',
         'IN_BUDGET',
         'ALLOW_AUTOMATIC_BUDGET_APPROVAL',

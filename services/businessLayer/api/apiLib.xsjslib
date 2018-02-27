@@ -192,7 +192,7 @@ function getReportExportDataRegion(filter, method) {
     ];
 
     var budgetFields = [
-        , 'PERCENTAGE_ALLOCATION'
+        'PERCENTAGE_ALLOCATION'
         , 'REGION_ID'
         , 'REGION_DESC'
     ];

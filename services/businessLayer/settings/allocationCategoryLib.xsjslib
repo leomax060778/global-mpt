@@ -47,8 +47,9 @@ function insertAllocationCategory(data, userId) {
 	return result;
 }
 
-function getAllocationCategory(){
-	return dbCategory.getAllocationCategory();
+function getAllocationCategory(categoryType){
+    var categoryTypeId = CATEGORY_TYPE[categoryType];
+	return dbCategory.getAllocationCategory(categoryTypeId || 0);
 }
 
 function getAllocationCategoryType(){
@@ -114,6 +115,11 @@ function getCategoryByHierarchyLevelId(hierarchy_level_id){
 }
 
 function updateAllocationCategory(data, userId) {
+    var objCategory = dbCategory.getAllocationCategoryByName(data.NAME);
+
+    if(objCategory && data.CATEGORY_ID !== objCategory.CATEGORY_ID)
+        throw ErrorLib.getErrors().CustomError("","", "Cannot update the category beacause exists another with same name.");
+
 	if(Number(data.CATEGORY_TYPE_ID) == CATEGORY_TYPE.COUNTRY){
         dbCategory.deleteAllocationCountryCategory(data.CATEGORY_ID, userId);
 	}

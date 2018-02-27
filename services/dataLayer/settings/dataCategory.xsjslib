@@ -204,8 +204,8 @@ function insertAllocationCategory(description, name, measureId, singleOptionOnly
 	}
 	return rdo;
 }
-function getAllocationCategory(){
-	var result = db.executeProcedureManual(GET_ALLOCATION_CATEGORY, {});
+function getAllocationCategory(categoryTypeId){
+	var result = db.executeProcedureManual(GET_ALLOCATION_CATEGORY, {in_category_type_id: categoryTypeId});
 	return db.extractArray(result.out_result);
 }
 

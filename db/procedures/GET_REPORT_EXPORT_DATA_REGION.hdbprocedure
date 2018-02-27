@@ -21,7 +21,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_REPORT_EXPOR
             , CLOUD NVARCHAR(30)
             , MODIFIED_DATE TIMESTAMP
             , PERCENTAGE_ALLOCATION DECIMAL(19,2)
-            , REGION_ID BIGINT
+            , REGION_ID INTEGER
             , REGION_DESC NVARCHAR(30)
 		)
 	)
