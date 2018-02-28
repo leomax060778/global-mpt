@@ -843,10 +843,10 @@ function isComplete(data, fromChangeStatusOnDemand) {
     }
 
     if (isComplete) {
-        isComplete = (Number(data.BUDGET_SPEND_Q1) || 0)
+        isComplete = Number(data.ALLOW_BUDGET_ZERO) || ((Number(data.BUDGET_SPEND_Q1) || 0)
             + (Number(data.BUDGET_SPEND_Q2) || 0)
             + (Number(data.BUDGET_SPEND_Q3) || 0)
-            + (Number(data.BUDGET_SPEND_Q4) || 0) === 100;
+            + (Number(data.BUDGET_SPEND_Q4) || 0) === 100);
 
         if (!Number(data.FORECAST_AT_L5)) {
             isComplete = isComplete && !!((data.TARGET_KPIS
@@ -1019,7 +1019,7 @@ function validateHl6(data, userId) {
         if (!data.BUDGET_SPEND_Q1 && !data.BUDGET_SPEND_Q2 && !data.BUDGET_SPEND_Q3 && !data.BUDGET_SPEND_Q4)
             throw ErrorLib.getErrors().CustomError("", "hl6Services/handlePost/insertHl6", L6_MSG_INITIATIVE_BUDGET_SPEND);
 
-        if (((Number(data.BUDGET_SPEND_Q1) || 0) +
+        if (!Number(data.ALLOW_BUDGET_ZERO) && ((Number(data.BUDGET_SPEND_Q1) || 0) +
                 (Number(data.BUDGET_SPEND_Q2) || 0) +
                 (Number(data.BUDGET_SPEND_Q3) || 0) +
                 (Number(data.BUDGET_SPEND_Q4) || 0)) < 100)

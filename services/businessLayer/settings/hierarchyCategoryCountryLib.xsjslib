@@ -155,13 +155,15 @@ function updateCategoryCountryOptionLevel(data, userId) {
             var totalOptions = data.OPTION_IDS.length;
 
             var allocationOptions = data.OPTION_IDS.map(function (optionId) {
-                return {in_allocation_country_category_option_id: optionId}
+                return {in_allocation_country_category_option_id: Number(optionId)}
             });
+
             var optionToDelete = dataHierarchyCategoryCountry.getAllocationCountryCategoryOptionLevelToDelete(data.HL2_ID, hierarchylevel, allocationOptions, userId);
             var associationDeleteCount = 0;
             if (optionToDelete.length) {
                 associationDeleteCount = dataHierarchyCategoryCountry.deleteAllocationCountryCategoryOptionLevel(data.HL2_ID, hierarchylevel, allocationOptions, userId);
             }
+
             if (associationDeleteCount !== optionToDelete.length) {
                 message = "Some options could not be removed because they are in use";
             }
