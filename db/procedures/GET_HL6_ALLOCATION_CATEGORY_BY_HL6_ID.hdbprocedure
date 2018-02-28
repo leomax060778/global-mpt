@@ -15,7 +15,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL6_ALLOCATI
 	READS SQL DATA AS
 BEGIN
 	out_category =
-	 SELECT
+	 (SELECT
 	 distinct allocation_category.allocation_category_id  as category_id
 	, hl6CO.hl6_id
 	, allocation_category.name as category_name
@@ -27,5 +27,19 @@ BEGIN
 	inner join allocation_category on ACOL.allocation_category_id = allocation_category.allocation_category_id
 	WHERE hl6_id = in_id
 	  AND hl6CO.enabled = 1
-	  AND hl6CO.deleted = 0;
+	  AND hl6CO.deleted = 0)
+	  UNION ALL
+	  (SELECT
+      	 distinct allocation_category.allocation_category_id as category_id
+      	, hl6CO.hl6_id
+      	, allocation_category.name as category_name
+      	, allocation_category.single_option_only
+      	, ACOL.in_processing_report
+      	, ACOL.make_category_mandatory
+      	FROM HL6_COUNTRY_CATEGORY_OPTION hl6CO
+      	inner join ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL ACOL on hl6CO.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID = ACOL.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID
+      	inner join allocation_category on ACOL.allocation_category_id = allocation_category.allocation_category_id
+      	WHERE hl6_id = in_id
+      	  AND hl6CO.enabled = 1
+      	  AND hl6CO.deleted = 0);
 END;

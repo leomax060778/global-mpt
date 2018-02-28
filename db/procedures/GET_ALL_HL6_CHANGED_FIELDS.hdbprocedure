@@ -26,6 +26,23 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_ALL_HL6_CHAN
                 	COST_CENTER NVARCHAR(25),
                 	MARKETING_ORGANIZATION NVARCHAR(100)
                 	),
+                	OUT out_hl6_extra_fields TABLE (
+                	HL6_ID BIGINT,
+                	EXTERNAL_ID nvarchar(255),
+                                PARENT_PATH nvarchar(255),
+                                BUDGET nvarchar(255),
+                                PLANNED_START_DATE nvarchar(255),
+                                PLANNED_END_DATE nvarchar(255),
+                                ACTUAL_START_DATE nvarchar(255),
+                                ACTUAL_END_DATE nvarchar(255),
+                                URL nvarchar(255),
+                                STREET nvarchar(255),
+                                POSTAL_CODE nvarchar(255),
+                                REGION nvarchar(255),
+                                EVENT_OWNER nvarchar(255),
+                                CAMPAIGN_DETAIL nvarchar(255),
+                                BUSINESS_VALUE nvarchar(255)
+                            ),
                 OUT out_hl6_category_options TABLE (
                      HL6_ID BIGINT,
                      OPTION_ID BIGINT,
@@ -53,14 +70,15 @@ var_hl6 =
                     FROM HL6_STATUS_DETAIL
                     WHERE DETAIL IN ('Update In CRM'));
 
-	out_hl6_changed_fields = SELECT hl6_id, column_name, display_name from HL6_CRM_BINDING
+	out_hl6_changed_fields = SELECT HL6_CRM_BINDING.hl6_id, column_name, display_name from HL6_CRM_BINDING
+	                        INNER JOIN :var_hl6 HL6 ON HL6.HL6_ID = HL6_CRM_BINDING.HL6_ID
 							WHERE column_changed = 1
 							AND deleted = 0 and enabled = 1;
 
     va_hl6_changed_fields = select distinct hl6_id from :out_hl6_changed_fields;
 
     out_hl6_category_options =
-    SELECT
+    (SELECT
      hl6CO.hl6_id
      ,option.allocation_option_id as option_id
      ,option.name as option_name
@@ -75,9 +93,26 @@ var_hl6 =
     inner join allocation_option option on ACOL.allocation_option_id = option.allocation_option_id
     inner join allocation_category category on category.allocation_category_id = ACOL.allocation_category_id
     inner join :var_hl6 T on T.hl6_id = hl6CO.hl6_id
-    where hl6CO.deleted = 0 and hl6CO.enabled = 1 and hl6CO.updated = 1;
+    where hl6CO.deleted = 0 and hl6CO.enabled = 1 and hl6CO.updated = 1)
+                                                                               UNION ALL
+                                                                               (SELECT
+                                                                                hl6CO.hl6_id
+                                                                                ,option.ALLOCATION_COUNTRY_CATEGORY_OPTION_ID as option_id
+                                                                                ,option.name as option_name
+                                                                                ,ACOL.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID as category_option_level_id
+                                                                                ,hl6CO.amount
+                                                                                ,category.name as category_name
+                                                                                ,ACOL.allocation_category_id
+                                                                                ,category.processing_report_export_key
+                                                                                ,option.crm_key
+                                                                               FROM HL6_COUNTRY_CATEGORY_OPTION hl6CO
+                                                                               inner join ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL ACOL ON ACOL.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID = hl6CO.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID
+                                                                               inner join ALLOCATION_COUNTRY_CATEGORY_OPTION option on ACOL.ALLOCATION_COUNTRY_CATEGORY_OPTION_ID = option.ALLOCATION_COUNTRY_CATEGORY_OPTION_ID
+                                                                               inner join allocation_category category on category.allocation_category_id = ACOL.allocation_category_id
+                                                                               inner join :var_hl6 T on T.hl6_id = hl6CO.hl6_id
+                                                                               where hl6CO.deleted = 0 and hl6CO.enabled = 1 and hl6CO.updated = 1);
 
-    out_hl6 = SELECT
+    va_out_hl6 = SELECT
             HL6.HL6_ID
             ,"MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BUDGET_YEAR.BUDGET_YEAR, HL1.ACRONYM, HL2.ORGANIZATION_ACRONYM, HL3.ACRONYM, HL4.ACRONYM, HL5.ACRONYM, HL6.ACRONYM) AS EXTERNAL_ID
             ,HL6.HL6_CRM_DESCRIPTION AS DESCRIPTION
@@ -101,6 +136,19 @@ var_hl6 =
             , HL6.EMPLOYEE_RESPONSIBLE_USER AS EMPLOYEE
             ,COST_CENTER.COST_CENTER_CODE as COST_CENTER
             ,SALE_ORGANIZATION.CRM_KEY AS MARKETING_ORGANIZATION
+            ,"MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BUDGET_YEAR.BUDGET_YEAR, HL1.ACRONYM, HL2.ORGANIZATION_ACRONYM, HL3.ACRONYM, HL4.ACRONYM, HL5.ACRONYM, '') AS PARENT_PATH
+            ,HL6.BUDGET
+            ,HL6.PLANNED_START_DATE
+            ,HL6.PLANNED_END_DATE
+            ,HL6.ACTUAL_START_DATE
+            ,HL6.ACTUAL_END_DATE
+            ,HL6.URL
+            ,HL6.STREET
+            ,HL6.POSTAL_CODE
+            ,HL6.REGION
+            ,HL6.EVENT_OWNER
+            ,'' AS CAMPAIGN_DETAIL
+            ,'' AS BUSINESS_VALUE
             FROM HL6
             INNER JOIN :var_hl6 T ON T.HL6_ID = HL6.hl6_id
             INNER JOIN HL5 ON HL6.HL5_ID = HL5.HL5_ID
@@ -128,4 +176,46 @@ var_hl6 =
                 select T2.hl6_id
                 from :out_hl6_category_options T2
             );
+
+            out_hl6 = SELECT HL6_ID
+                                 , EXTERNAL_ID
+                                 , DESCRIPTION
+                                 , OBJECTIVE
+                                 , TYPE
+                                 , SUB_TYPE
+                                 , PRIORITY
+                                 , DISTRIBUTION_RULE
+                                 , MKT_PROGRAM_ID
+                                 , MARKETING_ACTIVITYID
+                                 , BUSINESS_OWNER
+                                 , SHOW_CALENDAR
+                                 , CERTIFICATION_LEVEL
+                                 , ROUTE_TO_MARKET
+                                 , BUYING_CLASSIFICATION
+                                 , VENUE
+                                 , NO_OF_PARTICIPANTS
+                                 , PHONE_FOLLOWUP
+                                 , CITY
+                                 , COUNTRY
+                                 , EMPLOYEE
+                                 , COST_CENTER
+                                 , MARKETING_ORGANIZATION
+                            FROM :va_out_hl6;
+
+                out_hl6_extra_fields = SELECT HL6_ID
+                                                , EXTERNAL_ID
+                                               , PARENT_PATH
+                                              , BUDGET
+                                              , PLANNED_START_DATE
+                                              , PLANNED_END_DATE
+                                              , ACTUAL_START_DATE
+                                              , ACTUAL_END_DATE
+                                              , URL
+                                              , STREET
+                                              , POSTAL_CODE
+                                              , REGION
+                                              , EVENT_OWNER
+                                              , CAMPAIGN_DETAIL
+                                              , BUSINESS_VALUE
+                                FROM :va_out_hl6;
 END;

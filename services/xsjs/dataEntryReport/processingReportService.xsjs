@@ -18,6 +18,7 @@ function handleGet(param){
     var method = httpUtil.getUrlParameterByName("METHOD");
     var hierarchy = httpUtil.getUrlParameterByName("HL");
     var hl_id = httpUtil.getUrlParameterByName("HL_ID");
+    var ALL = httpUtil.getUrlParameterByName("ALL");
     var rdo;
     switch (hierarchy){
         case 'HL4':
@@ -25,6 +26,8 @@ function handleGet(param){
                 rdo = businessPlanL4.getAllL4CreateInCrmDEReportForDownload();
             else if(method === "DOWNLOAD_UPDATE_IN_CRM")
                 rdo = businessPlanL4.getAllHL4ChangedFields();
+            else if(method === "DOWNLOAD_DELETION_REQUEST")
+                rdo = !ALL ? businessPlanL4.getAllHL4DeletionRequest('HL4') : businessPlanL4.getAllHL4DeletionRequest('ALL_LEVELS');
             else if (!hl_id){
                 rdo = businessPlanL4.getAllL4DEReport();
             }
@@ -37,6 +40,8 @@ function handleGet(param){
                 rdo = businessPlanL5.getAllL5CreateInCrmDEReportForDownload();
             else if(method === "DOWNLOAD_UPDATE_IN_CRM")
                 rdo = businessPlanL5.getAllHL5ChangedFields();
+            else if(method === "DOWNLOAD_DELETION_REQUEST")
+                rdo = !ALL ? businessPlanL5.getAllHL5DeletionRequest('HL5'): businessPlanL5.getAllHL5DeletionRequest('ALL_LEVELS');
             else if (!hl_id){
                 rdo = businessPlanL5.getAllL5DEReport();
             }
@@ -49,6 +54,8 @@ function handleGet(param){
                 rdo = businessPlanL6.getAllL6CreateInCrmDEReportForDownload();
             else if(method === "DOWNLOAD_UPDATE_IN_CRM")
                 rdo = businessPlanL6.getAllHL6ChangedFields();
+            else if(method === "DOWNLOAD_DELETION_REQUEST")
+                rdo = !ALL ? businessPlanL6.getAllHL6DeletionRequest('HL6'): businessPlanL6.getAllHL6DeletionRequest('ALL_LEVELS');
             else if (!hl_id){
                 rdo = businessPlanL6.getAllL6DEReport();
             }

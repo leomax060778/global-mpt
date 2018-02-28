@@ -313,7 +313,7 @@ FROM HL4
 
 --GET ALL CATEGORIES TO EACH HL5
 
-    out_result_hl5_category = SELECT
+    out_result_hl5_category = (SELECT
                                   HL5.HL5_ID,
                                   HCO.AMOUNT AS HL5_AMOUNT,
                                   AC.NAME AS HL5_CATEGORY_NAME,
@@ -333,10 +333,32 @@ FROM HL4
                                   AND (HL1.HL1_ID = IN_HL1_ID OR 0 = IN_HL1_ID)
                                  AND (HL2.HL2_ID = IN_HL2_ID OR 0 = IN_HL2_ID)
                                  AND (HL3.HL3_ID = IN_HL3_ID OR 0 = IN_HL3_ID)
-                                 AND HCO.AMOUNT <> 0;
+                                 AND HCO.AMOUNT <> 0)
+                                 UNION ALL
+                                 (SELECT
+                                  HL5.HL5_ID,
+                                  HCO.AMOUNT AS HL5_AMOUNT,
+                                  AC.NAME AS HL5_CATEGORY_NAME,
+                                  AO.NAME AS HL5_OPTION_NAME
+                                  FROM HL5
+                                  INNER JOIN HL5_COUNTRY_CATEGORY_OPTION HCO ON HCO.HL5_ID = HL5.HL5_ID
+                                  INNER JOIN ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL ACOL ON ACOL.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID = HCO.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID
+                                  INNER JOIN ALLOCATION_CATEGORY AC ON AC.ALLOCATION_CATEGORY_ID = ACOL.ALLOCATION_CATEGORY_ID
+                                  INNER JOIN ALLOCATION_COUNTRY_CATEGORY_OPTION AO ON AO.ALLOCATION_COUNTRY_CATEGORY_OPTION_ID = ACOL.ALLOCATION_COUNTRY_CATEGORY_OPTION_ID
+                                  INNER JOIN HL4 ON HL5.HL4_ID = HL4.HL4_ID
+                                  INNER JOIN HL3 ON HL4.HL3_ID = HL3.HL3_ID
+                                  INNER JOIN HL2 ON HL3.HL2_ID = HL2.HL2_ID
+                                  INNER JOIN HL1 ON HL2.HL1_ID = HL1.HL1_ID
+                                  INNER JOIN BUDGET_YEAR BYEAR ON BYEAR.BUDGET_YEAR_ID = HL1.BUDGET_YEAR_ID
+                                  WHERE HL4.ENABLED = 1 AND HL4.DELETED = 0
+                                  AND HL5.ENABLED = 1 AND HL5.DELETED = 0
+                                  AND (HL1.HL1_ID = IN_HL1_ID OR 0 = IN_HL1_ID)
+                                 AND (HL2.HL2_ID = IN_HL2_ID OR 0 = IN_HL2_ID)
+                                 AND (HL3.HL3_ID = IN_HL3_ID OR 0 = IN_HL3_ID)
+                                 AND HCO.AMOUNT <> 0);
 
 --GET ALL CATEGORIES TO EACH HL6
-out_result_hl6_category = SELECT
+out_result_hl6_category = (SELECT
                             HL6.HL6_ID,
                             HCO.AMOUNT AS HL6_AMOUNT,
                             AC.NAME AS HL6_CATEGORY_NAME,
@@ -357,7 +379,30 @@ out_result_hl6_category = SELECT
                             AND (HL1.HL1_ID = IN_HL1_ID OR 0 = IN_HL1_ID)
                              AND (HL2.HL2_ID = IN_HL2_ID OR 0 = IN_HL2_ID)
                              AND (HL3.HL3_ID = IN_HL3_ID OR 0 = IN_HL3_ID)
-                                 AND HCO.AMOUNT <> 0;
+                                 AND HCO.AMOUNT <> 0)
+                             UNION ALL
+                             (SELECT
+                              HL6.HL6_ID,
+                              HCO.AMOUNT AS HL6_AMOUNT,
+                              AC.NAME AS HL6_CATEGORY_NAME,
+                              AO.NAME AS HL6_OPTION_NAME
+                              FROM HL6
+                              INNER JOIN HL6_COUNTRY_CATEGORY_OPTION HCO ON HCO.HL6_ID = HL6.HL6_ID
+                              INNER JOIN ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL ACOL ON ACOL.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID = HCO.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID
+                              INNER JOIN ALLOCATION_CATEGORY AC ON AC.ALLOCATION_CATEGORY_ID = ACOL.ALLOCATION_CATEGORY_ID
+                              INNER JOIN ALLOCATION_COUNTRY_CATEGORY_OPTION AO ON AO.ALLOCATION_COUNTRY_CATEGORY_OPTION_ID = ACOL.ALLOCATION_COUNTRY_CATEGORY_OPTION_ID
+                              INNER JOIN HL5 ON HL6.HL5_ID = HL5.HL5_ID
+                              INNER JOIN HL4 ON HL5.HL4_ID = HL4.HL4_ID
+                              INNER JOIN HL3 ON HL4.HL3_ID = HL3.HL3_ID
+                              INNER JOIN HL2 ON HL3.HL2_ID = HL2.HL2_ID
+                              INNER JOIN HL1 ON HL2.HL1_ID = HL1.HL1_ID
+                              INNER JOIN BUDGET_YEAR BYEAR ON BYEAR.BUDGET_YEAR_ID = HL1.BUDGET_YEAR_ID
+                              WHERE HL4.ENABLED = 1 AND HL4.DELETED = 0
+                              AND HL6.ENABLED = 1 AND HL6.DELETED = 0
+                              AND (HL1.HL1_ID = IN_HL1_ID OR 0 = IN_HL1_ID)
+                             AND (HL2.HL2_ID = IN_HL2_ID OR 0 = IN_HL2_ID)
+                             AND (HL3.HL3_ID = IN_HL3_ID OR 0 = IN_HL3_ID)
+                             AND HCO.AMOUNT <> 0);
 
 --GET ALL KPI TO EACH HL5
 out_result_hl5_kpi = SELECT

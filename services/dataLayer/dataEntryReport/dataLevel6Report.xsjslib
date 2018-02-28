@@ -13,6 +13,7 @@ var spDelL6ChangedFieldsByHl6Id = "DEL_HL6_CRM_BINDING";
 var GET_HL6_FOR_PROCESSING_REPORT = "GET_HL6_FOR_PROCESSING_REPORT";
 var UPD_PROCESSING_REPORT_EXPORT_DATA = "UPD_PROCESSING_REPORT_EXPORT_DATA";
 var spMassDelL6ChangedFieldsByHl6Id = "DEL_MASS_HL6_CRM_BINDING";
+var GET_REPORT_DELETION_REQUEST = "GET_REPORT_DELETION_REQUEST";
 
 /*********** END LIST OF PROCEDURES ***************/
 
@@ -29,7 +30,8 @@ function getAllHL6ChangedFields() {
     return {
         out_hl6_changed_fields: db.extractArray(data.out_hl6_changed_fields),
         out_hl6: db.extractArray(data.out_hl6),
-        out_hl6_category_options: db.extractArray(data.out_hl6_category_options)
+        out_hl6_category_options: db.extractArray(data.out_hl6_category_options),
+        out_hl6_extra_fields: db.extractArray(data.out_hl6_extra_fields)
     };
 }
 
@@ -72,4 +74,9 @@ function massDeleteL6ChangedFieldsByHl6Id(ids) {
         return rdo;
     }
     return null;
+}
+
+function getAllHL6DeletionRequest(level){
+    var rdo = db.executeProcedureManual(GET_REPORT_DELETION_REQUEST, {'IN_LEVEL': level});
+    return db.extractArray(rdo.out_result);
 }

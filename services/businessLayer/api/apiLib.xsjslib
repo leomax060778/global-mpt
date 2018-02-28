@@ -99,7 +99,7 @@ function getReportExportData(filter, method) {
         , 'CLOUD'
     ];
 
-    if(!filter.SCOPE){
+    if (!filter.SCOPE) {
         filter.SCOPE = 'ALL';
     }
 

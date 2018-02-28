@@ -13,6 +13,7 @@ var spGetL5ChangedFieldsByHl5Id = "GET_HL5_CHANGED_FIELDS_BY_HL5_ID";
 var spDelL5ChangedFieldsByHl5Id = "DEL_HL5_CRM_BINDING";
 var UPD_PROCESSING_REPORT_EXPORT_DATA = "UPD_PROCESSING_REPORT_EXPORT_DATA";
 var spMassDelL5ChangedFieldsByHl5Id = "DEL_MASS_HL5_CRM_BINDING";
+var GET_REPORT_DELETION_REQUEST = "GET_REPORT_DELETION_REQUEST";
 
 /*********** END LIST OF PROCEDURES ***************/
 
@@ -35,7 +36,8 @@ function getAllHL5ChangedFields() {
     return {
         out_hl5_changed_fields: db.extractArray(data.out_hl5_changed_fields),
         out_hl5: db.extractArray(data.out_hl5),
-        out_hl5_category_options: db.extractArray(data.out_hl5_category_options)
+        out_hl5_category_options: db.extractArray(data.out_hl5_category_options),
+        out_hl5_extra_fields: db.extractArray(data.out_hl5_extra_fields)
     };
 }
 
@@ -76,4 +78,10 @@ function massDeleteL5ChangedFieldsByHl5Id(ids) {
         return rdo;
     }
     return null;
+}
+
+
+function getAllHL5DeletionRequest(level){
+    var rdo = db.executeProcedureManual(GET_REPORT_DELETION_REQUEST, {'IN_LEVEL': level});
+    return db.extractArray(rdo.out_result);
 }
