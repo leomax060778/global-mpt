@@ -581,9 +581,13 @@ function updateHl6(data, userId) {
     if (!ownMoneyBudgetSpendRequestStatus) {
         budgetSpendRequest.insertOwnMoneyBudgetSpendRequest(data.BUDGET, data.HL6_ID, LEVEL_STRING, userId, automaticApproval && data.IN_BUDGET);
     } else {
+    	var budgetSpendRequestStatus = budgetSpendRequest.getBudgetSpendRequestsStatus();
 
-        budgetSpendRequest.updateOwnMoneyBudgetSpendRequestByHlIdLevel(data.HL6_ID, LEVEL_STRING, data.BUDGET, automaticApproval && data.IN_BUDGET, userId);
-
+        if ((Number(objHL6.BUDGET).toFixed(2) !== Number(data.BUDGET).toFixed(2)) ||
+                (ownMoneyBudgetSpendRequestStatus != budgetSpendRequestStatus.APPROVED) ) {
+         
+        	budgetSpendRequest.updateOwnMoneyBudgetSpendRequestByHlIdLevel(data.HL6_ID, LEVEL_STRING, data.BUDGET, automaticApproval && data.IN_BUDGET, userId);
+        }
     }
 
     var validationResult = validateHl6(data, userId);

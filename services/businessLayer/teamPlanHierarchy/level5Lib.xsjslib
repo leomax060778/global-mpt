@@ -731,9 +731,12 @@ function updateHl5(data, userId) {
     if (!ownMoneyBudgetSpendRequestStatus) {
         budgetSpendRequest.insertOwnMoneyBudgetSpendRequest(data.BUDGET, data.HL5_ID, LEVEL_STRING, userId, automaticApproval && data.IN_BUDGET);
     } else {
-        
-            budgetSpendRequest.updateOwnMoneyBudgetSpendRequestByHlIdLevel(data.HL5_ID, LEVEL_STRING, data.BUDGET, automaticApproval && data.IN_BUDGET, userId);
-        
+    	var budgetSpendRequestStatus = budgetSpendRequest.getBudgetSpendRequestsStatus();
+
+        if ((Number(objHL5.BUDGET).toFixed(2) != Number(data.BUDGET).toFixed(2)) ||
+            (ownMoneyBudgetSpendRequestStatus != budgetSpendRequestStatus.APPROVED) ) {
+                budgetSpendRequest.updateOwnMoneyBudgetSpendRequestByHlIdLevel(data.HL5_ID, LEVEL_STRING, data.BUDGET, automaticApproval && data.IN_BUDGET, userId);
+        }
         level6Lib.checkBudgetStatus(data);
     }
 
