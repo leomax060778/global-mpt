@@ -151,23 +151,38 @@ function getReportExportData(filter, method) {
         , IN_HIERARCHY_LEVEL: filter.IN_HIERARCHY_LEVEL
     });
 
-    if (spResult && spResult.length && filter.SCOPE.toUpperCase() != 'ALL') {
-        var outputFields = filter.SCOPE.toUpperCase() == 'BUDGET' ? budgetFields : kpiFields;
-
+    var outputFields = filter.SCOPE.toUpperCase() == 'ALL' ? defaultFields
+        : filter.SCOPE.toUpperCase() == 'BUDGET'
+            ? commonFields.concat(budgetFields)
+            : commonFields.concat(kpiFields);
+    if (spResult && spResult.length) {
         for (var i = 0; i < spResult.length; i++) {
             var elem = {};
-            commonFields.forEach(function (field) {
-                elem[field] = spResult[i][field];
-            });
-
             outputFields.forEach(function (field) {
-                elem[field] = spResult[i][field];
+                switch (field){
+                    case 'BUDGET':
+                    case 'BUDGET_Q1':
+                    case 'BUDGET_Q2':
+                    case 'BUDGET_Q3':
+                    case 'BUDGET_Q4':
+                    case 'MNP_VALUE':
+                    case 'MNP_VOLUME':
+                    case 'MTP_VALUE':
+                    case 'MTP_VOLUME':
+                    case 'MIP_VALUE':
+                    case 'MIP_VOLUME':
+                    case 'LEAD_VOLUME_VALUE':
+                    case 'LEAD_VOLUME_VOLUME':
+                        elem[field] = Number(spResult[i][field]) || (Number(spResult[i][field]) == 0 ? 0 : null);
+                        break;
+                    default:
+                        elem[field] = spResult[i][field] || null;
+                        break;
+                }
             });
             result.push(elem);
         }
 
-    } else {
-        result = spResult;
     }
 
     if (filter.FORMAT === "CSV") {
@@ -250,15 +265,16 @@ function getReportExportDataRegion(filter, method) {
         , IN_HIERARCHY_LEVEL: filter.IN_HIERARCHY_LEVEL
     });
 
-    var outputFields = budgetFields;
+    var outputFields = commonFields.concat(budgetFields);
+
     for (var i = 0; i < spResult.length; i++) {
         var elem = {};
-        commonFields.forEach(function (field) {
-            elem[field] = spResult[i][field];
-        });
-
         outputFields.forEach(function (field) {
-            elem[field] = spResult[i][field];
+            if (field == 'PERCENTAGE_ALLOCATION') {
+                elem[field] = Number(spResult[i][field]) || (Number(spResult[i][field]) == 0 ? 0 : null);
+            } else {
+                elem[field] = spResult[i][field] || null;
+            }
         });
         result.push(elem);
     }
