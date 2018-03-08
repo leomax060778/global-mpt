@@ -35,6 +35,7 @@ var businessError = mapper.getLogError();
 var pathBL = mapper.getPath();
 var config = mapper.getDataConfig();
 var AllocationCategory = mapper.getAllocationCategoryLib();
+var dataUtil = mapper.getDataUtil();
 /*************************************************/
 
 var levelCampaign = "Initiative/Campaign";
@@ -77,6 +78,7 @@ var L3_CATEGORY_TOTAL_PERCENTAGE = "Category total percentage should be less tha
 var L3_CATEGORY_OPTION = "Error while trying to save Option.";
 var L3_CATEGORY_OPTION_NOT_VALID = "Option or User is not valid.";
 var L3_MSG_INITIATIVE_COULDNT_CHAGE_STATUS = "Your record was saved as \"In progress\".  Please review your record for incomplete fields.";
+var L3_MSG_MISSING_DATA = "File is empty.";
 var L3_CAMPAIGN_FORECASTING_KPIS_COMMENT = "Please enter a comment to explain expected outcomes as you didn't select any Campaign type.";
 var L3_NOT_IMPLEMENT_EXECUTION_LEVEL = "This PROGRAMS/CAMPAIGNS does not implement execution level.";
 var L4_ID_NOT_FOUND = "The HL4 ID could not be found.";
@@ -101,6 +103,8 @@ var HIERARCHY_LEVEL = {
     HL5: 2,
     HL6: 3
 };
+
+var LEVEL_STRING = 'HL4';
 
 /** ****************END CONSTANTS***************** */
 
@@ -1078,15 +1082,41 @@ function setHl4StatusInCRM(hl4_id, userId) {
             dataL4Report.updateLevel4ReportForDownload(value.hl4_id);
         })
     }
-    /* else {
-            if (!Number(hl4_id))
-                throw ErrorLib.getErrors().CustomError("", "", L3_MSG_INITIATIVE_NOT_FOUND);
-            result = setHl4Status(hl4_id, HL4_STATUS.IN_CRM, userId);
-            if (result) {
-                mail.sendInCRMMail(hl4_id, "hl4");
-            }
-        }*/
     return 1;
+}
+
+function setStatusInCRMByUpload(data, userId) {
+    if(!data || !data.DATA || !data.DATA.length){
+        throw ErrorLib.getErrors().CustomError("", "", L3_MSG_MISSING_DATA);
+    }
+
+    var result = {
+        TOTAL_PROCESSED: data.DATA.length,
+        UPDATED: 0,
+        NOT_FOUND: 0,
+        NOT_FOUND_PATH: []
+    };
+
+    var spResult = dataUtil.getIdByPath(data.DATA, LEVEL_STRING);
+    var ids = [];
+
+    for(var i = 0; i < spResult.length; i++){
+        var elem = spResult[i];
+        if(Number(elem.ID)){
+            ids.push(Number(elem.ID));
+        } else {
+            result.NOT_FOUND_PATH.push(elem);
+        }
+    }
+
+    if(!data.CHECK && ids.length){
+        setHl4StatusInCRM(ids, userId);
+    }
+
+    result.UPDATED = ids.length;
+    result.NOT_FOUND = result.NOT_FOUND_PATH.length;
+
+    return result;
 }
 
 function changeHl4StatusOnDemand(hl4_id, userId) {

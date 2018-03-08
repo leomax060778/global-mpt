@@ -12,6 +12,7 @@ var method = "method";
 var id = "id";
 var setStatusInCRM = "SETINCRM";
 var changeStatus = "CHANGESTATUS";
+var setStatusInCRMByUpload = "SET_IN_CRM_STATUS_BY_UPLOAD";
 // var sendInCrmNotificationMail = "SENDMAIL";
 
 /******************************************/
@@ -76,6 +77,9 @@ function handlePut(reqBody, userId){
 		    case setStatusInCRM: //set status In CRM
 				rdo = hl4.setHl4StatusInCRM(hl4Id, userId);
 		        break;
+			case setStatusInCRMByUpload:
+                rdo = hl4.setStatusInCRMByUpload(reqBody, userId);
+                break;
 			case changeStatus:
 				rdo = hl4.changeHl4StatusOnDemand(hl4Id, userId);
 				break;

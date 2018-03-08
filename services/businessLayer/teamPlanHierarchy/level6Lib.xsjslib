@@ -41,6 +41,7 @@ var expectedOutcomesLevelLib = mapper.getExpectedOutcomesLevelLib();
 var allocationCategoryOptionLevelLib = mapper.getAllocationCategoryOptionLevelLib();
 var level4Lib = mapper.getLevel4();
 var uploadLib = mapper.getUploadLib();
+var dataUtil = mapper.getDataUtil();
 /** ********************************************** */
 
 var levelCampaign = "Marketing Sub Tactic";
@@ -88,6 +89,7 @@ var L6_BUSINESS_OWNER_NOT_VALID = "Business Owner cannot be empty.";
 var L6_MSG_REQUIRE_SPEND_BUDGET_VALIDATION = "You have answered “YES” to the question “Does this tactic/sub-tactic require spend budget?”. \n " +
     "You must enter a value greater than 0 under “MY BUDGET”,  “OTHER BUDGET” or “EXTERNAL FUNDING”.  \n" +
     "If you do not require spend budget for your tactic/sub-tactic, please change your selection to “NO”.";
+var L6_MSG_MISSING_DATA = "File is empty.";
 
 var HL6_STATUS = {
     IN_PROGRESS: 1,
@@ -1318,6 +1320,40 @@ function setStatusInCRM(hl6_id, userId) {
             }
         }*/
     return 1;
+}
+
+function setStatusInCRMByUpload(data, userId) {
+    if(!data || !data.DATA || !data.DATA.length){
+        throw ErrorLib.getErrors().CustomError("", "", L6_MSG_MISSING_DATA);
+    }
+
+    var result = {
+        TOTAL_PROCESSED: data.DATA.length,
+        UPDATED: 0,
+        NOT_FOUND: 0,
+        NOT_FOUND_PATH: []
+    };
+
+    var spResult = dataUtil.getIdByPath(data.DATA, LEVEL_STRING);
+    var ids = [];
+
+    for(var i = 0; i < spResult.length; i++){
+        var elem = spResult[i];
+        if(Number(elem.ID)){
+            ids.push({hl6_id: Number(elem.ID)});
+        } else {
+            result.NOT_FOUND_PATH.push(elem);
+        }
+    }
+
+    if(!data.CHECK && ids.length){
+        massSetHl6Status(ids, userId);
+    }
+
+    result.UPDATED = ids.length;
+    result.NOT_FOUND = result.NOT_FOUND_PATH.length;
+
+    return result;
 }
 
 function changeStatusOnDemand(hl6_id, userId, cancelConfirmation) {
