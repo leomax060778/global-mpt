@@ -664,7 +664,12 @@ function updateHl6(data, userId) {
             dataHl6.updateDeletionReason(data.HL6_ID, null, userId);
         }
         data.HL2_ID = dataHl2.getHl2ByHl4Id(data.HL4_ID).HL2_ID;
+
+        //Check if the KPIs were changed and update them
+        var originalKPIs = expectedOutcomesLib.getExpectedOutcomesByHl6Id(data.HL6_ID, objHL6.HL5_ID);
+        var changedKPIs = validateChangedKPIs(data, originalKPIs, objHL6.FORECAST_AT_L5);
         updateExpectedOutcomes(data, userId);
+
         updateBudgetDistribution(data, userId);
         updateCategoryOption(data, userId);
 
@@ -680,8 +685,16 @@ function updateHl6(data, userId) {
 
         dataL6Report.updateLevel6ReportForDownload(data.HL6_ID); //Update Processing Report Export Data
 
-        if (!data.ACRONYM) {
-            data.newAcronym = validAcronym;
+        var changedFields = (validationResult.crmBindingChangedFields && validationResult.crmBindingChangedFields.length > 0);
+        var changedFieldsUpdate = (validationResult.crmBindingChangedFieldsUpdate && validationResult.crmBindingChangedFieldsUpdate.length > 0);
+
+        // throw JSON.stringify({changedFields: changedFields, changedFieldsUpdate: changedFieldsUpdate, budgetChanged: validationResult.budgetChanged, changedKPIs: changedKPIs, status: validationResult.statusId});
+        if(!validationResult.crmFieldsHasChanged  && (validationResult.budgetChanged || changedKPIs) && Number(validationResult.statusId) === Number(HL6_STATUS.IN_CRM)){
+            return {SUCCESS_MESSAGE: "Your Sub-tactics has automatically updated to CRM"};
+        }else{
+            if (!data.ACRONYM) {
+                data.newAcronym = validAcronym;
+            }
         }
 
         return data;
@@ -689,6 +702,38 @@ function updateHl6(data, userId) {
     else {
         throw ErrorLib.getErrors().CustomError("", "", "Unexpected error, please try again.");
     }
+}
+
+function validateChangedKPIs(hl6Object, oldKPIs, oldForecastAtL5){
+    var changed = false;
+    var currentOldKPI;
+
+    if( !!oldForecastAtL5 !== !!hl6Object.FORECAST_AT_L5 ||
+        hl6Object.TARGET_KPIS.KPIS.length !== oldKPIs.KPIS.length ||
+        hl6Object.TARGET_KPIS.COMMENTS !== oldKPIs.COMMENTS
+    ){
+        changed = true;
+    } else if(hl6Object && hl6Object.TARGET_KPIS.KPIS.length){
+        hl6Object.TARGET_KPIS.KPIS.forEach(function(kpi){
+            currentOldKPI = oldKPIs.KPIS.find(function(oldKpi){
+                return Number(oldKpi.OUTCOMES_ID) === Number(kpi.OUTCOMES_ID);
+            });
+
+            if(!currentOldKPI){
+                changed = true;
+            }else{
+                changed = (
+                    (kpi.OUTCOMES_TYPE_NAME !== currentOldKPI.OUTCOMES_TYPE_NAME) ||
+                    (kpi.OUTCOMES_NAME !== currentOldKPI.OUTCOMES_NAME) ||
+                    (Number(kpi.OUTCOMES_TYPE_ID) !== Number(currentOldKPI.OUTCOMES_TYPE_ID)) ||
+                    (Number(kpi.EURO_VALUE) !== Number(currentOldKPI.EURO_VALUE)) ||
+                    (Number(kpi.VOLUME_VALUE) !== Number(currentOldKPI.VOLUME_VALUE))
+                );
+            }
+        });
+    }
+
+    return changed;
 }
 
 function hasAdditionalFields(campaignTypeId) {
@@ -1038,19 +1083,25 @@ function validateHl6(data, userId) {
         var crmFieldsHasChanged = crmFieldsHasChangedResult.crmFieldsHaveChanged;
         crmBindingChangedFields = crmFieldsHasChangedResult.crmBindingChangedFields;
         crmBindingChangedFieldsUpdate = crmFieldsHasChangedResult.crmBindingChangedFieldsUpdate;
+
+        var budgetChanged = crmFieldsHasChangedResult.budgetChanged;
+        var onlyBudget = crmFieldsHasChangedResult.onlyBudget;
+
         if (data.HL6_ID) {
-            if (!crmFieldsHasChanged && !categoryHasChanged && validateBudget(data)) {
-                if (data.STATUS_DETAIL_ID == HL6_STATUS.IN_CRM
-                    && !data.AUTOMATIC_APPROVAL
-                    && ((data.SALE_REQUESTS && data.SALE_REQUESTS.length)
-                        || (data.PARTNERS && data.PARTNERS.length))) {
-                    statusId = HL6_STATUS.IN_CRM_NEED_NEW_BUDGET_APPROVAL;
+            if(!crmFieldsHasChanged && !categoryHasChanged  && budgetChanged && Number(data.HL6_STATUS_DETAIL_ID) == HL6_STATUS.IN_CRM){
+                statusId = hl6.HL6_STATUS_DETAIL_ID;
+            }else if (!crmFieldsHasChanged && !categoryHasChanged && validateBudget(data)) {
+                    if (data.STATUS_DETAIL_ID == HL6_STATUS.IN_CRM
+                        && !data.AUTOMATIC_APPROVAL
+                        && ((data.SALE_REQUESTS && data.SALE_REQUESTS.length)
+                            || (data.PARTNERS && data.PARTNERS.length))) {
+                        statusId = HL6_STATUS.IN_CRM_NEED_NEW_BUDGET_APPROVAL;
+                    } else {
+                        statusId = hl6.HL6_STATUS_DETAIL_ID;
+                    }
                 } else {
-                    statusId = hl6.HL6_STATUS_DETAIL_ID;
+                    statusId = HL6_STATUS.IN_PROGRESS;
                 }
-            } else {
-                statusId = HL6_STATUS.IN_PROGRESS;
-            }
         }
     }
     return {
@@ -1058,6 +1109,9 @@ function validateHl6(data, userId) {
         , isComplete: isHl6Complete
         , crmBindingChangedFields: crmBindingChangedFields
         , crmBindingChangedFieldsUpdate: crmBindingChangedFieldsUpdate
+        , budgetChanged: budgetChanged
+        , onlyBudget: onlyBudget
+        , crmFieldsHasChanged: crmFieldsHasChanged || categoryHasChanged
     };
 }
 
@@ -1392,6 +1446,8 @@ function crmFieldsHaveChanged(data, isComplete, userId, isNew) {
     var crmFieldsHaveChanged = false;
     var crmBindingChangedFields = [];
     var crmBindingChangedFieldsUpdate = [];
+    var budgetChanged = false;
+
     if (!isComplete)
         return {
             crmFieldsHaveChanged: true,
@@ -1419,6 +1475,8 @@ function crmFieldsHaveChanged(data, isComplete, userId, isNew) {
         var oldHl6 = dataHl6.getHl6ById(data.HL6_ID);
         var existInCrm = dataHl6.hl6ExistsInCrm(data.HL6_ID);
         var l6CrmBindigFields = util.getMapHl6ChangedFieldsByHl6Id(data.HL6_ID);
+
+        // var debug = [];
 
         Object.keys(crmBindingFields).forEach(function (object) {
             crmBindingFields[object].forEach(function (field) {
@@ -1459,7 +1517,14 @@ function crmFieldsHaveChanged(data, isComplete, userId, isNew) {
                         case "BUDGET":
                             var oldCurrencyValue = Number(dataCurrency.getCurrencyValueId(oldHl6.EURO_CONVERSION_ID));
                             var newCurrencyValue = Number(dataCurrency.getCurrencyValueId(data.EURO_CONVERSION_ID));
-                            fieldChanged = Number(oldHl6[field]) / oldCurrencyValue != Number(data[field]) / newCurrencyValue;
+
+                            //When the HL5 is "In CRM", the budget can not change de status, but we need to validate it later to show the correct message.
+                            if(Number(data.HL6_STATUS_DETAIL_ID) !== Number(HL6_STATUS.IN_CRM)){
+                                fieldChanged = Number(oldHl6[field]) / oldCurrencyValue != Number(data[field]) / newCurrencyValue;
+                            }else{
+                                fieldChanged = false;
+                                budgetChanged = Number(oldHl6[field]) / oldCurrencyValue != Number(data[field]) / newCurrencyValue;
+                            }
                             break;
                         default:
                             fieldChanged = oldHl6[field] != data[field];
@@ -1481,7 +1546,9 @@ function crmFieldsHaveChanged(data, isComplete, userId, isNew) {
                     fieldChanged = true;
                 }
 
-                if (fieldChanged || oldParentPath != parentPath) {
+                // debug.push({field: field, fieldChanged: fieldChanged, oldParentPath: oldParentPath, parentPath: parentPath});
+
+                if (fieldChanged || oldParentPath != parentPath || (field == "BUDGET" && budgetChanged)) {
                     if (field == "PARENT_PATH") {
                         if (oldParentPath) {
                             if (oldParentPath != parentPath) {
@@ -1500,15 +1567,22 @@ function crmFieldsHaveChanged(data, isComplete, userId, isNew) {
                     } else {
                         crmBindingChangedFields.push(parameters);
                     }
-                    crmFieldsHaveChanged = true;
+                    if(field !== "BUDGET" || fieldChanged || oldParentPath != parentPath){
+                        crmFieldsHaveChanged = true;
+                    }
+
                 }
             });
         });
+
+        // throw JSON.stringify(debug);
     }
     return {
         crmFieldsHaveChanged: crmFieldsHaveChanged
         , crmBindingChangedFields: crmBindingChangedFields
         , crmBindingChangedFieldsUpdate: crmBindingChangedFieldsUpdate
+        , budgetChanged: budgetChanged
+        , onlyBudget: budgetChanged && !crmFieldsHaveChanged
     };
 }
 

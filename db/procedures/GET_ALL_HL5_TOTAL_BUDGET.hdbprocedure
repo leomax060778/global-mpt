@@ -7,22 +7,35 @@ SQL SECURITY INVOKER
 DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
 AS
 BEGIN
+	DECLARE hl5_count INTEGER;
 	DECLARE va_total_budget DECIMAL(19, 6);
-	va_total_budget := 0;
+	va_total_budget := null;
 
-    SELECT 
-	SUM(COALESCE(BSR.AMOUNT,HL5.BUDGET,0))
-	into va_total_budget
-	FROM HL5
-	LEFT JOIN BUDGET_SPEND_REQUEST BSR ON BSR.HL_ID = HL5.HL5_ID AND BSR.BUDGET_SPEND_REQUEST_TYPE_ID = 1
-        AND (BSR.BUDGET_SPEND_REQUEST_STATUS_ID = 1 OR BSR.BUDGET_SPEND_REQUEST_STATUS_ID = 2) AND BSR.HIERARCHY_LEVEL_ID = 2
-	WHERE
-	HL5.enabled=1
-	AND HL5.deleted=0
-	AND HL5.hl4_id = in_hl4_id
-	--- This means that will be included those records that aren´t in Deleted In CRM ---
-      AND HL5.HL5_STATUS_DETAIL_ID != 10
-	GROUP BY HL5.hl4_id;
+    SELECT count(*) into hl5_count FROM HL5
+                                   		WHERE HL5.enabled=1
+                                        	AND HL5.deleted=0
+                                          	AND HL5.hl4_id = in_hl4_id
+                                            AND HL5.HL5_STATUS_DETAIL_ID != 10;
+    IF(hl5_count > 0) THEN
+        SELECT
+                    SUM(COALESCE(BSR.AMOUNT,HL5.BUDGET,0))
+                    into va_total_budget
+                    FROM HL5
+                    LEFT JOIN BUDGET_SPEND_REQUEST BSR ON BSR.HL_ID = HL5.HL5_ID AND BSR.BUDGET_SPEND_REQUEST_TYPE_ID = 1
+                        AND (BSR.BUDGET_SPEND_REQUEST_STATUS_ID = 1 OR BSR.BUDGET_SPEND_REQUEST_STATUS_ID = 2) AND BSR.HIERARCHY_LEVEL_ID = 2
+                    WHERE
+                    HL5.enabled=1
+                    AND HL5.deleted=0
+                    AND HL5.hl4_id = in_hl4_id
+                    --- This means that will be included those records that aren´t in Deleted In CRM ---
+                      AND HL5.HL5_STATUS_DETAIL_ID != 10
+                    GROUP BY HL5.hl4_id;
+    
+
+    ELSE
+        va_total_budget := null;
+    END IF;
+
 
 	out_result:= ifnull(va_total_budget,0);
 END;
