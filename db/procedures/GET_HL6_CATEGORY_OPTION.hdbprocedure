@@ -13,6 +13,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL6_CATEGORY
     , MAKE_CATEGORY_MANDATORY TINYINT
     , UPDATED TINYINT
     , CATEGORY_TYPE_ID integer
+    , OPTIONS_LIMIT INTEGER
 	)
 ) 
 	LANGUAGE SQLSCRIPT
@@ -26,14 +27,15 @@ BEGIN
 	, hl6CO.hl6_id
 	, ac.name as category_name
 	,ao.allocation_option_id as option_id
-    	, ao.name as option_name
-    	,hl6CO.hl6_category_option_id as category_option_id
+    , ao.name as option_name
+    ,hl6CO.hl6_category_option_id as category_option_id
 	, hl6CO.allocation_category_option_level_id as category_option_level_id
 	, hl6CO.amount
 	, ac.SINGLE_OPTION_ONLY
-    	, ACOL.MAKE_CATEGORY_MANDATORY
-    	, hl6CO.UPDATED
-    	, AC.CATEGORY_TYPE_ID
+    , ACOL.MAKE_CATEGORY_MANDATORY
+    , hl6CO.UPDATED
+    , AC.CATEGORY_TYPE_ID
+    , ACOL.options_limit
 	FROM hl6_category_option hl6CO
 	inner join allocation_category_option_level ACOL on hl6CO.allocation_category_option_level_id = ACOL.allocation_category_option_level_id
 	AND ACOL.enabled = 1 AND ACOL.deleted = 0
@@ -56,6 +58,7 @@ BEGIN
                       	, ACOL.MAKE_CATEGORY_MANDATORY
                       	, hl6CO.UPDATED
                       	, AC.CATEGORY_TYPE_ID
+                      	, ACOL.options_limit
                       	FROM HL6_COUNTRY_CATEGORY_OPTION hl6CO
                       	inner join ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL ACOL on hl6CO.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_id = ACOL.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_id
                       	AND ACOL.enabled = 1 AND ACOL.deleted = 0
@@ -77,6 +80,7 @@ BEGIN
                             , MAKE_CATEGORY_MANDATORY
                             , UPDATED
                             , CATEGORY_TYPE_ID
+                            , OPTIONS_LIMIT
                     FROM :va_hl6_category_option
                      ORDER BY CATEGORY_NAME, OPTION_NAME;
 END;

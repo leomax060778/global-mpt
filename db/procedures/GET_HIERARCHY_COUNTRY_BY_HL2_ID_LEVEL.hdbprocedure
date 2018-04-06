@@ -14,7 +14,8 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HIERARCHY_CO
     ),
     OUT out_result TABLE (
         IN_PROCESSING_REPORT TINYINT,
-        MAKE_CATEGORY_MANDATORY TINYINT
+        MAKE_CATEGORY_MANDATORY TINYINT,
+        OPTIONS_LIMIT integer
     )
 )
 
@@ -44,7 +45,8 @@ BEGIN
 
         out_result =
                          SELECT TOP 1   ACCOL.IN_PROCESSING_REPORT,
-                                        ACCOL.MAKE_CATEGORY_MANDATORY
+                                        ACCOL.MAKE_CATEGORY_MANDATORY,
+                                        ACCOL.OPTIONS_LIMIT
                          FROM ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL ACCOL
                          INNER JOIN ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_HL2 ACCOL_HL2 ON ACCOL.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID = ACCOL_HL2.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID
                          	AND ACCOL_HL2.HL2_ID = IN_HL2_ID

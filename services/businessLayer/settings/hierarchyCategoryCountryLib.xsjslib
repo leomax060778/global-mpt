@@ -18,6 +18,8 @@ var CATEGORY_TYPE = {
     OPTION: 2
 };
 
+var OPTIONS_LIMIT_DEFAULT = 5;
+
 function getAllHl1(budgetYearId){
 	var result = dataHierarchyCategoryCountry.getAllHl1(budgetYearId);
 
@@ -65,7 +67,7 @@ function getCountryByHl2IdLevel(hl2Id, level, userId){
     result.ASSIGNED = data.ASSIGNED;  
     result.IN_PROCESSING_REPORT = (data.RESULT.length)? data.RESULT[0].IN_PROCESSING_REPORT: false;
     result.MAKE_CATEGORY_MANDATORY = (data.RESULT.length)? data.RESULT[0].MAKE_CATEGORY_MANDATORY: false;
-    
+    result.OPTIONS_LIMIT = (data.RESULT.length)? data.RESULT[0].OPTIONS_LIMIT : OPTIONS_LIMIT_DEFAULT;
 	return result;
 }
 
@@ -180,13 +182,15 @@ function updateCategoryCountryOptionLevel(data, userId) {
                         data.OPTION_IDS[i],
                         data.IN_PROCESSING_REPORT ? 1 : 0,
                         userId,
-                        data.MAKE_CATEGORY_MANDATORY ? 1 : 0);
+                        data.MAKE_CATEGORY_MANDATORY ? 1 : 0,
+                        data.OPTIONS_LIMIT);
 
                     var reqBody = {
                         CATEGORY_ID: countriesCategory.ALLOCATION_CATEGORY_ID,
                         HIERARCHY_LEVEL_ID: hierarchylevel,
                         MAKE_CATEGORY_MANDATORY: data.MAKE_CATEGORY_MANDATORY ? 1 : 0,
-                        IN_PROCESSING_REPORT: data.IN_PROCESSING_REPORT ? 1 : 0
+                        IN_PROCESSING_REPORT: data.IN_PROCESSING_REPORT ? 1 : 0,
+                        OPTIONS_LIMIT: data.OPTIONS_LIMIT
                     };
                     dataHierarchyCategoryCountry.updateAllocationCountryOptionFlags(reqBody);
 
@@ -197,7 +201,8 @@ function updateCategoryCountryOptionLevel(data, userId) {
                         hierarchylevel,
                         data.IN_PROCESSING_REPORT ? 1 : 0,
                         userId,
-                        data.MAKE_CATEGORY_MANDATORY ? 1 : 0);
+                        data.MAKE_CATEGORY_MANDATORY ? 1 : 0,
+                        data.OPTIONS_LIMIT);
 
                     var objAux = {};
                     objAux.in_hl2_id = data.HL2_ID;

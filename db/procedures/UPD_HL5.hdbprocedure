@@ -12,8 +12,8 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::UPD_HL5" (
 	,in in_marketing_program_id bigint
 	,in in_marketing_activity_id bigint
 	
-	,in in_actual_start_date timestamp
-	,in in_actual_end_date timestamp
+	,in in_actual_start_date NVARCHAR(32)
+	,in in_actual_end_date NVARCHAR(32)
 	,in in_show_on_dg_calendar tinyint
 	,in in_business_owner_id bigint
 	,in in_employee_responsible_id bigint
@@ -33,8 +33,8 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::UPD_HL5" (
     ,in in_country nvarchar(255)
     ,in in_url nvarchar(255)
     ,in in_sales_organization_id bigint
-    ,in in_planned_start_date timestamp
-    ,in in_planned_end_date timestamp
+    ,in in_planned_start_date NVARCHAR(32)
+    ,in in_planned_end_date NVARCHAR(32)
     ,in in_street nvarchar(255)
     ,in in_postal_code nvarchar(20)
     ,in in_region nvarchar(255)
@@ -69,8 +69,8 @@ BEGIN
 	marketing_program_id = in_marketing_program_id,
 	marketing_activity_id = in_marketing_activity_id,
 
-	actual_start_date = in_actual_start_date,
-	actual_end_date = in_actual_end_date,
+	actual_start_date = TO_TIMESTAMP(in_actual_start_date, 'MM/DD/YYYY'),
+    actual_end_date = TO_TIMESTAMP(in_actual_end_date, 'MM/DD/YYYY'),
 	show_on_dg_calendar = in_show_on_dg_calendar,
 	business_owner_id = in_business_owner_id ,
 	employee_responsible_id = in_employee_responsible_id,
@@ -89,8 +89,8 @@ BEGIN
     country = in_country,
     url = in_url,
     sales_organization_id = in_sales_organization_id,
-    planned_start_date = in_planned_start_date,
-    planned_end_date = in_planned_end_date,
+    planned_start_date = TO_TIMESTAMP(in_planned_start_date, 'MM/DD/YYYY'),
+    planned_end_date = TO_TIMESTAMP(in_planned_end_date, 'MM/DD/YYYY'),
     street = in_street,
     postal_code = in_postal_code,
     region = in_region,

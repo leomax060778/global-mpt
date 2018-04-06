@@ -19,6 +19,8 @@ var HIERARCHY_LEVEL = {
     HL6: 3
 };
 
+var OPTIONS_LIMIT_DEFAULT = 5;
+
 var ALLOCATION_CATEGORY_NOT_EXIST = "The Allocation category does not exist.";
 var ALLOCATION_OPTION_NOT_EXIST = "The Allocation option does not exist.";
 
@@ -95,14 +97,16 @@ function updateCategoryOptionLevel(data, userId) {
                         data.IN_OPTION_LIST[i],
                         data.IN_PROCESSING_REPORT,
                         userId,
-                        data.IN_MAKE_CATEGORY_MANDATORY);
+                        data.IN_MAKE_CATEGORY_MANDATORY,
+                        data.IN_OPTIONS_LIMIT);
 
                     //Update Make Category Mandatory and In Processing Report flags to avoid duplicated registers
                     var reqBody = {
                         CATEGORY_ID: data.IN_CATEGORY_ID,
                         HIERARCHY_LEVEL_ID: hierarchylevel,
                         MAKE_CATEGORY_MANDATORY: data.IN_MAKE_CATEGORY_MANDATORY,
-                        IN_PROCESSING_REPORT: data.IN_PROCESSING_REPORT
+                        IN_PROCESSING_REPORT: data.IN_PROCESSING_REPORT,
+                        IN_OPTIONS_LIMIT: data.IN_OPTIONS_LIMIT
                     };
                     dataCategoryOptionLevel.updateAllocationOptionFlags(reqBody);
 
@@ -113,7 +117,8 @@ function updateCategoryOptionLevel(data, userId) {
                         hierarchylevel,
                         data.IN_PROCESSING_REPORT,
                         userId,
-                        data.IN_MAKE_CATEGORY_MANDATORY);
+                        data.IN_MAKE_CATEGORY_MANDATORY,
+                        data.IN_OPTIONS_LIMIT);
                 }
 
                 ++countInsert;
@@ -172,6 +177,7 @@ function getHlCategoryOptionByLevelHlId(level, hlId, hl2Id) {
                 MAKE_CATEGORY_MANDATORY: categoryOption.MAKE_CATEGORY_MANDATORY || 0,
                 SINGLE_OPTION_ONLY: categoryOption.SINGLE_OPTION_ONLY || 0,
                 CATEGORY_TYPE_ID: categoryOption.CATEGORY_TYPE_ID,
+                OPTIONS_LIMIT: categoryOption.OPTIONS_LIMIT || OPTIONS_LIMIT_DEFAULT,
                 OPTIONS: []
             }
         }

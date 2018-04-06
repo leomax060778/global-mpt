@@ -14,8 +14,8 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL6_BY_ID"(
 			campaign_subtype_id INTEGER,
 			marketing_program_id INTEGER,
 			marketing_activity_id INTEGER,
-			actual_start_date TIMESTAMP,
-			actual_end_date TIMESTAMP,
+			actual_start_date NVARCHAR(32),
+            actual_end_date NVARCHAR(32),
 			show_on_dg_calendar TINYINT,
 			business_owner_id INTEGER,
 			employee_responsible_id INTEGER,
@@ -43,8 +43,8 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL6_BY_ID"(
 			results_campaign_q2 DECIMAL(19, 2),
 			results_campaign_q3 DECIMAL(19, 2),
 			results_campaign_q4 DECIMAL(19, 2),
-			PLANNED_START_DATE TIMESTAMP,
-			PLANNED_END_DATE TIMESTAMP,
+			planned_start_date NVARCHAR(32),
+            planned_end_date NVARCHAR(32),
 			STREET NVARCHAR(255),
 			POSTAL_CODE NVARCHAR(20)
 			,REGION nvarchar(255)
@@ -97,8 +97,8 @@ va_own_money_budget_request = SELECT TOP 1 BSRS.budget_spend_request_status_id
 				, HL6.CAMPAIGN_SUBTYPE_ID
 				, HL6.MARKETING_PROGRAM_ID
 				, HL6.MARKETING_ACTIVITY_ID
-				, HL6.ACTUAL_START_DATE
-				, HL6.ACTUAL_END_DATE
+				, TO_NVARCHAR(HL6.ACTUAL_START_DATE, 'MM/DD/YYYY') AS ACTUAL_START_DATE
+				, TO_NVARCHAR(HL6.ACTUAL_END_DATE, 'MM/DD/YYYY') AS ACTUAL_END_DATE
 				, HL6.SHOW_ON_DG_CALENDAR
 				, HL6.BUSINESS_OWNER_ID
 				, HL6.EMPLOYEE_RESPONSIBLE_ID
@@ -126,8 +126,8 @@ va_own_money_budget_request = SELECT TOP 1 BSRS.budget_spend_request_status_id
 				, HL6.RESULTS_CAMPAIGN_Q2
 				, HL6.RESULTS_CAMPAIGN_Q3
 				, HL6.RESULTS_CAMPAIGN_Q4
-				, HL6.PLANNED_START_DATE
-				, HL6.PLANNED_END_DATE
+				, TO_NVARCHAR(HL6.PLANNED_START_DATE, 'MM/DD/YYYY') AS PLANNED_START_DATE
+                , TO_NVARCHAR(HL6.PLANNED_END_DATE, 'MM/DD/YYYY') AS PLANNED_END_DATE
 				, HL6.STREET
 				, HL6.POSTAL_CODE
 				, HL6.REGION

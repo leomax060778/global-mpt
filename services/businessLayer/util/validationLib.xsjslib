@@ -46,7 +46,40 @@ function getMinMaxDateByIdAndLevel(HlId, Level){
 	var bYear = dataValidation.getBudgetYearByIdLevel(HlId, Level);
     var minDate = new Date(bYear[0].BUDGET_YEAR, 0, 1);
     var maxDate = new Date(bYear[0].BUDGET_YEAR, 11, 31);
-   
 
-    return {MIN_DATE : minDate, MAX_DATE: maxDate};
+    return {MIN_DATE : formatDateToString(minDate), MAX_DATE: formatDateToString(maxDate)};
+}
+
+function formatDateToString (date, dateFormat) {
+    if (!date) {
+        return "";
+    }
+
+    var parsedDate = new Date(date);
+    var year = parsedDate.getFullYear();
+    var month = parsedDate.getMonth() + 1;
+    var day = parsedDate.getDate();
+    var hours = parsedDate.getHours();
+    var minutes = parsedDate.getMinutes();
+    var currentFormattedDate = "";
+    switch (dateFormat) {
+        case "MM-DD-YYYY":
+            currentFormattedDate = ("0" + month).slice(-2) + "-" + ("0" + day).slice(-2) + "-" + year;
+            break;
+        case "YYYY-MM-DD":
+            currentFormattedDate = year + "-" + ("0" + month).slice(-2) + "-" + ("0" + day).slice(-2);
+            break;
+        case "MM-DD-YYYY hh:mm":
+            currentFormattedDate = ("0" + month).slice(-2) + "-" + ("0" + day).slice(-2) + "-" + year + " " + hours + ":" + ("0" + minutes).slice(-2);
+            break;
+        case "defaultMessage":
+            //Currently the default format for messages is MM-DD-YYYY hh:mm
+            currentFormattedDate = ("0" + month).slice(-2) + "-" + ("0" + day).slice(-2) + "-" + year + " " + hours + ":" + ("0" + minutes).slice(-2);
+            break;
+        default:
+            //Currently the default format is MM-DD-YYYY
+            currentFormattedDate = ("0" + month).slice(-2) + "/" + ("0" + day).slice(-2) + "/" + year;
+            break;
+    }
+    return currentFormattedDate;
 }

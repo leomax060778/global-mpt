@@ -9,10 +9,10 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL5_FOR_PROC
                 , MARKETING_PROGRAM  nvarchar(255)
                 , MARKETING_PROGRAM_DESCRIPTION  nvarchar(255)
                 , MARKETING_ACTIVITY nvarchar(255)
-                , PLANNED_START_DATE TIMESTAMP
-                , PLANNED_END_DATE TIMESTAMP
-                , ACTUAL_START_DATE TIMESTAMP
-                , ACTUAL_END_DATE TIMESTAMP
+                , PLANNED_START_DATE NVARCHAR(32)
+                , PLANNED_END_DATE NVARCHAR(32)
+                , ACTUAL_START_DATE NVARCHAR(32)
+                , ACTUAL_END_DATE NVARCHAR(32)
                 , DISTRIBUTION_CHANNEL NVARCHAR(255)
                 , BUDGET DECIMAL(19,2)
                 , URL NVARCHAR(255)
@@ -81,10 +81,10 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL5_FOR_PROC
                         , MARKETING_PROGRAM.NAME AS MARKETING_PROGRAM
                         , MARKETING_PROGRAM.DESCRIPTION AS MARKETING_PROGRAM_DESCRIPTION
                         , MARKETING_ACTIVITY.NAME AS MARKETING_ACTIVITY
-                        , HL5.planned_start_date
-                        , HL5.planned_end_date
-                        , HL5.actual_start_date
-                        , HL5.actual_end_date
+                        , TO_NVARCHAR(HL5.planned_start_date, 'MM/DD/YYYY') AS planned_start_date
+                        , TO_NVARCHAR(HL5.planned_end_date, 'MM/DD/YYYY') AS planned_end_date
+                        , TO_NVARCHAR(HL5.actual_start_date, 'MM/DD/YYYY') AS actual_start_date
+                        , TO_NVARCHAR(HL5.actual_end_date, 'MM/DD/YYYY') AS actual_end_date
                         , DISTRIBUTION_CHANNEL.NAME AS DISTRIBUTION_CHANNEL
                         , HL5.budget
                         , HL5.url

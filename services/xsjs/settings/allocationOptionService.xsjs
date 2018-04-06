@@ -18,6 +18,8 @@ var hierarchyLevel = {
 	'HL6' : 3
 };
 
+var OPTIONS_LIMIT_DEFAULT = 5;
+
 function processRequest(){
 	return httpUtil.processRequest(handleGet,handlePost,handlePut,handleDelete,false,"",true);
 }
@@ -38,10 +40,12 @@ function handleGet(params,userId){
 					result.in_processing_report = flags.IN_PROCESSING_REPORT;
 					result.in_show_copy_configuration_check_box = !!flags.SHOW_COPY_OPTION_TO_SEGMENTATION_CHECK_BOX;
                     result.in_make_category_mandatory = !!flags.MAKE_CATEGORY_MANDATORY;
+                    result.in_options_limit = flags.OPTIONS_LIMIT;
 				} else {
 					result.in_processing_report = 0;
 					result.in_show_copy_configuration_check_box = false;
                     result.in_make_category_mandatory = false;
+                    result.in_options_limit = OPTIONS_LIMIT_DEFAULT;
 				}
 			} else {
 				result.results = AllocationOptionLib.getAssignedOptionByCategoryIdByLevelId(categoryId,levelId, true);

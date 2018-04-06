@@ -13,6 +13,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_CATEGORY_OPT
         , make_category_mandatory TINYINT
         , single_option_only TINYINT
         , CATEGORY_TYPE_ID integer
+        , OPTIONS_LIMIT integer
         )
 	) 
 	LANGUAGE SQLSCRIPT
@@ -32,6 +33,7 @@ BEGIN
     ,ACOL.make_category_mandatory
     ,AC.SINGLE_OPTION_ONLY
     ,AC.CATEGORY_TYPE_ID
+    ,ACOL.OPTIONS_LIMIT
     from allocation_category_option_level acol
     inner join allocation_category ac on acol.allocation_category_id = ac.allocation_category_id
     inner join allocation_option ao on acol.allocation_option_id = ao.allocation_option_id
@@ -57,6 +59,7 @@ BEGIN
             ,ACOL.make_category_mandatory
             ,AC.SINGLE_OPTION_ONLY
             ,AC.CATEGORY_TYPE_ID
+            ,ACOL.OPTIONS_LIMIT
             from ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL acol
             inner join allocation_category ac on acol.allocation_category_id = ac.allocation_category_id
             inner join ALLOCATION_COUNTRY_CATEGORY_OPTION ao on acol.ALLOCATION_COUNTRY_CATEGORY_OPTION_ID = ao.ALLOCATION_COUNTRY_CATEGORY_OPTION_ID
@@ -87,6 +90,7 @@ BEGIN
                         , make_category_mandatory
                         , SINGLE_OPTION_ONLY
                         , CATEGORY_TYPE_ID
+                        , OPTIONS_LIMIT
                         FROM :va_allocation_category_option
                          ORDER BY CATEGORY_NAME, OPTION_NAME;
 

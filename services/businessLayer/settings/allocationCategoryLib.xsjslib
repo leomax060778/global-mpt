@@ -18,6 +18,8 @@ var CATEGORY_TYPE = {
 
 var HIERARCHY_LEVEL = util.getHierarchyLevelEnum();
 
+var OPTIONS_LIMIT_DEFAULT = 5;
+
 function getAllocationCategoryByName(name){
 	return dbCategory.getAllocationCategoryByName(name);
 }
@@ -83,7 +85,8 @@ function getCategoryOptionByHierarchyLevelId(hierarchy_level_id, hl4Id){
                 , MAKE_CATEGORY_MANDATORY: categoryOption.MAKE_CATEGORY_MANDATORY
 				, SINGLE_OPTION_ONLY: categoryOption.SINGLE_OPTION_ONLY
                 , CATEGORY_TYPE_ID: categoryOption.CATEGORY_TYPE_ID
-                ,OPTIONS: [{
+                , OPTIONS_LIMIT: categoryOption.OPTIONS_LIMIT || OPTIONS_LIMIT_DEFAULT
+                , OPTIONS: [{
                     OPTION_ID: categoryOption.OPTION_ID
                     , OPTION_NAME: categoryOption.OPTION_NAME
                     , CATEGORY_ID: categoryOption.CATEGORY_ID

@@ -10,8 +10,8 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_HL6"
 	,in in_campaign_subtype_id bigint
 	,in in_marketing_program_id bigint
 	,in in_marketing_activity_id bigint
-	,in in_actual_start_date timestamp
-	,in in_actual_end_date timestamp
+	,in in_actual_start_date NVARCHAR(32)
+	,in in_actual_end_date NVARCHAR(32)
 	,in in_show_on_dg_calendar tinyint
 	,in in_business_owner_id bigint
 	,in in_employee_responsible_id bigint
@@ -34,8 +34,8 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_HL6"
     ,in in_results_campaign_q2 decimal(19, 2)
     ,in in_results_campaign_q3 decimal(19, 2)
     ,in in_results_campaign_q4 decimal(19, 2)
-    ,in in_planned_start_date timestamp
-    ,in in_planned_end_date timestamp
+    ,in in_planned_start_date NVARCHAR(32)
+    ,in in_planned_end_date NVARCHAR(32)
     ,in in_street nvarchar(255)
     ,in in_postal_code nvarchar(20)
     ,in in_region nvarchar(255)
@@ -122,8 +122,8 @@ BEGIN
 ,in_campaign_subtype_id
 ,in_marketing_program_id
 ,in_marketing_activity_id
-,in_actual_start_date
-,in_actual_end_date
+,TO_TIMESTAMP(in_actual_start_date,'MM/DD/YYYY')
+,TO_TIMESTAMP(in_actual_end_date,'MM/DD/YYYY')
 ,in_show_on_dg_calendar
 ,in_business_owner_id
 ,in_employee_responsible_id
@@ -146,8 +146,8 @@ BEGIN
 ,in_results_campaign_q2
 ,in_results_campaign_q3
 ,in_results_campaign_q4
-,in_planned_start_date
-,in_planned_end_date
+,TO_TIMESTAMP(in_planned_start_date,'MM/DD/YYYY')
+,TO_TIMESTAMP(in_planned_end_date,'MM/DD/YYYY')
 ,in_street
 ,in_postal_code
 , in_region
