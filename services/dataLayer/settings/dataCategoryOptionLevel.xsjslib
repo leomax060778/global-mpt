@@ -66,14 +66,15 @@ function getAllocationCategoryByCategoryIdLevelId(categoryId, levelId){
 }
 
 
-function insertAllocationCATEGORYOptionLevel(categoryId, optionId, levelId, inProcessingReport, userId, make_category_mandatory, autoCommit) {
+function insertAllocationCATEGORYOptionLevel(categoryId, optionId, levelId, inProcessingReport, userId, make_category_mandatory, in_options_limit, autoCommit) {
 	var params = {
 		'in_category_id': categoryId,
 		'in_option_id': optionId,
 		'in_level_id': levelId,
 		'in_in_processing_report': inProcessingReport,
 		'in_user_id': userId,
-        'in_make_category_mandatory':make_category_mandatory
+        'in_make_category_mandatory': make_category_mandatory,
+        'in_options_limit': in_options_limit
 	};
 	var rdo;
 	if (autoCommit) {
@@ -100,14 +101,15 @@ function updateAllocationCategoryOptionLevelProcessingReport(categoryId, levelId
 	return rdo;
 }
 
-function updateAllocationCategoryOptionLevel(categoryId, levelId, optionId, processingReport, userId, make_category_mandatory,autoCommit){
+function updateAllocationCategoryOptionLevel(categoryId, levelId, optionId, processingReport, userId, make_category_mandatory, in_options_limit,autoCommit){
     var params = {
         'in_category_id': categoryId,
         'in_level_id': levelId,
         'in_option_id':optionId,
         'in_user_id' : userId,
         'in_in_processing_report':processingReport,
-        'in_make_category_mandatory':make_category_mandatory
+        'in_make_category_mandatory':make_category_mandatory,
+        'in_options_limit': in_options_limit
     };
 
     return db.executeScalarManual(UPD_ALLOCATION_CATEGORY_OPTION_LEVEL,params,'out_result');
@@ -119,6 +121,7 @@ function updateAllocationOptionFlags(reqBody){
 	params.in_hierarchy_level_id = reqBody.HIERARCHY_LEVEL_ID;
 	params.in_make_category_mandatory = reqBody.MAKE_CATEGORY_MANDATORY;
 	params.in_in_processing_report = reqBody.IN_PROCESSING_REPORT;
+	params.in_options_limit = reqBody.IN_OPTIONS_LIMIT;
 
 	return db.executeScalarManual(UPD_ALLOCATION_OPTION_FLAGS, params, 'out_result');
 }

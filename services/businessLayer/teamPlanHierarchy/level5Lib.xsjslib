@@ -51,6 +51,7 @@ var dataObj = mapper.getDataObjectives();
 var dataMO = mapper.getDataMarketingOrganization();
 var uploadLib = mapper.getUploadLib();
 var allocationCategory = mapper.getAllocationCategoryLib();
+var dataUtil = mapper.getDataUtil();
 /*************************************************/
 
 var levelCampaign = "Marketing Tactic ";
@@ -110,6 +111,7 @@ var L5_MSG_INITIATIVE_SALES_ORGANIZATION = "The Marketing Tactic marketing organ
 var L5_MSG_REQUIRE_SPEND_BUDGET_VALIDATION = "You have answered “YES” to the question “Does this tactic/sub-tactic require spend budget?”. \n " +
     "You must enter a value greater than 0 under “MY BUDGET”,  “OTHER BUDGET” or “EXTERNAL FUNDING”.  \n" +
     "If you do not require spend budget for your tactic/sub-tactic, please change your selection to “NO”.";
+var L5_MSG_MISSING_DATA = "File is empty.";
 
 var HL5_STATUS = {
     IN_PROGRESS: 1,
@@ -1011,6 +1013,13 @@ function isComplete(data, fromChangeStatusOnDemand) {
                             percentagePerOption = percentagePerOption + Number(option.AMOUNT);
                         });
                         isComplete = isComplete && percentagePerOption === 100 || (!hl5Category.MAKE_CATEGORY_MANDATORY && percentagePerOption === 0);
+
+                        var totalOptionsSelected = hl5Category.OPTIONS.filter(function (option) {
+                            return option.AMOUNT && Number(option.AMOUNT) !== 0;
+                        }).length;
+
+                        isComplete = totalOptionsSelected <= hl5Category.OPTIONS_LIMIT;
+
                         if (!isComplete) {
                             break;
                         }
@@ -1349,9 +1358,11 @@ function CompareCategories(ListCategories1, ListCategories2, existInCrm, hl5Id) 
 
     for (var i = 0; i < ListCategories1.length; i++) {
         var category = ListCategories1[i];
-        // throw JSON.stringify({hl5Id: hl5Id, actualCategory: actualCategory, ListCategories1: ListCategories1});
-        if (actualCategory[category.CATEGORY_ID].IN_PROCESSING_REPORT)
-            flag = CompareCategoryOption(category, category.CATEGORY_ID, ListCategories2, existInCrm) || flag;
+        
+        //Compare Categories
+        if (actualCategory[category.CATEGORY_ID].IN_PROCESSING_REPORT){
+        	flag = CompareCategoryOption(category, category.CATEGORY_ID, ListCategories2, existInCrm) || flag;
+        }
     }
     return flag;
 }
@@ -1541,6 +1552,40 @@ function setStatusInCRM(hl5_id, userId) {
             }
         }*/
     return 1;
+}
+
+function setStatusInCRMByUpload(data, userId) {
+    if(!data || !data.DATA || !data.DATA.length){
+        throw ErrorLib.getErrors().CustomError("", "", L5_MSG_MISSING_DATA);
+    }
+
+    var result = {
+        TOTAL_PROCESSED: data.DATA.length,
+        UPDATED: 0,
+        NOT_FOUND: 0,
+        NOT_FOUND_PATH: []
+    };
+
+    var spResult = dataUtil.getIdByPath(data.DATA, LEVEL_STRING);
+    var ids = [];
+
+    for(var i = 0; i < spResult.length; i++){
+        var elem = spResult[i];
+        if(Number(elem.ID)){
+            ids.push({hl5_id: Number(elem.ID)});
+        } else {
+            result.NOT_FOUND_PATH.push(elem);
+        }
+    }
+
+    if(!data.CHECK && ids.length){
+        massSetHl5Status(ids, userId);
+    }
+
+    result.UPDATED = ids.length;
+    result.NOT_FOUND = result.NOT_FOUND_PATH.length;
+
+    return result;
 }
 
 function changeStatusOnDemand(hl5_id, userId, cancelConfirmation) {
@@ -2357,7 +2402,7 @@ function getCategoryOption(hl5Id) {
     return allocationCategoryOptionLevelLib.getHlCategoryOptionByLevelHlId(LEVEL_STRING, hl5Id);
 }
 
-function uiToServerParser(object) {
+function uiToServerParser(object, isClone) {
     var data = JSON.stringify(object, function (key, value) {
         if (Array.isArray(value)) {
             return value;
@@ -2386,6 +2431,13 @@ function uiToServerParser(object) {
 
     data.BUDGET_DISTRIBUTION = data.BUDGET_DISTRIBUTION.REGIONS.concat(data.BUDGET_DISTRIBUTION.CENTRAL_TEAMS);
     data.SALES = data.SALES.REGIONS.concat(data.SALES.CENTRAL_TEAMS.concat(data.SALES.OTHERS));
+
+    if(!isClone) {
+        data.ACTUAL_START_DATE = data.ACTUAL_START_DATE_STRING;
+        data.ACTUAL_END_DATE = data.ACTUAL_END_DATE_STRING;
+        data.PLANNED_START_DATE = data.PLANNED_START_DATE_STRING;
+        data.PLANNED_END_DATE = data.PLANNED_END_DATE_STRING;
+    }
 
     return data;
 }
@@ -2469,7 +2521,7 @@ function serverToUiParser(object) {
 function clone(cloneHl5Id, userId) {
     var data = getHl5ById(cloneHl5Id);
     var currencyId = uploadLib.getDefaultCurrencyForBudgetYearByPath(data);
-    data = uiToServerParser(data);
+    data = uiToServerParser(data, true);
     data.STATUS_DETAIL_ID = HL5_STATUS.IN_PROGRESS;
     var acronym = getNewSerialAcronym(data.HL4_ID);
     data.CREATED_USER_ID = userId;

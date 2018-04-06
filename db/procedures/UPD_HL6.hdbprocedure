@@ -10,8 +10,8 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::UPD_HL6"
 	,in in_campaign_subtype_id bigint
 	,in in_marketing_program_id bigint
 	,in in_marketing_activity_id bigint
-	,in in_actual_start_date timestamp
-	,in in_actual_end_date timestamp
+	,in in_actual_start_date NVARCHAR(32)
+	,in in_actual_end_date NVARCHAR(32)
 	,in in_show_on_dg_calendar tinyint
 	,in in_business_owner_id bigint
 	,in in_employee_responsible_id bigint
@@ -34,8 +34,8 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::UPD_HL6"
     ,in in_results_campaign_q2 decimal(19, 2)
     ,in in_results_campaign_q3 decimal(19, 2)
     ,in in_results_campaign_q4 decimal(19, 2)
-    ,in in_planned_start_date timestamp
-    ,in in_planned_end_date timestamp
+    ,in in_planned_start_date NVARCHAR(32)
+    ,in in_planned_end_date NVARCHAR(32)
     ,in in_street nvarchar(255)
     ,in in_postal_code nvarchar(20)
     ,in in_region nvarchar(255)
@@ -66,8 +66,8 @@ BEGIN
 	, campaign_subtype_id = in_campaign_subtype_id
 	, marketing_program_id = in_marketing_program_id
 	, marketing_activity_id = in_marketing_activity_id
-	, actual_start_date = in_actual_start_date
-	, actual_end_date = in_actual_end_date
+	, actual_start_date = TO_TIMESTAMP(in_actual_start_date, 'MM/DD/YYYY')
+	, actual_end_date = TO_TIMESTAMP(in_actual_end_date, 'MM/DD/YYYY')
 	, show_on_dg_calendar = in_show_on_dg_calendar 
 	, business_owner_id = in_business_owner_id
 	, employee_responsible_id = in_employee_responsible_id
@@ -91,8 +91,8 @@ BEGIN
     ,results_campaign_q2 = in_results_campaign_q2
     ,results_campaign_q3 = in_results_campaign_q3
     ,results_campaign_q4 = in_results_campaign_q4
-    ,planned_start_date = in_planned_start_date
-    ,planned_end_date = in_planned_end_date
+    ,planned_start_date = TO_TIMESTAMP(in_planned_start_date, 'MM/DD/YYYY')
+    ,planned_end_date = TO_TIMESTAMP(in_planned_end_date, 'MM/DD/YYYY')
     ,street = in_street
     ,postal_code = in_postal_code
     , region = in_region

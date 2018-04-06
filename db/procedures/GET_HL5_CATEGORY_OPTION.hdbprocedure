@@ -13,6 +13,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL5_CATEGORY
     , MAKE_CATEGORY_MANDATORY TINYINT
     , UPDATED TINYINT
     , CATEGORY_TYPE_ID integer
+    , OPTIONS_LIMIT integer
 	)
 ) 
 	LANGUAGE SQLSCRIPT
@@ -34,6 +35,7 @@ BEGIN
 	, ACOL.MAKE_CATEGORY_MANDATORY
 	, hl5CO.UPDATED
 	, AC.CATEGORY_TYPE_ID
+	, ACOL.OPTIONS_LIMIT
 	FROM hl5_category_option hl5CO
 	inner join allocation_category_option_level ACOL on hl5CO.allocation_category_option_level_id = ACOL.allocation_category_option_level_id
 	AND ACOL.enabled = 1 AND ACOL.deleted = 0
@@ -56,6 +58,7 @@ BEGIN
       	, ACOL.MAKE_CATEGORY_MANDATORY
       	, hl5CO.UPDATED
       	, AC.CATEGORY_TYPE_ID
+      	, ACOL.OPTIONS_LIMIT
       	FROM HL5_COUNTRY_CATEGORY_OPTION hl5CO
       	inner join ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL ACOL on hl5CO.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_id = ACOL.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_id
       	AND ACOL.enabled = 1 AND ACOL.deleted = 0
@@ -77,6 +80,7 @@ BEGIN
                            	, MAKE_CATEGORY_MANDATORY
                            	, UPDATED
                            	, CATEGORY_TYPE_ID
+                           	, OPTIONS_LIMIT
                     FROM :va_hl5_category_option
                      ORDER BY CATEGORY_NAME, OPTION_NAME;
 END;

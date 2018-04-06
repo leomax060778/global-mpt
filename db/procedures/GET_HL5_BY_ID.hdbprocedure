@@ -13,8 +13,8 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL5_BY_ID" (
 		, campaign_subtype_id integer
 		, marketing_program_id integer
 		, marketing_activity_id integer
-		, actual_start_date timestamp
-		, actual_end_date timestamp
+		, actual_start_date NVARCHAR(32)
+		, actual_end_date NVARCHAR(32)
 		, show_on_dg_calendar tinyint
 		, business_owner_id integer
 		, employee_responsible_id integer
@@ -38,8 +38,8 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL5_BY_ID" (
         , country_id integer
         , url nvarchar(255)
         , sales_organization_id integer
-        , planned_start_date timestamp
-        , planned_end_date timestamp
+        , planned_start_date NVARCHAR(32)
+        , planned_end_date NVARCHAR(32)
         , street nvarchar(255)
         , postal_code nvarchar(20)
         , region nvarchar(255)
@@ -91,8 +91,8 @@ out_result = select
                 , HL5.campaign_subtype_id
                 , HL5.marketing_program_id
                 , HL5.marketing_activity_id
-                , HL5.actual_start_date
-                , HL5.actual_end_date
+                , TO_NVARCHAR(HL5.ACTUAL_START_DATE, 'MM/DD/YYYY') AS ACTUAL_START_DATE
+                , TO_NVARCHAR(HL5.ACTUAL_END_DATE, 'MM/DD/YYYY') AS ACTUAL_END_DATE
                 , HL5.show_on_dg_calendar
                 , HL5.business_owner_id
                 , HL5.employee_responsible_id
@@ -116,8 +116,8 @@ out_result = select
                 , HL5.country_id as country_id
                 , HL5.url
                 , HL5.sales_organization_id
-                , HL5.planned_start_date
-                , HL5.planned_end_date
+                , TO_NVARCHAR(HL5.PLANNED_START_DATE, 'MM/DD/YYYY') AS PLANNED_START_DATE
+                , TO_NVARCHAR(HL5.PLANNED_END_DATE, 'MM/DD/YYYY') AS PLANNED_END_DATE
                 , HL5.street
                 , HL5.postal_code
                 , HL5.region

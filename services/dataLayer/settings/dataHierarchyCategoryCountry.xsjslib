@@ -87,27 +87,29 @@ function getAllocationCountryOptionLevelByHl2AndLevelId(hl2Id, hierarchy_level_i
     return null;
 }
 
-function updateAllocationCountryCategoryOptionLevel(categoryId, levelId, optionId, processingReport, userId, make_category_mandatory){
+function updateAllocationCountryCategoryOptionLevel(categoryId, levelId, optionId, processingReport, userId, make_category_mandatory, in_options_limit){
     var params = {
         'in_category_id': categoryId,
         'in_level_id': levelId,
         'in_option_id':optionId,
         'in_user_id' : userId,
         'in_in_processing_report':processingReport,
-        'in_make_category_mandatory':make_category_mandatory
+        'in_make_category_mandatory':make_category_mandatory,
+        'in_options_limit': in_options_limit
     };
 
     return db.executeScalarManual(spUPD_ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL,params,'out_result');
 }
 
-function insertAllocationCountryCategoryOptionLevel(categoryId, optionId, levelId, inProcessingReport, userId, make_category_mandatory) {
+function insertAllocationCountryCategoryOptionLevel(categoryId, optionId, levelId, inProcessingReport, userId, make_category_mandatory, in_options_limit) {
     var params = {
         'in_category_id': categoryId,
         'in_level_id': levelId,
         'in_option_id':optionId,
         'in_user_id' : userId,
         'in_in_processing_report':inProcessingReport,
-        'in_make_category_mandatory':make_category_mandatory
+        'in_make_category_mandatory':make_category_mandatory,
+        'in_options_limit': in_options_limit
     };
     return db.executeScalarManual(spINS_ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL, params, 'out_result');
 }
@@ -122,7 +124,7 @@ function updateAllocationCountryOptionFlags(reqBody){
     params.in_hierarchy_level_id = reqBody.HIERARCHY_LEVEL_ID;
     params.in_make_category_mandatory = reqBody.MAKE_CATEGORY_MANDATORY;
     params.in_in_processing_report = reqBody.IN_PROCESSING_REPORT;
-
+    params.in_options_limit = reqBody.OPTIONS_LIMIT;
     return db.executeScalarManual(spUPD_ALLOCATION_COUNTRY_OPTION_FLAGS, params, 'out_result');
 }
 

@@ -5,6 +5,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::UPD_ALLOCATION_C
 	IN in_user_id BIGINT,
 	IN in_in_processing_report tinyint,
 	IN in_make_category_mandatory TINYINT,
+	in in_options_limit integer,
 	OUT out_result integer
 )
    LANGUAGE SQLSCRIPT
@@ -16,12 +17,11 @@ BEGIN
         SET IN_PROCESSING_REPORT = in_in_processing_report
             , modified_date_tz = CURRENT_TIMESTAMP
             , modified_user_id = in_user_id
-            , enabled = 1
-            , deleted = 0
             , make_category_mandatory = in_make_category_mandatory
+            , options_limit = in_options_limit
         WHERE HIERARCHY_LEVEL_ID = in_level_id
          AND ALLOCATION_CATEGORY_ID = in_category_id
-         AND ALLOCATION_COUNTRY_CATEGORY_OPTION_ID = in_option_id;
-
+         AND ALLOCATION_COUNTRY_CATEGORY_OPTION_ID = in_option_id
+        AND enabled = 1 and deleted = 0;
         SELECT ::ROWCOUNT INTO out_result FROM DUMMY;
 END
