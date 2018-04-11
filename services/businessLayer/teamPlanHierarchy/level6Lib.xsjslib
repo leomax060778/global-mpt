@@ -125,7 +125,8 @@ var LEVEL_STRING = 'HL6';
 var map = {
     "REGION_ID": "ORGANIZATION_ID",
     "HL2_ID": "ORGANIZATION_ID",
-    "PERCENTAGE": "PERCENTAGE"
+    "PERCENTAGE": "PERCENTAGE",
+    "HL6_STATUS_DETAIL_ID": "STATUS_DETAIL_ID"
 };
 
 function getHl6ByHl5Id(hl5Id, userId) {
@@ -853,6 +854,7 @@ function isComplete(data, fromChangeStatusOnDemand) {
                     for (var j = 0; j < data.CATEGORIES.length; j++) {
                         var hl6Category = data.CATEGORIES[j];
                         var percentagePerOption = 0;
+                        var percentagePerOptionKpi = 0;
 
                         isComplete = isComplete && !!(hl6Category.CATEGORY_ID && Number(hl6Category.CATEGORY_ID));
                         var countOptions = dataOption.getAllocationOptionCountByCategoryIdLevelId(hl6Category.CATEGORY_ID, LEVEL_STRING.toLowerCase());
@@ -862,19 +864,23 @@ function isComplete(data, fromChangeStatusOnDemand) {
 
                         hl6Category.OPTIONS.forEach(function (option) {
                             option.AMOUNT = option.AMOUNT || 0;
+                            option.AMOUNT_KPI = option.AMOUNT_KPI || 0;
                             isComplete = isComplete && !!(option.OPTION_ID && Number(option.OPTION_ID));
-                            isComplete = isComplete && !(Number(option.AMOUNT) > 100 || Number(option.AMOUNT) < 0);
+                            isComplete = isComplete && !(Number(option.AMOUNT) > 100 || Number(option.AMOUNT) < 0); // Budget%
+                            isComplete = isComplete && !(Number(option.AMOUNT_KPI) > 100 || Number(option.AMOUNT_KPI) < 0); // KPI%
 
-                            percentagePerOption = percentagePerOption + Number(option.AMOUNT);
+                            percentagePerOption = percentagePerOption + Number(option.AMOUNT); // Budget%
+                            percentagePerOptionKpi = percentagePerOptionKpi + Number(option.AMOUNT_KPI); // KPI%
                         });
 
-                        isComplete = isComplete && percentagePerOption === 100 || (!hl6Category.MAKE_CATEGORY_MANDATORY && percentagePerOption === 0);
+                        isComplete = isComplete && percentagePerOption === 100 || (!hl6Category.MAKE_CATEGORY_MANDATORY && percentagePerOption === 0); // Budget%
+                        isComplete = isComplete && percentagePerOptionKpi === 100 || (!hl6Category.MAKE_CATEGORY_MANDATORY && percentagePerOptionKpi === 0); // KPI%
 
                         var totalOptionsSelected = hl6Category.OPTIONS.filter(function (option) {
-                            return option.AMOUNT && Number(option.AMOUNT) !== 0;
+                            return (option.AMOUNT && Number(option.AMOUNT) !== 0 || option.AMOUNT_KPI && Number(option.AMOUNT_KPI) !== 0);
                         }).length;
 
-                        isComplete = totalOptionsSelected <= hl6Category.OPTIONS_LIMIT;
+                        isComplete = isComplete && totalOptionsSelected <= hl6Category.OPTIONS_LIMIT;
                         if (!isComplete) {
                             break;
                         }
@@ -1014,7 +1020,7 @@ function validateHl6(data, userId) {
     var hl6 = data.HL6_ID ? dataHl6.getHl6ById(data.HL6_ID) : {};
     if (data.HL6_ID) {
         existInCrm = dataHl6.hl6ExistsInCrm(data.HL6_ID);
-        categoryHasChanged = categoryChanged(data, existInCrm);
+        categoryHasChanged = categoryChanged(data, existInCrm, userId);
         if (existInCrm && hl6.ACRONYM != data.ACRONYM)
             throw ErrorLib.getErrors().CustomError("", "hl6Services/handlePost/insertHl6", L6_MSG_INITIATIVE_PROPERTIES_CANNOT_UPDATE);
     }
@@ -1098,14 +1104,15 @@ function validateHl6(data, userId) {
         if (data.HL6_ID) {
             if(!crmFieldsHasChanged && !categoryHasChanged  && budgetChanged && Number(data.HL6_STATUS_DETAIL_ID) == HL6_STATUS.IN_CRM){
                 statusId = hl6.HL6_STATUS_DETAIL_ID;
-            }else if (!crmFieldsHasChanged && !categoryHasChanged && validateBudget(data)) {
+            }else
+                if (!crmFieldsHasChanged && !categoryHasChanged && validateBudget(data)) {
                     if (data.STATUS_DETAIL_ID == HL6_STATUS.IN_CRM
                         && !data.AUTOMATIC_APPROVAL
                         && ((data.SALE_REQUESTS && data.SALE_REQUESTS.length)
                             || (data.PARTNERS && data.PARTNERS.length))) {
                         statusId = HL6_STATUS.IN_CRM_NEED_NEW_BUDGET_APPROVAL;
                     } else {
-                        statusId = hl6.HL6_STATUS_DETAIL_ID;
+                            statusId = hl6.HL6_STATUS_DETAIL_ID;
                     }
                 } else {
                     statusId = HL6_STATUS.IN_PROGRESS;
@@ -1123,12 +1130,22 @@ function validateHl6(data, userId) {
     };
 }
 
-function categoryChanged(data, existInCrm) {
+function categoryChanged(data, existInCrm, userId) {
     var optionChange = false;
     //obtain the CATEGORY options in bd
     var hl6_categoryBD = getCategoryOption(data.HL6_ID);
 
     var optionChange = CompareCategories(data.CATEGORIES, hl6_categoryBD, existInCrm, data.HL6_ID);
+    if(optionChange){
+        var field = [{
+            "in_hl6_id": data.HL6_ID,
+            "in_column_name": "CATEGORY",
+            "in_changed": 1,
+            "in_user_id": userId,
+            "in_display_name": ''
+        }];
+        insertInCrmBinding(field, [], data.HL6_ID); // Inset in HL6_CRM_BINDING a row for categoryChange
+    }
 
     return optionChange;
 }
@@ -1230,11 +1247,14 @@ function isCategoryOptionComplete(data) {
     for (var i = 0; i < data.CATEGORIES.length; i++) {
         var hl6Category = data.CATEGORIES[i];
         var percentagePerOption = 0;
+        var percentagePerOptionKpi = 0;
         if (!hl6Category.CATEGORY_ID || !Number(hl6Category.CATEGORY_ID))
             throw ErrorLib.getErrors().CustomError("", "hl6Services/handlePost/insertHl6", L6_CATEGORY_NOT_VALID);
 
-        if (!hl6Category.OPTIONS.length)
+        if (!hl6Category.OPTIONS.length) {
             percentagePerOption = 100;
+            percentagePerOptionKpi = 100;
+        }
         //TODO review. Workaround for empty categories on edit
         //throw ErrorLib.getErrors().CustomError("","hl6Services/handlePost/insertHl6", L6_CATEGORY_OPTIONS_NOT_EMPTY);
 
@@ -1246,19 +1266,24 @@ function isCategoryOptionComplete(data) {
                 throw ErrorLib.getErrors().CustomError("", "", L6_CATEGORY_OPTION_NOT_VALID);
             if ((parseFloat(option.AMOUNT) && !Number(option.AMOUNT)) || Number(option.AMOUNT) > 100 || Number(option.AMOUNT) < 0)
                 throw ErrorLib.getErrors().CustomError("", "", "Option value is not valid (actual value " + option.AMOUNT + ")");
+            if ((parseFloat(option.AMOUNT_KPI) && !Number(option.AMOUNT_KPI)) || Number(option.AMOUNT_KPI) > 100 || Number(option.AMOUNT_KPI) < 0)
+                throw ErrorLib.getErrors().CustomError("", "", "Option KPI value is not valid (actual value " + option.AMOUNT_KPI + ")");
 
             percentagePerOption = percentagePerOption + Number(option.AMOUNT);
+            percentagePerOptionKpi = percentagePerOptionKpi + Number(option.AMOUNT_KPI);
         });
         if (percentagePerOption > 100) {
             throw ErrorLib.getErrors().CustomError("", "hl6Services/handlePost/insertHl6", L6_CATEGORY_TOTAL_PERCENTAGE);
         }
 
-        if (!Number(hl6Category.MAKE_CATEGORY_MANDATORY) && (percentagePerOption === 0 || percentagePerOption === 100)) {
+        if (!Number(hl6Category.MAKE_CATEGORY_MANDATORY)
+            && (percentagePerOption === 0 || percentagePerOption === 100)
+            && (percentagePerOptionKpi === 0 || percentagePerOptionKpi === 100)) {
             categoryOptionComplete = true;
-            break;
-        } else if (percentagePerOption > 100) {
+            /*break;*/
+        } else if (percentagePerOption > 100 || percentagePerOptionKpi > 100) {
             throw ErrorLib.getErrors().CustomError("", "", L6_CATEGORY_TOTAL_PERCENTAGE);
-        } else if (percentagePerOption < 100) {
+        } else if (percentagePerOption < 100 || percentagePerOptionKpi < 100) {
             categoryOptionComplete = false;
             break;
         } else {
@@ -1431,7 +1456,15 @@ function changeStatusOnDemand(hl6_id, userId, cancelConfirmation) {
         if (!cancelConfirmation) {
             if (hl6.HL6_STATUS_DETAIL_ID == HL6_STATUS.VALID_FOR_CRM
                 || hl6.HL6_STATUS_DETAIL_ID == HL6_STATUS.IN_PROGRESS) {
-                statusId = existInCrm ? HL6_STATUS.UPDATE_IN_CRM : HL6_STATUS.CREATE_IN_CRM;
+                if (!existInCrm) {
+                    // If not exist in CRM - set status: CREATE_IN_CRM
+                    statusId = HL6_STATUS.CREATE_IN_CRM;
+                } else {
+                    var numChanges = level6DER.countL6ChangedFieldsByHL6Id(hl6_id);
+                    statusId = numChanges > 0 ? HL6_STATUS.UPDATE_IN_CRM : HL6_STATUS.IN_CRM;
+                    // If exist in CRM and have changes in CRM fields - set status: UPDATE_IN_CRM
+                    // If exist in CRM and not have changes in CRM fields - set status: IN_CRM
+                }
             } else if (hl6.HL6_STATUS_DETAIL_ID == HL6_STATUS.IN_CRM_NEED_NEW_BUDGET_APPROVAL) {
                 statusId = HL6_STATUS.IN_CRM;
             } else {
@@ -1451,13 +1484,13 @@ function changeStatusOnDemand(hl6_id, userId, cancelConfirmation) {
                 throw ErrorLib.getErrors().CustomError("", "", L6_MSG_COULDNT_CHANGE_STATUS_DUE_OWN_MONEY_BUDGET_SPEND_REQUEST_STATUS);
             }
         }
-
+        var data = JSON.parse(JSON.stringify(hl6));
         if (statusId == HL6_STATUS.VALID_FOR_CRM
             || statusId == HL6_STATUS.CREATE_IN_CRM
             || statusId == HL6_STATUS.UPDATE_IN_CRM) {
             var targetKpis = expectedOutcomesLib.getExpectedOutcomesByHl6Id(hl6_id, hl6.HL5_ID);
             var hl6Category = getCategoryOption(hl6_id);
-            var data = JSON.parse(JSON.stringify(hl6));
+            /*var data = JSON.parse(JSON.stringify(hl6));*/
             data.TARGET_KPIS = targetKpis;
             data.CATEGORIES = hl6Category;
             var l4Id = dataHl5.getHl5ById(data.HL5_ID).HL4_ID;
@@ -1680,6 +1713,7 @@ function insertCategoryOption(data, userId) {
                 in_hl6_id: data.HL6_ID
                 , in_category_option_level_id: categoryOptionLevelId
                 , in_amount: Number(option.AMOUNT) || 0
+                , in_amount_kpi: Number(option.AMOUNT_KPI) || 0
                 , in_updated: !!Number(option.AMOUNT) ? 1 : 0
             };
 
@@ -1719,6 +1753,7 @@ function updateCategoryOption(data, userId, fromChangeStatusOnDemand) {
             var categoryOption = {
                 in_category_option_level_id: categoryOptionLevelId
                 , in_amount: Number(option.AMOUNT) || 0
+                , in_amount_kpi: Number(option.AMOUNT_KPI) || 0
                 , in_user_id: userId
                 , in_updated: fromChangeStatusOnDemand && !!Number(option.AMOUNT) ? 1 : (option.UPDATED || 0)
                 , in_hl6_id: data.HL6_ID
@@ -2155,6 +2190,7 @@ function getCarryOverHl5CategoryOption(hl5_id, hl4_id) {
             category.OPTIONS.map(function (option) {
                 var hl5option = extractElementByList(hl5Cat.OPTIONS, "OPTION_ID", option.OPTION_ID);
                 option.AMOUNT = hl5option ? hl5option.AMOUNT : 0;
+                option.AMOUNT_KPI = hl5option ? hl5option.AMOUNT_KPI : 0;
                 return option;
             });
         }

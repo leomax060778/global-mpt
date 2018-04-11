@@ -50,6 +50,15 @@ function getAllHL5ChangedFields(userId) {
 
 }
 
+function countL5ChangedFieldsByHL5Id(hl5Id) {
+    var changedFields = dataL5DER.getL5ChangedFieldsByHl5Id(hl5Id);
+    if(changedFields){
+        return changedFields.length;
+    } else {
+        return 0;
+    }
+
+}
 function getL5ChangedFieldsByHl5Id(hl5Id, userId) {
     var data = {"hl5": [], "category": []};
     data.STATUS_FLAG = dataHl5.getHl5StatusByHl5Id(hl5Id).HL5_STATUS_DETAIL_ID == HL5_STATUS.DELETION_REQUEST;

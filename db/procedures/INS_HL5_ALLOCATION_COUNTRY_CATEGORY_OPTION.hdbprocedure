@@ -4,7 +4,8 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_HL5_ALLOCATI
         	    in_category_option_level_id bigint,
         	    in_amount DECIMAL(19, 2),
         	    in_user_id bigint,
-        	    in_updated TINYINT
+        	    in_updated TINYINT,
+        	    in_amount_kpi DECIMAL(19, 2)
         		),
     OUT out_result_id bigint
 )
@@ -12,8 +13,8 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_HL5_ALLOCATI
 	SQL SECURITY INVOKER 
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL" AS
 BEGIN
-	INSERT INTO HL5_COUNTRY_CATEGORY_OPTION (ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID,hl5_id,amount,created_user_id,updated)
-	(select IN_CATEGORY_OPTION_LEVEL_ID, IN_HL5_ID, IN_AMOUNT, IN_USER_ID, IN_UPDATED from :categoryOption);
+	INSERT INTO HL5_COUNTRY_CATEGORY_OPTION (ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID,hl5_id,amount,created_user_id,updated, amount_kpi)
+	(select IN_CATEGORY_OPTION_LEVEL_ID, IN_HL5_ID, IN_AMOUNT, IN_USER_ID, IN_UPDATED, IN_AMOUNT_KPI from :categoryOption);
 
 	SELECT TOP 1 CURRENT_IDENTITY_VALUE() INTO out_result_id FROM HL5_CATEGORY_OPTION;
 END;
