@@ -188,6 +188,7 @@ function getHlCategoryOptionByLevelHlId(level, hlId, hl2Id) {
             SINGLE_OPTION_ONLY: categoryOption.SINGLE_OPTION_ONLY || 0,
             CATEGORY_OPTION_LEVEL_ID: categoryOption.CATEGORY_OPTION_LEVEL_ID,
             AMOUNT: categoryOption.AMOUNT,
+            AMOUNT_KPI: categoryOption.AMOUNT_KPI,
             CATEGORY_OPTION_ID: categoryOption.CATEGORY_OPTION_ID,
             UPDATED: categoryOption.UPDATED
         });

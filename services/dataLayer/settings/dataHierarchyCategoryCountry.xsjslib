@@ -153,3 +153,13 @@ function checkInUseAllocationCountryCategoryById(categoryId) {
     }
     return null;
 }
+
+function massResetCountryCategoryOptionUpdated(ids, level, userId){
+    var parameters = {
+        'in_ids': ids.map(function (value) { return {id: value[level.toLowerCase()+"_id"]} }),
+        'in_user_id': userId
+    };
+    var storedProcedure = "MASS_RESET_"+ level.toUpperCase() +"_COUNTRY_CATEGORY_OPTION_UPDATED";
+    var rdo = db.executeScalarManual(storedProcedure, parameters, 'out_result');
+    return rdo;
+}

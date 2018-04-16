@@ -12,6 +12,17 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_TRANSPOSED_C
 	    ,ZZIMP_PERCENTAGE4  NVARCHAR(255)
 	    ,IMP5  NVARCHAR(255)
 	    ,ZZIMP_PERCENTAGE5  NVARCHAR(255)
+	    ,IMP6  NVARCHAR(255)
+        ,ZZIMP_PERCENTAGE6  NVARCHAR(255)
+        ,IMP7  NVARCHAR(255)
+        ,ZZIMP_PERCENTAGE7  NVARCHAR(255)
+        ,IMP8  NVARCHAR(255)
+        ,ZZIMP_PERCENTAGE8  NVARCHAR(255)
+        ,IMP9  NVARCHAR(255)
+        ,ZZIMP_PERCENTAGE9  NVARCHAR(255)
+        ,IMP10  NVARCHAR(255)
+        ,ZZIMP_PERCENTAGE10  NVARCHAR(255)
+
 	    ,MKTSEG1  NVARCHAR(255)
 	    ,ZZMSEG_PERCENTAGE1  NVARCHAR(255)
 	    ,MKTSEG2  NVARCHAR(255)
@@ -22,6 +33,17 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_TRANSPOSED_C
 	    ,ZZMSEG_PERCENTAGE4  NVARCHAR(255)
 	    ,MKTSEG5  NVARCHAR(255)
 	    ,ZZMSEG_PERCENTAGE5  NVARCHAR(255)
+	    ,MKTSEG6  NVARCHAR(255)
+        ,ZZMSEG_PERCENTAGE6  NVARCHAR(255)
+        ,MKTSEG7  NVARCHAR(255)
+        ,ZZMSEG_PERCENTAGE7  NVARCHAR(255)
+        ,MKTSEG8  NVARCHAR(255)
+        ,ZZMSEG_PERCENTAGE8  NVARCHAR(255)
+        ,MKTSEG9  NVARCHAR(255)
+        ,ZZMSEG_PERCENTAGE9  NVARCHAR(255)
+        ,MKTSEG10  NVARCHAR(255)
+        ,ZZMSEG_PERCENTAGE10  NVARCHAR(255)
+
 	    ,INDUSTRY1  NVARCHAR(255)
 	    ,ZZIND_PERCENTAGE1  NVARCHAR(255)
 	    ,INDUSTRY2  NVARCHAR(255)
@@ -32,6 +54,17 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_TRANSPOSED_C
 	    ,ZZIND_PERCENTAGE4  NVARCHAR(255)
 	    ,INDUSTRY5  NVARCHAR(255)
 	    ,ZZIND_PERCENTAGE5  NVARCHAR(255)
+	    ,INDUSTRY6  NVARCHAR(255)
+        ,ZZIND_PERCENTAGE6  NVARCHAR(255)
+        ,INDUSTRY7  NVARCHAR(255)
+        ,ZZIND_PERCENTAGE7  NVARCHAR(255)
+        ,INDUSTRY8  NVARCHAR(255)
+        ,ZZIND_PERCENTAGE8  NVARCHAR(255)
+        ,INDUSTRY9  NVARCHAR(255)
+        ,ZZIND_PERCENTAGE9  NVARCHAR(255)
+        ,INDUSTRY10  NVARCHAR(255)
+        ,ZZIND_PERCENTAGE10  NVARCHAR(255)
+
 	    ,SOLUTION1  NVARCHAR(255)
 	    ,ZZSOL_PERCENTAGE1  NVARCHAR(255)
 	    ,SOLUTION2  NVARCHAR(255)
@@ -42,6 +75,16 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_TRANSPOSED_C
 	    ,ZZSOL_PERCENTAGE4  NVARCHAR(255)
 	    ,SOLUTION5  NVARCHAR(255)
 	    ,ZZSOL_PERCENTAGE5  NVARCHAR(255)
+	    ,SOLUTION6  NVARCHAR(255)
+        ,ZZSOL_PERCENTAGE6  NVARCHAR(255)
+        ,SOLUTION7  NVARCHAR(255)
+        ,ZZSOL_PERCENTAGE7  NVARCHAR(255)
+        ,SOLUTION8  NVARCHAR(255)
+        ,ZZSOL_PERCENTAGE8  NVARCHAR(255)
+        ,SOLUTION9  NVARCHAR(255)
+        ,ZZSOL_PERCENTAGE9  NVARCHAR(255)
+        ,SOLUTION10  NVARCHAR(255)
+        ,ZZSOL_PERCENTAGE10  NVARCHAR(255)
         )
 	)
 
@@ -96,11 +139,11 @@ IF(IN_LEVEL = 'HL4') THEN
 -----------------------------HL4----------------------------------
 
 -- Get exactly 5 allocation_category_option, ordered by amount.
-    VA_HL_IMP_OPTIONS = SELECT TOP 5 option_name,
+    VA_HL_IMP_OPTIONS = SELECT TOP 10 option_name,
                                      option_percentage,
                                      Row_number() OVER(ORDER BY option_percentage DESC) AS ROWNUM
                         FROM   (SELECT OPTION_NAME, OPTION_PERCENTAGE FROM (
-                                SELECT TOP 5 O.CRM_KEY     AS OPTION_NAME,
+                                SELECT TOP 10 O.CRM_KEY     AS OPTION_NAME,
                                        HCP.amount AS OPTION_PERCENTAGE
                                 FROM   hl4_category_option HCP
                                        RIGHT JOIN allocation_category_option_level ACOL
@@ -135,17 +178,37 @@ IF(IN_LEVEL = 'HL4') THEN
                                 UNION ALL
                                 SELECT '' AS OPTION_NAME,
                                        0  AS OPTION_PERCENTAGE
+                                FROM   dummy
+                                UNION ALL
+                                SELECT '' AS OPTION_NAME,
+                                       0  AS OPTION_PERCENTAGE
+                                FROM   dummy
+                                UNION ALL
+                                SELECT '' AS OPTION_NAME,
+                                       0  AS OPTION_PERCENTAGE
+                                FROM   dummy
+                                UNION ALL
+                                SELECT '' AS OPTION_NAME,
+                                       0  AS OPTION_PERCENTAGE
+                                FROM   dummy
+                                UNION ALL
+                                SELECT '' AS OPTION_NAME,
+                                       0  AS OPTION_PERCENTAGE
+                                FROM   dummy
+                                UNION ALL
+                                SELECT '' AS OPTION_NAME,
+                                       0  AS OPTION_PERCENTAGE
                                 FROM   dummy)
                         ORDER  BY option_percentage DESC;
 
 
 
 -- Get exactly 5 allocation_category_option, ordered by amount.
-    VA_HL_MKTSEG_OPTIONS = SELECT TOP 5 option_name,
+    VA_HL_MKTSEG_OPTIONS = SELECT TOP 10 option_name,
                                         option_percentage,
-                                        Row_number() OVER(ORDER BY option_percentage DESC) + 5 AS ROWNUM
+                                        Row_number() OVER(ORDER BY option_percentage DESC) + 10 AS ROWNUM
                            FROM   (SELECT OPTION_NAME, OPTION_PERCENTAGE FROM (
-                                SELECT TOP 5 O.CRM_KEY     AS OPTION_NAME,
+                                SELECT TOP 10 O.CRM_KEY     AS OPTION_NAME,
                                           HCP.amount AS OPTION_PERCENTAGE
                                    FROM   hl4_category_option HCP
                                           RIGHT JOIN allocation_category_option_level ACOL
@@ -180,17 +243,37 @@ IF(IN_LEVEL = 'HL4') THEN
                                    UNION ALL
                                    SELECT '' AS OPTION_NAME,
                                           0  AS OPTION_PERCENTAGE
+                                   FROM   dummy
+                                   UNION ALL
+                                   SELECT '' AS OPTION_NAME,
+                                          0  AS OPTION_PERCENTAGE
+                                   FROM   dummy
+                                   UNION ALL
+                                   SELECT '' AS OPTION_NAME,
+                                          0  AS OPTION_PERCENTAGE
+                                   FROM   dummy
+                                   UNION ALL
+                                   SELECT '' AS OPTION_NAME,
+                                          0  AS OPTION_PERCENTAGE
+                                   FROM   dummy
+                                   UNION ALL
+                                   SELECT '' AS OPTION_NAME,
+                                          0  AS OPTION_PERCENTAGE
+                                   FROM   dummy
+                                   UNION ALL
+                                   SELECT '' AS OPTION_NAME,
+                                          0  AS OPTION_PERCENTAGE
                                    FROM   dummy)
                            ORDER  BY option_percentage DESC;
 
 
 
 -- Get exactly 5 allocation_category_option, ordered by amount.
-    VA_HL_INDUSTRY_OPTIONS = SELECT TOP 5 option_name,
+    VA_HL_INDUSTRY_OPTIONS = SELECT TOP 10 option_name,
                                          option_percentage,
-                                         Row_number() OVER(ORDER BY option_percentage DESC) + 10 AS ROWNUM
+                                         Row_number() OVER(ORDER BY option_percentage DESC) + 20 AS ROWNUM
                             FROM   (SELECT OPTION_NAME, OPTION_PERCENTAGE FROM (
-                                SELECT TOP 5 O.CRM_KEY     AS OPTION_NAME,
+                                SELECT TOP 10 O.CRM_KEY     AS OPTION_NAME,
                                            HCP.amount AS OPTION_PERCENTAGE
                                     FROM   hl4_category_option HCP
                                            RIGHT JOIN allocation_category_option_level ACOL
@@ -225,17 +308,37 @@ IF(IN_LEVEL = 'HL4') THEN
                                     UNION ALL
                                     SELECT '' AS OPTION_NAME,
                                            0  AS OPTION_PERCENTAGE
+                                    FROM   dummy
+                                    UNION ALL
+                                    SELECT '' AS OPTION_NAME,
+                                           0  AS OPTION_PERCENTAGE
+                                    FROM   dummy
+                                    UNION ALL
+                                    SELECT '' AS OPTION_NAME,
+                                           0  AS OPTION_PERCENTAGE
+                                    FROM   dummy
+                                    UNION ALL
+                                    SELECT '' AS OPTION_NAME,
+                                           0  AS OPTION_PERCENTAGE
+                                    FROM   dummy
+                                    UNION ALL
+                                    SELECT '' AS OPTION_NAME,
+                                           0  AS OPTION_PERCENTAGE
+                                    FROM   dummy
+                                    UNION ALL
+                                    SELECT '' AS OPTION_NAME,
+                                           0  AS OPTION_PERCENTAGE
                                     FROM   dummy)
                             ORDER  BY option_percentage DESC;
 
 
 
 -- Get exactly 5 allocation_category_option, ordered by amount.
-    VA_HL_SOLUTION_OPTIONS = SELECT TOP 5 option_name,
+    VA_HL_SOLUTION_OPTIONS = SELECT TOP 10 option_name,
                                           option_percentage,
-                                          Row_number() OVER(ORDER BY option_percentage DESC) + 15 AS ROWNUM
+                                          Row_number() OVER(ORDER BY option_percentage DESC) + 30 AS ROWNUM
                              FROM   (SELECT OPTION_NAME, OPTION_PERCENTAGE FROM (
-                                SELECT TOP 5 O.CRM_KEY     AS OPTION_NAME,
+                                SELECT TOP 10 O.CRM_KEY     AS OPTION_NAME,
                                             HCP.amount AS OPTION_PERCENTAGE
                                      FROM   hl4_category_option HCP
                                             RIGHT JOIN allocation_category_option_level ACOL
@@ -270,6 +373,26 @@ IF(IN_LEVEL = 'HL4') THEN
                                      UNION ALL
                                      SELECT '' AS OPTION_NAME,
                                             0  AS OPTION_PERCENTAGE
+                                     FROM   dummy
+                                     UNION ALL
+                                     SELECT '' AS OPTION_NAME,
+                                            0  AS OPTION_PERCENTAGE
+                                     FROM   dummy
+                                     UNION ALL
+                                     SELECT '' AS OPTION_NAME,
+                                            0  AS OPTION_PERCENTAGE
+                                     FROM   dummy
+                                     UNION ALL
+                                     SELECT '' AS OPTION_NAME,
+                                            0  AS OPTION_PERCENTAGE
+                                     FROM   dummy
+                                     UNION ALL
+                                     SELECT '' AS OPTION_NAME,
+                                            0  AS OPTION_PERCENTAGE
+                                     FROM   dummy
+                                     UNION ALL
+                                     SELECT '' AS OPTION_NAME,
+                                            0  AS OPTION_PERCENTAGE
                                      FROM   dummy)
                              ORDER  BY option_percentage DESC;
 
@@ -280,12 +403,12 @@ ELSEIF(IN_LEVEL = 'HL5') THEN
 -----------------------------HL5-------------------------------------------------
 
 -- Get exactly 5 allocation_category_option, ordered by amount.
-VA_HL_IMP_OPTIONS = SELECT TOP 5 option_name,
+VA_HL_IMP_OPTIONS = SELECT TOP 10 option_name,
                                      option_percentage,
                                      Row_number() OVER(ORDER BY option_percentage DESC) AS ROWNUM
                         FROM
                         (SELECT OPTION_NAME, OPTION_PERCENTAGE FROM (
-                                SELECT TOP 5 O.CRM_KEY     AS OPTION_NAME,
+                                SELECT TOP 10 O.CRM_KEY     AS OPTION_NAME,
                                        HCP.amount AS OPTION_PERCENTAGE
                                 FROM   hl5_category_option HCP
                                        RIGHT JOIN allocation_category_option_level ACOL
@@ -320,17 +443,37 @@ VA_HL_IMP_OPTIONS = SELECT TOP 5 option_name,
                                 UNION ALL
                                 SELECT '' AS OPTION_NAME,
                                        0  AS OPTION_PERCENTAGE
+                                FROM   dummy
+                                UNION ALL
+                                SELECT '' AS OPTION_NAME,
+                                       0  AS OPTION_PERCENTAGE
+                                FROM   dummy
+                                UNION ALL
+                                SELECT '' AS OPTION_NAME,
+                                       0  AS OPTION_PERCENTAGE
+                                FROM   dummy
+                                UNION ALL
+                                SELECT '' AS OPTION_NAME,
+                                       0  AS OPTION_PERCENTAGE
+                                FROM   dummy
+                                UNION ALL
+                                SELECT '' AS OPTION_NAME,
+                                       0  AS OPTION_PERCENTAGE
+                                FROM   dummy
+                                UNION ALL
+                                SELECT '' AS OPTION_NAME,
+                                       0  AS OPTION_PERCENTAGE
                                 FROM   dummy)
                         ORDER  BY option_percentage DESC;
 
 
 
 -- Get exactly 5 allocation_category_option, ordered by amount.
-    VA_HL_MKTSEG_OPTIONS = SELECT TOP 5 option_name,
+    VA_HL_MKTSEG_OPTIONS = SELECT TOP 10 option_name,
                                         option_percentage,
-                                        Row_number() OVER(ORDER BY option_percentage DESC) + 5 AS ROWNUM
+                                        Row_number() OVER(ORDER BY option_percentage DESC) + 10 AS ROWNUM
                            FROM   (SELECT OPTION_NAME, OPTION_PERCENTAGE FROM (
-                                SELECT TOP 5 O.CRM_KEY     AS OPTION_NAME,
+                                SELECT TOP 10 O.CRM_KEY     AS OPTION_NAME,
                                           HCP.amount AS OPTION_PERCENTAGE
                                    FROM   hl5_category_option HCP
                                           RIGHT JOIN allocation_category_option_level ACOL
@@ -365,6 +508,26 @@ VA_HL_IMP_OPTIONS = SELECT TOP 5 option_name,
                                    UNION ALL
                                    SELECT '' AS OPTION_NAME,
                                           0  AS OPTION_PERCENTAGE
+                                   FROM   dummy
+                                   UNION ALL
+                                   SELECT '' AS OPTION_NAME,
+                                          0  AS OPTION_PERCENTAGE
+                                   FROM   dummy
+                                   UNION ALL
+                                   SELECT '' AS OPTION_NAME,
+                                          0  AS OPTION_PERCENTAGE
+                                   FROM   dummy
+                                   UNION ALL
+                                   SELECT '' AS OPTION_NAME,
+                                          0  AS OPTION_PERCENTAGE
+                                   FROM   dummy
+                                   UNION ALL
+                                   SELECT '' AS OPTION_NAME,
+                                          0  AS OPTION_PERCENTAGE
+                                   FROM   dummy
+                                   UNION ALL
+                                   SELECT '' AS OPTION_NAME,
+                                          0  AS OPTION_PERCENTAGE
                                    FROM   dummy)
                            ORDER  BY option_percentage DESC;
 
@@ -372,11 +535,11 @@ VA_HL_IMP_OPTIONS = SELECT TOP 5 option_name,
 
 -- Get exactly 5 allocation_category_option, ordered by amount.
 
-    VA_HL_INDUSTRY_OPTIONS = SELECT TOP 5 option_name,
+    VA_HL_INDUSTRY_OPTIONS = SELECT TOP 10 option_name,
                                          option_percentage,
-                                         Row_number() OVER(ORDER BY option_percentage DESC) + 10 AS ROWNUM
+                                         Row_number() OVER(ORDER BY option_percentage DESC) + 20 AS ROWNUM
                             FROM   (SELECT OPTION_NAME, OPTION_PERCENTAGE FROM (
-                                SELECT TOP 5 O.CRM_KEY     AS OPTION_NAME,
+                                SELECT TOP 10 O.CRM_KEY     AS OPTION_NAME,
                                            HCP.amount AS OPTION_PERCENTAGE
                                     FROM   hl5_category_option HCP
                                            RIGHT JOIN allocation_category_option_level ACOL
@@ -411,17 +574,37 @@ VA_HL_IMP_OPTIONS = SELECT TOP 5 option_name,
                                     UNION ALL
                                     SELECT '' AS OPTION_NAME,
                                            0  AS OPTION_PERCENTAGE
+                                    FROM   dummy
+                                    UNION ALL
+                                    SELECT '' AS OPTION_NAME,
+                                           0  AS OPTION_PERCENTAGE
+                                    FROM   dummy
+                                    UNION ALL
+                                    SELECT '' AS OPTION_NAME,
+                                           0  AS OPTION_PERCENTAGE
+                                    FROM   dummy
+                                    UNION ALL
+                                    SELECT '' AS OPTION_NAME,
+                                           0  AS OPTION_PERCENTAGE
+                                    FROM   dummy
+                                    UNION ALL
+                                    SELECT '' AS OPTION_NAME,
+                                           0  AS OPTION_PERCENTAGE
+                                    FROM   dummy
+                                    UNION ALL
+                                    SELECT '' AS OPTION_NAME,
+                                           0  AS OPTION_PERCENTAGE
                                     FROM   dummy)
                             ORDER  BY option_percentage DESC;
 
 
 
 -- Get exactly 5 allocation_category_option, ordered by amount.
-    VA_HL_SOLUTION_OPTIONS = SELECT TOP 5 option_name,
+    VA_HL_SOLUTION_OPTIONS = SELECT TOP 10 option_name,
                                           option_percentage,
-                                          Row_number() OVER(ORDER BY option_percentage DESC) + 15 AS ROWNUM
+                                          Row_number() OVER(ORDER BY option_percentage DESC) + 30 AS ROWNUM
                              FROM   (SELECT OPTION_NAME, OPTION_PERCENTAGE FROM (
-                                SELECT TOP 5 O.CRM_KEY     AS OPTION_NAME,
+                                SELECT TOP 10 O.CRM_KEY     AS OPTION_NAME,
                                             HCP.amount AS OPTION_PERCENTAGE
                                      FROM   hl5_category_option HCP
                                             RIGHT JOIN allocation_category_option_level ACOL
@@ -456,6 +639,27 @@ VA_HL_IMP_OPTIONS = SELECT TOP 5 option_name,
                                      UNION ALL
                                      SELECT '' AS OPTION_NAME,
                                             0  AS OPTION_PERCENTAGE
+                                     FROM   dummy
+                                     UNION ALL
+                                     SELECT '' AS OPTION_NAME,
+                                            0  AS OPTION_PERCENTAGE
+                                     FROM   dummy
+                                     -- Padding with empty rows so the row count is always 5
+                                     UNION ALL
+                                     SELECT '' AS OPTION_NAME,
+                                            0  AS OPTION_PERCENTAGE
+                                     FROM   dummy
+                                     UNION ALL
+                                     SELECT '' AS OPTION_NAME,
+                                            0  AS OPTION_PERCENTAGE
+                                     FROM   dummy
+                                     UNION ALL
+                                     SELECT '' AS OPTION_NAME,
+                                            0  AS OPTION_PERCENTAGE
+                                     FROM   dummy
+                                     UNION ALL
+                                     SELECT '' AS OPTION_NAME,
+                                            0  AS OPTION_PERCENTAGE
                                      FROM   dummy)
                              ORDER  BY option_percentage DESC;
 
@@ -464,11 +668,11 @@ ELSEIF(IN_LEVEL = 'HL6') THEN
 -----------------------------HL6-------------------------------------------------
 
 -- Get exactly 5 allocation_category_option, ordered by amount.
-VA_HL_IMP_OPTIONS = SELECT TOP 5 option_name,
+VA_HL_IMP_OPTIONS = SELECT TOP 10 option_name,
                                  option_percentage,
                                  Row_number() OVER(ORDER BY option_percentage DESC)  AS ROWNUM
                     FROM   (SELECT OPTION_NAME, OPTION_PERCENTAGE FROM (
-                                SELECT TOP 5 O.CRM_KEY     AS OPTION_NAME,
+                                SELECT TOP 10 O.CRM_KEY     AS OPTION_NAME,
                                    HCP.amount AS OPTION_PERCENTAGE
                             FROM   hl6_category_option HCP
                                    RIGHT JOIN allocation_category_option_level ACOL
@@ -503,17 +707,37 @@ VA_HL_IMP_OPTIONS = SELECT TOP 5 option_name,
                             UNION ALL
                             SELECT '' AS OPTION_NAME,
                                    0  AS OPTION_PERCENTAGE
+                            FROM   dummy
+                            UNION ALL
+                            SELECT '' AS OPTION_NAME,
+                                   0  AS OPTION_PERCENTAGE
+                            FROM   dummy
+                            UNION ALL
+                            SELECT '' AS OPTION_NAME,
+                                   0  AS OPTION_PERCENTAGE
+                            FROM   dummy
+                            UNION ALL
+                            SELECT '' AS OPTION_NAME,
+                                   0  AS OPTION_PERCENTAGE
+                            FROM   dummy
+                            UNION ALL
+                            SELECT '' AS OPTION_NAME,
+                                   0  AS OPTION_PERCENTAGE
+                            FROM   dummy
+                            UNION ALL
+                            SELECT '' AS OPTION_NAME,
+                                   0  AS OPTION_PERCENTAGE
                             FROM   dummy)
                     ORDER  BY option_percentage DESC;
 
 
 
 -- Get exactly 5 allocation_category_option, ordered by amount.
-VA_HL_MKTSEG_OPTIONS = SELECT TOP 5 option_name,
+VA_HL_MKTSEG_OPTIONS = SELECT TOP 10 option_name,
                                     option_percentage,
-                                    Row_number() OVER(ORDER BY option_percentage DESC) + 5 AS ROWNUM
+                                    Row_number() OVER(ORDER BY option_percentage DESC) + 10 AS ROWNUM
                        FROM   (SELECT OPTION_NAME, OPTION_PERCENTAGE FROM (
-                                SELECT TOP 5 O.CRM_KEY     AS OPTION_NAME,
+                                SELECT TOP 10 O.CRM_KEY     AS OPTION_NAME,
                                       HCP.amount AS OPTION_PERCENTAGE
                                FROM   hl6_category_option HCP
                                       RIGHT JOIN allocation_category_option_level ACOL
@@ -548,17 +772,37 @@ VA_HL_MKTSEG_OPTIONS = SELECT TOP 5 option_name,
                                UNION ALL
                                SELECT '' AS OPTION_NAME,
                                       0  AS OPTION_PERCENTAGE
+                               FROM   dummy
+                               UNION ALL
+                               SELECT '' AS OPTION_NAME,
+                                      0  AS OPTION_PERCENTAGE
+                               FROM   dummy
+                               UNION ALL
+                               SELECT '' AS OPTION_NAME,
+                                      0  AS OPTION_PERCENTAGE
+                               FROM   dummy
+                               UNION ALL
+                               SELECT '' AS OPTION_NAME,
+                                      0  AS OPTION_PERCENTAGE
+                               FROM   dummy
+                               UNION ALL
+                               SELECT '' AS OPTION_NAME,
+                                      0  AS OPTION_PERCENTAGE
+                               FROM   dummy
+                               UNION ALL
+                               SELECT '' AS OPTION_NAME,
+                                      0  AS OPTION_PERCENTAGE
                                FROM   dummy)
                        ORDER  BY option_percentage DESC;
 
 
 
 -- Get exactly 5 allocation_category_option, ordered by amount.
-VA_HL_INDUSTRY_OPTIONS = SELECT TOP 5 option_name,
+VA_HL_INDUSTRY_OPTIONS = SELECT TOP 10 option_name,
                                      option_percentage,
-                                     Row_number() OVER(ORDER BY option_percentage DESC) + 10 AS ROWNUM
+                                     Row_number() OVER(ORDER BY option_percentage DESC) + 20 AS ROWNUM
                         FROM   (SELECT OPTION_NAME, OPTION_PERCENTAGE FROM (
-                                SELECT TOP 5 O.CRM_KEY     AS OPTION_NAME,
+                                SELECT TOP 10 O.CRM_KEY     AS OPTION_NAME,
                                        HCP.amount AS OPTION_PERCENTAGE
                                 FROM   hl6_category_option HCP
                                        RIGHT JOIN allocation_category_option_level ACOL
@@ -593,17 +837,37 @@ VA_HL_INDUSTRY_OPTIONS = SELECT TOP 5 option_name,
                                 UNION ALL
                                 SELECT '' AS OPTION_NAME,
                                        0  AS OPTION_PERCENTAGE
+                                FROM   dummy
+                                UNION ALL
+                                SELECT '' AS OPTION_NAME,
+                                       0  AS OPTION_PERCENTAGE
+                                FROM   dummy
+                                UNION ALL
+                                SELECT '' AS OPTION_NAME,
+                                       0  AS OPTION_PERCENTAGE
+                                FROM   dummy
+                                UNION ALL
+                                SELECT '' AS OPTION_NAME,
+                                       0  AS OPTION_PERCENTAGE
+                                FROM   dummy
+                                UNION ALL
+                                SELECT '' AS OPTION_NAME,
+                                       0  AS OPTION_PERCENTAGE
+                                FROM   dummy
+                                UNION ALL
+                                SELECT '' AS OPTION_NAME,
+                                       0  AS OPTION_PERCENTAGE
                                 FROM   dummy)
                         ORDER  BY option_percentage DESC;
 
 
 
 -- Get exactly 5 allocation_category_option, ordered by amount.
-VA_HL_SOLUTION_OPTIONS = SELECT TOP 5 option_name,
+VA_HL_SOLUTION_OPTIONS = SELECT TOP 10 option_name,
                                       option_percentage,
-                                      Row_number() OVER(ORDER BY option_percentage DESC) + 15 AS ROWNUM
+                                      Row_number() OVER(ORDER BY option_percentage DESC) + 30 AS ROWNUM
                          FROM   (SELECT OPTION_NAME, OPTION_PERCENTAGE FROM (
-                                SELECT TOP 5 O.CRM_KEY     AS OPTION_NAME,
+                                SELECT TOP 10 O.CRM_KEY     AS OPTION_NAME,
                                         HCP.amount AS OPTION_PERCENTAGE
                                  FROM   hl6_category_option HCP
                                         RIGHT JOIN allocation_category_option_level ACOL
@@ -619,6 +883,26 @@ VA_HL_SOLUTION_OPTIONS = SELECT TOP 5 option_name,
                                         AND HCP.DELETED = 0
                                         ORDER BY HCP.AMOUNT DESC)
                                 -- Padding with empty rows so the row count is always 5
+                                 UNION ALL
+                                 SELECT '' AS OPTION_NAME,
+                                        0  AS OPTION_PERCENTAGE
+                                 FROM   dummy
+                                 UNION ALL
+                                 SELECT '' AS OPTION_NAME,
+                                        0  AS OPTION_PERCENTAGE
+                                 FROM   dummy
+                                 UNION ALL
+                                 SELECT '' AS OPTION_NAME,
+                                        0  AS OPTION_PERCENTAGE
+                                 FROM   dummy
+                                 UNION ALL
+                                 SELECT '' AS OPTION_NAME,
+                                        0  AS OPTION_PERCENTAGE
+                                 FROM   dummy
+                                 UNION ALL
+                                 SELECT '' AS OPTION_NAME,
+                                        0  AS OPTION_PERCENTAGE
+                                 FROM   dummy
                                  UNION ALL
                                  SELECT '' AS OPTION_NAME,
                                         0  AS OPTION_PERCENTAGE
@@ -668,36 +952,79 @@ END IF;
     CASE WHEN (V.ROWNUM = 4 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZIMP_PERCENTAGE4,
     CASE WHEN (V.ROWNUM = 5 )THEN OPTION_NAME ELSE '0' END AS IMP5,
     CASE WHEN (V.ROWNUM = 5 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZIMP_PERCENTAGE5,
-    CASE WHEN (V.ROWNUM = 6 )THEN OPTION_NAME ELSE '0' END AS MKTSEG1,
-    CASE WHEN (V.ROWNUM = 6 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZMSEG_PERCENTAGE1,
-    CASE WHEN (V.ROWNUM = 7 )THEN OPTION_NAME ELSE '0' END AS MKTSEG2,
-    CASE WHEN (V.ROWNUM = 7 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZMSEG_PERCENTAGE2,
-    CASE WHEN (V.ROWNUM = 8 )THEN OPTION_NAME ELSE '0' END AS MKTSEG3,
-    CASE WHEN (V.ROWNUM = 8 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZMSEG_PERCENTAGE3,
-    CASE WHEN (V.ROWNUM = 9 )THEN OPTION_NAME ELSE '0' END AS MKTSEG4,
-    CASE WHEN (V.ROWNUM = 9 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZMSEG_PERCENTAGE4,
-    CASE WHEN (V.ROWNUM = 10 )THEN OPTION_NAME ELSE '0' END AS MKTSEG5,
-    CASE WHEN (V.ROWNUM = 10 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZMSEG_PERCENTAGE5,
-    CASE WHEN (V.ROWNUM = 11 )THEN OPTION_NAME ELSE '0' END AS INDUSTRY1,
-    CASE WHEN (V.ROWNUM = 11 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZIND_PERCENTAGE1,
-    CASE WHEN (V.ROWNUM = 12 )THEN OPTION_NAME ELSE '0' END AS INDUSTRY2,
-    CASE WHEN (V.ROWNUM = 12 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZIND_PERCENTAGE2,
-    CASE WHEN (V.ROWNUM = 13 )THEN OPTION_NAME ELSE '0' END AS INDUSTRY3,
-    CASE WHEN (V.ROWNUM = 13 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZIND_PERCENTAGE3,
-    CASE WHEN (V.ROWNUM = 14 )THEN OPTION_NAME ELSE '0' END AS INDUSTRY4,
-    CASE WHEN (V.ROWNUM = 14 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZIND_PERCENTAGE4,
-    CASE WHEN (V.ROWNUM = 15 )THEN OPTION_NAME ELSE '0' END AS INDUSTRY5,
-    CASE WHEN (V.ROWNUM = 15 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZIND_PERCENTAGE5,
-    CASE WHEN (V.ROWNUM = 16 )THEN OPTION_NAME ELSE '0' END AS SOLUTION1,
-    CASE WHEN (V.ROWNUM = 16 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZSOL_PERCENTAGE1,
-    CASE WHEN (V.ROWNUM = 17 )THEN OPTION_NAME ELSE '0' END AS SOLUTION2,
-    CASE WHEN (V.ROWNUM = 17 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZSOL_PERCENTAGE2,
-    CASE WHEN (V.ROWNUM = 18 )THEN OPTION_NAME ELSE '0' END AS SOLUTION3,
-    CASE WHEN (V.ROWNUM = 18 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZSOL_PERCENTAGE3,
-    CASE WHEN (V.ROWNUM = 19 )THEN OPTION_NAME ELSE '0' END AS SOLUTION4,
-    CASE WHEN (V.ROWNUM = 19 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZSOL_PERCENTAGE4,
-    CASE WHEN (V.ROWNUM = 20 )THEN OPTION_NAME ELSE '0' END AS SOLUTION5,
-    CASE WHEN (V.ROWNUM = 20 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZSOL_PERCENTAGE5
+    CASE WHEN (V.ROWNUM = 6 )THEN OPTION_NAME ELSE '0' END AS IMP6,
+    CASE WHEN (V.ROWNUM = 6 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZIMP_PERCENTAGE6,
+    CASE WHEN (V.ROWNUM = 7 )THEN OPTION_NAME ELSE '0' END AS IMP7,
+    CASE WHEN (V.ROWNUM = 7 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZIMP_PERCENTAGE7,
+    CASE WHEN (V.ROWNUM = 8 )THEN OPTION_NAME ELSE '0' END AS IMP8,
+    CASE WHEN (V.ROWNUM = 8 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZIMP_PERCENTAGE8,
+    CASE WHEN (V.ROWNUM = 9 )THEN OPTION_NAME ELSE '0' END AS IMP9,
+    CASE WHEN (V.ROWNUM = 9 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZIMP_PERCENTAGE9,
+    CASE WHEN (V.ROWNUM = 10 )THEN OPTION_NAME ELSE '0' END AS IMP10,
+    CASE WHEN (V.ROWNUM = 10 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZIMP_PERCENTAGE10,
+
+    CASE WHEN (V.ROWNUM = 11 )THEN OPTION_NAME ELSE '0' END AS MKTSEG1,
+    CASE WHEN (V.ROWNUM = 11 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZMSEG_PERCENTAGE1,
+    CASE WHEN (V.ROWNUM = 12 )THEN OPTION_NAME ELSE '0' END AS MKTSEG2,
+    CASE WHEN (V.ROWNUM = 12 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZMSEG_PERCENTAGE2,
+    CASE WHEN (V.ROWNUM = 13 )THEN OPTION_NAME ELSE '0' END AS MKTSEG3,
+    CASE WHEN (V.ROWNUM = 13 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZMSEG_PERCENTAGE3,
+    CASE WHEN (V.ROWNUM = 14 )THEN OPTION_NAME ELSE '0' END AS MKTSEG4,
+    CASE WHEN (V.ROWNUM = 14 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZMSEG_PERCENTAGE4,
+    CASE WHEN (V.ROWNUM = 15 )THEN OPTION_NAME ELSE '0' END AS MKTSEG5,
+    CASE WHEN (V.ROWNUM = 15 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZMSEG_PERCENTAGE5,
+    CASE WHEN (V.ROWNUM = 16 )THEN OPTION_NAME ELSE '0' END AS MKTSEG6,
+    CASE WHEN (V.ROWNUM = 16 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZMSEG_PERCENTAGE6,
+    CASE WHEN (V.ROWNUM = 17 )THEN OPTION_NAME ELSE '0' END AS MKTSEG7,
+    CASE WHEN (V.ROWNUM = 17 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZMSEG_PERCENTAGE7,
+    CASE WHEN (V.ROWNUM = 18 )THEN OPTION_NAME ELSE '0' END AS MKTSEG8,
+    CASE WHEN (V.ROWNUM = 18 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZMSEG_PERCENTAGE8,
+    CASE WHEN (V.ROWNUM = 19 )THEN OPTION_NAME ELSE '0' END AS MKTSEG9,
+    CASE WHEN (V.ROWNUM = 19 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZMSEG_PERCENTAGE9,
+    CASE WHEN (V.ROWNUM = 20 )THEN OPTION_NAME ELSE '0' END AS MKTSEG10,
+    CASE WHEN (V.ROWNUM = 20 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZMSEG_PERCENTAGE10,
+
+    CASE WHEN (V.ROWNUM = 21 )THEN OPTION_NAME ELSE '0' END AS INDUSTRY1,
+    CASE WHEN (V.ROWNUM = 21 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZIND_PERCENTAGE1,
+    CASE WHEN (V.ROWNUM = 22 )THEN OPTION_NAME ELSE '0' END AS INDUSTRY2,
+    CASE WHEN (V.ROWNUM = 22 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZIND_PERCENTAGE2,
+    CASE WHEN (V.ROWNUM = 23 )THEN OPTION_NAME ELSE '0' END AS INDUSTRY3,
+    CASE WHEN (V.ROWNUM = 23 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZIND_PERCENTAGE3,
+    CASE WHEN (V.ROWNUM = 24 )THEN OPTION_NAME ELSE '0' END AS INDUSTRY4,
+    CASE WHEN (V.ROWNUM = 24 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZIND_PERCENTAGE4,
+    CASE WHEN (V.ROWNUM = 25 )THEN OPTION_NAME ELSE '0' END AS INDUSTRY5,
+    CASE WHEN (V.ROWNUM = 25 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZIND_PERCENTAGE5,
+    CASE WHEN (V.ROWNUM = 26 )THEN OPTION_NAME ELSE '0' END AS INDUSTRY6,
+    CASE WHEN (V.ROWNUM = 26 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZIND_PERCENTAGE6,
+    CASE WHEN (V.ROWNUM = 27 )THEN OPTION_NAME ELSE '0' END AS INDUSTRY7,
+    CASE WHEN (V.ROWNUM = 27 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZIND_PERCENTAGE7,
+    CASE WHEN (V.ROWNUM = 28 )THEN OPTION_NAME ELSE '0' END AS INDUSTRY8,
+    CASE WHEN (V.ROWNUM = 28 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZIND_PERCENTAGE8,
+    CASE WHEN (V.ROWNUM = 29 )THEN OPTION_NAME ELSE '0' END AS INDUSTRY9,
+    CASE WHEN (V.ROWNUM = 29 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZIND_PERCENTAGE9,
+    CASE WHEN (V.ROWNUM = 30 )THEN OPTION_NAME ELSE '0' END AS INDUSTRY10,
+    CASE WHEN (V.ROWNUM = 30 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZIND_PERCENTAGE10,
+
+    CASE WHEN (V.ROWNUM = 31 )THEN OPTION_NAME ELSE '0' END AS SOLUTION1,
+    CASE WHEN (V.ROWNUM = 31 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZSOL_PERCENTAGE1,
+    CASE WHEN (V.ROWNUM = 32 )THEN OPTION_NAME ELSE '0' END AS SOLUTION2,
+    CASE WHEN (V.ROWNUM = 32 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZSOL_PERCENTAGE2,
+    CASE WHEN (V.ROWNUM = 33 )THEN OPTION_NAME ELSE '0' END AS SOLUTION3,
+    CASE WHEN (V.ROWNUM = 33 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZSOL_PERCENTAGE3,
+    CASE WHEN (V.ROWNUM = 34 )THEN OPTION_NAME ELSE '0' END AS SOLUTION4,
+    CASE WHEN (V.ROWNUM = 34 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZSOL_PERCENTAGE4,
+    CASE WHEN (V.ROWNUM = 35 )THEN OPTION_NAME ELSE '0' END AS SOLUTION5,
+    CASE WHEN (V.ROWNUM = 35 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZSOL_PERCENTAGE5,
+    CASE WHEN (V.ROWNUM = 36 )THEN OPTION_NAME ELSE '0' END AS SOLUTION6,
+    CASE WHEN (V.ROWNUM = 36 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZSOL_PERCENTAGE6,
+    CASE WHEN (V.ROWNUM = 37 )THEN OPTION_NAME ELSE '0' END AS SOLUTION7,
+    CASE WHEN (V.ROWNUM = 37 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZSOL_PERCENTAGE7,
+    CASE WHEN (V.ROWNUM = 38 )THEN OPTION_NAME ELSE '0' END AS SOLUTION8,
+    CASE WHEN (V.ROWNUM = 38 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZSOL_PERCENTAGE8,
+    CASE WHEN (V.ROWNUM = 39 )THEN OPTION_NAME ELSE '0' END AS SOLUTION9,
+    CASE WHEN (V.ROWNUM = 39 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZSOL_PERCENTAGE9,
+    CASE WHEN (V.ROWNUM = 40 )THEN OPTION_NAME ELSE '0' END AS SOLUTION10,
+    CASE WHEN (V.ROWNUM = 40 )THEN OPTION_PERCENTAGE ELSE '0' END AS ZZSOL_PERCENTAGE10
 
     FROM :VA_HL_ALL_OPTIONS V;
 
@@ -713,6 +1040,17 @@ END IF;
     MAX(ZZIMP_PERCENTAGE4) AS ZZIMP_PERCENTAGE4,
     MAX(IMP5) AS IMP5,
     MAX(ZZIMP_PERCENTAGE5) AS ZZIMP_PERCENTAGE5,
+    MAX(IMP6) AS IMP6,
+    MAX(ZZIMP_PERCENTAGE6) AS ZZIMP_PERCENTAGE6,
+    MAX(IMP7) AS IMP7,
+    MAX(ZZIMP_PERCENTAGE7) AS ZZIMP_PERCENTAGE7,
+    MAX(IMP8) AS IMP8,
+    MAX(ZZIMP_PERCENTAGE8) AS ZZIMP_PERCENTAGE8,
+    MAX(IMP9) AS IMP9,
+    MAX(ZZIMP_PERCENTAGE9) AS ZZIMP_PERCENTAGE9,
+    MAX(IMP10) AS IMP10,
+    MAX(ZZIMP_PERCENTAGE10) AS ZZIMP_PERCENTAGE10,
+
     MAX(MKTSEG1) AS MKTSEG1,
     MAX(ZZMSEG_PERCENTAGE1) AS ZZMSEG_PERCENTAGE1,
     MAX(MKTSEG2) AS MKTSEG2,
@@ -723,6 +1061,17 @@ END IF;
     MAX(ZZMSEG_PERCENTAGE4) AS ZZMSEG_PERCENTAGE4,
     MAX(MKTSEG5) AS MKTSEG5,
     MAX(ZZMSEG_PERCENTAGE5) AS ZZMSEG_PERCENTAGE5,
+    MAX(MKTSEG6) AS MKTSEG6,
+    MAX(ZZMSEG_PERCENTAGE6) AS ZZMSEG_PERCENTAGE6,
+    MAX(MKTSEG7) AS MKTSEG7,
+    MAX(ZZMSEG_PERCENTAGE7) AS ZZMSEG_PERCENTAGE7,
+    MAX(MKTSEG8) AS MKTSEG8,
+    MAX(ZZMSEG_PERCENTAGE8) AS ZZMSEG_PERCENTAGE8,
+    MAX(MKTSEG9) AS MKTSEG9,
+    MAX(ZZMSEG_PERCENTAGE9) AS ZZMSEG_PERCENTAGE9,
+    MAX(MKTSEG10) AS MKTSEG10,
+    MAX(ZZMSEG_PERCENTAGE10) AS ZZMSEG_PERCENTAGE10,
+
     MAX(INDUSTRY1) AS INDUSTRY1,
     MAX(ZZIND_PERCENTAGE1) AS ZZIND_PERCENTAGE1,
     MAX(INDUSTRY2) AS INDUSTRY2,
@@ -733,6 +1082,17 @@ END IF;
     MAX(ZZIND_PERCENTAGE4) AS ZZIND_PERCENTAGE4,
     MAX(INDUSTRY5) AS INDUSTRY5,
     MAX(ZZIND_PERCENTAGE5) AS ZZIND_PERCENTAGE5,
+    MAX(INDUSTRY6) AS INDUSTRY6,
+    MAX(ZZIND_PERCENTAGE6) AS ZZIND_PERCENTAGE6,
+    MAX(INDUSTRY7) AS INDUSTRY7,
+    MAX(ZZIND_PERCENTAGE7) AS ZZIND_PERCENTAGE7,
+    MAX(INDUSTRY8) AS INDUSTRY8,
+    MAX(ZZIND_PERCENTAGE8) AS ZZIND_PERCENTAGE8,
+    MAX(INDUSTRY9) AS INDUSTRY9,
+    MAX(ZZIND_PERCENTAGE9) AS ZZIND_PERCENTAGE9,
+    MAX(INDUSTRY10) AS INDUSTRY10,
+    MAX(ZZIND_PERCENTAGE10) AS ZZIND_PERCENTAGE10,
+
     MAX(SOLUTION1) AS SOLUTION1,
     MAX(ZZSOL_PERCENTAGE1) AS ZZSOL_PERCENTAGE1,
     MAX(SOLUTION2) AS SOLUTION2,
@@ -742,7 +1102,17 @@ END IF;
     MAX(SOLUTION4) AS SOLUTION4,
     MAX(ZZSOL_PERCENTAGE4) AS ZZSOL_PERCENTAGE4,
     MAX(SOLUTION5) AS SOLUTION5,
-    MAX(ZZSOL_PERCENTAGE5) AS ZZSOL_PERCENTAGE5
+    MAX(ZZSOL_PERCENTAGE5) AS ZZSOL_PERCENTAGE5,
+    MAX(SOLUTION6) AS SOLUTION6,
+    MAX(ZZSOL_PERCENTAGE6) AS ZZSOL_PERCENTAGE6,
+    MAX(SOLUTION7) AS SOLUTION7,
+    MAX(ZZSOL_PERCENTAGE7) AS ZZSOL_PERCENTAGE7,
+    MAX(SOLUTION8) AS SOLUTION8,
+    MAX(ZZSOL_PERCENTAGE8) AS ZZSOL_PERCENTAGE8,
+    MAX(SOLUTION9) AS SOLUTION9,
+    MAX(ZZSOL_PERCENTAGE9) AS ZZSOL_PERCENTAGE9,
+    MAX(SOLUTION10) AS SOLUTION10,
+    MAX(ZZSOL_PERCENTAGE10) AS ZZSOL_PERCENTAGE10
 
     FROM :VA_IDENTITY_MATRIX;
 

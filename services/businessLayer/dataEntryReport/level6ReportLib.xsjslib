@@ -32,6 +32,15 @@ var HL6_STATUS = {
     DELETED_IN_CRM: 10
 };
 
+function countL6ChangedFieldsByHL6Id(hl6Id) {
+    var changedFields = dataL6DER.getL6ChangedFieldsByHl6Id(hl6Id);
+    if(changedFields){
+        return changedFields.length;
+    } else {
+        return 0;
+    }
+
+}
 
 function getAllL6DEReport(userId) {
     var hl6List = dataL6DER.getAllLevel6Report(userId);

@@ -14,6 +14,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL5_CATEGORY
     , UPDATED TINYINT
     , CATEGORY_TYPE_ID integer
     , OPTIONS_LIMIT integer
+    , amount_kpi decimal(19,2)
 	)
 ) 
 	LANGUAGE SQLSCRIPT
@@ -26,9 +27,9 @@ BEGIN
 	 ac.allocation_category_id as category_id
 	, hl5CO.hl5_id
 	, ac.name as category_name
-	,ao.allocation_option_id as option_id
-    	, ao.name as option_name
-    	,hl5CO.hl5_category_option_id as category_option_id
+	, ao.allocation_option_id as option_id
+    , ao.name as option_name
+    , hl5CO.hl5_category_option_id as category_option_id
 	, hl5CO.allocation_category_option_level_id as category_option_level_id
 	, hl5CO.amount
 	, ac.SINGLE_OPTION_ONLY
@@ -36,6 +37,7 @@ BEGIN
 	, hl5CO.UPDATED
 	, AC.CATEGORY_TYPE_ID
 	, ACOL.OPTIONS_LIMIT
+	, hl5CO.amount_kpi
 	FROM hl5_category_option hl5CO
 	inner join allocation_category_option_level ACOL on hl5CO.allocation_category_option_level_id = ACOL.allocation_category_option_level_id
 	AND ACOL.enabled = 1 AND ACOL.deleted = 0
@@ -59,6 +61,7 @@ BEGIN
       	, hl5CO.UPDATED
       	, AC.CATEGORY_TYPE_ID
       	, ACOL.OPTIONS_LIMIT
+      	, hl5CO.amount_kpi
       	FROM HL5_COUNTRY_CATEGORY_OPTION hl5CO
       	inner join ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL ACOL on hl5CO.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_id = ACOL.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_id
       	AND ACOL.enabled = 1 AND ACOL.deleted = 0
@@ -68,19 +71,21 @@ BEGIN
       	  AND hl5CO.enabled = 1
       	  AND hl5CO.deleted = 0);
 
-	 out_result = SELECT CATEGORY_ID
-                           , HL5_ID
-                           , CATEGORY_NAME
-                           , OPTION_ID
-                           , OPTION_NAME
-                           , CATEGORY_OPTION_ID
-                           , CATEGORY_OPTION_LEVEL_ID
-                           , AMOUNT
-                           , SINGLE_OPTION_ONLY
-                           	, MAKE_CATEGORY_MANDATORY
-                           	, UPDATED
-                           	, CATEGORY_TYPE_ID
-                           	, OPTIONS_LIMIT
-                    FROM :va_hl5_category_option
-                     ORDER BY CATEGORY_NAME, OPTION_NAME;
+	 out_result =
+	        SELECT CATEGORY_ID
+                   , HL5_ID
+                   , CATEGORY_NAME
+                   , OPTION_ID
+                   , OPTION_NAME
+                   , CATEGORY_OPTION_ID
+                   , CATEGORY_OPTION_LEVEL_ID
+                   , AMOUNT
+                   , SINGLE_OPTION_ONLY
+                   , MAKE_CATEGORY_MANDATORY
+                   , UPDATED
+                   , CATEGORY_TYPE_ID
+                   , OPTIONS_LIMIT
+                   , amount_kpi
+            FROM :va_hl5_category_option
+             ORDER BY CATEGORY_NAME, OPTION_NAME;
 END;

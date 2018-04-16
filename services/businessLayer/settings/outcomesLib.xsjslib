@@ -20,6 +20,7 @@ function getAllOutcomes(hl){
                     OUTCOMES_ID: outcome.OUTCOMES_ID
                     , OUTCOMES_NAME: outcome.OUTCOMES_NAME
                     , SHOW_WIZARD: outcome.SHOW_WIZARD
+                    , KPI_DISTRIBUTION: outcome.KPI_DISTRIBUTION
                 }]
             };
         } else {
@@ -27,6 +28,7 @@ function getAllOutcomes(hl){
                 OUTCOMES_ID: outcome.OUTCOMES_ID
                 , OUTCOMES_NAME: outcome.OUTCOMES_NAME
                 , SHOW_WIZARD: outcome.SHOW_WIZARD
+                , KPI_DISTRIBUTION: outcome.KPI_DISTRIBUTION
             });
         }
 

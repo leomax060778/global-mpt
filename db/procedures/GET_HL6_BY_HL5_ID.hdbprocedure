@@ -1,7 +1,7 @@
 PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL6_BY_HL5_ID" (
         IN in_hl5_id BIGINT,
         OUT out_result TABLE(
-              HL6_ID BIGINT
+              HL6_ID INTEGER
             , HL6_CRM_DESCRIPTION NVARCHAR(100)
             , HL6_ACRONYM NVARCHAR(25)
             , HL5_PATH NVARCHAR(25)
