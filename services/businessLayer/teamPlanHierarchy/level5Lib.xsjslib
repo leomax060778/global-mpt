@@ -52,6 +52,7 @@ var dataMO = mapper.getDataMarketingOrganization();
 var uploadLib = mapper.getUploadLib();
 var allocationCategory = mapper.getAllocationCategoryLib();
 var dataUtil = mapper.getDataUtil();
+var dataHierarchyCategoryCountry = mapper.getDataHierarchyCategoryCountry();
 /*************************************************/
 
 var levelCampaign = "Marketing Tactic ";
@@ -166,10 +167,10 @@ function getHl5ByHl4Id(id, userId) {
         hl5List.forEach(function (hl5) {
             var actionPermission = getActionPermission(hl5, userId, isSuperAdmin);
 
-            hl5.ENABLE_DELETION = actionPermission.ENABLE_DELETION;
-            hl5.ENABLE_CHANGE_STATUS = actionPermission.ENABLE_CHANGE_STATUS;
-            hl5.ENABLE_EDIT = actionPermission.ENABLE_EDIT;
-            hl5.ENABLE_CLONE = actionPermission.ENABLE_CLONE;
+            hl5.ENABLE_DELETION = !!actionPermission.ENABLE_DELETION;
+            hl5.ENABLE_CHANGE_STATUS = !!actionPermission.ENABLE_CHANGE_STATUS;
+            hl5.ENABLE_EDIT = !!actionPermission.ENABLE_EDIT;
+            hl5.ENABLE_CLONE = !!actionPermission.ENABLE_CLONE;
         });
 
         hl5TotalBudget = dataHl4.getHl4ById(id).HL4_FNC_BUDGET_TOTAL_MKT;
@@ -765,7 +766,7 @@ function updateHl5(data, userId) {
             data.BUDGET = Number(data.BUDGET) / conversionValue;
             data.IN_BUDGET = checkBudgetStatus(data.HL4_ID, hl5_id, Number(data.BUDGET) / conversionValue);
         }*/
-        
+
         dataHl5.updateHl5(
             data.HL5_ID
             , data.CRM_DESCRIPTION || 'N/D'
@@ -998,6 +999,7 @@ function isComplete(data, fromChangeStatusOnDemand) {
                     for (var j = 0; j < data.CATEGORIES.length; j++) {
                         var hl5Category = data.CATEGORIES[j];
                         var percentagePerOption = 0;
+                        var percentagePerOptionKpi = 0;
 
                         isComplete = isComplete && !!(hl5Category.CATEGORY_ID && Number(hl5Category.CATEGORY_ID));
                         var countOptions = dataOption.getAllocationOptionCountByCategoryIdLevelId(hl5Category.CATEGORY_ID, LEVEL_STRING.toLowerCase());
@@ -1007,18 +1009,24 @@ function isComplete(data, fromChangeStatusOnDemand) {
 
                         hl5Category.OPTIONS.forEach(function (option) {
                             option.AMOUNT = option.AMOUNT || 0;
+                            option.AMOUNT_KPI = option.AMOUNT_KPI || 0;
                             isComplete = isComplete && !!(option.OPTION_ID && Number(option.OPTION_ID));
                             isComplete = isComplete && !(Number(option.AMOUNT) > 100 || Number(option.AMOUNT) < 0);
+                            isComplete = isComplete && !(Number(option.AMOUNT_KPI) > 100 || Number(option.AMOUNT_KPI) < 0);
 
                             percentagePerOption = percentagePerOption + Number(option.AMOUNT);
+                            percentagePerOptionKpi = percentagePerOptionKpi + Number(option.AMOUNT_KPI);
                         });
-                        isComplete = isComplete && percentagePerOption === 100 || (!hl5Category.MAKE_CATEGORY_MANDATORY && percentagePerOption === 0);
+
+                        isComplete = isComplete &&
+                            (percentagePerOption === 100 || (!hl5Category.MAKE_CATEGORY_MANDATORY && percentagePerOption === 0)) &&
+                            (percentagePerOptionKpi === 100 || (!hl5Category.MAKE_CATEGORY_MANDATORY && percentagePerOptionKpi === 0));
 
                         var totalOptionsSelected = hl5Category.OPTIONS.filter(function (option) {
                             return option.AMOUNT && Number(option.AMOUNT) !== 0;
                         }).length;
 
-                        isComplete = totalOptionsSelected <= hl5Category.OPTIONS_LIMIT;
+                        isComplete = isComplete && totalOptionsSelected <= hl5Category.OPTIONS_LIMIT;
 
                         if (!isComplete) {
                             break;
@@ -1138,7 +1146,7 @@ function validateHl5(data, userId) {
     var hl5 = data.HL5_ID ? dataHl5.getHl5ById(data.HL5_ID) : {};
     if (data.HL5_ID) {
         existInCrm = dataHl5.hl5ExistsInCrm(data.HL5_ID);
-        categoryHasChanged = categoryChanged(data, existInCrm);
+        categoryHasChanged = categoryChanged(data, existInCrm, userId);
         if (existInCrm && hl5.ACRONYM != data.ACRONYM)
             throw ErrorLib.getErrors().CustomError("", "hl5Services/handlePost/insertHl5", L5_MSG_INITIATIVE_PROPERTIES_CANNOT_UPDATE);
     }
@@ -1263,7 +1271,7 @@ function validateHl5(data, userId) {
                     && ((data.SALE_REQUESTS && data.SALE_REQUESTS.length) || (data.PARTNERS && data.PARTNERS.length))) {
                     statusId = HL5_STATUS.IN_CRM_NEED_NEW_BUDGET_APPROVAL;
                 } else {
-                    statusId = hl5.HL5_STATUS_DETAIL_ID;
+                        statusId = hl5.HL5_STATUS_DETAIL_ID;
                 }
             } else {
                 statusId = HL5_STATUS.IN_PROGRESS;
@@ -1281,13 +1289,22 @@ function validateHl5(data, userId) {
     };
 }
 
-function categoryChanged(data, existInCrm) {
+function categoryChanged(data, existInCrm, userId) {
     var optionChange = false;
     //obtain the CATEGORY options in bd
     var hl5_categoryBD = getCategoryOption(data.HL5_ID);
 
     var optionChange = CompareCategories(data.CATEGORIES, hl5_categoryBD, existInCrm, data.HL5_ID);
-
+    if(optionChange){
+        var field = [{
+                "in_hl5_id": data.HL5_ID,
+                "in_column_name": "CATEGORY",
+                "in_changed": 1,
+                "in_user_id": userId,
+                "in_display_name": ''
+        }];
+        insertInCrmBinding(field, [], data.HL5_ID); // Inset in HL6_CRM_BINDING a row for categoryChange
+    }
     return optionChange;
 }
 
@@ -1391,11 +1408,14 @@ function isCategoryOptionComplete(data) {
     for (var i = 0; i < data.CATEGORIES.length; i++) {
         var hl5Category = data.CATEGORIES[i];
         var percentagePerOption = 0;
+        var percentagePerOptionKpi = 0;
         if (!hl5Category.CATEGORY_ID || !Number(hl5Category.CATEGORY_ID))
             throw ErrorLib.getErrors().CustomError("", "", L5_CATEGORY_NOT_VALID);
 
-        if (!hl5Category.OPTIONS.length)
+        if (!hl5Category.OPTIONS.length) {
             percentagePerOption = 100;
+            percentagePerOptionKpi = 100;
+        }
         //TODO review. Workaround for empty categories on edit
         //throw ErrorLib.getErrors().CustomError("","hl5Services/handlePost/insertHl5", L5_CATEGORY_OPTIONS_NOT_EMPTY);
 
@@ -1407,16 +1427,20 @@ function isCategoryOptionComplete(data) {
                 throw ErrorLib.getErrors().CustomError("", "", L5_CATEGORY_OPTION_NOT_VALID);
             if ((parseFloat(option.AMOUNT) && !Number(option.AMOUNT)) || Number(option.AMOUNT) > 100 || Number(option.AMOUNT) < 0)
                 throw ErrorLib.getErrors().CustomError("", "", "Option value is not valid (actual value " + option.AMOUNT + ")");
+            if ((parseFloat(option.AMOUNT_KPI) && !Number(option.AMOUNT_KPI)) || Number(option.AMOUNT_KPI) > 100 || Number(option.AMOUNT_KPI) < 0)
+                throw ErrorLib.getErrors().CustomError("", "", "Option KPI value is not valid (actual value " + option.AMOUNT_KPI + ")");
 
             percentagePerOption = percentagePerOption + Number(option.AMOUNT);
+            percentagePerOptionKpi = percentagePerOptionKpi + Number(option.AMOUNT_KPI);
         });
 
-        if (!Number(hl5Category.MAKE_CATEGORY_MANDATORY) && (percentagePerOption === 0 || percentagePerOption === 100)) {
-            categoryOptionComplete = true;
-            break;
-        } else if (percentagePerOption > 100) {
+        if (!Number(hl5Category.MAKE_CATEGORY_MANDATORY) &&
+            (percentagePerOption === 0 || percentagePerOption === 100) &&
+            (percentagePerOptionKpi === 0 || percentagePerOptionKpi === 100)) {
+                categoryOptionComplete = true;
+        } else if (percentagePerOption > 100 || percentagePerOptionKpi > 100) {
             throw ErrorLib.getErrors().CustomError("", "", L5_CATEGORY_TOTAL_PERCENTAGE);
-        } else if (percentagePerOption < 100) {
+        } else if (percentagePerOption < 100 || percentagePerOptionKpi < 100) {
             categoryOptionComplete = false;
             break;
         } else {
@@ -1518,6 +1542,7 @@ function massSetHl5Status(hl5Ids, userId) {
 
 function massResetHl5CategoryOptionUpdated(hl5Id, userId) {
     dataCategoryOptionLevel.massResetHl5CategoryOptionUpdated(hl5Id, LEVEL_STRING.toLowerCase(), userId);
+    dataHierarchyCategoryCountry.massResetCountryCategoryOptionUpdated(hl5Id, LEVEL_STRING.toLowerCase(), userId);
     return true;
 }
 
@@ -1599,7 +1624,14 @@ function changeStatusOnDemand(hl5_id, userId, cancelConfirmation) {
         if (!cancelConfirmation) {
             if (hl5.HL5_STATUS_DETAIL_ID == HL5_STATUS.VALID_FOR_CRM
                 || hl5.HL5_STATUS_DETAIL_ID == HL5_STATUS.IN_PROGRESS) {
-                statusId = existInCrm ? HL5_STATUS.UPDATE_IN_CRM : HL5_STATUS.CREATE_IN_CRM;
+
+                if (!existInCrm) {
+                    statusId = HL5_STATUS.CREATE_IN_CRM;
+                } else {
+                    var numChanges = level5DER.countL5ChangedFieldsByHL5Id(hl5_id);
+                    statusId = numChanges > 0 ? HL5_STATUS.UPDATE_IN_CRM : HL5_STATUS.IN_CRM;
+                }
+
             } else if (hl5.HL5_STATUS_DETAIL_ID == HL5_STATUS.IN_CRM_NEED_NEW_BUDGET_APPROVAL) {
                 statusId = HL5_STATUS.IN_CRM;
             } else {
@@ -1614,16 +1646,22 @@ function changeStatusOnDemand(hl5_id, userId, cancelConfirmation) {
             var budgetSpendRequestStatus = budgetSpendRequest.getBudgetSpendRequestsStatus();
 
             var ownMoneyBudgetSpendRequestStatus = budgetSpendRequest.getOwnMoneyBudgetSpendRequestStatusByHlIdLevel(hl5_id, LEVEL_STRING);
+            // var countApprovedCoFundedBudgetSpendRequestByHlIdLevel = !budgetSpendRequest.countApprovedCoFundedBudgetSpendRequestByHlIdLevel(hl5_id, LEVEL_STRING);
+            //
+            // throw JSON.stringify({ownMoneyBudgetSpendRequestStatus:ownMoneyBudgetSpendRequestStatus
+            //     , countApprovedCoFundedBudgetSpendRequestByHlIdLevel:countApprovedCoFundedBudgetSpendRequestByHlIdLevel});
+
             if ((!ownMoneyBudgetSpendRequestStatus || (ownMoneyBudgetSpendRequestStatus && ownMoneyBudgetSpendRequestStatus != budgetSpendRequestStatus.APPROVED)
                     && !budgetSpendRequest.countApprovedCoFundedBudgetSpendRequestByHlIdLevel(hl5_id, LEVEL_STRING))) {
                 throw ErrorLib.getErrors().CustomError("", "", L5_MSG_COULDNT_CHANGE_STATUS_DUE_OWN_MONEY_BUDGET_SPEND_REQUEST_STATUS);
             }
         }
 
+        var data = JSON.parse(JSON.stringify(hl5));
         if (statusId == HL5_STATUS.VALID_FOR_CRM || statusId == HL5_STATUS.CREATE_IN_CRM || statusId == HL5_STATUS.UPDATE_IN_CRM) {
             var targetKpis = expectedOutcomesLib.getExpectedOutcomesByHl5Id(hl5_id, hl5.HL4_ID);
             var hl5Category = getCategoryOption(hl5_id);
-            var data = JSON.parse(JSON.stringify(hl5));
+            /*var data = JSON.parse(JSON.stringify(hl5));*/
             data.TARGET_KPIS = targetKpis;
             data.CATEGORIES = hl5Category;
             data.AUTOMATIC_APPROVAL = blLevel2.getHl2AllowAutomaticBudgetApprovalByHl4Id(data.HL4_ID);
@@ -1933,6 +1971,7 @@ function insertCategoryOption(data, userId) {
                 in_hl5_id: data.HL5_ID
                 , in_category_option_level_id: categoryOptionLevelId
                 , in_amount: Number(option.AMOUNT) || 0
+                , in_amount_kpi: Number(option.AMOUNT_KPI) || 0
                 , in_user_id: userId
                 , in_updated: !!Number(option.AMOUNT) ? 1 : 0
             };
@@ -1971,6 +2010,7 @@ function updateCategoryOption(data, userId, fromChangeStatusOnDemand) {
             var categoryOption = {
                 in_category_option_level_id: categoryOptionLevelId
                 , in_amount: Number(option.AMOUNT) || 0
+                , in_amount_kpi: Number(option.AMOUNT_KPI) || 0
                 , in_user_id: userId
                 , in_updated: fromChangeStatusOnDemand && !!Number(option.AMOUNT) ? 1 : (option.UPDATED || 0)
                 , in_hl5_id: data.HL5_ID
