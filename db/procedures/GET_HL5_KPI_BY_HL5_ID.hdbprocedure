@@ -7,7 +7,8 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL5_KPI_BY_H
 			outcomes_name NVARCHAR(255),
 			outcomes_type_id BIGINT,
 			outcomes_type_name  NVARCHAR(255),
-			comments NVARCHAR(3000)
+			comments NVARCHAR(3000),
+           KPI_DISTRIBUTION TINYINT
 		)
 	) 
 	LANGUAGE SQLSCRIPT
@@ -25,6 +26,7 @@ BEGIN
      	, outcomes_type.expected_outcome_id     AS outcomes_type_id
      	, outcomes_type.name                    AS outcomes_type_name
      	, heo.comments
+     	, eol.KPI_DISTRIBUTION
      	 from hl5_expected_outcomes heo
      	 left join hl5_expected_outcomes_detail heod on heod.hl5_expected_outcomes_id = heo.hl5_expected_outcomes_id
      	 left join expected_outcome_level eol on heod.outcomes_id = eol.expected_outcome_level_id
