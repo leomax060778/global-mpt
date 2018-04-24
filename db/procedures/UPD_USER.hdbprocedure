@@ -5,6 +5,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::UPD_USER" (
 	IN in_last_name nvarchar(255),
 	IN in_email nvarchar(255),
 	IN in_phone nvarchar(255),
+	IN in_data_protection_enabled tinyint,
 	IN in_modified_user_id bigint,
 	OUT out_result BIGINT
 ) 
@@ -23,6 +24,7 @@ BEGIN
 	user.last_name = in_last_name, 
 	user.email = in_email, 
 	user.phone = in_phone,
+	user.data_protection_enabled = in_data_protection_enabled,
     user.modified_date_tz = CURRENT_TIMESTAMP,
     user.modified_user_id = in_modified_user_id
     FROM "USER" user

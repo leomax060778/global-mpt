@@ -1,0 +1,48 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::UPD_INTERLOCK_REPORT_DATA" (
+	OUT out_result BIGINT) 
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER 
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	AS
+BEGIN
+	 DELETE FROM "MKTG_PLANNING_TOOL"."CV_INTERLOCK_REPORT_DATA";
+
+	 VA_GET_NEW_DATA = (
+                             select
+                              T.ORGANIZATION_TYPE_NAME_FROM
+                             ,T.ORGANIZATION_NAME_FROM
+                             ,T.INTERLOCK_ENTITY_NAME_FROM
+                             ,T.ACTION
+                             ,T.ORGANIZATION_TYPE_NAME_TO
+                             ,T.ORGANIZATION_NAME_TO
+                             ,T.INTERLOCK_ENTITY_NAME_TO
+                             ,T.REQUESTED_RESOURCE
+                             ,T.REQUESTED_BUDGET
+                             ,T.STATUS_DETAIL
+                             ,T.CREATED_DATE
+                             ,T.STATUS_CHANGE_DATE
+                             ,T.REQUESTER
+                             ,T.CONTACT_DATA
+                             from "_SYS_BIC"."mktgplanningtool.db.data.views/CV_INTERLOCK_PROCESS_REPORT" T
+                           ) ;
+
+	 INSERT INTO "MKTG_PLANNING_TOOL"."CV_INTERLOCK_REPORT_DATA" (
+	                                     ORGANIZATION_TYPE_NAME_FROM,
+                                         ORGANIZATION_NAME_FROM,
+                                         INTERLOCK_ENTITY_NAME_FROM,
+                                         ACTION,
+                                         ORGANIZATION_TYPE_NAME_TO,
+                                         ORGANIZATION_NAME_TO,
+                                         INTERLOCK_ENTITY_NAME_TO,
+                                         REQUESTED_RESOURCE,
+                                         REQUESTED_BUDGET,
+                                         STATUS_DETAIL,
+                                         CREATED_DATE,
+                                         STATUS_CHANGE_DATE,
+                                         REQUESTER,
+                                         CONTACT_DATA
+	 )
+	 SELECT * FROM :VA_GET_NEW_DATA;
+    --************************************************--
+	 SELECT ::ROWCOUNT INTO out_result FROM DUMMY;
+END;

@@ -16,7 +16,7 @@ function processRequest(){
 
 //Implementation of GET call
 function handleGet(parameters, userSessionID){
-	if(parameters.length === 2){
+	if(parameters.length){
 		if(parameters[0].name === LEVEL && parameters[1].name === HL_ID){		
 			var rdo = blPath.getPathByLevelParent(parameters[0].value, parameters[1].value);
 			httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);				

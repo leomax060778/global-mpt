@@ -1,0 +1,20 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::MASS_RESET_HL5_COUNTRY_CATEGORY_OPTION_UPDATED" (
+		IN in_ids table(
+		   id bigint
+		)
+		,IN in_user_id BIGINT
+		,OUT out_result INTEGER
+	)
+	LANGUAGE SQLSCRIPT
+   SQL SECURITY INVOKER
+   DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+   AS
+BEGIN
+	UPDATE "MKTG_PLANNING_TOOL"."HL5_COUNTRY_CATEGORY_OPTION" SET
+	UPDATED = 0
+	,modified_user_id = in_user_id
+	,modified_date_tz = CURRENT_TIMESTAMP
+	WHERE HL5_ID in (SELECT id FROM :in_ids);
+
+	SELECT ::ROWCOUNT INTO out_result FROM DUMMY;
+END;

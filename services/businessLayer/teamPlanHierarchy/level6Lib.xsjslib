@@ -42,6 +42,7 @@ var allocationCategoryOptionLevelLib = mapper.getAllocationCategoryOptionLevelLi
 var level4Lib = mapper.getLevel4();
 var uploadLib = mapper.getUploadLib();
 var dataUtil = mapper.getDataUtil();
+var dataHierarchyCategoryCountry = mapper.getDataHierarchyCategoryCountry();
 /** ********************************************** */
 
 var levelCampaign = "Marketing Sub Tactic";
@@ -130,14 +131,26 @@ var map = {
 };
 
 function getHl6ByHl5Id(hl5Id, userId) {
-    var hl6List = dataHl6.getHl6ByHl5Id(hl5Id, true);
-    var l4Id = dataHl5.getHl5ById(hl5Id).HL4_ID;
+    var hl6List = [];
+    var l4Id = 0;
+    var isSuperAdmin = false;
+    var enableCration = false;
+    var hl5 = {};
     var totalBudget = 0;
     var totalAllocated = 0;
     var remainingBudget = 0;
     var allHl6 = [];
-    var isSuperAdmin = util.isSuperAdmin(userId);
-    var hl5 = dataHl5.getHl5ById(hl5Id);
+    
+
+        l4Id = dataHl5.getHl5ById(hl5Id) ? dataHl5.getHl5ById(hl5Id).HL4_ID : 0; 
+        hl5 = dataHl5.getHl5ById(hl5Id);
+        hl6List = dataHl6.getHl6ByHl5Id(hl5Id, 1);
+        isSuperAdmin = util.isSuperAdmin(userId);
+        totalBudget = hl5 ? hl5.BUDGET : 0;
+        totalAllocated = dataHl6.getHl6TotalBudgetByHl5Id(hl5Id);
+        remainingBudget = totalBudget - totalAllocated;
+        enableCration = level5Lib.addChildPermission(hl5Id) && level4Lib.addChildPermission(l4Id);
+
     if (hl6List.length) {
         hl6List.forEach(function (hl6) {
             var aux = {};
@@ -146,7 +159,7 @@ function getHl6ByHl5Id(hl5Id, userId) {
                 if (key !== 'HL5_PATH') {
                     //set view link to CRT
                     if (key === 'CRT_RELATED') {
-                        aux.TO_CRT = hl6.STATUS_ID == HL6_STATUS.IN_CRM && hl6.CRT_RELATED;
+                        aux.TO_CRT = false;
                     } else {
                         aux[key] = hl6[key];
                     }
@@ -155,16 +168,12 @@ function getHl6ByHl5Id(hl5Id, userId) {
                     aux.CRM_ID = hl6[key];
                 }
             });
-            aux.ENABLE_DELETION = actionPermission.ENABLE_DELETION;
-            aux.ENABLE_CHANGE_STATUS = actionPermission.ENABLE_CHANGE_STATUS;
-            aux.ENABLE_EDIT = actionPermission.ENABLE_EDIT;
-            aux.ENABLE_CLONE = actionPermission.ENABLE_CLONE;
+            aux.ENABLE_DELETION = !!actionPermission.ENABLE_DELETION;
+            aux.ENABLE_CHANGE_STATUS = !!actionPermission.ENABLE_CHANGE_STATUS;
+            aux.ENABLE_EDIT = !!actionPermission.ENABLE_EDIT;
+            aux.ENABLE_CLONE = !!actionPermission.ENABLE_CLONE;
             allHl6.push(aux);
         });
-
-        totalBudget = hl5.BUDGET;
-        totalAllocated = dataHl6.getHl6TotalBudgetByHl5Id(hl5Id);
-        remainingBudget = totalBudget - totalAllocated;
     }
 
     var response = {
@@ -172,7 +181,7 @@ function getHl6ByHl5Id(hl5Id, userId) {
         "total_budget": totalBudget,
         "remaining_budget": remainingBudget,
         "total_allocated": totalAllocated,
-        "ENABLE_CREATION": level5Lib.addChildPermission(hl5Id) && level4Lib.addChildPermission(l4Id)
+        "ENABLE_CREATION": enableCration
     };
     response.budget_year = budgetYear.getBudgetYearByLevelParent(6, hl5Id, true);
     return response;
@@ -1374,6 +1383,7 @@ function massSetHl6Status(hl6Ids, userId) {
 
 function massResetHl6CategoryOptionUpdated(hl6Id, userId) {
     dataCategoryOptionLevel.massResetHl6CategoryOptionUpdated(hl6Id, LEVEL_STRING.toLowerCase(), userId);
+    dataHierarchyCategoryCountry.massResetCountryCategoryOptionUpdated(hl6Id, LEVEL_STRING.toLowerCase(), userId);
     return true;
 }
 

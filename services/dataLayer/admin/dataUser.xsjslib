@@ -6,11 +6,15 @@ var ErrorLib = mapper.getErrors();
 /** ********************************************** */
 
 var spGetAll = "GET_ALL_USER";
+var spGetAllByUserName = "GET_ALL_USER_BY_USER_NAME";
 var spGetUserById = "GET_USER_BY_ID";
 var spGetUserByUserName = "GET_USER_BY_USERNAME";
 var spGetUserByEmail = "GET_USER_BY_EMAIL";
 var spInseruser = "INS_USER";
 var spUpdateUser = "UPD_USER";
+var spUpdateUserDataProtection = "UPD_USER_DATA_PROTECTION";
+var spUpdateUserWithMask = "UPD_USER_APPLY_DATA_PROTECTION";
+var spRestoreUser = "UPD_USER_RESTORE";
 var spDeleteUser = "DEL_USER";
 var spUpdatePass = "UPD_USER_PASSWORD";
 var spGetUsersByHl1Id = "GET_USERS_BY_HL1_ID";
@@ -45,6 +49,14 @@ function getAllUser() {
 
 	var rdo = db.executeProcedure(spGetAll, {});
 	return db.extractArray(rdo.USER);
+}
+
+function getAllUserByUserName(userName){
+	var params = {};
+	params.IN_USER_NAME = userName;
+	
+	var rdo = db.executeProcedure(spGetAllByUserName, params);
+	return db.extractArray(rdo.out_result);
 }
 
 function getUserById(id) {
@@ -168,9 +180,36 @@ function updateUser(user, modUser) {
 	param.in_last_name = user.LAST_NAME;
 	param.in_email = user.EMAIL;
 	param.in_phone = user.PHONE;
+	param.in_data_protection_enabled = user.DATA_PROTECTION_ENABLED;
 	param.in_modified_user_id = modUser; // User that insert.
 
 	return db.executeScalar(spUpdateUser, param, "out_result");
+}
+
+function updateDataProtection(dataProtection, userId, userSession){
+	var params = {};
+	params.in_user_id = userId;
+	params.in_data_protection_enabled = dataProtection? 1:0;
+	params.in_modified_user_id = userSession;
+	
+	return db.executeScalar(spUpdateUserDataProtection, params, "out_result");
+}
+
+function updateUserWithMask(mask, userId, userSession){
+	var params = {};
+	params.in_user_id = userId;
+	params.in_default_mask = mask;
+	params.in_modified_user_id = userSession;
+	
+	return db.executeScalar(spUpdateUserWithMask, params, "out_result");
+}
+
+function restoreUser(reqBody, userId){
+	var params = {};
+	params.IN_USER_ID = reqBody.USER_ID;
+	params.IN_MODIFIED_USER_ID = userId;
+	
+	return db.executeScalar(spRestoreUser, params, "out_result");
 }
 
 function deleteUser(userTable, modUser) {

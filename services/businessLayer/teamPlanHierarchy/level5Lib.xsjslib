@@ -52,6 +52,7 @@ var dataMO = mapper.getDataMarketingOrganization();
 var uploadLib = mapper.getUploadLib();
 var allocationCategory = mapper.getAllocationCategoryLib();
 var dataUtil = mapper.getDataUtil();
+var dataHierarchyCategoryCountry = mapper.getDataHierarchyCategoryCountry();
 /*************************************************/
 
 var levelCampaign = "Marketing Tactic ";
@@ -166,10 +167,10 @@ function getHl5ByHl4Id(id, userId) {
         hl5List.forEach(function (hl5) {
             var actionPermission = getActionPermission(hl5, userId, isSuperAdmin);
 
-            hl5.ENABLE_DELETION = actionPermission.ENABLE_DELETION;
-            hl5.ENABLE_CHANGE_STATUS = actionPermission.ENABLE_CHANGE_STATUS;
-            hl5.ENABLE_EDIT = actionPermission.ENABLE_EDIT;
-            hl5.ENABLE_CLONE = actionPermission.ENABLE_CLONE;
+            hl5.ENABLE_DELETION = !!actionPermission.ENABLE_DELETION;
+            hl5.ENABLE_CHANGE_STATUS = !!actionPermission.ENABLE_CHANGE_STATUS;
+            hl5.ENABLE_EDIT = !!actionPermission.ENABLE_EDIT;
+            hl5.ENABLE_CLONE = !!actionPermission.ENABLE_CLONE;
         });
 
         hl5TotalBudget = dataHl4.getHl4ById(id).HL4_FNC_BUDGET_TOTAL_MKT;
@@ -1541,6 +1542,7 @@ function massSetHl5Status(hl5Ids, userId) {
 
 function massResetHl5CategoryOptionUpdated(hl5Id, userId) {
     dataCategoryOptionLevel.massResetHl5CategoryOptionUpdated(hl5Id, LEVEL_STRING.toLowerCase(), userId);
+    dataHierarchyCategoryCountry.massResetCountryCategoryOptionUpdated(hl5Id, LEVEL_STRING.toLowerCase(), userId);
     return true;
 }
 

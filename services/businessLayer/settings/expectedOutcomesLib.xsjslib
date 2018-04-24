@@ -291,7 +291,8 @@ function getExpectedOutcomeTotalAvailableByHlIdLevelId(parentId, level, childId)
             VALUE_AVAILABLE_TO_ALLOCATE: kpi.VALUE_AVAILABLE_TO_ALLOCATE,
             VOLUME_AVAILABLE_TO_ALLOCATE: kpi.VOLUME_AVAILABLE_TO_ALLOCATE,
             ALLOCATED_VALUE: kpi.ALLOCATED_VALUE,
-            ALLOCATED_VOLUME: kpi.ALLOCATED_VOLUME
+            ALLOCATED_VOLUME: kpi.ALLOCATED_VOLUME,
+            KPI_DISTRIBUTION: kpi.KPI_DISTRIBUTION
         }
     });
     return result;
@@ -361,7 +362,8 @@ function getExpectedOutcomesByHlIdParentId(hlId, parentId, level, nextLevel, fro
                     OUTCOMES_ID: elem.OUTCOMES_ID,
                     EURO_VALUE: elem.EURO_VALUE,
                     VOLUME_VALUE: elem.VOLUME_VALUE,
-                    EXPECTED_OUTCOME_LEVEL_ID: elem.EXPECTED_OUTCOME_LEVEL_ID
+                    EXPECTED_OUTCOME_LEVEL_ID: elem.EXPECTED_OUTCOME_LEVEL_ID,
+                    KPI_DISTRIBUTION: elem.KPI_DISTRIBUTION
                 })
             }
         });

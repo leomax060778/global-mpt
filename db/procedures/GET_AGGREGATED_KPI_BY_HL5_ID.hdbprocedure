@@ -6,7 +6,8 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_AGGREGATED_K
             outcomes_id BIGINT,
             outcomes_name NVARCHAR(255),
             outcomes_type_id BIGINT,
-            outcomes_type_name  NVARCHAR(255)
+            outcomes_type_name  NVARCHAR(255),
+            KPI_DISTRIBUTION TINYINT
         )
 )
 LANGUAGE SQLSCRIPT
@@ -23,6 +24,7 @@ out_result =
         	, outcomes.name                         AS outcomes_name
         	, outcomes_type.expected_outcome_id     AS outcomes_type_id
         	, outcomes_type.name                    AS outcomes_type_name
+        	, eol.KPI_DISTRIBUTION
         	
         	 from hl6
         	 inner join hl6_expected_outcomes heo on heo.hl6_id = hl6.hl6_id
@@ -30,7 +32,8 @@ out_result =
         	 left join expected_outcome_level eol on heod.outcomes_id = eol.expected_outcome_level_id
         	 left join expected_outcome_option outcomes on outcomes.expected_outcome_option_id = eol.expected_outcome_option_id
         	 left join expected_outcome outcomes_type on outcomes_type.expected_outcome_id = eol.expected_outcome_id
-     	where heo.deleted = 0 and heo.enabled = 1 and hl6.hl5_id = in_hl5_id group by outcomes.expected_outcome_option_id, outcomes.name, outcomes_type.expected_outcome_id, outcomes_type.name;
+     	where heo.deleted = 0 and heo.enabled = 1 and hl6.hl5_id = in_hl5_id 
+     	group by outcomes.expected_outcome_option_id, outcomes.name, outcomes_type.expected_outcome_id, outcomes_type.name, eol.KPI_DISTRIBUTION;
 		
 END;
 

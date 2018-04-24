@@ -32,6 +32,7 @@
         <viewAttribute datatype="NVARCHAR" id="ON_PREM" length="25"/>
         <viewAttribute datatype="NVARCHAR" id="CLOUD" length="25"/>
         <viewAttribute datatype="TIMESTAMP" id="MODIFIED_DATE"/>
+        <viewAttribute datatype="NVARCHAR" id="STATUS" length="25"/>
       </viewAttributes>
       <calculatedViewAttributes/>
       <definition> 
@@ -153,6 +154,7 @@ va_l1_result = SELECT HL1.HL1_ID AS HL_ID
 				, HL1.ON_PREM
 				, HL1.CLOUD
 				, HL1.MODIFIED_DATE
+				, '' AS STATUS
 				FROM :va_l1 HL1
 				LEFT JOIN :va_l1_mnp MNP ON HL1.HL1_ID = MNP.HL1_ID
 				LEFT JOIN :va_l1_mtp MTP ON HL1.HL1_ID = MTP.HL1_ID
@@ -276,6 +278,7 @@ va_l2_result = SELECT HL2.HL2_ID AS HL_ID
 				, HL2.ON_PREM
 				, HL2.CLOUD
 				, HL2.MODIFIED_DATE
+				, '' AS STATUS
 				FROM :va_l2 HL2
 				LEFT JOIN :va_l2_mnp MNP ON HL2.HL2_ID = MNP.HL2_ID
 				LEFT JOIN :va_l2_mtp MTP ON HL2.HL2_ID = MTP.HL2_ID
@@ -400,6 +403,7 @@ va_l3_result = SELECT HL3.HL3_ID AS HL_ID
 				, HL3.ON_PREM
 				, HL3.CLOUD
 				, HL3.MODIFIED_DATE
+				, '' AS STATUS
 				FROM :va_l3 HL3
 				LEFT JOIN :va_l3_mnp MNP ON HL3.HL3_ID = MNP.HL3_ID
 				LEFT JOIN :va_l3_mtp MTP ON HL3.HL3_ID = MTP.HL3_ID
@@ -430,11 +434,14 @@ va_l4 = SELECT HL4_ID
 			, '' AS ON_PREM
 			, '' AS CLOUD
 			, COALESCE(HL4.MODIFIED_DATE_TZ, HL4.CREATED_DATE_TZ) AS MODIFIED_DATE
+			, SD.DETAIL AS STATUS
 			FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL4&quot; HL4
 			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL3&quot; HL3 ON HL3.HL3_ID = HL4.HL3_ID
 			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL2&quot; HL2 ON HL2.HL2_ID = HL3.HL2_ID
 			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL1&quot; HL1 ON HL1.HL1_ID = HL2.HL1_ID
 			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_BUDGET_YEAR&quot; BY ON BY.BUDGET_YEAR_ID = HL1.BUDGET_YEAR_ID
+			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL4_STATUS_DETAIL&quot; SD ON SD.HL4_STATUS_DETAIL_ID = HL4.HL4_STATUS_DETAIL_ID
+			
 			WHERE HL4.ENABLED = 1 AND HL4.DELETED = 0
 			AND (HL4.HL4_STATUS_DETAIL_ID = 3 OR HL4.HL4_STATUS_DETAIL_ID = 4); --HL4_STATUS_DETAIL_ID 3 = In CRM and HL4_STATUS_DETAIL_ID 4 = Update In CRM;
 
@@ -526,11 +533,13 @@ va_l4_result = SELECT HL4.HL4_ID AS HL_ID
 				, HL4.ON_PREM
 				, HL4.CLOUD
 				, HL4.MODIFIED_DATE
+				, HL4.STATUS
 				FROM :va_l4 HL4
 				LEFT JOIN :va_l4_mnp MNP ON HL4.HL4_ID = MNP.HL4_ID
 				LEFT JOIN :va_l4_mtp MTP ON HL4.HL4_ID = MTP.HL4_ID
 				LEFT JOIN :va_l4_mip MIP ON HL4.HL4_ID = MIP.HL4_ID
 				LEFT JOIN :va_l4_lead_volume LEAD_VOLUME ON HL4.HL4_ID = LEAD_VOLUME.HL4_ID
+				
 				ORDER BY HL4.CRM_ID;
 
 va_l5 = SELECT HL5_ID
@@ -556,12 +565,15 @@ va_l5 = SELECT HL5_ID
 			, '' AS ON_PREM
 			, '' AS CLOUD
 			, COALESCE(HL5.MODIFIED_DATE_TZ, HL5.CREATED_DATE_TZ) AS MODIFIED_DATE
+			, SD.DETAIL AS STATUS
 			FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL5&quot; HL5
 			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL4&quot; HL4 ON HL4.HL4_ID = HL5.HL4_ID
 			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL3&quot; HL3 ON HL3.HL3_ID = HL4.HL3_ID
 			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL2&quot; HL2 ON HL2.HL2_ID = HL3.HL2_ID
 			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL1&quot; HL1 ON HL1.HL1_ID = HL2.HL1_ID
 			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_BUDGET_YEAR&quot; BY ON BY.BUDGET_YEAR_ID = HL1.BUDGET_YEAR_ID
+			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL5_STATUS_DETAIL&quot; SD ON SD.HL5_STATUS_DETAIL_ID = HL5.HL5_STATUS_DETAIL_ID
+			
 			WHERE HL5.ENABLED = 1 AND HL5.DELETED = 0
 			AND (HL5.HL5_STATUS_DETAIL_ID = 3 OR HL5.HL5_STATUS_DETAIL_ID = 4); --HL5_STATUS_DETAIL_ID 3 = In CRM and HL5_STATUS_DETAIL_ID 4 = Update In CRM;
 
@@ -653,6 +665,7 @@ va_l5_result = SELECT HL5.HL5_ID AS HL_ID
 				, HL5.ON_PREM
 				, HL5.CLOUD
 				, HL5.MODIFIED_DATE
+				, HL5.STATUS
 				FROM :va_l5 HL5
 				LEFT JOIN :va_l5_mnp MNP ON HL5.HL5_ID = MNP.HL5_ID
 				LEFT JOIN :va_l5_mtp MTP ON HL5.HL5_ID = MTP.HL5_ID
@@ -683,6 +696,7 @@ va_l6 = SELECT HL6_ID
 			, '' AS ON_PREM
 			, '' AS CLOUD
 			, COALESCE(HL6.MODIFIED_DATE_TZ, HL6.CREATED_DATE_TZ) AS MODIFIED_DATE
+			, SD.DETAIL AS STATUS
 			FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL6&quot; HL6
 			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL5&quot; HL5 ON HL5.HL5_ID = HL6.HL5_ID
 			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL4&quot; HL4 ON HL4.HL4_ID = HL5.HL4_ID
@@ -690,6 +704,8 @@ va_l6 = SELECT HL6_ID
 			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL2&quot; HL2 ON HL2.HL2_ID = HL3.HL2_ID
 			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL1&quot; HL1 ON HL1.HL1_ID = HL2.HL1_ID
 			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_BUDGET_YEAR&quot; BY ON BY.BUDGET_YEAR_ID = HL1.BUDGET_YEAR_ID
+			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL6_STATUS_DETAIL&quot; SD ON SD.HL6_STATUS_DETAIL_ID = HL6.HL6_STATUS_DETAIL_ID
+			
 			WHERE HL6.ENABLED = 1 AND HL6.DELETED = 0
 			AND (HL6.HL6_STATUS_DETAIL_ID = 3 OR HL6.HL6_STATUS_DETAIL_ID = 4); --HL6_STATUS_DETAIL_ID 3 = In CRM and HL6_STATUS_DETAIL_ID 4 = Update In CRM;
 
@@ -781,6 +797,7 @@ va_l6_result = SELECT HL6.HL6_ID AS HL_ID
 				, HL6.ON_PREM
 				, HL6.CLOUD
 				, HL6.MODIFIED_DATE
+				, HL6.STATUS
 				FROM :va_l6 HL6
 				LEFT JOIN :va_l6_mnp MNP ON HL6.HL6_ID = MNP.HL6_ID
 				LEFT JOIN :va_l6_mtp MTP ON HL6.HL6_ID = MTP.HL6_ID
@@ -811,6 +828,7 @@ var_out = SELECT HIERARCHY_LEVEL_ID
             , ON_PREM
             , CLOUD
             , MODIFIED_DATE
+            , STATUS
 FROM ((SELECT HL_ID
 				, HIERARCHY_LEVEL_ID
 				, CRM_ID
@@ -835,6 +853,7 @@ FROM ((SELECT HL_ID
 				, ON_PREM
 				, CLOUD
 				, MODIFIED_DATE
+				, STATUS
 from :va_l1_result HL1)
 UNION
 (SELECT HL_ID
@@ -861,6 +880,7 @@ UNION
 				, ON_PREM
 				, CLOUD
 				, MODIFIED_DATE
+				, STATUS
 from :va_l2_result HL2)
 UNION
 (SELECT HL_ID
@@ -887,6 +907,7 @@ UNION
 				, ON_PREM
 				, CLOUD
 				, MODIFIED_DATE
+				, STATUS
 from :va_l3_result HL3)
 UNION
 (SELECT HL_ID
@@ -913,6 +934,7 @@ UNION
 				, ON_PREM
 				, CLOUD
 				, MODIFIED_DATE
+				, STATUS
 from :va_l4_result HL4)
 UNION
 (SELECT HL_ID
@@ -939,6 +961,7 @@ UNION
 				, ON_PREM
 				, CLOUD
 				, MODIFIED_DATE
+				, STATUS
 from :va_l5_result HL5)
 UNION
 (SELECT HL_ID
@@ -965,6 +988,7 @@ UNION
 				, ON_PREM
 				, CLOUD
 				, MODIFIED_DATE
+				, STATUS
 from :va_l6_result HL6));
 
 END /********* End Procedure Script ************/</definition>
@@ -1064,6 +1088,10 @@ END /********* End Procedure Script ************/</definition>
       <attribute id="MODIFIED_DATE" order="23">
         <descriptions/>
         <keyMapping columnObjectName="Script_View" columnName="MODIFIED_DATE"/>
+      </attribute>
+      <attribute id="STATUS" order="24">
+        <descriptions defaultDescription="STATUS"/>
+        <keyMapping columnObjectName="Script_View" columnName="STATUS"/>
       </attribute>
     </attributes>
     <calculatedAttributes/>

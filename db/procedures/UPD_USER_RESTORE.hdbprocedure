@@ -1,0 +1,21 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::UPD_USER_RESTORE" (
+	IN IN_USER_ID bigint,
+	IN IN_MODIFIED_USER_ID bigint,
+	OUT out_result BIGINT
+) 
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	AS
+BEGIN
+    UPDATE user_table
+    SET user_table.ENABLED = 1,
+	    user_table.DELETED = 0,
+	    user_table.MODIFIED_DATE_TZ = CURRENT_TIMESTAMP,
+	    user_table.MODIFIED_USER_ID = IN_MODIFIED_USER_ID
+	FROM "USER" user_table
+	WHERE user_table.USER_ID = IN_USER_ID;
+
+    SELECT ::ROWCOUNT INTO out_result FROM DUMMY;
+
+END;

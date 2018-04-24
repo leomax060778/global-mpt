@@ -1,8 +1,22 @@
 PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_USERS_BY_HL2_ID" ( 
 	in in_hl2_id bigint,
-	OUT users_in TABLE(USER_ID bigint, USER_NAME nvarchar(255), FIRST_NAME nvarchar(255), LAST_NAME nvarchar(255), EMAIL nvarchar(255), PHONE nvarchar(255), ROLE_NAME nvarchar(255)),
-	OUT users_out TABLE(USER_ID bigint, USER_NAME nvarchar(255), FIRST_NAME nvarchar(255), LAST_NAME nvarchar(255), EMAIL nvarchar(255), PHONE nvarchar(255), ROLE_NAME nvarchar(255))
-	
+	OUT users_in TABLE(
+	    USER_ID bigint,
+	    USER_NAME nvarchar(255),
+	    FIRST_NAME nvarchar(255),
+	    LAST_NAME nvarchar(255),
+	    EMAIL nvarchar(255),
+	    PHONE nvarchar(255),
+	    ROLE_NAME nvarchar(255)),
+	OUT users_out TABLE(
+	    USER_ID bigint,
+        USER_NAME nvarchar(255),
+        FIRST_NAME nvarchar(255),
+        LAST_NAME nvarchar(255),
+        EMAIL nvarchar(255),
+        PHONE nvarchar(255),
+        ROLE_NAME nvarchar(255)
+        )
 )
  
 	LANGUAGE SQLSCRIPT
@@ -15,28 +29,44 @@ BEGIN
  *****************************/
 
 --USERS IN RELATION HL2		
-users_in = select distinct u.user_id, u.USER_NAME, u.FIRST_NAME, u.LAST_NAME, u.EMAIL, u.PHONE, role.NAME as ROLE_NAME
-from user u
-inner join HL2_USER hl2User on hl2User.user_id=u.user_id
-inner join USER_ROLE userRole ON userRole.user_id = u.user_id
-inner join ROLE role ON role.role_id = userRole.role_id
-where hl2User.hl2_id = in_hl2_id 
-and u.deleted = 0 and u.enabled = 1 
-;
+users_in =  SELECT DISTINCT u.user_id,
+                            u.USER_NAME,
+                            u.FIRST_NAME,
+                            u.LAST_NAME,
+                            u.EMAIL,
+                            u.PHONE,
+                            role.NAME AS ROLE_NAME
+            FROM USER u
+                INNER JOIN HL2_USER hl2User ON hl2User.user_id=u.user_id
+                INNER JOIN USER_ROLE userRole ON userRole.user_id = u.user_id
+                INNER JOIN ROLE role ON role.role_id = userRole.role_id
+            WHERE hl2User.hl2_id = in_hl2_id
+                AND u.deleted = 0
+                AND u.enabled = 1
+                AND u.data_protection_enabled = 0;
 
 --USERS WITHOUT RELATION IN HL2
-users_out = select distinct u.user_id, u.USER_NAME, u.FIRST_NAME, u.LAST_NAME, u.EMAIL, u.PHONE, role.NAME as ROLE_NAME
-from HL1_USER L1
-inner join user u on L1.user_id = u.user_id
-inner join USER_ROLE userRole ON userRole.user_id = u.user_id
-inner join ROLE role ON role.role_id = userRole.role_id
-where u.user_id not in (
-select distinct u.user_id
-from user u
-inner join HL2_USER hl2User on hl2User.user_id=u.user_id
-where hl2User.hl2_id = in_hl2_id 
-) 
-and u.deleted = 0 and u.enabled = 1;
-		
+users_out = SELECT DISTINCT u.user_id,
+                            u.USER_NAME,
+                            u.FIRST_NAME,
+                            u.LAST_NAME,
+                            u.EMAIL,
+                            u.PHONE,
+                            role.NAME AS ROLE_NAME
+            FROM HL1_USER L1
+                INNER JOIN user u ON L1.user_id = u.user_id
+                INNER JOIN USER_ROLE userRole ON userRole.user_id = u.user_id
+                INNER JOIN ROLE role ON role.role_id = userRole.role_id
+            WHERE u.user_id NOT IN (
+	                SELECT DISTINCT u.user_id
+	                FROM USER u
+	                	INNER JOIN HL2_USER hl2User ON hl2User.user_id=u.user_id
+	                WHERE hl2User.hl2_id = in_hl2_id
+	                	AND u.data_protection_enabled = 0
+                )
+                AND u.deleted = 0
+                AND u.enabled = 1
+                AND u.data_protection_enabled = 0;
+
 		
 END;

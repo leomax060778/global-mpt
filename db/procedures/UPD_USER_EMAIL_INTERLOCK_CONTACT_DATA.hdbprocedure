@@ -1,0 +1,39 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::UPD_USER_EMAIL_INTERLOCK_CONTACT_DATA" (
+	IN IN_USER_EMAIL NVARCHAR(255),
+	IN IN_MODIFIED_USER_ID BIGINT,
+	OUT out_result BIGINT
+)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	AS
+BEGIN
+        --Select Default Aprrover email
+        defaultApprover = SELECT U.EMAIL
+                          		  FROM CONFIGURATION C
+                          		  	INNER JOIN USER U ON C.VALUE = U.USER_NAME
+                          		  WHERE C.KEY = 'defaultContactApprover';
+
+        --Select a list of INTERLOCK_REQUEST_ID where default approver is a contact
+        haveDefaultApprover = SELECT C.INTERLOCK_REQUEST_ID
+                              FROM INTERLOCK_CONTACT_DATA  C, :defaultApprover defaultApprover
+                              WHERE C.EMAIL = defaultApprover.EMAIL;
+
+		--Interlock Contact Data Update
+		UPDATE icd
+		    SET icd.EMAIL = defaultApprover.EMAIL,
+			    icd.MODIFIED_DATE_TZ = CURRENT_TIMESTAMP,
+			    icd.MODIFIED_USER_ID = IN_MODIFIED_USER_ID
+		    FROM "INTERLOCK_CONTACT_DATA" icd, :defaultApprover defaultApprover, INTERLOCK_REQUEST ir
+		    WHERE icd.EMAIL = IN_USER_EMAIL
+		    AND ir.INTERLOCK_REQUEST_ID = icd.INTERLOCK_REQUEST_ID
+		    AND ir.INTERLOCK_STATUS_ID != 2 -- Approved
+		    AND ir.INTERLOCK_STATUS_ID != 3 -- Rejected
+		    AND 1 = (CASE WHEN (icd.INTERLOCK_REQUEST_ID IN (SELECT INTERLOCK_REQUEST_ID FROM :haveDefaultApprover))
+		                THEN 0
+		                ELSE 1 
+		                END); 
+ 
+		--Return
+		SELECT ::ROWCOUNT INTO out_result FROM DUMMY;
+END;

@@ -68,6 +68,10 @@ function getConfigurationByName(key){
 	return db.extractArray(result.out_result);
 }
 
+function getDataProtectionMask() {
+    return '****';
+}
+
 /*************Super Admin**************/
 var ApplySuperAdminToAllInitiatives = true;
 function getApplySuperAdminToAllInitiatives(){

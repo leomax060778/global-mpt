@@ -71,7 +71,7 @@ function getInterlockReport(userId) {
         isSA = userbl.isSuperAdmin(userId) ? 1 : 0;
     }
 
-    var interlockReport = dataInterlock.getInterlockReport(userId, isSA);
+    var interlockReport = dataInterlock.getInterlockReport(isSA, userId);
     return interlockReport;
 }
 

@@ -1,0 +1,59 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::UPD_USER_APPROVER_TO_DEFAULT_CONTACT_DATA" (
+	IN IN_USER_EMAIL NVARCHAR(255),
+	IN IN_MODIFIED_USER_ID BIGINT,
+	OUT out_result BIGINT
+)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	AS
+BEGIN
+        --Select HL2_ID with Spend Approver with DP
+        hl2WithSpendApprover = SELECT HL2_BUDGET_SPEND_APPROVER.HL2_ID
+                                    FROM HL2_BUDGET_SPEND_APPROVER, USER
+                                    WHERE USER.EMAIL = IN_USER_EMAIL
+                                    AND HL2_BUDGET_SPEND_APPROVER.USER_ID = USER.USER_ID;
+
+        --Select HL3_ID with Spend Approver with DP
+        hl3WithSpendApprover = SELECT HL3_BUDGET_SPEND_APPROVER.HL3_ID
+                                    FROM HL3_BUDGET_SPEND_APPROVER, USER
+                                    WHERE USER.EMAIL = IN_USER_EMAIL
+                                    AND HL3_BUDGET_SPEND_APPROVER.USER_ID = USER.USER_ID;
+
+        --Select Default Approver ID
+        defaultApprover = SELECT USER_ID
+                              FROM CONFIGURATION, USER
+                              WHERE CONFIGURATION.KEY = 'defaultContactApprover'
+                              AND CONFIGURATION.VALUE = USER.USER_NAME;
+
+        --Select HL2_ID with Default Approver as Spend Approver
+        hl2WithDefaultSpendApprover = SELECT HL2_BUDGET_SPEND_APPROVER.HL2_ID
+                                          FROM HL2_BUDGET_SPEND_APPROVER, :defaultApprover defaultApprover, USER
+                                          WHERE USER.EMAIL = IN_USER_EMAIL
+                                          AND HL2_BUDGET_SPEND_APPROVER.USER_ID = defaultApprover.USER_ID;
+
+        --Select HL3_ID with Default Approver as Spend Approver
+        hl3WithDefaultSpendApprover = SELECT HL3_BUDGET_SPEND_APPROVER.HL3_ID
+                                        FROM HL3_BUDGET_SPEND_APPROVER, :defaultApprover defaultApprover, USER
+                                        WHERE USER.EMAIL = IN_USER_EMAIL
+                                        AND HL3_BUDGET_SPEND_APPROVER.USER_ID = defaultApprover.USER_ID;
+
+        UPDATE hl2BSP
+            SET hl2BSP.USER_ID = defaultApprover.USER_ID,
+                hl2BSP.MODIFIED_DATE_TZ = CURRENT_TIMESTAMP,
+                hl2BSP.MODIFIED_USER_ID = IN_MODIFIED_USER_ID
+            FROM HL2_BUDGET_SPEND_APPROVER hl2BSP, :defaultApprover defaultApprover
+            WHERE hl2BSP.HL2_ID IN (SELECT HL2_ID FROM :hl2WithSpendApprover)
+            AND hl2BSP.HL2_ID NOT IN (SELECT HL2_ID FROM :hl2WithDefaultSpendApprover);
+
+        UPDATE hl3BSP
+            SET hl3BSP.USER_ID = defaultApprover.USER_ID,
+                hl3BSP.MODIFIED_DATE_TZ = CURRENT_TIMESTAMP,
+                hl3BSP.MODIFIED_USER_ID = IN_MODIFIED_USER_ID
+            FROM HL3_BUDGET_SPEND_APPROVER hl3BSP, :defaultApprover defaultApprover
+            WHERE hl3BSP.HL3_ID IN (SELECT HL3_ID FROM :hl3WithSpendApprover)
+            AND hl3BSP.HL3_ID NOT IN (SELECT HL3_ID FROM :hl3WithDefaultSpendApprover);
+
+
+		SELECT ::ROWCOUNT INTO out_result FROM DUMMY;
+END;
