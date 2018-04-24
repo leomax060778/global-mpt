@@ -1240,6 +1240,7 @@ function getHl4CategoryOption(hl4Id) {
 function getCategoryOptionVersioned(hl4Id) {
     var hl4Categories = dataCategoryOptionLevel.getAllocationCategory(hl4Id, 'hl4');
     var allocationOptions = util.getAllocationOptionInCrmVersionByCategoryAndLevelId('hl4', hl4Id);
+    allocationOptions = allocationOptions && allocationOptions.length ? allocationOptions : util.getAllocationOptionByCategoryAndLevelId('hl4', hl4Id);
     var result = [];
     var aux = [];
     if (hl4Categories && hl4Categories.length > 0) {
@@ -1250,7 +1251,7 @@ function getCategoryOptionVersioned(hl4Id) {
 
             hl4Category.hl4_category_option = [];
             Object.keys(aux).forEach(function (key) {
-                if (key === "hl4_category_option") {
+                if (key === "hl4_category_option" && allocationOptions[aux.CATEGORY_ID]) {
                     for (var i = 0; i < aux[key].length; i++) {
                         var option = {};
                         Object.keys(aux[key][i]).forEach(function (auxKey) {
