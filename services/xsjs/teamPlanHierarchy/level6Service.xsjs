@@ -11,7 +11,6 @@ var section = "FOR_SEARCH";
 var method = "method";
 var id = "id";
 var setStatusInCRM = "SETINCRM";
-var setStatusInCRMByUpload = "SET_IN_CRM_STATUS_BY_UPLOAD";
 var changeStatus = "CHANGESTATUS";
 // var sendInCrmNotificationMail = "SENDMAIL";
 var categories = "HL5_CATEGORIES";
@@ -66,10 +65,6 @@ function handlePut(reqBody, userId){
         switch (aCmd) {
             case setStatusInCRM: //set status In CRM
                 var rdo = hl6.setStatusInCRM(hl6Id, userId);
-                return	httpUtil.handleResponse(rdo,httpUtil.OK,httpUtil.AppJson);
-                break;
-            case setStatusInCRMByUpload:
-                var rdo = hl6.setStatusInCRMByUpload(reqBody, userId);
                 return	httpUtil.handleResponse(rdo,httpUtil.OK,httpUtil.AppJson);
                 break;
             case changeStatus:
