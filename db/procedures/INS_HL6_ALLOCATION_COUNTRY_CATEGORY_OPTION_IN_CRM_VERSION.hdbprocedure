@@ -25,7 +25,7 @@ BEGIN
                 IN_HL6_ID as HL6_ID,
                 AMOUNT,
                 AMOUNT_KPI,
-                MODIFIED_USER_ID AS CREATED_USER_ID
+                COALESCE(MODIFIED_USER_ID, CREATED_USER_ID) AS CREATED_USER_ID
     	from HL6_COUNTRY_CATEGORY_OPTION
     	where hl6_id = IN_HL6_ID);
 
