@@ -13,6 +13,11 @@ BEGIN
  *****************************/
   out_result = SELECT USER_ID, PASSWORD, USER_NAME, FIRST_NAME, LAST_NAME, EMAIL, PHONE
  		FROM "USER" 
- 		WHERE upper(USER_NAME) = upper(in_user_name) AND
- 		ENABLED = 1 AND DELETED = 0;
+ 		WHERE upper(USER_NAME) = upper(in_user_name)
+            AND USER_ID NOT IN (    SELECT USER_ID
+                                    FROM "USER_DATA_PROTECTION"
+                                    WHERE USER_DATA_PROTECTION_STATUS_ID = 2 --2: Approved
+                                )
+            AND	ENABLED = 1
+            AND DELETED = 0;
 END;

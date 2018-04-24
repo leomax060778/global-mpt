@@ -17,6 +17,7 @@ var dataHl1 = mapper.getDataLevel1();
 var dataHl2 = mapper.getDataLevel2();
 var dataHl3 = mapper.getDataLevel3();
 var userMail = mapper.getUserMail();
+var dataProtectionLib = mapper.getDataProtection();
 /** ********************************************** */
 
 var DATA_NOT_FOUND = "Data is missing.";
@@ -38,6 +39,15 @@ var roleMap = {
 
 function getAll() {
     return dbUser.getAllUser();
+}
+
+function getAllUserByUserName(userName){
+	if(!userName){
+		throw ErrorLib.getErrors().BadRequest("The Parameter User Name is not found",
+	            "userServices/handleGet/getAllUserByUserName", userName);
+	}
+	
+	return dbUser.getAllUserByUserName(userName);
 }
 
 function getUserById(id) {
@@ -310,6 +320,7 @@ function updateUser(user, updateUser) {
     user.LAST_NAME =  user.LAST_NAME ? user.LAST_NAME.trim() : null;
     user.EMAIL =  user.EMAIL ? user.EMAIL.trim() : null;
     user.PHONE =  user.PHONE ? user.PHONE.trim() : null;
+    user.DATA_PROTECTION_ENABLED =  user.DATA_PROTECTION_ENABLED ? 1 : 0;
 
     if (!user.USER_ID)
         throw ErrorLib.getErrors().CustomError("",
@@ -338,12 +349,16 @@ function updateUser(user, updateUser) {
 
         // insert user
         updUserId = dbUser.updateUser(user, updateUser);
+        
+        if(user.DATA_PROTECTION_ENABLED){
+        	dataProtectionLib.insertUserDataProtection(user.USER_ID, updateUser);
+        }
 
         if (updUserId) {
             // Update user role
             var resultUserRole = dbUserRole.updateUserRoleByUserId(
                 user.USER_ID, user.ROLE_ID, updateUser);
-
+            
             // check if transaction was completed
             transactionDone = !!updUserId && !!resultUserRole;
         }
@@ -361,6 +376,25 @@ function updateUser(user, updateUser) {
     } finally {
         db.closeConnection();
     }
+}
+
+function updateDataProtection(dataProtection, userId, userSession){
+	return dbUser.updateDataProtection(dataProtection, userId, userSession);
+}
+
+function updateUserWithMask(userId, userSession){
+	var mask = config.getDataProtectionMask();
+	
+	return dbUser.updateUserWithMask(mask, userId, userSession);
+}
+
+function restoreUser(reqBody, userId){
+	if(!reqBody.USER_ID || !userId){
+		throw ErrorLib.getErrors().CustomError("",
+	            "userServices/handlePut/restoreUser", "The USER is not found");
+	}
+	
+	return dbUser.restoreUser(reqBody, userId);
 }
 
 function deleteUser(data, deleteUser) {

@@ -65,6 +65,7 @@ function getReportExportData(filter, method) {
         , 'ON_PREM'
         , 'CLOUD'
         , 'MODIFIED_DATE'
+        , 'STATUS'
     ];
 
     var commonFields = [
@@ -84,6 +85,7 @@ function getReportExportData(filter, method) {
         , 'BUDGET_Q4'
         , 'INTERNAL_FUNDING'
         , 'PARTNER_CONTRIBUTION'
+        , 'STATUS'
     ];
 
     var kpiFields = [
@@ -97,6 +99,7 @@ function getReportExportData(filter, method) {
         , 'LEAD_VOLUME_VOLUME'
         , 'ON_PREM'
         , 'CLOUD'
+        , 'STATUS'
     ];
 
     if (!filter.SCOPE) {
@@ -105,6 +108,32 @@ function getReportExportData(filter, method) {
 
     if (scopeValues.indexOf(filter.SCOPE.toUpperCase()) < 0) {
         throw ErrorLib.getErrors().CustomError("", "", "The parameter SCOPE is invalid");
+    }
+
+    var validStatus = {
+        IN_CRM: "In CRM",
+        IN_PROGRESS: "In Progress",
+        CREATE_IN_CRM: "Create In CRM",
+        UPDATE_IN_CRM: "Update In CRM",
+        EXCEED_BUDGET: "Exceed Budget",
+        COMPLETE: "Complete",
+        VALID_FOR_CRM: "Valid for CRM",
+        IN_CRM_NEED_NEW_BUDGET_APPROVAL: "In CRM-Need New Budget Approval",
+        DELETION_REQUEST: "Deletion Request",
+        DELETED_IN_CRM: "Deleted In CRM"
+    };
+
+    if (filter.IN_STATUS != null) {
+        filter.IN_STATUS = filter.IN_STATUS.toUpperCase();
+        if (!validStatus[filter.IN_STATUS]) {
+            throw ErrorLib.getErrors().CustomError("", "", "Status invalid, current status are:  IN_CRM, " +
+                "IN_PROGRESS," +
+                " CREATE_IN_CRM," +
+                " UPDATE_IN_CRM," +
+                " VALID_FOR_CRM," +
+                " IN_CRM_NEED_NEW_BUDGET_APPROVAL," +
+                " DELETION_REQUEST,DELETED_IN_CRM");
+        }
     }
 
     var filterParameter = {
@@ -149,6 +178,7 @@ function getReportExportData(filter, method) {
         IN_IS_FULL_DOWNLOAD: filter.IN_IS_FULL_DOWNLOAD
         , IN_DELTA_TIME_LAST_UPDATE: filter.IN_DELTA_TIME_LAST_UPDATE
         , IN_HIERARCHY_LEVEL: filter.IN_HIERARCHY_LEVEL
+        , IN_STATUS: validStatus[filter.IN_STATUS] || null
     });
 
     var outputFields = filter.SCOPE.toUpperCase() == 'ALL' ? defaultFields
@@ -159,7 +189,7 @@ function getReportExportData(filter, method) {
         for (var i = 0; i < spResult.length; i++) {
             var elem = {};
             outputFields.forEach(function (field) {
-                switch (field){
+                switch (field) {
                     case 'BUDGET':
                     case 'BUDGET_Q1':
                     case 'BUDGET_Q2':

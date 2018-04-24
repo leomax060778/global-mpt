@@ -1,0 +1,20 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::UPD_USER_DATA_PROTECTION" (
+	IN in_user_id bigint,
+	IN in_data_protection_enabled tinyint,
+	IN in_modified_user_id bigint,
+	OUT out_result BIGINT
+ ) 
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	AS
+BEGIN
+	UPDATE user
+    SET user.data_protection_enabled = in_data_protection_enabled,
+	    user.modified_date_tz = CURRENT_TIMESTAMP,
+	    user.modified_user_id = in_modified_user_id
+    FROM "USER" user
+    WHERE user.user_id = in_user_id;
+
+    SELECT ::ROWCOUNT INTO out_result FROM DUMMY;
+END;

@@ -44,13 +44,14 @@ BEGIN
                                                , role.NAME as ROLE_NAME
 
                                    from user u
-                                   inner join hl3_budget_spend_approver bsa on bsa.user_id=u.user_id
-                                   inner join hl3_user hlu on hlu.user_id = u.user_id
-                                   inner join USER_ROLE userRole ON userRole.user_id = u.user_id
-                                   inner join ROLE role ON role.role_id = userRole.role_id
+	                                   inner join hl3_budget_spend_approver bsa on bsa.user_id=u.user_id
+	                                   inner join hl3_user hlu on hlu.user_id = u.user_id
+	                                   inner join USER_ROLE userRole ON userRole.user_id = u.user_id
+	                                   inner join ROLE role ON role.role_id = userRole.role_id
                                    --inner join BUDGET_SPEND_APPROVER approver on approver.user_id = u.user_id
 
-                                    where bsa.hl3_id = in_hl3_id;
+                                    where bsa.hl3_id = in_hl3_id
+                                    	and u.data_protection_enabled = 0;
 
     budget_approver_available =  select distinct u.user_id
                                                 , u.USER_NAME
@@ -66,8 +67,10 @@ BEGIN
                                     inner join hl3 on hl3.hl3_id = in_hl3_id
                                     inner join hl2 on hl3.hl2_id = hl2.hl2_id
                                     where u.user_id not in (select user_id from :budget_approver_assigned)
-                                    and hl1User.hl1_id = hl2.hl1_id
-                                    and u.deleted = 0 and u.enabled = 1
+	                                    and hl1User.hl1_id = hl2.hl1_id
+	                                    and u.deleted = 0 
+	                                    and u.enabled = 1
+	                                    and u.data_protection_enabled = 0
                                     ;
 
 
@@ -84,7 +87,8 @@ BEGIN
                                     --inner join BUDGET_SPEND_APPROVER on BUDGET_SPEND_APPROVER.user_id = L3.user_id
                                     inner join USER_ROLE userRole ON userRole.user_id = u.user_id
                                     inner join ROLE role ON role.role_id = userRole.role_id                                    
-                                    where L3.hl3_id = in_hl3_id;
+                                    where L3.hl3_id = in_hl3_id
+                                    	and u.data_protection_enabled = 0;
                                     --and u.user_id not in (select user_id from :budget_approver_assigned);
 		
 		

@@ -9,6 +9,7 @@ var requestAccess = mapper.getRequestAccess();
 /******************************************/
 
 var getAll = "ALL";
+var getAllByUserName = "ALL_BY_USER_NAME";
 var getUserbyId = "USERBYID";
 var getUserApproversbyId = "USERAPPROVERSBYID";
 var updatePassword = "UPDPASS";
@@ -35,11 +36,17 @@ function handleGet(parameters, userId) {
     if (parameters.length > 0) {
         var aCmd = parameters.get('method');
         var level = parameters.get('level');
+        var userName = parameters.get('user_name');
+        
         switch (aCmd) {
             case getAll: //get all users
                 rdo = user.getAll();
                 return httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
                 break;
+            case getAllByUserName:
+            	rdo = user.getAllUserByUserName(userName);
+                return httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
+            	break;
             case getUserbyId: // get one user by id
                 rdo = user.getUserById(parameters[1].value);
                 return httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
@@ -106,11 +113,14 @@ function handlePut(reqBody, userId) {
                 var rdo = user.userLevelPermission(reqBody, userId);
                 return httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
                 break;
-
             case processRequestAccess:
                 var rdo = requestAccess.processRequestAccess(reqBody, userId);
                 return httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
                 break;
+            case "RESTORE_USER":
+            	var rdo = user.restoreUser(reqBody, userId);
+                return httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
+            	break;
             default:
                 throw ErrorLib.getErrors().BadRequest("", "userServices/handlePut", parameters);
 

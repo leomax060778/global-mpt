@@ -75,6 +75,11 @@ function getLevel5Mail(){
     return $.mktgplanningtool.services.mails.level5MailLib;
 }
 
+function getEventRequestMail(){
+    $.import("mktgplanningtool.services.mails","eventRequestMailLib");
+    return $.mktgplanningtool.services.mails.eventRequestMailLib;
+}
+
 function getLevel6(){
     $.import("mktgplanningtool.services.businessLayer.teamPlanHierarchy","level6Lib");
     return $.mktgplanningtool.services.businessLayer.teamPlanHierarchy.level6Lib;
@@ -461,6 +466,37 @@ function getHierarchyCategoryCountry(){
 	$.import("mktgplanningtool.services.businessLayer.settings","hierarchyCategoryCountryLib");
     return $.mktgplanningtool.services.businessLayer.settings.hierarchyCategoryCountryLib;
 }
+
+function getDesTypeLib() {
+    $.import("mktgplanningtool.services.businessLayer.settings","desTypeLib");
+    return $.mktgplanningtool.services.businessLayer.settings.desTypeLib;
+}
+
+function getDesTypeCampaignSubTypeLib() {
+    $.import("mktgplanningtool.services.businessLayer.settings","desTypeCampaignSubTypeLib");
+    return $.mktgplanningtool.services.businessLayer.settings.desTypeCampaignSubTypeLib;
+}
+
+function getEventManagementLib() {
+    $.import("mktgplanningtool.services.businessLayer.eventManagement","eventManagementLib");
+    return $.mktgplanningtool.services.businessLayer.eventManagement.eventManagementLib;
+}
+
+function getCustomerDemographicsLib() {
+    $.import("mktgplanningtool.services.businessLayer.eventManagement","customerDemographicsLib");
+    return $.mktgplanningtool.services.businessLayer.eventManagement.customerDemographicsLib;
+}
+
+function getEventRequestCategoryOption() {
+    $.import("mktgplanningtool.services.businessLayer.eventManagement","eventRequestCategoryOptionLib");
+    return $.mktgplanningtool.services.businessLayer.eventManagement.eventRequestCategoryOptionLib;
+}
+
+function getDataProtection(){
+	 $.import("mktgplanningtool.services.businessLayer.admin","dataProtectionLib");
+	 return $.mktgplanningtool.services.businessLayer.admin.dataProtectionLib;
+}
+
 /************Data Layer Mapper*****************/
 
 function getdbHelper(){
@@ -866,4 +902,34 @@ function getDataSearch(){
 function getDataHierarchyCategoryCountry(){
 	$.import("mktgplanningtool.services.dataLayer.settings","dataHierarchyCategoryCountry");
     return $.mktgplanningtool.services.dataLayer.settings.dataHierarchyCategoryCountry;
+}
+
+function getDataDesType() {
+    $.import("mktgplanningtool.services.dataLayer.settings","dataDesType");
+    return $.mktgplanningtool.services.dataLayer.settings.dataDesType;
+}
+
+function getDataDesTypeCampaignSubType() {
+    $.import("mktgplanningtool.services.dataLayer.settings","dataDesTypeCampaignSubType");
+    return $.mktgplanningtool.services.dataLayer.settings.dataDesTypeCampaignSubType;
+}
+
+function dataEventRequestCategoryOption() {
+    $.import("mktgplanningtool.services.dataLayer.eventManagement","dataEventRequestCategoryOption");
+    return $.mktgplanningtool.services.dataLayer.eventManagement.dataEventRequestCategoryOption;
+}
+
+function getDataEventManagement() {
+    $.import("mktgplanningtool.services.dataLayer.eventManagement","dataEventManagement");
+    return $.mktgplanningtool.services.dataLayer.eventManagement.dataEventManagement;
+}
+
+function getDataCustomerDemographics() {
+    $.import("mktgplanningtool.services.dataLayer.eventManagement","dataCustomerDemographics");
+    return $.mktgplanningtool.services.dataLayer.eventManagement.dataCustomerDemographics;
+}
+
+function getDataDataProtection(){
+	$.import("mktgplanningtool.services.dataLayer.admin","dataDataProtection");
+    return $.mktgplanningtool.services.dataLayer.admin.dataDataProtection;
 }

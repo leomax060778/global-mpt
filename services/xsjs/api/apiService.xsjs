@@ -28,6 +28,7 @@ function handleGet(parameters, userSessionID) {
     var levelFilter = httpUtil.getUrlParameters().get("HIERARCHY_LEVEL");
     var scope = httpUtil.getUrlParameters().get("SCOPE");
     var format = httpUtil.getUrlParameters().get("FORMAT");
+    var status = httpUtil.getUrlParameters().get("STATUS");
     if (parameters.length > 0) {
         var filter = {};
         if (method === "FULL" || method === "DELTA") {
@@ -36,6 +37,7 @@ function handleGet(parameters, userSessionID) {
             filter.IN_DELTA_TIME_LAST_UPDATE = deltaTimeLastUpdate || 0;
             filter.SCOPE = scope || null;
             filter.FORMAT = format || DEFAULT_FORMAT;
+            filter.IN_STATUS = status || null;
         }
         switch (parameters[0].name) {
             case GET_WBS_BY_ID:
