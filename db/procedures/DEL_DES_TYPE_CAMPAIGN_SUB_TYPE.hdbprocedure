@@ -1,0 +1,14 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::DEL_DES_TYPE_CAMPAIGN_SUB_TYPE" (
+	IN in_campaign_sub_type_id bigint,
+	OUT out_result bigint
+)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL" AS
+BEGIN
+ 	DELETE FROM "MKTG_PLANNING_TOOL"."DES_TYPE_CAMPAIGN_SUB_TYPE" T
+ 	WHERE T.campaign_sub_type_id = in_campaign_sub_type_id;
+
+	SELECT ::ROWCOUNT INTO out_result FROM DUMMY;
+
+END;

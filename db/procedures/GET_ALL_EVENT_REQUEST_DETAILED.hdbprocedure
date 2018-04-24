@@ -1,0 +1,124 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_ALL_EVENT_REQUEST_DETAILED" (
+		IN IN_HL1_ID BIGINT,
+		IN IN_HL2_ID BIGINT,
+		IN IN_HL3_ID BIGINT,
+        OUT out_result table (
+        	HL4_ID integer,
+        	HL5_ID integer,
+            EVENT_REQUEST_ID integer,
+            NAME NVARCHAR(255),
+            EVENT_REQUEST_STATUS_ID INTEGER,
+            STATUS_NAME NVARCHAR(255),
+            START_DATE NVARCHAR(32),
+            END_DATE NVARCHAR(32),
+            HL4_CRM_ID NVARCHAR(255),
+            CITY NVARCHAR(255),
+            COUNTRY NVARCHAR(255),
+            VENUE NVARCHAR(255),
+            EVENT_OWNER NVARCHAR(255),
+            OBJECTIVE NVARCHAR(255),
+            EVENT_TYPE NVARCHAR(255),
+            EVENT_SUB_TYPE NVARCHAR(255),
+            DES_TYPE NVARCHAR(255),
+            SUMMARY NVARCHAR(255),
+            PARTICIPANTS_NUMBER INTEGER,
+            EXISTING_CUSTOMERS_PERCENTAGE INTEGER,
+            COST DECIMAL(19,2),
+            PARTNER_REVENUE DECIMAL(19,2),
+            MNP_VALUE DECIMAL(19,2),
+            MNP_VOLUME INTEGER
+        ),
+        OUT out_result_customer_demographics TABLE(
+            EVENT_REQUEST_ID BIGINT,
+            NAME NVARCHAR(255)
+        ),
+        OUT out_result_categories TABLE(
+            EVENT_REQUEST_ID BIGINT,
+            PERCENTAGE DECIMAL(19,2),
+            CATEGORY_NAME NVARCHAR(255),
+            OPTION_NAME NVARCHAR(255)
+        )
+	)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	READS SQL DATA AS
+BEGIN	
+		out_result =
+					SELECT	
+							ER.HL4_ID
+							,ER.HL5_ID
+							,ER.EVENT_REQUEST_ID
+							,ER.NAME
+							,ER.EVENT_REQUEST_STATUS_ID
+							,ERS.NAME AS STATUS_NAME
+							, TO_NVARCHAR(ER.START_DATE, 'MM/DD/YYYY') AS START_DATE
+							, TO_NVARCHAR(ER.END_DATE, 'MM/DD/YYYY') AS END_DATE
+							,"MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BGY.BUDGET_YEAR, HL1.acronym, hl2.ORGANIZATION_ACRONYM, HL3.acronym, hl4.acronym, '', '') AS HL4_CRM_ID
+							,ER.CITY
+							,C.NAME as COUNTRY
+							,ER.VENUE
+							,ER.EVENT_OWNER
+							,O.NAME AS OBJECTIVE
+							,CT.NAME AS EVENT_TYPE
+							,CST.NAME AS EVENT_SUB_TYPE
+							,DES_TYPE.NAME AS DES_TYPE
+							,ER.SUMMARY
+							,ER.PARTICIPANTS_NUMBER
+							,ER.EXISTING_CUSTOMERS_PERCENTAGE
+							,ER.COST
+							,ER.PARTNER_REVENUE
+							,ER.MNP_VALUE
+							,ER.MNP_VOLUME
+						
+						FROM EVENT_REQUEST ER
+							INNER JOIN EVENT_REQUEST_STATUS ERS ON ERS.EVENT_REQUEST_STATUS_ID = ER.EVENT_REQUEST_STATUS_ID
+							LEFT JOIN COUNTRY C ON C.COUNTRY_ID = ER.COUNTRY_ID
+							LEFT JOIN DES_TYPE DES_TYPE ON DES_TYPE.DES_TYPE_ID = ER.DES_TYPE_ID
+							INNER JOIN OBJECTIVE O ON O.OBJECTIVE_ID = ER.OBJECTIVE_ID
+							INNER JOIN CAMPAIGN_TYPE CT ON CT.CAMPAIGN_TYPE_ID = ER.CAMPAIGN_TYPE_ID
+							INNER JOIN CAMPAIGN_SUB_TYPE CST ON CST.CAMPAIGN_SUB_TYPE_ID = ER.CAMPAIGN_SUB_TYPE_ID
+							INNER JOIN HL4 hl4 ON hl4.hl4_id = ER.hl4_id
+							INNER JOIN HL3 hl3 ON hl3.hl3_id = hl4.hl3_id
+							INNER JOIN HL2 hl2 ON hl2.hl2_id = hl3.hl2_id 
+							INNER JOIN HL1 hl1 ON hl1.hl1_id = hl2.hl1_id
+							INNER JOIN BUDGET_YEAR BGY ON hl1.budget_year_id = BGY.budget_year_id AND BGY.enabled=1 AND BGY.deleted=0
+						WHERE ER.enabled = 1 
+							AND ER.deleted = 0
+							AND (hl4.hl3_id = IN_HL3_ID OR IN_HL3_ID = 0)
+							AND (hl3.hl2_id = IN_HL2_ID OR IN_HL2_ID = 0)
+							AND (hl2.hl1_id = IN_HL1_ID OR IN_HL1_ID = 0)
+						ORDER BY UPPER(ER.NAME);
+						
+		out_result_customer_demographics = SELECT 	ERCD.EVENT_REQUEST_ID,
+													CD.NAME
+											FROM EVENT_REQUEST_CUSTOMER_DEMOGRAPHICS ERCD
+												INNER JOIN CUSTOMER_DEMOGRAPHICS CD ON ERCD.CUSTOMER_DEMOGRAPHICS_ID = CD.CUSTOMER_DEMOGRAPHICS_ID
+											WHERE ERCD.EVENT_REQUEST_ID IN (SELECT EVENT_REQUEST_ID FROM :out_result)
+												AND ERCD.ENABLED = 1
+												AND ERCD.DELETED = 0
+												AND CD.ENABLED = 1
+												AND CD.DELETED = 0;
+
+		out_result_categories = SELECT ERCO.EVENT_REQUEST_ID,
+		                               ERCO.PERCENTAGE,
+		                               CAT.NAME AS CATEGORY_NAME,
+		                               OPT.NAME AS OPTION_NAME
+		                        FROM EVENT_REQUEST_CATEGORY_OPTION ERCO
+		                            INNER JOIN ALLOCATION_CATEGORY_OPTION_LEVEL ACOL
+		                                ON ERCO.ALLOCATION_CATEGORY_OPTION_LEVEL_ID = ACOL.ALLOCATION_CATEGORY_OPTION_LEVEL_ID
+		                                AND ACOL.AVAILABLE_IN_EVENT_REQUEST = 1
+		                            INNER JOIN ALLOCATION_CATEGORY CAT
+		                                ON ACOL.ALLOCATION_CATEGORY_ID = CAT.ALLOCATION_CATEGORY_ID
+		                            INNER JOIN ALLOCATION_OPTION OPT
+		                                ON ACOL.ALLOCATION_OPTION_ID = OPT.ALLOCATION_OPTION_ID
+		                        WHERE ERCO.EVENT_REQUEST_ID IN (SELECT EVENT_REQUEST_ID FROM :out_result)
+		                            AND ERCO.ENABLED = 1
+		                            AND ERCO.DELETED = 0
+		                            AND ACOL.ENABLED = 1
+                                    AND ACOL.DELETED = 0
+                                    AND CAT.ENABLED = 1
+                                    AND CAT.DELETED = 0
+                                    AND OPT.ENABLED = 1
+                                    AND OPT.DELETED = 0;
+END;

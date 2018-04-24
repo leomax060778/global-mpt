@@ -68,10 +68,11 @@ function getAllocationCategoryType(){
 }
 
 
-function getCategoryOptionByHierarchyLevelId(hierarchy_level_id, hl2Id){
+function getCategoryOptionByHierarchyLevelId(hierarchy_level_id, hl2Id, filterEventRequestAllocation){
 	var params = {
 		'in_hierarchy_level_id' : hierarchy_level_id,
-		'in_hl2_id' : hl2Id
+		'in_hl2_id' : hl2Id,
+		'in_filter_event_request_allocation': filterEventRequestAllocation
 	};
 	var result = db.executeProcedure(GET_CATEGORY_OPTION_BY_HIERARCHY_LEVEL_ID, params);
 

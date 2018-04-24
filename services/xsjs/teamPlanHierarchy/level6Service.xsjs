@@ -39,7 +39,9 @@ function handleGet(params, userId) {
         result = acronym ? acronym : 0;
 
     }else if(in_hl5_id && !hl5_categories && !hl5_expectedOutcomes && !param_section){
-        result = hl6.getHl6ByHl5Id(in_hl5_id, userId);
+        var isLegacy = httpUtil.getUrlParameters().get("IS_LEGACY");
+        var includeLegacy = httpUtil.getUrlParameters().get("INCLUDE_LEGACY");
+        result = hl6.getHl6ByHl5Id(in_hl5_id, userId, includeLegacy, isLegacy);
     }else if(in_hl6_id){
         result = hl6.getHl6ById(in_hl6_id);
     }else if (param_section && param_section == section){

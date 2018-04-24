@@ -40,7 +40,8 @@ function handleGet(params, userId) {
     {
         result = hl5.getNewSerialAcronym(in_hl4_id);
     }else if(in_hl4_id && !dataType){
-        result = hl5.getHl5ByHl4Id(in_hl4_id, userId);
+        var includeLegacy = httpUtil.getUrlParameters().get("INCLUDE_LEGACY");
+        result = hl5.getHl5ByHl4Id(in_hl4_id, userId, includeLegacy);
     } else if (in_hl5_id) {
         var isCarryOver = httpUtil.getUrlParameters().get("METHOD") == "CARRY_OVER";
         result = hl5.getHl5ById(in_hl5_id, isCarryOver);

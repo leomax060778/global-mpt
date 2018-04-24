@@ -6,14 +6,16 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_ALLOCATION_C
 	IN in_user_id BIGINT,
 	IN in_make_category_mandatory TINYINT,
 	IN in_options_limit integer,
+	IN in_available_in_event_request TINYINT,
 	OUT out_result BIGINT
 ) 
 	LANGUAGE SQLSCRIPT
 	SQL SECURITY INVOKER 
 	AS
 BEGIN
-		INSERT INTO "MKTG_PLANNING_TOOL"."ALLOCATION_CATEGORY_OPTION_LEVEL"(allocation_category_id, allocation_option_id, hierarchy_level_id,in_processing_report,created_user_id, make_category_mandatory, options_limit)
-		VALUES(in_category_id, in_option_id, in_level_id, in_in_processing_report, in_user_id, in_make_category_mandatory, in_options_limit);
+		INSERT INTO "MKTG_PLANNING_TOOL"."ALLOCATION_CATEGORY_OPTION_LEVEL"(allocation_category_id, allocation_option_id, hierarchy_level_id,in_processing_report,created_user_id, make_category_mandatory, options_limit, available_in_event_request)
+		VALUES(in_category_id, in_option_id, in_level_id, in_in_processing_report, in_user_id, in_make_category_mandatory, in_options_limit, in_available_in_event_request);
+
 		
 		SELECT TOP 1 CURRENT_IDENTITY_VALUE() INTO out_result FROM "MKTG_PLANNING_TOOL"."ALLOCATION_CATEGORY_OPTION_LEVEL";
 END;

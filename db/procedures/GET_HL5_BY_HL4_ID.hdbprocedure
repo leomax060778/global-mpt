@@ -1,5 +1,6 @@
 PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL5_BY_HL4_ID" (  
         IN in_hl4_id BIGINT,
+        IN in_include_legacy_records TINYINT,
         OUT out_result TABLE(
               HL5_ID BIGINT
             , CRM_ID NVARCHAR(25)
@@ -16,6 +17,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL5_BY_HL4_I
              , HL5_CRM_DESCRIPTION NVARCHAR(255) 
              , IN_CRM_CHILD integer
              , PARENT_STATUS_ID integer
+             ,IS_LEGACY TINYINT
         )
 )
 LANGUAGE SQLSCRIPT
@@ -35,6 +37,7 @@ va_intermidate = SELECT
     ,HL5_CRM_DESCRIPTION
     ,HL5.HL5_STATUS_DETAIL_ID
     , HL4.HL4_STATUS_DETAIL_ID AS PARENT_STATUS_ID
+    , 0 AS IS_LEGACY
     FROM HL5 Hl5
     INNER JOIN HL4 hl4 ON hl4.hl4_id=hl5.hl4_id AND hl4.enabled=1 AND hl4.deleted=0
     INNER JOIN HL3 hl3 ON hl3.hl3_id=hl4.hl3_id AND hl3.enabled=1 AND hl3.deleted=0
@@ -64,7 +67,7 @@ aux_out_result = SELECT
         ,va_hl5.ACRONYM
         ,va_hl5.HL5_CRM_DESCRIPTION
         ,va_hl5.PARENT_STATUS_ID
-
+        , va_hl5.IS_LEGACY
     FROM :va_intermidate va_hl5
     LEFT JOIN HL6 hl6 ON hl6.HL5_ID = va_hl5.hl5_id AND hl6.enabled=1 AND hl6.deleted=0
     --- This means that will be included those records that aren´t in Deleted In CRM ---
@@ -83,7 +86,82 @@ aux_out_result = SELECT
     ,va_hl5.IMPORTED
     ,va_hl5.ACRONYM
     , va_hl5.HL5_CRM_DESCRIPTION
-    ,va_hl5.PARENT_STATUS_ID;
+    ,va_hl5.PARENT_STATUS_ID
+    , va_hl5.IS_LEGACY;
+
+
+   IF in_include_legacy_records = 1 THEN
+           va_intermidate_legacy =
+           SELECT
+                   hl5.HL5_LEGACY_ID AS HL5_ID
+               , PATH AS CRM_ID
+               ,hl5_status_detail.detail AS STATUS_DETAIL
+               ,CONCAT(CONCAT(userTable.FIRST_NAME, ' '),userTable.LAST_NAME) AS CREATED_BY
+               ,hl5.BUDGET AS HL5_BUDGET
+               ,null as IMPORTED
+               , NULL AS ACRONYM
+               ,HL5_CRM_DESCRIPTION
+               ,HL5.HL5_STATUS_DETAIL_ID
+               , HL4.HL4_STATUS_DETAIL_ID AS PARENT_STATUS_ID
+               , 1 AS IS_LEGACY
+               FROM HL5_LEGACY Hl5
+               INNER JOIN HL4 hl4 ON hl4.hl4_id=hl5.hl4_id AND hl4.enabled=1 AND hl4.deleted=0
+               INNER JOIN hl5_status_detail hl5_status_detail ON hl5_status_detail.hl5_status_detail_id = hl5.hl5_status_detail_id
+               INNER JOIN "MKTG_PLANNING_TOOL"."USER" userTable ON userTable.USER_ID = hl5.created_user_id
+               WHERE hl5.enabled=1 AND hl5.deleted=0
+           AND hl5.hl4_id = in_hl4_id;
+
+           aux_out_result =
+           (SELECT HL5_ID
+                   , CRM_ID
+                   , STATUS_DETAIL
+                   , HL5_STATUS_DETAIL_ID
+                   , CREATED_BY
+                   , HL5_BUDGET
+                   , TOTAL_HL6
+                   , QUANTITY_HL6_OUT_BUDGET
+                   , ALLOCATED
+                   , REMAINING
+                   , IN_CRM_CHILD
+                   , IMPORTED
+                   , ACRONYM
+                   , HL5_CRM_DESCRIPTION
+                   , PARENT_STATUS_ID
+                   , IS_LEGACY FROM :aux_out_result)
+           UNION ALL
+           (SELECT
+                   va_hl5.HL5_ID
+           		,va_hl5.CRM_ID
+           		,va_hl5.STATUS_DETAIL
+           		,va_hl5.HL5_STATUS_DETAIL_ID
+           		,va_hl5.CREATED_BY
+           		,va_hl5.HL5_BUDGET
+           		, COUNT(DISTINCT HL6.HL6_legacy_ID) AS TOTAL_HL6
+           		, SUM(CASE WHEN  HL6.IN_BUDGET IS NULL THEN 0 WHEN HL6.IN_BUDGET = 0 THEN 1 ELSE 0 END) QUANTITY_HL6_OUT_BUDGET --# of L6 out off budget
+           		, COALESCE(SUM(hl6.BUDGET),0) AS ALLOCATED
+           		, COALESCE((va_hl5.HL5_BUDGET - SUM(hl6.BUDGET)), va_hl5.HL5_BUDGET) AS REMAINING
+           		, SUM(CASE WHEN (hl6.HL6_STATUS_DETAIL_ID = 2 OR hl6.HL6_STATUS_DETAIL_ID = 3 OR hl6.HL6_STATUS_DETAIL_ID = 4) THEN 1 ELSE 0 END) AS IN_CRM_CHILD
+                   ,va_hl5.IMPORTED
+                   ,va_hl5.ACRONYM
+                   ,va_hl5.HL5_CRM_DESCRIPTION
+                   ,va_hl5.PARENT_STATUS_ID
+                , va_hl5.IS_LEGACY
+               FROM :va_intermidate_legacy va_hl5
+               LEFT JOIN HL6_LEGACY hl6 ON hl6.HL5_legacy_ID = va_hl5.hl5_id AND hl6.enabled=1 AND hl6.deleted=0
+                   	  AND HL6.HL6_STATUS_DETAIL_ID != 10
+           	GROUP BY
+           	va_hl5.HL5_ID
+               ,va_hl5.CRM_ID
+               ,va_hl5.STATUS_DETAIL
+               ,va_hl5.HL5_STATUS_DETAIL_ID
+               ,va_hl5.CREATED_BY
+               ,va_hl5.HL5_BUDGET
+               ,va_hl5.IMPORTED
+               ,va_hl5.ACRONYM
+               , va_hl5.HL5_CRM_DESCRIPTION
+               ,va_hl5.PARENT_STATUS_ID
+               , va_hl5.IS_LEGACY);
+   	END IF;
 
 out_result =
 select
@@ -93,7 +171,6 @@ select
 ,T.HL5_STATUS_DETAIL_ID AS STATUS_ID
 ,T.CREATED_BY
 ,T.HL5_BUDGET
-
 ,SUM(T.TOTAL_HL6) AS TOTAL_HL6
 ,SUM(T.QUANTITY_HL6_OUT_BUDGET) AS QUANTITY_HL6_OUT_BUDGET
 ,SUM(T.ALLOCATED) AS ALLOCATED
@@ -103,6 +180,7 @@ select
 ,T.HL5_CRM_DESCRIPTION
 ,T.IN_CRM_CHILD
 ,T.PARENT_STATUS_ID
+,T.IS_LEGACY
 from :aux_out_result T
 GROUP BY
 T.HL5_ID
@@ -116,6 +194,7 @@ T.HL5_ID
 ,T.HL5_CRM_DESCRIPTION
 ,T.IN_CRM_CHILD
 ,T.PARENT_STATUS_ID
+,T.IS_LEGACY
 ORDER BY T.CRM_ID ASC;
 
 END;

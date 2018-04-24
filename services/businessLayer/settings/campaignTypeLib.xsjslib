@@ -22,11 +22,16 @@ function getCampaignTypeByObjectiveId(objectiveId) {
     return dataCampaignType.getCampaignTypeByObjectiveId(objectiveId);
 }
 
+function getCampaignTypeByObjectiveIdEventRequest(objectiveId) {
+    return dataCampaignType.getCampaignTypeByObjectiveIdEventRequest(objectiveId);
+}
+
 function insertCampaignType(payload, userId) {
     validateCampaignType(payload);
     return dataCampaignType.insertCampaignType(
         payload.IN_NAME.trim()
         , payload.IN_SHOW_ADDITIONAL_FIELDS
+        , payload.IN_USE_IN_EVENT_REQUEST
         , payload.IN_CRM_KEY.trim()
         , payload.IN_ROLLOVER_TEXT ? payload.IN_ROLLOVER_TEXT.trim(): null
         , payload.IN_EXAMPLE ? payload.IN_EXAMPLE.trim() : null
@@ -60,6 +65,7 @@ function updateCampaignType(campaignTypeData, userId){
         campaignTypeData.IN_CAMPAIGN_TYPE_ID
         , campaignTypeData.IN_NAME.trim()
         , campaignTypeData.IN_SHOW_ADDITIONAL_FIELDS
+        , campaignTypeData.IN_USE_IN_EVENT_REQUEST
         , campaignTypeData.IN_CRM_KEY.trim()
         , campaignTypeData.IN_ROLLOVER_TEXT ? campaignTypeData.IN_ROLLOVER_TEXT.trim(): null
         , campaignTypeData.IN_EXAMPLE ? campaignTypeData.IN_EXAMPLE.trim() : null

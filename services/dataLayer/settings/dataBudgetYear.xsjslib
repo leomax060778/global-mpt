@@ -108,10 +108,11 @@ function resetAllBudgetYearDefaultYear(budgetYearId, userId){
 	return db.executeScalarManual(RESET_ALL_BUDGET_YEAR_DEFAULT_YEAR,params,'out_result');
 }
 
-function getBudgetYearByLevelParent(level, hlId){
+function getBudgetYearByLevelParent(level, hlId, isLegacy){
 	var params = {
 		"in_lh" : level
 		, "in_parent_id": hlId
+		, "in_is_legacy": isLegacy || 0
 	};
 	var result = db.executeProcedureManual(spGET_BUDGET_YEAR_BY_LEVEL_PARENT, params);
 	return db.extractArray(result['out_result'])[0];
