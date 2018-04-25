@@ -29,7 +29,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_REPORT_EXPOR
             , ON_PREM NVARCHAR(30)
             , CLOUD NVARCHAR(30)
             , MODIFIED_DATE TIMESTAMP
-            , STATUS NVARCHAR(30)
+            --, STATUS NVARCHAR(30)
 		)
 	)
 	LANGUAGE SQLSCRIPT
@@ -61,7 +61,7 @@ BEGIN
                             , ON_PREM
                             , CLOUD
                             , MODIFIED_DATE
-                            , STATUS
+                            --, STATUS
         FROM "_SYS_BIC"."mktgplanningtool.db.data.views/CV_REPORT_EXPORT_DATA";
 
              IF IN_IS_FULL_DOWNLOAD <> 1 THEN
@@ -88,7 +88,7 @@ BEGIN
                                     , ON_PREM
                                     , CLOUD
                                     , MODIFIED_DATE
-                                    , STATUS
+                                    --, STATUS
                 FROM :out_result T
                 WHERE HIERARCHY_LEVEL_ID IN (SELECT HIERARCHY_LEVEL_ID FROM :IN_HIERARCHY_LEVEL)
                 AND IN_DELTA_TIME_LAST_UPDATE <= MODIFIED_DATE;
@@ -118,9 +118,9 @@ BEGIN
                                     , ON_PREM
                                     , CLOUD
                                     , MODIFIED_DATE
-                                    , STATUS
-                FROM "_SYS_BIC"."mktgplanningtool.db.data.views/CV_REPORT_EXPORT_DATA"
-                WHERE STATUS = IN_STATUS;
+                                    --, STATUS
+                FROM "_SYS_BIC"."mktgplanningtool.db.data.views/CV_REPORT_EXPORT_DATA";
+                --WHERE STATUS = IN_STATUS;
 
                      IF IN_IS_FULL_DOWNLOAD <> 1 THEN
                         out_result = SELECT HIERARCHY_LEVEL_ID
@@ -146,7 +146,7 @@ BEGIN
                                             , ON_PREM
                                             , CLOUD
                                             , MODIFIED_DATE
-                                            , STATUS
+                                            --, STATUS
                         FROM :out_result T
                         WHERE HIERARCHY_LEVEL_ID IN (SELECT HIERARCHY_LEVEL_ID FROM :IN_HIERARCHY_LEVEL)
                         AND IN_DELTA_TIME_LAST_UPDATE <= MODIFIED_DATE;
