@@ -336,7 +336,9 @@ function createRelatedMarketingTactic(eventRequestId, userId){
 
 function deleteRelatedMarketingTactic(eventRequestId, userId) {
     var eventRquest = dataEventManagement.getEventRequestById(eventRequestId);
-    level5Lib.deleteHl5({HL5_ID: eventRquest.HL5_ID}, userId, null, true, true);
+    if(eventRquest.HL5_ID){
+        level5Lib.deleteHl5({HL5_ID: eventRquest.HL5_ID}, userId, null, true, true);
+    }
     mail.sendEventRequestRejectedNotification(eventRquest.HL5_ID, eventRquest.CREATED_USER_ID);
     return 1;
 }

@@ -509,7 +509,7 @@ function sendEventRequestRejectedNotification(hl5Id, requestorId) {
     var env = config.getMailEnvironment();
     var reqBody = {};
     var userData = userLib.getUserById(Number(requestorId));
-    reqBody.PATH = pathLib.getPathByLevelHlId('hl5', Number(hl5Id));
+    reqBody.PATH = Number(hl5Id) ? pathLib.getPathByLevelHlId('hl5', Number(hl5Id)) : null;
     var mailObj = eventRequestMailLib.parseRejectedEventRequest(reqBody, {ENVIRONMENT: env});
 
     if (mailObj) {

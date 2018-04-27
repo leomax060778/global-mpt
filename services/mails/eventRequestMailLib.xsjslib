@@ -8,8 +8,12 @@ function parseApprovedEventRequest(data, basicData){
 
 function parseRejectedEventRequest(data, basicData){
 	var mailObj = {};
+	var mailBody = 'Your Event Request has been rejected';
+    if(data.PATH){
+        mailBody += ' and the related WBS ID: ' + data.PATH + ' has been deleted';
+	}
 	mailObj.body = '<p>Dear Requestor</p>'
-		+ '<p> Your Event Request has been rejected and the related WBS ID: ' + data.PATH + ' has been deleted.</p>';
+		+ '<p> ' + mailBody + '.</p>';
 	mailObj.subject = basicData.ENVIRONMENT+' MPT - Event Request has been rejected';
 	return mailObj;
 }
