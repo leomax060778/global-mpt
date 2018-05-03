@@ -49,6 +49,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::UPD_HL6"
     , IN in_person_responsible nvarchar(7)
     , IN in_is_complete TINYINT
     , IN in_country_id bigint
+    , IN in_inherited_creation tinyint
 	,OUT out_result decimal(19, 6)
 	) 
 	LANGUAGE SQLSCRIPT
@@ -106,6 +107,7 @@ BEGIN
     , PERSON_RESPONSIBLE = in_person_responsible
     , IS_COMPLETE = in_is_complete
     , country_id = in_country_id
+    , inherited_creation = in_inherited_creation
 	where hl6_id = in_hl6_id;
 	
 	SELECT ::ROWCOUNT INTO out_result FROM DUMMY;

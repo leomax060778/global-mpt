@@ -278,8 +278,9 @@ function updateHl1(data, userId) {
             });
         }
     }
-    if (arrDelHl2User.length > 0)
-        dataHl2User.deleteLevel2User(arrDelHl2User);
+    if (arrDelHl2User.length > 0) {
+        level2.deleteLevel2User(arrDelHl2User);
+    }
 
     updateExpectedOutcomes(data, userId);
     updateCategoryoption(data, userId);

@@ -7,7 +7,6 @@ var ErrorLib = mapper.getErrors();
 
 /***************SPs******************************/
 var GET_SYSUUID = "GET_SYSUUID";
-var GET_ID_BY_PATH = "GET_ID_BY_PATH";
 /*************************************************/
 
 function getHash(name){
@@ -17,9 +16,4 @@ function getHash(name){
         return rdo[0].SYS_UNIQUE_NUMBER;
 
     return null;
-}
-
-function getIdByPath(data, level){
-    var rdo = db.executeProcedureManual(GET_ID_BY_PATH, {in_path_table: data, in_level: level});
-    return db.extractArray(rdo.out_result);
 }

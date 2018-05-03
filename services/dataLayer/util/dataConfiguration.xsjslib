@@ -38,6 +38,7 @@ function search() { return "search"}
 function userAccess() { return "User access"}
 function budgetSpendRequest() { return "SpendBudgetRequests" }
 function interlock() { return "Interlock" }
+function eventManagement() { return "Events Management" }
 /**************************/
 
 var spGetPermissionByName = "GET_PERMISSION_BY_NAME";

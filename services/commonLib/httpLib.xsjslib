@@ -53,6 +53,17 @@ function getUrlParameterByName(name){
 	});
 	return result;
 }
+
+function getJSONParameters(){
+	var params =  $.request.parameters;
+	var result = {};
+
+	Object.keys(params).forEach(function(position){
+		result[params[position].name] = params[position].value;
+	});
+
+	return result;
+}
  
    
  //This function set the Response with a error. value = error --> ErrorLib.Errors.SomeError("message","datails")

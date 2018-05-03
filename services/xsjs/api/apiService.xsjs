@@ -37,7 +37,7 @@ function handleGet(parameters, userSessionID) {
             filter.IN_DELTA_TIME_LAST_UPDATE = deltaTimeLastUpdate || 0;
             filter.SCOPE = scope || null;
             filter.FORMAT = format || DEFAULT_FORMAT;
-            //filter.IN_STATUS = status || null;
+            filter.IN_STATUS = status || null;
         }
         switch (parameters[0].name) {
             case GET_WBS_BY_ID:

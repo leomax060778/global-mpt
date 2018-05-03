@@ -13,6 +13,7 @@ var INS_CAMPAIGN_TYPE = "INS_CAMPAIGN_TYPE";
 var UPD_CAMPAIGN_TYPE = "UPD_CAMPAIGN_TYPE";
 var DEL_CAMPAIGN_TYPE = "DEL_CAMPAIGN_TYPE";
 var GET_COUNT_CAMPAIGN_TYPE_IN_USE_BY_ID = "GET_COUNT_CAMPAIGN_TYPE_IN_USE_BY_ID";
+var GET_CAMPAIGN_TYPE_BY_OBJECTIVE_ID_EVENT_REQUEST = "GET_CAMPAIGN_TYPE_BY_OBJECTIVE_ID_EVENT_REQUEST";
 
 function getAllCampaignType() {
     var parameters = {};
@@ -40,11 +41,22 @@ function getCampaignTypeByObjectiveId(objectiveId) {
         return null;
 }
 
-function insertCampaignType(name, additionalFields, crmKey, rolloverText, example, userId) {
+function getCampaignTypeByObjectiveIdEventRequest(objectiveId) {
+    var parameters = {'in_objective_id': objectiveId};
+    var data = db.executeProcedureManual(GET_CAMPAIGN_TYPE_BY_OBJECTIVE_ID_EVENT_REQUEST, parameters);
+    var result = db.extractArray(data.out_result);
+    if (result.length)
+        return result;
+    else
+        return null;
+}
+
+function insertCampaignType(name, additionalFields, useInEventsRequest, crmKey, rolloverText, example, userId) {
     var parameters = {};
     parameters.IN_NAME = name;
     parameters.IN_CREATED_USER_ID = userId;
     parameters.IN_SHOW_ADDITIONAL_FIELDS = additionalFields;
+    parameters.IN_USE_IN_EVENT_REQUEST = useInEventsRequest;
     parameters.IN_CRM_KEY = crmKey;
     parameters.IN_ROLLOVER_TEXT = rolloverText;
     parameters.IN_EXAMPLE = example;
@@ -69,12 +81,13 @@ function getCampaignTypeByCrmKey(crmKey) {
     return null;
 }
 
-function updateCampaignType(campaignTypeId, name, additionalFields, crmKey, rolloverText, example, userId) {
+function updateCampaignType(campaignTypeId, name, additionalFields, useInEventsRequest, crmKey, rolloverText, example, userId) {
     var parameters = {};
     parameters.IN_CAMPAIGN_TYPE_ID = campaignTypeId;
     parameters.IN_NAME = name;
     parameters.IN_MODIFIED_USER_ID = userId;
     parameters.IN_SHOW_ADDITIONAL_FIELDS = additionalFields;
+    parameters.IN_USE_IN_EVENT_REQUEST = useInEventsRequest;
     parameters.IN_CRM_KEY = crmKey;
     parameters.IN_ROLLOVER_TEXT = rolloverText;
     parameters.IN_EXAMPLE = example;
@@ -88,7 +101,7 @@ function deleteCampaignType(campaignTypeId, userId) {
     return db.executeScalarManual(DEL_CAMPAIGN_TYPE, parameters, "out_result");
 }
 
-function checkInUseCampaignTypeById(campaignTypeId){
+function checkInUseCampaignTypeById(campaignTypeId) {
     var parameters = {
         in_campaign_type_id: campaignTypeId
     };

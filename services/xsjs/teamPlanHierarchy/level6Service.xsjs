@@ -11,7 +11,6 @@ var section = "FOR_SEARCH";
 var method = "method";
 var id = "id";
 var setStatusInCRM = "SETINCRM";
-var setStatusInCRMByUpload = "SET_IN_CRM_STATUS_BY_UPLOAD";
 var changeStatus = "CHANGESTATUS";
 // var sendInCrmNotificationMail = "SENDMAIL";
 var categories = "HL5_CATEGORIES";
@@ -39,7 +38,9 @@ function handleGet(params, userId) {
         result = acronym ? acronym : 0;
 
     }else if(in_hl5_id && !hl5_categories && !hl5_expectedOutcomes && !param_section){
-        result = hl6.getHl6ByHl5Id(in_hl5_id, userId);
+        var isLegacy = httpUtil.getUrlParameters().get("IS_LEGACY");
+        var includeLegacy = httpUtil.getUrlParameters().get("INCLUDE_LEGACY");
+        result = hl6.getHl6ByHl5Id(in_hl5_id, userId, includeLegacy, isLegacy);
     }else if(in_hl6_id){
         result = hl6.getHl6ById(in_hl6_id);
     }else if (param_section && param_section == section){
@@ -66,10 +67,6 @@ function handlePut(reqBody, userId){
         switch (aCmd) {
             case setStatusInCRM: //set status In CRM
                 var rdo = hl6.setStatusInCRM(hl6Id, userId);
-                return	httpUtil.handleResponse(rdo,httpUtil.OK,httpUtil.AppJson);
-                break;
-            case setStatusInCRMByUpload:
-                var rdo = hl6.setStatusInCRMByUpload(reqBody, userId);
                 return	httpUtil.handleResponse(rdo,httpUtil.OK,httpUtil.AppJson);
                 break;
             case changeStatus:

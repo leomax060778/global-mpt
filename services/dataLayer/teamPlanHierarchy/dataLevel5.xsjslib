@@ -7,6 +7,7 @@ var ErrorLib = mapper.getErrors();
 
 var spGetHl5ByHl4Id = "GET_HL5_BY_HL4_ID";
 var spGetHl5ById = "GET_HL5_BY_ID";
+var spGetHl5VersionedById = "GET_HL5_IN_CRM_VERSION_BY_ID";
 var spGetHl5ByAcronym = "GET_HL5_BY_ACRONYM";
 var spGetCountHl6ByHl5Id = "GET_COUNT_HL6_BY_HL5_ID";
 var spGetCountHl6InCRMByHl5Id = "GET_COUNT_HL6_IN_CRM_BY_HL5_ID";
@@ -39,6 +40,7 @@ var spInsHl5Budget = "INS_HL5_BUDGET";
 var spInsHl5BudgetSalesUpload = "INS_HL5_BUDGET_SALES_UPLOAD";
 var spInsHl5Sales = "INS_HL5_SALES";
 var spInsHl5 = "INS_HL5";
+var spInsHl5Versioned = "INS_HL5_IN_CRM_VERSION";
 var spInsHl5RequestCategoryOption = 'INS_HL5_REQUEST_CATEGORY_OPTION';
 
 /*****OTHER**********************/
@@ -103,9 +105,10 @@ function getAllBusinessOwner(){
 	return db.extractArray(rdo.output_result);
 }
 
-function getHl5ByHl4Id(hl4Id){
+function getHl5ByHl4Id(hl4Id, includeLegacy){
 	var params = {
 			'in_hl4_id': hl4Id
+		, 'in_include_legacy_records': includeLegacy ? includeLegacy : 0
 		};
 	var rdo = db.executeProcedureManual(spGetHl5ByHl4Id,params);
 	return db.extractArray(rdo.out_result);
@@ -154,6 +157,21 @@ function getHl5ById(id){
 		return db.extractArray(rdo.out_result)[0];
 	}
 	return null;
+}
+
+/**
+ * Get the last HL5 version IN_CRM
+ * @returns {*}
+ */
+function getHL5VersionedById(id) {
+    if(id !== ""){
+        var params = {
+            'in_hl5_id': id
+        };
+        var rdo = db.executeProcedureManual(spGetHl5VersionedById,params);
+        return db.extractArray(rdo.out_result)[0];
+    }
+    return null;
 }
 function getHl5ForEmail(ids) {
     var rdo = db.executeProcedureManual(GET_HL5_FOR_EMAIL, {
@@ -359,7 +377,7 @@ function insertHl5(hl5CrmDescription,acronym,distributionChannelId,budget,hl4Id
 	, region
 	, event_owner
 	, number_of_participants
-	, priority_id,co_funded,allow_budget_zero, is_power_user,emploreeResponsible, person_responsible, is_complete, multiTactic, autoCommit, imported, import_id
+	, priority_id,co_funded,allow_budget_zero, is_power_user,emploreeResponsible, person_responsible, is_complete, multiTactic, autoCommit, imported, import_id, inherited_creation
 	){
 	var params = {
 		'in_hl5_crm_description' : hl5CrmDescription,
@@ -414,6 +432,7 @@ function insertHl5(hl5CrmDescription,acronym,distributionChannelId,budget,hl4Id
 		, 'in_is_complete': is_complete
 		, 'in_forecast_at_l5': multiTactic ? 1:0
 		, 'in_country_id': country
+		, 'in_inherited_creation' : inherited_creation ? 1 : 0
 	};
 
 	var rdo;
@@ -494,7 +513,7 @@ function updateHl5(hl5Id,hl5CrmDescription,inAcronym,distributionChannelId,budge
 	, event_owner
 	, number_of_participants
 	, priority_id,co_funded, allow_budget_zero, is_power_user,employee_responsible_user,person_responsible, is_complete
-				   ,multiTactic,autoCommit){
+				   ,multiTactic, inherited_creation,autoCommit){
 	var params = {
 		'in_hl5_id' : hl5Id,
 		'in_hl5_crm_description' : hl5CrmDescription,
@@ -545,6 +564,7 @@ function updateHl5(hl5Id,hl5CrmDescription,inAcronym,distributionChannelId,budge
         , 'in_is_complete': is_complete
 		, 'in_forecast_at_l5': multiTactic ? 1:0
         , 'in_country_id': country
+        , 'in_inherited_creation': inherited_creation ? 1 : 0
 
 	};
 
@@ -758,5 +778,13 @@ function updateDeletionReason(hl5Id, deleteionReason, userId){
         , in_user_id: userId
     };
     var rdo = db.executeScalarManual(UPD_DELETION_REASON, parameters, 'out_result');
+    return rdo;
+}
+
+function insertHl5VersionInCRM(hl5_id) {
+    var parameters = {
+        in_hl5_id: hl5_id
+    };
+    var rdo = db.executeScalarManual(spInsHl5Versioned, parameters, 'out_result');
     return rdo;
 }

@@ -22,10 +22,11 @@ function handleGet(parameters, userSessionID){
 			httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);				
 		}
 		else{
-			throw ErrorLib.getErrors().BadRequest("","pathService/handleGet","invalid parameters names (can be: LEVEL or HL_ID)");
+			throw ErrorLib.getErrors().BadRequest("","","invalid parameters names (can be: LEVEL or HL_ID)");
 		}
-	}else
-		throw ErrorLib.getErrors().BadRequest("","pathService/handleGet","invalid number of parameters");
+	}else {
+        throw ErrorLib.getErrors().BadRequest("", "", "invalid number of parameters");
+    }
 };
 
 function handlePost(reqBody,userSessionID) {	
