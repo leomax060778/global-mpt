@@ -23,8 +23,7 @@ function handleGet(){
         result = AllocationCategory.getAllocationCategoryType();
 	} else {
         if(hierarchy_level_id) {
-        	var fromEventRequest = method == 'EVENT_REQUEST_ALLOCATION';
-            result = AllocationCategory.getCategoryOptionByHierarchyLevelId(hierarchy_level_id, hl4_id, Number(fromEventRequest));
+            result = AllocationCategory.getCategoryOptionByHierarchyLevelId(hierarchy_level_id, hl4_id);
         } else {
             result = AllocationCategory.getAllocationCategory(categoryType);
         }

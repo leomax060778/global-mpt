@@ -174,9 +174,9 @@ function uiToServerParser(object) {
 	return data;
 }
 
-function getBudgetYearByLevelParent(level, hlId, toFilter, isLegacy){
+function getBudgetYearByLevelParent(level, hlId, toFilter){
 	if(toFilter)
-		return dbBudget.getBudgetYearByLevelParent(level, hlId, isLegacy);
+		return dbBudget.getBudgetYearByLevelParent(level, hlId);
 
 	return dbBudget.getBudgetYearByLevelParent(level, hlId).BUDGET_YEAR_ID;
 }

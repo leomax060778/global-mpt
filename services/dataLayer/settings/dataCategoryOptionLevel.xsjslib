@@ -65,17 +65,16 @@ function getAllocationCategoryByCategoryIdLevelId(categoryId, levelId){
 	return db.extractArray(rdo.out_result);
 }
 
-function insertAllocationCATEGORYOptionLevel(categoryId, optionId, levelId, inProcessingReport, userId, make_category_mandatory, in_options_limit, in_available_in_event_request, autoCommit) {
+
+function insertAllocationCATEGORYOptionLevel(categoryId, optionId, levelId, inProcessingReport, userId, make_category_mandatory, in_options_limit, autoCommit) {
 	var params = {
 		'in_category_id': categoryId,
 		'in_option_id': optionId,
 		'in_level_id': levelId,
 		'in_in_processing_report': inProcessingReport,
 		'in_user_id': userId,
-
         'in_make_category_mandatory': make_category_mandatory,
-        'in_options_limit': in_options_limit,
-        'in_available_in_event_request': in_available_in_event_request
+        'in_options_limit': in_options_limit
 	};
 	var rdo;
 	if (autoCommit) {
@@ -102,8 +101,7 @@ function updateAllocationCategoryOptionLevelProcessingReport(categoryId, levelId
 	return rdo;
 }
 
-function updateAllocationCategoryOptionLevel(categoryId, levelId, optionId, processingReport, userId, make_category_mandatory, in_options_limit, in_available_in_event_request, autoCommit){
-
+function updateAllocationCategoryOptionLevel(categoryId, levelId, optionId, processingReport, userId, make_category_mandatory, in_options_limit,autoCommit){
     var params = {
         'in_category_id': categoryId,
         'in_level_id': levelId,
@@ -111,8 +109,7 @@ function updateAllocationCategoryOptionLevel(categoryId, levelId, optionId, proc
         'in_user_id' : userId,
         'in_in_processing_report':processingReport,
         'in_make_category_mandatory':make_category_mandatory,
-        'in_options_limit': in_options_limit,
-        'in_available_in_event_request': in_available_in_event_request
+        'in_options_limit': in_options_limit
     };
 
     return db.executeScalarManual(UPD_ALLOCATION_CATEGORY_OPTION_LEVEL,params,'out_result');
@@ -125,7 +122,6 @@ function updateAllocationOptionFlags(reqBody){
 	params.in_make_category_mandatory = reqBody.MAKE_CATEGORY_MANDATORY;
 	params.in_in_processing_report = reqBody.IN_PROCESSING_REPORT;
 	params.in_options_limit = reqBody.IN_OPTIONS_LIMIT;
-	params.in_available_in_event_request = reqBody.AVAILABLE_IN_EVENT_REQUEST;
 
 	return db.executeScalarManual(UPD_ALLOCATION_OPTION_FLAGS, params, 'out_result');
 }
@@ -181,15 +177,6 @@ function getAllocationOptionByCategoryAndLevelId(level, hlId){
 	return null;
 }
 
-function getAllocationOptionInCrmVersionByCategoryAndLevelId(level, hlId){
-	if(hlId && level){
-		var storedProcedure = "GET_"+ level.toUpperCase() +"_ALLOCATION_OPTION_IN_CRM_VERSION";
-		var rdo = db.executeProcedureManual(storedProcedure,{'in_hl4_id': hlId });
-		return db.extractArray(rdo.out_option);
-	}
-	return null;
-}
-
 function getHlCategoryOptionByLevelHlId(level, hlId){
     if(hlId && level){
         var storedProcedure = "GET_"+ level.toUpperCase() +"_CATEGORY_OPTION";
@@ -197,55 +184,6 @@ function getHlCategoryOptionByLevelHlId(level, hlId){
         return db.extractArray(rdo.out_result);
     }
     return null;
-}
-
-/**
- * Get the last version of Category was IN_CRM
- * @param level
- * @param hlId
- * @returns {*}
- */
-function getHlCategoryOptionVersionedByLevelHlId(level, hlId){
-    if(hlId && level){
-        var storedProcedure = "GET_"+ level.toUpperCase() +"_CATEGORY_OPTION_IN_CRM_VERSION";
-        var params = {};
-        params['in_' + level.toLowerCase() + '_id'] = hlId ;
-        var rdo = db.executeProcedureManual(storedProcedure, params);
-        return db.extractArray(rdo.out_result);
-    }
-    return null;
-}
-
-/**
- * Insert category option when Hl# is IN_CRM or UPDATE_IN_CRM to compare later
- * @param level
- * @param hlId
- * @returns {*}
- */
-function insertCategoryOptionVersioned(level, hlId, hlVersionedId) {
-    if(hlId && level){
-        var storedProcedure = "INS_"+ level.toUpperCase() +"_ALLOCATION_CATEGORY_OPTION_IN_CRM_VERSION";
-        var params = {};
-        params['in_' + level.toLowerCase() + '_id'] = hlId;
-        params['in_' + level.toLowerCase() + '_in_crm_version_id'] = hlVersionedId ;
-        var rdo = db.executeProcedureManual(storedProcedure, params);
-        return db.extractArray(rdo.out_result);
-    }
-    return null;
-}
-
-/**
- * Insert country category option when Hl# is IN_CRM or UPDATE_IN_CRM to compare later
- * @param level
- * @param hlId
- * @returns {*}
- */
-function insertCountryCategoryOptionVersioned(level, hlId, hlVersionedId) {
-    var params = {};
-    params['in_' + level.toLowerCase() + '_id'] = hlId ;
-    params['in_' + level.toLowerCase() + '_in_crm_version_id'] = hlVersionedId ;
-    var storedProcedure = "INS_"+ level.toUpperCase() +"_ALLOCATION_COUNTRY_CATEGORY_OPTION_IN_CRM_VERSION";
-    return db.executeScalarManual(storedProcedure,params,'out_result');
 }
 
 function getAllocationOptionByCategoryAndLevel(allocation_category_id, level){

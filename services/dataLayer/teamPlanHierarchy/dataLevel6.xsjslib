@@ -5,9 +5,7 @@ var db = mapper.getdbHelper();
 var ErrorLib = mapper.getErrors();
 /*************************************************/
 var spGetHl6Byhl5Id = "GET_HL6_BY_HL5_ID";
-var spGetHl6LegacyByhl5Id = "GET_HL6_LEGACY_BY_HL5_ID";
 var spGetHl6ById = "GET_HL6_BY_ID";
-var spGetHl6VersionedById = "GET_HL6_IN_CRM_VERSION_BY_ID";
 var spGetHl6ByAcronym = "GET_HL6_BY_ACRONYM";
 var spGetHl6StatusByHl6Id = "GET_HL6_STATUS_BY_HL6_ID";
 var spGetHl6ForSearch = "GET_HL6_FOR_SEARCH";
@@ -23,8 +21,6 @@ var GET_HL6_FOR_EMAIL = "GET_HL6_FOR_EMAIL";
 var spInsHl6CrmBinding = "INS_HL6_CRM_BINDING";
 var spInsHl6LogStatus = "INS_HL6_LOG_STATUS";
 var spInsHl6 = "INS_HL6";
-var spInsHl6Versioned = "INS_HL6_IN_CRM_VERSION";
-
 
 var spInsHl6Sales = "INS_HL6_SALES";
 var spInsHl6Budget = "INS_HL6_BUDGET";
@@ -75,7 +71,7 @@ function insertHl6(hl6CrmDescription,hl6Acronym,budget,hl5Id, routeToMarket
     , region
     , event_owner
     , number_of_participants
-    , priority_id,co_funded,allow_budget_zero, is_power_user, employeeResponsible, personResponsible, is_complete, autoCommit, imported,import_id, inherited_creation){
+    , priority_id,co_funded,allow_budget_zero, is_power_user, employeeResponsible, personResponsible, is_complete, autoCommit, imported,import_id){
     var params = {
         'in_hl6_crm_description' : hl6CrmDescription,
         'in_acronym': hl6Acronym,
@@ -131,7 +127,6 @@ function insertHl6(hl6CrmDescription,hl6Acronym,budget,hl5Id, routeToMarket
         , 'in_person_responsible' : personResponsible || null
         , 'in_is_complete': is_complete
         , 'in_country_id': country
-        , 'in_inherited_creation' : inherited_creation ? 1 : 0
     };
 
     var rdo;
@@ -146,20 +141,16 @@ function insertHl6(hl6CrmDescription,hl6Acronym,budget,hl5Id, routeToMarket
 /*en inserts*/
 
 
-function getHl6ByHl5Id(hl5Id, includeLegacy) {
-    var params = {
-        'in_hl5_id': hl5Id
-        , 'in_include_legacy_records': includeLegacy || 0
-    };
-    var rdo = db.executeProcedureManual(spGetHl6Byhl5Id, params);
-    return db.extractArray(rdo.out_result);
-}
-
-function getHl6LegacyByHl5Id(hl5Id) {
+function getHl6ByHl5Id(hl5Id, autoCommit) {
     var params = {
         'in_hl5_id': hl5Id
     };
-    var rdo = db.executeProcedureManual(spGetHl6LegacyByhl5Id, params);
+    var rdo;
+    if (autoCommit) {
+        rdo = db.executeProcedure(spGetHl6Byhl5Id, params);
+    } else {
+        rdo = db.executeProcedureManual(spGetHl6Byhl5Id, params);
+    }
     return db.extractArray(rdo.out_result);
 }
 
@@ -191,21 +182,6 @@ function getHl6ById(hl6Id, autoCommit) {
         rdo = db.executeProcedureManual(spGetHl6ById,params);
     }
     return db.extractArray(rdo.out_result)[0];
-}
-
-/**
- * Get the last HL6 version IN_CRM
- * @returns {*}
- */
-function getHL6VersionedById(id) {
-    if(id !== ""){
-        var params = {
-            'in_hl6_id': id
-        };
-        var rdo = db.executeProcedureManual(spGetHl6VersionedById,params);
-        return db.extractArray(rdo.out_result)[0];
-    }
-    return null;
 }
 function getHl6ForEmail(ids) {
     var rdo = db.executeProcedureManual(GET_HL6_FOR_EMAIL, {
@@ -442,7 +418,7 @@ function updateHl6(hl6Id,acronym, hl6CrmDescription,budget, routeToMarket
     , region
     , event_owner
     , number_of_participants
-    , priority_id, co_funded, allow_budget_zero,is_power_user,employee_responsible_user,person_responsible, is_complete, inherited_creation,autoCommit){
+    , priority_id, co_funded, allow_budget_zero,is_power_user,employee_responsible_user,person_responsible, is_complete,autoCommit){
     var params = {
         'in_hl6_id': hl6Id,
         'in_hl6_acronym': acronym,
@@ -495,7 +471,6 @@ function updateHl6(hl6Id,acronym, hl6CrmDescription,budget, routeToMarket
         , 'in_person_responsible' : person_responsible
         , 'in_is_complete': is_complete
         , 'in_country_id': country
-        , 'in_inherited_creation': inherited_creation ? 1 : 0
     };
 
     var rdo = db.executeScalarManual(spUpdHl6,params,'out_result');
@@ -668,13 +643,5 @@ function updateDeletionReason(hl6Id, deleteionReason, userId){
         , in_user_id: userId
     };
     var rdo = db.executeScalarManual(UPD_DELETION_REASON, parameters, 'out_result');
-    return rdo;
-}
-
-function insertHl6VersionInCRM(hl6_id) {
-    var parameters = {
-        in_hl6_id: hl6_id
-    }
-    var rdo = db.executeScalarManual(spInsHl6Versioned, parameters, 'out_result');
     return rdo;
 }

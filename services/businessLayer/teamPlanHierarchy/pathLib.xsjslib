@@ -58,7 +58,7 @@ function getCleanPathByLevelParent(hierarchyLevel, parentId) {
 }
 
 // Get complete path of specific level and parent id of HL
-function getPathByLevelParent(hierarchyLevel, parentId, isLegacy) {
+function getPathByLevelParent(hierarchyLevel, parentId) {
     var result = {};
     var levelPath = levelLabel[parseInt(hierarchyLevel)] || "";
 
@@ -68,7 +68,7 @@ function getPathByLevelParent(hierarchyLevel, parentId, isLegacy) {
 
     // Build the path to return
     if (levelPath.length && parseInt(hierarchyLevel) > 1) {
-        var path = isLegacy && parseInt(hierarchyLevel) == 6 ? dataPath.getLegacyPathByLevelParent(hierarchyLevel, parentId) : dataPath.getPathByLevelParent(hierarchyLevel, parentId);
+        var path = dataPath.getPathByLevelParent(hierarchyLevel, parentId);
         if (path.length) {
             result.GRANDPARENT_ID = path[0].GRANDPARENT_ID;
             result.CRM_ID = path[0].CRM_ID;

@@ -8,10 +8,6 @@ var dataL5DER = mapper.getDataLevel5Report();
 var dataCategory = mapper.getDataCategory();
 // var dataUtil = mapper.getDataUtil();
 /** ***********END INCLUDE LIBRARIES*************** */
-
-var COPY_CRM_DESCRIPTION = "Copy";
-var CREATED_FROM_EVENT_REQUEST_CRM_DESCRIPTION = "Created from Event Request";
-
 function validateIsNumber(value){
     return !isNaN(value);
 }
@@ -180,21 +176,6 @@ function getAllocationOptionByCategoryAndLevelId(level, hlId){
     return mapCategoryOption;
 }
 
-function getAllocationOptionInCrmVersionByCategoryAndLevelId(level, hlId){
-    var mapCategoryOption = {};
-    var sp_result = dataCategoryOptionLevel.getAllocationOptionInCrmVersionByCategoryAndLevelId(level, hlId);
-    for (var i = 0; i < sp_result.length; i++) {
-        var obj = sp_result[i];
-
-        if(!mapCategoryOption[obj.ALLOCATION_CATEGORY_ID])
-            mapCategoryOption[obj.ALLOCATION_CATEGORY_ID] = [];
-
-        mapCategoryOption[obj.ALLOCATION_CATEGORY_ID].push(obj);
-
-    }
-    return mapCategoryOption;
-}
-
 function getMapHl6ChangedFieldsByHl6Id(hl6_id){
     var mapFields = {};
     var sp_result = dataL6DER.getL6ChangedFieldsByHl6Id(hl6_id);
@@ -275,16 +256,6 @@ function getEnableEdit(statusId, statusLevel, userId, superAdmin, parentStatusId
     return  Number(statusId) !== statusLevel.DELETED_IN_CRM && Number(parentStatusId || 0) !== statusLevel.DELETED_IN_CRM
         && Number(granParentStatusId || 0) !== statusLevel.DELETED_IN_CRM
         && (superAdmin || (Number(statusId) !== statusLevel.CREATE_IN_CRM && Number(statusId) !== statusLevel.UPDATE_IN_CRM));
-}
-
-function getCopyCrmDescription(){
-    return "Copy";
-    // return COPY_CRM_DESCRIPTION;
-}
-
-function getEventRequestCrmDescription(){
-    return "Created from Event Request";
-    // return CREATED_FROM_EVENT_REQUEST_CRM_DESCRIPTION;
 }
 
 /**

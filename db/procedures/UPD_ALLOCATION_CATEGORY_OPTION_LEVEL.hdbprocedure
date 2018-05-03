@@ -5,10 +5,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::UPD_ALLOCATION_C
 	IN in_user_id BIGINT,
 	IN in_in_processing_report tinyint,
 	IN in_make_category_mandatory TINYINT,
-
 	IN in_options_limit integer,
-	IN in_available_in_event_request TINYINT,
-
 	OUT out_result integer
 )
    LANGUAGE SQLSCRIPT
@@ -23,9 +20,7 @@ BEGIN
             , enabled = 1
             , deleted = 0
             , make_category_mandatory = in_make_category_mandatory
-
             , options_limit = in_options_limit
-            , available_in_event_request = in_available_in_event_request
         WHERE HIERARCHY_LEVEL_ID = in_level_id
          AND ALLOCATION_CATEGORY_ID = in_category_id
          AND ALLOCATION_OPTION_ID = in_option_id;

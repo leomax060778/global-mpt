@@ -23,7 +23,6 @@ var blAllocationOption = mapper.getAllocationOptionLib();
 var dataCampaignType = mapper.getDataCampaignType();
 var dataObjective = mapper.getDataObjectives();
 var dataCampaignSubType = mapper.getDataCampaignSubType();
-var desTypeLib = mapper.getDesTypeLib();
 /** ***********END INCLUDE LIBRARIES*************** */
 
 var MSG_HL4_NOT_FOUND = "Hl4 not found.";
@@ -64,7 +63,6 @@ var mapCampaignObjetveLib = {
     , UPLOAD_CAMPAIGN_TYPE: blCampaignType
     , UPLOAD_USER : blUser
     , UPLOAD_MARKETING_ACTIVITY: blMarketingActivity
-    , UPLOAD_DES_TYPE: desTypeLib
 };
 
 var mapFieldIdName = {
@@ -72,7 +70,6 @@ var mapFieldIdName = {
     , UPLOAD_CAMPAIGN_SUB_TYPE: "CAMPAIGN_SUB_TYPE_ID"
     , UPLOAD_CAMPAIGN_TYPE: "CAMPAIGN_TYPE_ID"
     , UPLOAD_MARKETING_ACTIVITY: "MARKETING_ACTIVITY_ID"
-    , UPLOAD_DES_TYPE: "DES_TYPE_ID"
 };
 
 var mapCampaignObjetveGetList = {
@@ -81,7 +78,7 @@ var mapCampaignObjetveGetList = {
     , UPLOAD_CAMPAIGN_TYPE: dataCampaignType.getAllCampaignType
     , UPLOAD_USER: blUser.getAll
     , UPLOAD_MARKETING_ACTIVITY: blMarketingActivity.getAllMarketingActivity
-    , UPLOAD_DES_TYPE: desTypeLib.getDesType
+
 };
 
 //get map excel upload file configuration for static relation between field on database tables and excel column header
@@ -1982,29 +1979,21 @@ function checkUploadEntity(data, uploadType){
 
 function uploadEntity(data, uploadType, userId) {
     var businessLayer = mapCampaignObjetveLib[uploadType.toUpperCase()];
-    var list = mapCampaignObjetveGetList[uploadType.toUpperCase()]();
     var entityList = data.batch;
     var entitiesUpdated = 0;
     var entitiesCreated = 0;
-    var entityId = 0;
+    var entityId;
 
     entityList.forEach(function(entity){
-    	var exist = false;
-        for (var i = 0; i < list.length; i++) {
-            var nameField = list[i].IN_NAME || list[i].NAME || list[i].USER_NAME;
-            if (entity.IN_NAME.trim().toUpperCase() === nameField.trim().toUpperCase()) {
-            	entityId = list[i][mapFieldIdName[uploadType.toUpperCase()]];
-                exist = true;
-                break;
-            }
-        }
-        if (exist) {
-        	entity["IN_" + mapFieldIdName[uploadType.toUpperCase()]] = entityId;
-            businessLayer.updateEntity(entity, userId);
-            entitiesUpdated++;
+        var bdEntity = businessLayer.getByName(entity.IN_NAME.trim());
+
+        if(!bdEntity){
+            entityId = businessLayer.insertEntity(entity, userId);
+            entitiesCreated++;
         } else {
-        	businessLayer.insertEntity(entity, userId);
-        	entitiesCreated++;
+            entity["IN_" + mapFieldIdName[uploadType.toUpperCase()]] = bdEntity[mapFieldIdName[uploadType.toUpperCase()]];
+            entityId = businessLayer.updateEntity(entity, userId);
+            entitiesUpdated++;
         }
     });
     return {toCreate: entitiesCreated, toUpdate: entitiesUpdated};

@@ -73,9 +73,9 @@ function getCategoryInUseByCategoryId(categoryId){
 
 }
 
-function getCategoryOptionByHierarchyLevelId(hierarchy_level_id, hl4Id, fromEventRequest){
+function getCategoryOptionByHierarchyLevelId(hierarchy_level_id, hl4Id){
     var hl2 = hl4Id ? dataHl2.getHl2ByHl4Id(hl4Id) : {};
-	var spResult = dbCategory.getCategoryOptionByHierarchyLevelId(hierarchy_level_id, hl2.HL2_ID || 0, fromEventRequest || 0);
+	var spResult = dbCategory.getCategoryOptionByHierarchyLevelId(hierarchy_level_id, hl2.HL2_ID || 0);
 	var result = {};
     spResult.forEach(function(categoryOption){
         if(!result[categoryOption.CATEGORY_NAME]){

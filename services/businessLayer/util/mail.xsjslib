@@ -19,7 +19,6 @@ var hl4ProcessingReport = mapper.getLevel4DEReport();
 var hl5ProcessingReport = mapper.getLevel5DEReport();
 var hl6ProcessingReport = mapper.getLevel6DEReport();
 var userMail = mapper.getUserMail();
-var eventRequestMailLib = mapper.getEventRequestMail();
 
 var pathLib = mapper.getPath();
 var userLib = mapper.getUser();
@@ -485,39 +484,6 @@ function sendProcessingReportRequesterMail(data, userId) {
 
     var mailObject = getJson({address: data.addresseeEmail}, mailObj.subject, mailObj.body);
     return sendMail(mailObject, true);
-}
-
-function sendEventRequestApprovedNotification(hl5Id, requestorId) {
-    var env = config.getMailEnvironment();
-    var reqBody = {};
-    var hlInformation = dataHl5.getHl5ById(hl5Id);
-    var userData = userLib.getUserById(Number(requestorId));
-    reqBody.PATH = pathLib.getPathByLevelHlId('hl5', Number(hl5Id));
-    reqBody.HL4_ID = Number(hlInformation.HL4_ID);
-    reqBody.HL5_ID = Number(hlInformation.HL5_ID);
-    var mailObj = eventRequestMailLib.parseApprovedEventRequest(reqBody, {ENVIRONMENT: env, APP_URL: config.getAppUrl()});
-
-    if (hlInformation && mailObj) {
-        var mailObject = getJson([{"address": userData[0].EMAIL}], mailObj.subject, mailObj.body);
-        sendMail(mailObject, true);
-    } else {
-        throw ErrorLib.getErrors().CustomError("", "", L6_COULDNT_SEND_EMAIL_IN_CRM);
-    }
-}
-
-function sendEventRequestRejectedNotification(hl5Id, requestorId) {
-    var env = config.getMailEnvironment();
-    var reqBody = {};
-    var userData = userLib.getUserById(Number(requestorId));
-    reqBody.PATH = Number(hl5Id) ? pathLib.getPathByLevelHlId('hl5', Number(hl5Id)) : null;
-    var mailObj = eventRequestMailLib.parseRejectedEventRequest(reqBody, {ENVIRONMENT: env});
-
-    if (mailObj) {
-        var mailObject = getJson([{"address": userData[0].EMAIL}], mailObj.subject, mailObj.body);
-        sendMail(mailObject, true);
-    } else {
-        throw ErrorLib.getErrors().CustomError("", "", L6_COULDNT_SEND_EMAIL_IN_CRM);
-    }
 }
 
 //Send a email

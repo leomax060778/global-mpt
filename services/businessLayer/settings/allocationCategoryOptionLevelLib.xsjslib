@@ -98,17 +98,15 @@ function updateCategoryOptionLevel(data, userId) {
                         data.IN_PROCESSING_REPORT,
                         userId,
                         data.IN_MAKE_CATEGORY_MANDATORY,
-                        data.IN_OPTIONS_LIMIT,
-                        Number(data.AVAILABLE_IN_EVENT_REQUEST) || 0);
+                        data.IN_OPTIONS_LIMIT);
+
                     //Update Make Category Mandatory and In Processing Report flags to avoid duplicated registers
                     var reqBody = {
                         CATEGORY_ID: data.IN_CATEGORY_ID,
                         HIERARCHY_LEVEL_ID: hierarchylevel,
                         MAKE_CATEGORY_MANDATORY: data.IN_MAKE_CATEGORY_MANDATORY,
                         IN_PROCESSING_REPORT: data.IN_PROCESSING_REPORT,
-                        IN_OPTIONS_LIMIT: data.IN_OPTIONS_LIMIT,
-                        AVAILABLE_IN_EVENT_REQUEST: Number(data.AVAILABLE_IN_EVENT_REQUEST) || 0
-
+                        IN_OPTIONS_LIMIT: data.IN_OPTIONS_LIMIT
                     };
                     dataCategoryOptionLevel.updateAllocationOptionFlags(reqBody);
 
@@ -119,11 +117,8 @@ function updateCategoryOptionLevel(data, userId) {
                         hierarchylevel,
                         data.IN_PROCESSING_REPORT,
                         userId,
-
                         data.IN_MAKE_CATEGORY_MANDATORY,
-                        data.IN_OPTIONS_LIMIT,
-                        Number(data.AVAILABLE_IN_EVENT_REQUEST) || 0);
-
+                        data.IN_OPTIONS_LIMIT);
                 }
 
                 ++countInsert;
@@ -173,36 +168,6 @@ function updateCategoryOptionLevel(data, userId) {
 
 function getHlCategoryOptionByLevelHlId(level, hlId, hl2Id) {
     var categoryOptionList = dataCategoryOptionLevel.getHlCategoryOptionByLevelHlId(level, hlId, hl2Id);
-    var result = {};
-    categoryOptionList.forEach(function (categoryOption) {
-        if (!result[categoryOption.CATEGORY_NAME]) {
-            result[categoryOption.CATEGORY_NAME] = {
-                CATEGORY_ID: categoryOption.CATEGORY_ID,
-                CATEGORY_NAME: categoryOption.CATEGORY_NAME,
-                MAKE_CATEGORY_MANDATORY: categoryOption.MAKE_CATEGORY_MANDATORY || 0,
-                SINGLE_OPTION_ONLY: categoryOption.SINGLE_OPTION_ONLY || 0,
-                CATEGORY_TYPE_ID: categoryOption.CATEGORY_TYPE_ID,
-                OPTIONS_LIMIT: categoryOption.OPTIONS_LIMIT || OPTIONS_LIMIT_DEFAULT,
-                OPTIONS: []
-            }
-        }
-        result[categoryOption.CATEGORY_NAME].OPTIONS.push({
-            OPTION_ID: categoryOption.OPTION_ID,
-            OPTION_NAME: categoryOption.OPTION_NAME,
-            CATEGORY_ID: level == 'HL5' || level == 'HL6' ? categoryOption.CATEGORY_ID : undefined,
-            SINGLE_OPTION_ONLY: categoryOption.SINGLE_OPTION_ONLY || 0,
-            CATEGORY_OPTION_LEVEL_ID: categoryOption.CATEGORY_OPTION_LEVEL_ID,
-            AMOUNT: categoryOption.AMOUNT,
-            AMOUNT_KPI: categoryOption.AMOUNT_KPI,
-            CATEGORY_OPTION_ID: categoryOption.CATEGORY_OPTION_ID,
-            UPDATED: categoryOption.UPDATED
-        });
-    });
-    return util.objectToArray(result);
-}
-
-function getHlCategoryOptionVersionedByLevelHlId(level, hlId) {
-    var categoryOptionList = dataCategoryOptionLevel.getHlCategoryOptionVersionedByLevelHlId(level, hlId);
     var result = {};
     categoryOptionList.forEach(function (categoryOption) {
         if (!result[categoryOption.CATEGORY_NAME]) {

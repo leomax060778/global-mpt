@@ -9,8 +9,6 @@ var GET_BY_CAMPAIGN_ID = "GET_BY_CAMPAIGN_ID";
 var GET_ALL_BY_CAMPAIGN_ID = "GET_ALL_BY_CAMPAIGN_ID";
 var UPD_CAMPAIGN_TYPE_SUBTYPE_DATE_RULE = "UPD_DATE_RULES";
 var BY_ID = "BY_ID";
-var GET_WITH_EVENT_APPROVAL_REQUIRED_BY_CAMPAIGN_ID = "GET_WITH_EVENT_APPROVAL_REQUIRED_BY_CAMPAIGN_ID";
-
 function processRequest() {
     return httpUtil.processRequest(handleGet, handlePost, handlePut, handleDelete, false, "", true);
 }
@@ -27,9 +25,6 @@ function handleGet(parameters, userSessionID) {
                 break;
             case GET_ALL_BY_CAMPAIGN_ID:
                 rdo = blCampaignSubType.getAllCampaignSubTypeByTypeId(parameters[0].value, parameters[1].value, "All");
-                break;
-            case GET_WITH_EVENT_APPROVAL_REQUIRED_BY_CAMPAIGN_ID:
-                rdo = blCampaignSubType.getAllCampaignSubTypeEVRByTypeId(parameters[0].value, parameters[1].value);
                 break;
             default:
                 throw ErrorLib.getErrors().BadRequest("", "campaignSubType/handleGet", "invalid parameter name (can be: GET_BY_CAMPAIGN_ID, GET_ALL_BY_CAMPAIGN_ID or BY_ID)");

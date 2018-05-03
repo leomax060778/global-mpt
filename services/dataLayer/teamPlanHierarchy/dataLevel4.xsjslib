@@ -43,8 +43,6 @@ var spResetHl4CategoryOptionUpdated = "RESET_HL4_CATEGORY_OPTION_UPDATED";
 var GET_HL4_FOR_EMAIL = "GET_HL4_FOR_EMAIL";
 
 var UPD_DELETION_REASON = "UPD_HL4_DELETION_REASON";
-var INS_HL4_IN_CRM_VERSION = "INS_HL4_IN_CRM_VERSION";
-var GET_HL4_IN_CRM_VERSION_BY_ID = "GET_HL4_IN_CRM_VERSION_BY_ID";
 
 /******************************************************/
 
@@ -329,16 +327,4 @@ function updateDeletionReason(hl4Id, deleteionReason, userId){
     };
     var rdo = db.executeScalarManual(UPD_DELETION_REASON, parameters, 'out_result');
     return rdo;
-}
-
-function insertHl4VersionInCRM(hl4_id) {
-    var parameters = {
-        in_hl4_id: hl4_id
-    };
-    return db.executeScalarManual(INS_HL4_IN_CRM_VERSION, parameters, 'out_result');
-}
-
-function getHl4InCrmVersionById(hl4_id) {
-    var rdo = db.executeProcedureManual(GET_HL4_IN_CRM_VERSION_BY_ID, {'in_hl4_id': hl4_id});
-    return db.extractArray(rdo.out_result)[0];
 }
