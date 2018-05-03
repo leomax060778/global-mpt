@@ -1,0 +1,61 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL3_EVENT_APPROVER_BY_HL3_ID" (
+in in_hl_id bigint,
+in in_parent_id bigint,
+	OUT event_approver_assigned TABLE(
+            USER_ID bigint
+            , USER_NAME nvarchar(255)
+            , FIRST_NAME nvarchar(255)
+            , LAST_NAME nvarchar(255)
+            , EMAIL nvarchar(255)
+            , PHONE nvarchar(255)
+            , ROLE_NAME nvarchar(255)
+	    ),
+	OUT event_approver_available TABLE(
+	        USER_ID bigint
+	        , USER_NAME nvarchar(255)
+	        , FIRST_NAME nvarchar(255)
+	        , LAST_NAME nvarchar(255)
+	        , EMAIL nvarchar(255)
+	        , PHONE nvarchar(255)
+	        , ROLE_NAME nvarchar(255)
+	    )
+)
+
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	READS SQL DATA AS
+BEGIN
+
+    event_approver_assigned = select distinct u.user_id
+                                               , u.USER_NAME
+                                               , u.FIRST_NAME
+                                               , u.LAST_NAME
+                                               , u.EMAIL
+                                               , u.PHONE
+                                               , role.NAME as ROLE_NAME
+
+                                   from user u
+                                   inner join hl3_event_approver bsa on bsa.user_id=u.user_id
+                                   inner join USER_ROLE userRole ON userRole.user_id = u.user_id
+                                   inner join ROLE role ON role.role_id = userRole.role_id
+                                    where bsa.hl3_id = in_hl_id
+                                    AND BSA.ENABLED = 1 AND BSA.DELETED = 0;
+
+    event_approver_available =  select distinct u.user_id
+                                                , u.USER_NAME
+                                                , u.FIRST_NAME
+                                                , u.LAST_NAME
+                                                , u.EMAIL
+                                                , u.PHONE
+                                                , role.NAME as ROLE_NAME
+                                    from user u
+                                    inner join HL3_USER hl3User on hl3User.user_id=u.user_id
+                                    inner join USER_ROLE userRole ON userRole.user_id = u.user_id
+                                    inner join ROLE role ON role.role_id = userRole.role_id
+                                    where u.user_id not in (select user_id from :event_approver_assigned)
+                                    and hl3User.hl3_id = in_hl_id
+                                    and u.deleted = 0 and u.enabled = 1;
+
+END;
+

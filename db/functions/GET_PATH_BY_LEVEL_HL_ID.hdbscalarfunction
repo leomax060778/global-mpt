@@ -1,0 +1,33 @@
+FUNCTION "LHILDT"."mktgplanningtool.db.functions::GET_PATH_BY_LEVEL_HL_ID" 
+    (in hl_id bigint
+    , in level nvarchar(3))
+	RETURNS result nvarchar(255)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER 
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	AS
+BEGIN
+    declare crmPrefix nvarchar(255);
+    crmPrefix := '';
+    /*IF coalesce(L6_acronym, '') != '' THEN --path for L6
+            select CONCAT(CONCAT(CONCAT(CONCAT(CONCAT(CONCAT(L2_acronym, SUBSTRING(TO_NVARCHAR(budgetYear), LENGTH(budgetYear) - 1, 2)), '-'), L4_acronym), '-'), L5_acronym)
+            , L6_acronym )
+            into result from dummy;
+    ELSEIF coalesce(L5_acronym, '') != '' THEN --path for L5
+        select CONCAT(CONCAT(CONCAT(CONCAT(CONCAT(L2_acronym, SUBSTRING(TO_NVARCHAR(budgetYear), LENGTH(budgetYear) - 1, 2)), '-'), L4_acronym), '-'), L5_acronym) into result from dummy;
+    ELSEIF coalesce(L4_acronym,'') != '' THEN --path for L4
+        select CONCAT(CONCAT(CONCAT(L2_acronym, SUBSTRING(TO_NVARCHAR(budgetYear), LENGTH(budgetYear) - 1, 2)), '-'), L4_acronym) into result from dummy;
+    ELSEIF coalesce(L3_acronym,'') != '' THEN --path for L3
+        select CONCAT(CONCAT(CONCAT(L2_acronym, SUBSTRING(TO_NVARCHAR(budgetYear), LENGTH(budgetYear) - 1, 2)), '-'), L3_acronym) into result from dummy;
+    ELSEIF coalesce(L2_acronym,'') != '' THEN --path for L2
+        select CONCAT(L2_acronym, SUBSTRING(TO_NVARCHAR(budgetYear), LENGTH(budgetYear) - 1, 2)) into result from dummy;
+    ELSEIF coalesce(L1_acronym,'') != '' THEN --path for L2
+            select CONCAT(L1_acronym, SUBSTRING(TO_NVARCHAR(budgetYear), LENGTH(budgetYear) - 1, 2)) into result from dummy;
+    ELSE
+        select 'CRM' into result from dummy;
+    END IF;
+    */
+    CALL "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_PATH_BY_LEVEL_HL_ID"(hl_id,level,crmPrefix);
+    select concat(crmPrefix, :result) into result from dummy;
+
+END;
