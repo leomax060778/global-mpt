@@ -37,6 +37,19 @@ function getAllCampaignSubTypeByTypeId(idCampaignType, idObjective, returnMode) 
     }
 }
 
+function getAllCampaignSubTypeEVRByTypeId(idCampaignType, idObjective){
+
+    if(!idObjective){
+        throw ErrorLib.getErrors().CustomError("", "campaignSubTypeService/handleGet/getAllCampaignSubTypeEVRByTypeId", CAMPAIGN_SUB_TYPE_DATA);
+    }
+
+    if(!idCampaignType){
+        throw ErrorLib.getErrors().CustomError("", "campaignSubTypeService/handleGet/getAllCampaignSubTypeEVRByTypeId", CAMPAIGN_SUB_TYPE_DATA);
+    }
+
+    return dataCampaignSubType.getAllCampaignSuTypeEVRByCampaignTypeId(idCampaignType);
+}
+
 function getAllCampaignSubTypeById(idCampaignSubType) {
     return dataCampaignSubType.getCampaignSubTypeById(idCampaignSubType);
 }
@@ -47,7 +60,8 @@ function insertCampaignSubType(payload, userId) {
         , payload.IN_CRM_KEY.trim()
         , payload.IN_ROLLOVER_TEXT ? payload.IN_ROLLOVER_TEXT.trim() : null
         , payload.IN_EXAMPLE ? payload.IN_EXAMPLE.trim() : null
-        , userId);
+        , userId
+        , payload.IN_EVENT_APPROVAL_REQUIRED);
 }
 
 function validateCampaignType(data) {
@@ -79,7 +93,8 @@ function updateCampaignSubType(campaignSubTypeData, userId) {
         , campaignSubTypeData.IN_CRM_KEY.trim()
         , campaignSubTypeData.IN_ROLLOVER_TEXT ? campaignSubTypeData.IN_ROLLOVER_TEXT.trim() : null
         , campaignSubTypeData.IN_EXAMPLE ? campaignSubTypeData.IN_EXAMPLE.trim() : null
-        , userId);
+        , userId
+        , campaignSubTypeData.IN_EVENT_APPROVAL_REQUIRED);
 }
 
 function updateDateRules(data, userId){

@@ -49,7 +49,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::UPD_HL5" (
     , IN in_is_complete TINYINT
     , IN in_forecast_at_l5 TINYINT
     , IN in_country_id bigint
-    
+    , in in_inherited_creation tinyint
 	,OUT out_result int
 )
    LANGUAGE SQLSCRIPT
@@ -105,7 +105,7 @@ BEGIN
     , IS_COMPLETE = in_is_complete
     , forecast_at_l5 = in_forecast_at_l5
     , country_id=in_country_id
-
+    , inherited_creation = in_inherited_creation
     where hl5_id = in_hl5_id;
 
     SELECT ::ROWCOUNT INTO out_result FROM DUMMY;

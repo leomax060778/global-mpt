@@ -26,6 +26,7 @@ var dataCategory = mapper.getDataCategory();
 var expectedOutcomesLevelLib = mapper.getExpectedOutcomesLevelLib();
 var allocationCategoryOptionLevelLib = mapper.getAllocationCategoryOptionLevelLib();
 var budgetSpendRequestLib = mapper.getBudgetSpendRequest();
+var eventManagementLib = mapper.getEventManagementLib();
 /** ***********END INCLUDE LIBRARIES*************** */
 var LEVEL3 = 3;
 var L2_MSG_TEAM_NOT_FOUND = "The Priority/Sub-Team can not be found.";
@@ -50,6 +51,7 @@ var L3_CATEGORY_OPTION_NOT_VALID = "Option is not valid.";
 var L3_CATEGORY_TOTAL_PERCENTAGE = "Budget Distribution should be equal to 100%.";
 var L3_CATEGORY_OPTIONS_NOT_EMPTY = "Option percentage should be less than or equal to 100%.";
 var L3_BUDGET_ZERO_CATEGORY_TOTAL_PERCENTAGE_ZERO = "When Sub-Team budget is zero then Category total percentage should be equal to 0%.";
+var L3_APPROVERS_NOT_FOUND = "Approvers data was not found.";
 
 var HIERARCHY_LEVEL = {
     HL1: 6,
@@ -158,6 +160,7 @@ function getLevel3ById(hl3Id, userId) {
     var hl3 = JSON.parse(JSON.stringify(data.getLevel3ById(hl3Id, userId)));
     var hl3Users = userbl.getUserByHl3Id(hl3Id, hl3.HL2_ID);
     var hl2BudgetAllocated = dataHl2.getHl2AllocatedBudget(hl3.HL2_ID, 0);
+    var eventApprover = eventManagementLib.getEventApproverByHlId('HL3',hl3Id, hl3.HL2_ID);
     hl3.TARGET_KPIS = expectedOutcomesLib.getExpectedOutcomesByHl3Id(hl3Id, hl3.HL2_ID);
     hl3.CATEGORIES = getCategoryOption(hl3Id);
     hl3.BUDGET = hl3.HL3_FNC_BUDGET_TOTAL;
@@ -166,6 +169,9 @@ function getLevel3ById(hl3Id, userId) {
     hl3.ASSIGNED_USERS = hl3Users.users_in;
     hl3.BUDGET_APPROVERS = budgetSpendRequestLib.getL3BudgetApproverByL3Id(hl3Id).assigned;
     hl3.BUDGET_APPROVERS_AVAILABLE = budgetSpendRequestLib.getL3BudgetApproverByL3Id(hl3Id).available;
+    hl3.EVENT_APPROVERS = eventApprover.assigned;
+    hl3.EVENT_APPROVERS_AVAILABLE = eventApprover.available;
+
     hl3.AVAILABLE_USERS = hl3Users.users_out;
     return hl3;
 }
@@ -240,6 +246,7 @@ function deleteHl3(objHl3, userId) {
         dataExOut.deleteHl3ExpectedOutcomesDetail(objHl3.HL3_ID, userId);
         dataExOut.deleteHl3ExpectedOutcomes(objHl3.HL3_ID, userId);
         dataCategoryOptionLevel.deleteCategoryOption(objHl3.HL3_ID, userId, 'HL3');
+        eventManagementLib.deleteEventApprover('HL3', objHl3.HL3_ID);
         result = result + data.deleteLevel3(objHl3.HL3_ID, userId);
     }
     else
@@ -262,7 +269,6 @@ function insertHl3(objHl3, userId) {
             "hl3Services/handlePost/insertHl3",
             L2_MSG_PLAN_NOT_FOUND);
 
-    checkOverBudget(objHl3.HL2_ID, hl2.HL2_BUDGET_TOTAL, objHl3.BUDGET);
     objHl3.HL3_ID = 0;
 
     /**
@@ -288,6 +294,7 @@ function insertHl3(objHl3, userId) {
     objHl3.HL3_ID = hl3Id;
     var listObjHl3User = setUsersHl3(objHl3, userId);
     setBudgetApproversHl3(objHl3, listObjHl3User, userId);
+    setEventApproversHl3(objHl3, listObjHl3User, userId, true);
     insertExpectedOutcomes(objHl3, userId);
     insertCategoryOption(objHl3, userId);
 
@@ -334,7 +341,6 @@ function updateHl3(objHl3, userId) {
             L2_MSG_TEAM_EXISTS);
 
     var hl2 = dataHl2.getLevel2ById(objHl3.HL2_ID);
-    checkOverBudget(hl2.HL2_ID, hl2.HL2_BUDGET_TOTAL, objHl3.BUDGET, objHl3.HL3_ID);
     //Obtain current HL3
     var currentHL3 = data.getLevel3ById(objHl3.HL3_ID, userId);
     currentHL3 = JSON.parse(JSON.stringify(currentHL3));
@@ -371,11 +377,13 @@ function updateHl3(objHl3, userId) {
 
     var listObjHl3User = setUsersHl3(objHl3, userId);
     setBudgetApproversHl3(objHl3, listObjHl3User, userId);
+    setEventApproversHl3(objHl3, listObjHl3User, userId);
     updateExpectedOutcomes(objHl3, userId);
     updateCategoryoption(objHl3, userId);
 
     return result;
 }
+
 function setBudgetApproversHl3(objHl3, listObjHl3User, userId){
     if (validateApprovers(listObjHl3User, objHl3.BUDGET_APPROVERS)) {
         budgetSpendRequestLib.deleteL3BudgetApprover(objHl3.HL3_ID, objHl3.BUDGET_APPROVERS);
@@ -386,7 +394,24 @@ function setBudgetApproversHl3(objHl3, listObjHl3User, userId){
 
 }
 
+function setEventApproversHl3(objHl3, listObjHl3User, userId, isNew){
+    if (!validateApprovers(listObjHl3User, objHl3.EVENT_APPROVERS)) {
+        throw ErrorLib.getErrors().CustomError("", "", "The Event Approvers do not match the Assigned Users.")
+    }
+
+    if(isNew) {
+        eventManagementLib.insertEventApprover('HL3', objHl3.HL3_ID, objHl3.EVENT_APPROVERS, userId);
+    } else {
+        eventManagementLib.updateEventApprover('HL3',objHl3.HL3_ID, objHl3.EVENT_APPROVERS, userId);
+    }
+
+    return true;
+}
+
 function validateApprovers(listObjHl3User, listObjHl3Approvers) {
+    if(!listObjHl3Approvers || !listObjHl3Approvers.length){
+        throw ErrorLib.getErrors().CustomError("", "", L3_APPROVERS_NOT_FOUND);
+    }
     return arrayContainsArray(listObjHl3User, listObjHl3Approvers);
 }
 
@@ -1089,4 +1114,9 @@ function getCarryOverHl2CategoryOption(hl2_id) {
         }
         return category;
     });
+}
+
+function deleteLevel3User(arrDelHl3User) {
+    eventManagementLib.deleteEventApproverByHlIdUserId('HL3',arrDelHl3User);
+    return dataHl3User.deleteLevel3User(arrDelHl3User);
 }

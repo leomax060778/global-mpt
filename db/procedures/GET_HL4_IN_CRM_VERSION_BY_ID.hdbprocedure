@@ -1,0 +1,80 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL4_IN_CRM_VERSION_BY_ID" (
+	IN in_hl4_id BIGINT,
+	OUT out_result TABLE(
+	hl4_id BIGINT,
+	hl3_id BIGINT,
+	hl4_crm_description NVARCHAR(100),
+	hl4_details NVARCHAR(3000),
+	hl4_business_details NVARCHAR(3000),
+	hl4_status_detail_id bigint,
+	STATUS NVARCHAR(25),
+	acronym NVARCHAR(25),
+	is_annual_plan TINYINT
+	,euro_conversion_id integer
+	,in_budget TINYINT
+	,hl4_fnc_budget_spend_q1 DECIMAL(19, 2)
+	,hl4_fnc_budget_spend_q2 DECIMAL(19, 2)
+	,hl4_fnc_budget_spend_q3 DECIMAL(19, 2)
+	,hl4_fnc_budget_spend_q4 DECIMAL(19, 2)
+	,hl4_fnc_budget_total_mkt DECIMAL(19, 2)
+	,SHOPPING_CART_APPROVER NVARCHAR(10)
+    ,COST_CENTER NVARCHAR(10)
+    ,MKT_ORG_ID integer
+    ,DIS_CHANNEL_ID integer
+    , CRM_ID NVARCHAR(255)
+    ,CREATED_USER_ID integer
+    ,MARKETING_ORGANIZATION  NVARCHAR(255)
+     ,DISTRIBUTION_CHANNEL  NVARCHAR(255)
+	) 
+) 
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER 
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	READS SQL DATA AS
+BEGIN
+
+    DECLARE VA_HL4_IN_CRM_VERSION_ID INTEGER;
+    VA_HL4_IN_CRM_VERSION_ID := 0;
+
+    SELECT MAX(HL4_IN_CRM_VERSION_ID) INTO VA_HL4_IN_CRM_VERSION_ID
+    FROM HL4_IN_CRM_VERSION WHERE HL4_ID = IN_HL4_ID;
+
+out_result =
+	SELECT HL4.hl4_id,
+			HL4.hl3_id,
+		   HL4.hl4_crm_description,
+		   HL4.hl4_details,
+		   HL4.hl4_business_details,
+		   HL4.hl4_status_detail_id,
+		   STATUS.DETAIL as STATUS,
+		   HL4.acronym,
+		   HL4.is_annual_plan
+		 --new refactor 04112016
+		,HL4.euro_conversion_id
+		,HL4.in_budget
+		,HL4.hl4_fnc_budget_spend_q1
+		,HL4.hl4_fnc_budget_spend_q2
+		,HL4.hl4_fnc_budget_spend_q3
+		,HL4.hl4_fnc_budget_spend_q4
+		,HL4.hl4_fnc_budget_total_mkt
+		,HL4.SHOPPING_CART_APPROVER
+        ,HL4.COST_CENTER
+        ,HL4.MKT_ORG_ID
+    	,HL4.DIS_CHANNEL_ID
+    	,"MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BGY.BUDGET_YEAR, HL1.ACRONYM, HL2.ORGANIZATION_ACRONYM, HL3.ACRONYM, HL4.ACRONYM, '', '') as CRM_ID
+    	, HL4.CREATED_USER_ID
+        , SALE_ORGANIZATION.NAME as MARKETING_ORGANIZATION
+        , DISTRIBUTION_CHANNEL.NAME as DISTRIBUTION_CHANNEL
+	FROM HL4_IN_CRM_VERSION HL4
+	INNER JOIN HL3 ON HL3.HL3_ID = HL4.HL3_ID
+	INNER JOIN HL2 ON HL2.HL2_ID = HL3.HL2_ID
+	INNER JOIN HL1 ON HL1.HL1_ID = HL2.HL1_ID
+	INNER JOIN HL4_STATUS_DETAIL STATUS ON HL4.hl4_status_detail_id = STATUS.hl4_status_detail_id
+	INNER JOIN BUDGET_YEAR BGY ON HL1.BUDGET_YEAR_ID = BGY.BUDGET_YEAR_ID
+	LEFT JOIN DISTRIBUTION_CHANNEL ON DISTRIBUTION_CHANNEL.DISTRIBUTION_CHANNEL_ID = HL4.DIS_CHANNEL_ID
+	LEFT JOIN SALE_ORGANIZATION ON SALE_ORGANIZATION.SALES_ORGANIZATION_ID = HL4.MKT_ORG_ID
+	WHERE HL4.HL4_IN_CRM_VERSION_ID = VA_HL4_IN_CRM_VERSION_ID
+	  AND HL4.deleted = 0
+	  AND HL4.enabled = 1;
+
+END;

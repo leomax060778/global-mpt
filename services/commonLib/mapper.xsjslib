@@ -493,8 +493,8 @@ function getEventRequestCategoryOption() {
 }
 
 function getDataProtection(){
-	 $.import("mktgplanningtool.services.businessLayer.admin","dataProtectionLib");
-	 return $.mktgplanningtool.services.businessLayer.admin.dataProtectionLib;
+    $.import("mktgplanningtool.services.businessLayer.admin","dataProtectionLib");
+    return $.mktgplanningtool.services.businessLayer.admin.dataProtectionLib;
 }
 
 /************Data Layer Mapper*****************/
@@ -930,6 +930,6 @@ function getDataCustomerDemographics() {
 }
 
 function getDataDataProtection(){
-	$.import("mktgplanningtool.services.dataLayer.admin","dataDataProtection");
+    $.import("mktgplanningtool.services.dataLayer.admin","dataDataProtection");
     return $.mktgplanningtool.services.dataLayer.admin.dataDataProtection;
 }

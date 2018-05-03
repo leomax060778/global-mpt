@@ -65,7 +65,7 @@ function getReportExportData(filter, method) {
         , 'ON_PREM'
         , 'CLOUD'
         , 'MODIFIED_DATE'
-        //, 'STATUS'
+        , 'STATUS'
     ];
 
     var commonFields = [
@@ -85,7 +85,7 @@ function getReportExportData(filter, method) {
         , 'BUDGET_Q4'
         , 'INTERNAL_FUNDING'
         , 'PARTNER_CONTRIBUTION'
-        //, 'STATUS'
+        , 'STATUS'
     ];
 
     var kpiFields = [
@@ -99,7 +99,7 @@ function getReportExportData(filter, method) {
         , 'LEAD_VOLUME_VOLUME'
         , 'ON_PREM'
         , 'CLOUD'
-        //, 'STATUS'
+        , 'STATUS'
     ];
 
     if (!filter.SCOPE) {

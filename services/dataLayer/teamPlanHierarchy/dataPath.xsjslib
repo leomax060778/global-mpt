@@ -5,6 +5,7 @@ var db = mapper.getdbHelper();
 /*************************************************/
 
 var GET_PATH_BY_LEVEL_PARENT = "GET_PATH_BY_LEVEL_PARENT";
+var GET_LEGACY_PATH_BY_LEVEL_PARENT = "GET_LEGACY_PATH_BY_LEVEL_PARENT";
 var GET_PATH_ORGANIZATION_ACRONYM = "GET_PATH_ORGANIZATION_ACRONYM";
 var GET_CRM_PARENT_PATH_BY_ID_LEVEL_ID = "GET_CRM_PARENT_PATH_BY_ID_LEVEL_ID";
 var INS_CRM_PARENT_PATH = "INS_CRM_PARENT_PATH";
@@ -24,6 +25,11 @@ var HIERARCHY_LEVEL = {
 function getPathByLevelParent(hierarchyLevel, parentId){
 	var result = db.executeProcedureManual(GET_PATH_BY_LEVEL_PARENT, {'in_lh':hierarchyLevel, 'in_parent_id': parentId});
 	return db.extractArray(result.out_result);
+}
+
+function getLegacyPathByLevelParent(hierarchyLevel, parentId){
+    var result = db.executeProcedureManual(GET_LEGACY_PATH_BY_LEVEL_PARENT, {'in_lh':hierarchyLevel, 'in_parent_id': parentId});
+    return db.extractArray(result.out_result);
 }
 
 // Get the organization acronym providing the parent id
