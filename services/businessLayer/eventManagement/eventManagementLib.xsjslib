@@ -65,8 +65,9 @@ function getAllEventManagement(userId) {
     return util.objectToArray(result);
 }
 
-function getAllEventRequestApproved(){
-    var result = JSON.parse(JSON.stringify(dataEventManagement.getAllEventRequestApproved()));
+function getAllEventRequestApproved(userId){
+    var isSuperAdmin = util.isSuperAdmin(userId) ? 1 : 0;
+    var result = JSON.parse(JSON.stringify(dataEventManagement.getAllEventRequestApproved(userId, isSuperAdmin)));
 
     var customerDemographics = {};
     var eventCategories = {};

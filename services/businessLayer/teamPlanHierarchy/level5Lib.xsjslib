@@ -2688,6 +2688,7 @@ function createFromEventRequest(eventRequest) {
     newHl5.CATEGORIES = eventRequest.CATEGORIES;
     newHl5.IN_BUDGET = 0;
     newHl5.INHERITED_CREATION = 1;
+    newHl5.FORECAST_AT_L5 = 1;
     //create new L5
     var hl5_id = insertDataHl5(newHl5.ACRONYM, newHl5);
     pathBL.insParentPath(LEVEL_STRING.toLowerCase(), hl5_id, newHl5.HL4_ID, newHl5.CREATED_USER_ID);

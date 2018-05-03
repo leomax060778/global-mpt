@@ -26,8 +26,11 @@ function getAllEventRequest(userId, isSa){
     return db.extractArray(rdo.out_result);
 }
 
-function getAllEventRequestApproved(){
-	var parameters = {};
+function getAllEventRequestApproved(userId, isSa){
+    var parameters = {
+        in_user_id: userId,
+        in_isSa: isSa
+    };
 	var rdo = db.executeProcedureManual(GET_ALL_EVENT_REQUEST_APPROVED, parameters);
 
 	var result = {};

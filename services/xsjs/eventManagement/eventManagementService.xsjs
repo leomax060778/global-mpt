@@ -20,7 +20,7 @@ function handleGet(params, userSessionID) {
             result = eventManagementLib.getAllEventManagement(userSessionID);
             break;
         case 'ALL_APPROVED_DETAILED':
-            result = eventManagementLib.getAllEventRequestApproved();
+            result = eventManagementLib.getAllEventRequestApproved(userSessionID);
             break;
         case 'FILTERS':
             result = eventManagementLib.getPathHl1Hl2Hl3(httpUtil.getUrlParameterByName("BUDGET_YEAR"), httpUtil.getUrlParameterByName("REGION_ID"));
