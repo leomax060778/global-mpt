@@ -65,7 +65,6 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL6_BY_ID"(
             , FORECAST_AT_L5 TINYINT
             , COST_CENTER_NAME NVARCHAR(255)
             , PRIORITY_NAME NVARCHAR(255)
-            , inherited_creation TINYINT
 		)
 	)
 	LANGUAGE SQLSCRIPT
@@ -149,7 +148,6 @@ va_own_money_budget_request = SELECT TOP 1 BSRS.budget_spend_request_status_id
                 , HL5.FORECAST_AT_L5
                 , CONCAT(CONCAT(COST_CENTER.NAME, ', '), COST_CENTER.COST_CENTER_CODE) AS COST_CENTER_NAME
                 , PRI.NAME AS PRIORITY_NAME
-                , hl6.inherited_creation
 			FROM HL6
 			INNER JOIN HL5 ON HL5.HL5_ID = HL6.HL5_ID
 			LEFT JOIN :va_own_money_budget_request BSRS ON BSRS.HL6_ID = HL6.HL6_ID

@@ -61,7 +61,6 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL5_BY_ID" (
         , COST_CENTER_NAME NVARCHAR(255)
         , PRIORITY_NAME NVARCHAR(255)
         , ALLOW_AUTOMATIC_BUDGET_APPROVAL TINYINT
-        , inherited_creation TINYINT
 		)		
 ) 
 	LANGUAGE SQLSCRIPT
@@ -140,7 +139,6 @@ out_result = select
                 , CONCAT(CONCAT(COST_CENTER.NAME, ', '), COST_CENTER.COST_CENTER_CODE) AS COST_CENTER_NAME
                 , PRI.NAME AS PRIORITY_NAME
                 , HL2.ALLOW_AUTOMATIC_BUDGET_APPROVAL as ALLOW_AUTOMATIC_BUDGET_APPROVAL
-                , hl5.inherited_creation
                  FROM HL5
                  LEFT JOIN :va_own_money_budget_request BSRS ON BSRS.HL5_ID = HL5.HL5_ID
                  LEFT JOIN CAMPAIGN_TYPE C_TYPE ON C_TYPE.CAMPAIGN_TYPE_ID = HL5.CAMPAIGN_TYPE_ID

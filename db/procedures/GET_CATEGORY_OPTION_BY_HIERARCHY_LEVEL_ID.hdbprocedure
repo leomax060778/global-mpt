@@ -1,7 +1,6 @@
 PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_CATEGORY_OPTION_BY_HIERARCHY_LEVEL_ID" (
 	IN in_hierarchy_level_id BIGINT,
 	IN in_hl2_id BIGINT,
-	IN in_filter_event_request_allocation TINYINT,
 	OUT out_result TABLE (
         category_id integer
         , hierarchy_level_id integer
@@ -14,7 +13,6 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_CATEGORY_OPT
         , make_category_mandatory TINYINT
         , single_option_only TINYINT
         , CATEGORY_TYPE_ID integer
-        , AVAILABLE_IN_EVENT_REQUEST TINYINT
         , OPTIONS_LIMIT integer
         )
 	) 
@@ -35,7 +33,6 @@ BEGIN
     ,ACOL.make_category_mandatory
     ,AC.SINGLE_OPTION_ONLY
     ,AC.CATEGORY_TYPE_ID
-    ,ACOL.AVAILABLE_IN_EVENT_REQUEST
     ,ACOL.OPTIONS_LIMIT
     from allocation_category_option_level acol
     inner join allocation_category ac on acol.allocation_category_id = ac.allocation_category_id
@@ -62,7 +59,6 @@ BEGIN
             ,ACOL.make_category_mandatory
             ,AC.SINGLE_OPTION_ONLY
             ,AC.CATEGORY_TYPE_ID
-            ,0 AS AVAILABLE_IN_EVENT_REQUEST
             ,ACOL.OPTIONS_LIMIT
             from ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL acol
             inner join allocation_category ac on acol.allocation_category_id = ac.allocation_category_id
@@ -94,27 +90,8 @@ BEGIN
                         , make_category_mandatory
                         , SINGLE_OPTION_ONLY
                         , CATEGORY_TYPE_ID
-                        , AVAILABLE_IN_EVENT_REQUEST
                         , OPTIONS_LIMIT
                         FROM :va_allocation_category_option
                          ORDER BY CATEGORY_NAME, OPTION_NAME;
-
-    IF in_filter_event_request_allocation = 1 THEN
-     out_result = SELECT CATEGORY_ID
-                            , HIERARCHY_LEVEL_ID
-                            , MEASURE_ID
-                            , CATEGORY_NAME
-                            , DESCRIPTION
-                            , IN_PROCESSING_REPORT
-                            , OPTION_ID
-                            , OPTION_NAME
-                            , make_category_mandatory
-                            , SINGLE_OPTION_ONLY
-                            , CATEGORY_TYPE_ID
-                            , AVAILABLE_IN_EVENT_REQUEST
-                            , OPTIONS_LIMIT
-                            FROM :out_result
-                            WHERE AVAILABLE_IN_EVENT_REQUEST = 1;
-    END IF;
 
 END;
