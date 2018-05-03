@@ -402,6 +402,6 @@ insert into "MKTG_PLANNING_TOOL"."HL5_CATEGORY_OPTION_LEGACY"(ALLOCATION_CATEGOR
 -- *************************************************************************************
 -- Update schema version
 INSERT INTO SCHEMA_VERSION(VERSION, DESCRIPTION, SCRIPT)
-VALUES('V5.0.0-126', 'hl5_category_option_legacy for Industry', 'V201803121610__import_hl5_category_option_legacy_for_industry.sql');
+VALUES('V5.0.0-147', 'hl5_category_option_legacy for Industry', 'V201803121610__import_hl5_category_option_legacy_for_industry.sql');
 
 COMMIT;

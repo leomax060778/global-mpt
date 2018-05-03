@@ -136,7 +136,6 @@ function insertHl2(objLevel2, userId) {
     objLevel2.USER_ID = userId;
 
     var hl1 = dataHl1.getLevel1ById(objLevel2.HL1_ID);
-    checkOverBudget(objLevel2.HL1_ID, hl1.BUDGET, objLevel2.BUDGET);
 
     if (dataHl2.getLevelByAcronymAndOrganizationAcronym(hl1.ACRONYM, hl1.BUDGET_YEAR_ID, objLevel2.ACRONYM)) {
         throw ErrorLib.getErrors().CustomError("", "hl2Services/handlePost/insertHl2", L1_MSG_LEVEL_1_EXISTS);
@@ -604,8 +603,6 @@ function validateUpdateHl2(objLevel2) {
         isValid = true;
 
         var hl1 = dataHl1.getLevel1ById(objLevel2.HL1_ID);
-
-        checkOverBudget(objLevel2.HL1_ID, hl1.BUDGET, objLevel2.BUDGET, objLevel2.HL2_ID);
 
         var objHl2Other = dataHl2.getLevelByAcronymAndOrganizationAcronym(hl1.ACRONYM, hl1.BUDGET_YEAR_ID, objLevel2.ACRONYM);
         //check the same object

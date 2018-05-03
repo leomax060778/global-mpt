@@ -39,6 +39,6 @@ insert into "MKTG_PLANNING_TOOL"."HL6_CATEGORY_OPTION_LEGACY"(ALLOCATION_CATEGOR
 -- *************************************************************************************
 -- Update schema version
 INSERT INTO SCHEMA_VERSION(VERSION, DESCRIPTION, SCRIPT)
-VALUES('V5.0.0-132', 'hl6_category_option_legacy for solution', 'V201803130930__import_hl6_category_option_legacy_for_solution.sql');
+VALUES('V5.0.0-153', 'hl6_category_option_legacy for solution', 'V201803130930__import_hl6_category_option_legacy_for_solution.sql');
 
 COMMIT;

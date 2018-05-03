@@ -269,7 +269,6 @@ function insertHl3(objHl3, userId) {
             "hl3Services/handlePost/insertHl3",
             L2_MSG_PLAN_NOT_FOUND);
 
-    checkOverBudget(objHl3.HL2_ID, hl2.HL2_BUDGET_TOTAL, objHl3.BUDGET);
     objHl3.HL3_ID = 0;
 
     /**
@@ -342,7 +341,6 @@ function updateHl3(objHl3, userId) {
             L2_MSG_TEAM_EXISTS);
 
     var hl2 = dataHl2.getLevel2ById(objHl3.HL2_ID);
-    checkOverBudget(hl2.HL2_ID, hl2.HL2_BUDGET_TOTAL, objHl3.BUDGET, objHl3.HL3_ID);
     //Obtain current HL3
     var currentHL3 = data.getLevel3ById(objHl3.HL3_ID, userId);
     currentHL3 = JSON.parse(JSON.stringify(currentHL3));

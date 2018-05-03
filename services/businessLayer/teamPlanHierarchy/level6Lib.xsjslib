@@ -125,6 +125,7 @@ var CATEGORY_TYPE = allocationCategory.getCategoryType();
 var LEVEL_STRING = 'HL6';
 
 var L6_COPY_CRM_DESCRIPTION = util.getCopyCrmDescription();
+var CREATED_FROM_EVENT_REQUEST_CRM_DESCRIPTION = util.getEventRequestCrmDescription();
 
 var map = {
     "REGION_ID": "ORGANIZATION_ID",

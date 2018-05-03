@@ -39,6 +39,6 @@ insert into "MKTG_PLANNING_TOOL"."HL6_CATEGORY_OPTION_LEGACY"(ALLOCATION_CATEGOR
 -- *************************************************************************************
 -- Update schema version
 INSERT INTO SCHEMA_VERSION(VERSION, DESCRIPTION, SCRIPT)
-VALUES('V5.0.0-131', 'hl6_category_option_legacy for marketing priority', 'V201803130930__import_hl6_category_option_legacy_for_marketing_priority.sql');
+VALUES('V5.0.0-152', 'hl6_category_option_legacy for marketing priority', 'V201803130930__import_hl6_category_option_legacy_for_marketing_priority.sql');
 
 COMMIT;
