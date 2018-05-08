@@ -1275,7 +1275,7 @@ function validateHl5(data, userId) {
             var categoryHasChanged = categoryChanged(data, existInCrm);*/
 
             //If only the budget were changed and the HL5 is "In CRM" -> the status does not change
-            if (!crmFieldsHasChanged && !categoryHasChanged && budgetChanged && Number(data.STATUS_DETAIL_ID) == HL5_STATUS.IN_CRM) {
+            if (!crmFieldsHasChanged && !categoryHasChanged && budgetChanged && Number(hl5.HL5_STATUS_DETAIL_ID) == HL5_STATUS.IN_CRM) {
                 statusId = hl5.HL5_STATUS_DETAIL_ID;
             } else if (!crmFieldsHasChanged && !categoryHasChanged && validateBudget(data)) {
                 if (data.STATUS_DETAIL_ID == HL5_STATUS.IN_CRM
@@ -1284,7 +1284,7 @@ function validateHl5(data, userId) {
                     statusId = HL5_STATUS.IN_CRM_NEED_NEW_BUDGET_APPROVAL;
                 } else {
                     if (!crmFieldsHasChanged && !categoryHasChanged && !budgetChanged
-                        && Number(data.STATUS_DETAIL_ID) === HL5_STATUS.UPDATE_IN_CRM) {
+                        && Number(hl5.HL5_STATUS_DETAIL_ID) === HL5_STATUS.UPDATE_IN_CRM) {
                         statusId = HL5_STATUS.IN_CRM;
                     } else {
                         statusId = hl5.HL5_STATUS_DETAIL_ID;

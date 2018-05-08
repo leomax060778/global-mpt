@@ -1131,11 +1131,11 @@ function validateHl6(data, userId) {
             }
             if(!crmFieldsHasChanged && !categoryHasChanged  && !budgetChanged && existInCrm){
                 statusId = HL6_STATUS.IN_CRM;
-            } else if(!crmFieldsHasChanged && !categoryHasChanged  && budgetChanged && Number(data.HL6_STATUS_DETAIL_ID) == HL6_STATUS.IN_CRM){
+            } else if(!crmFieldsHasChanged && !categoryHasChanged  && budgetChanged && Number(hl6.HL6_STATUS_DETAIL_ID) == HL6_STATUS.IN_CRM){
                 statusId = hl6.HL6_STATUS_DETAIL_ID;
             } else
                 if (!crmFieldsHasChanged && !categoryHasChanged && validateBudget(data)) {
-                    if (data.STATUS_DETAIL_ID == HL6_STATUS.IN_CRM
+                    if (Number(hl6.HL6_STATUS_DETAIL_ID) == HL6_STATUS.IN_CRM
                         && !data.AUTOMATIC_APPROVAL
                         && ((data.SALE_REQUESTS && data.SALE_REQUESTS.length)
                             || (data.PARTNERS && data.PARTNERS.length))) {
@@ -1623,17 +1623,19 @@ function crmFieldsHaveChanged(data, isComplete, userId, isNew) {
                         case "BUDGET":
                             var oldCurrencyValue = Number(dataCurrency.getCurrencyValueId(oldHl6.EURO_CONVERSION_ID));
                             var newCurrencyValue = Number(dataCurrency.getCurrencyValueId(data.EURO_CONVERSION_ID));
-
+                            
                             //When the HL5 is "In CRM", the budget can not change de status, but we need to validate it later to show the correct message.
-                            if(Number(data.HL6_STATUS_DETAIL_ID) !== Number(HL6_STATUS.IN_CRM)){
+                            if(Number(oldHl6.HL6_STATUS_DETAIL_ID) !== Number(HL6_STATUS.IN_CRM)){
                                 fieldChanged = Number(oldHl6[field]) / oldCurrencyValue != Number(data[field]) / newCurrencyValue;
                             }else{
                                 fieldChanged = false;
                                 budgetChanged = Number(oldHl6[field]) / oldCurrencyValue != Number(data[field]) / newCurrencyValue;
                             }
+                            
                             break;
                         default:
                             fieldChanged = oldHl6[field] != data[field];
+	                        break;
                     }
                     /*if (field == 'BUDGET') {
                         var oldCurrencyValue = Number(dataCurrency.getCurrencyValueId(oldHl6.EURO_CONVERSION_ID));
@@ -1653,7 +1655,7 @@ function crmFieldsHaveChanged(data, isComplete, userId, isNew) {
                 }
 
                 // debug.push({field: field, fieldChanged: fieldChanged, oldParentPath: oldParentPath, parentPath: parentPath});
-
+                                
                 if (fieldChanged || oldParentPath != parentPath || (field == "BUDGET" && budgetChanged)) {
                     if (field == "PARENT_PATH") {
                         if (oldParentPath) {
@@ -1676,7 +1678,6 @@ function crmFieldsHaveChanged(data, isComplete, userId, isNew) {
                     if(field !== "BUDGET" || fieldChanged || oldParentPath != parentPath){
                         crmFieldsHaveChanged = true;
                     }
-
                 }
             });
         });
