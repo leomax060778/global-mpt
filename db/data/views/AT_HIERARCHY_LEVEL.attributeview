@@ -2,7 +2,6 @@
 <Dimension:dimension xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:AccessControl="http://www.sap.com/ndb/SQLCoreModelAccessControl.ecore" xmlns:Dimension="http://www.sap.com/ndb/BiModelDimension.ecore" schemaVersion="1.2" id="AT_HIERARCHY_LEVEL" applyPrivilegeType="ANALYTIC_PRIVILEGE" checkAnalyticPrivileges="true" defaultClient="$$client$$" defaultLanguage="$$language$$" hierarchiesSQLEnabled="false" translationRelevant="true" visibility="internal" dimensionType="Standard">
   <origin/>
   <descriptions defaultDescription="AT_HIERARCHY_LEVEL"/>
-  <metadata changedAt="2016-08-29 13:40:02.968"/>
   <informationModelLayout relativeWidthScenario="27"/>
   <attributes>
     <attribute id="HIERARCHY_LEVEL_ID" key="true" order="1" attributeHierarchyActive="false" displayAttribute="false">
@@ -12,6 +11,10 @@
     <attribute id="DESCRIPTION" order="2" attributeHierarchyActive="false" displayAttribute="false">
       <descriptions defaultDescription="DESCRIPTION"/>
       <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HIERARCHY_LEVEL" columnName="DESCRIPTION"/>
+    </attribute>
+    <attribute id="HIERARCHY_LEVEL_VALUE" key="true" order="3" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="HIERARCHY_LEVEL_VALUE"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HIERARCHY_LEVEL" columnName="HIERARCHY_LEVEL_VALUE"/>
     </attribute>
   </attributes>
   <calculatedAttributes/>
