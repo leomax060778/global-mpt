@@ -143,7 +143,7 @@ BEGIN
                     INNER JOIN HL2 ON HL1.HL1_ID = HL2.HL1_ID
                     INNER JOIN HL3 ON HL2.HL2_ID = HL3.HL2_ID
                     INNER JOIN HL4 ON HL3.HL3_ID = HL4.HL3_ID
-                    INNER JOIN REGION ON HL1.REGION_ID = REGION.REGION_ID;
+                    LEFT JOIN REGION ON HL1.REGION_ID = REGION.REGION_ID;
 
                     IF in_object_type = 'CPG' THEN
                         va_intermedate = SELECT
