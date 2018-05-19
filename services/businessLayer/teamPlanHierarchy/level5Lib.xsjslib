@@ -178,7 +178,7 @@ function getHl5ByHl4Id(id, userId, includeLegacy) {
             hl5.ENABLE_CLONE = !!actionPermission.ENABLE_CLONE;
         });
 
-        hl5TotalBudget = dataHl4.getHl4ById(id).HL4_FNC_BUDGET_TOTAL_MKT;
+        hl5TotalBudget = dataHl4.getHl4ById(id).BUDGET;
         totalAllocated = dataHl5.getHl5TotalBudgetByHl4Id(id);
         hl5BudgetRemaining = hl5TotalBudget - totalAllocated;
     }
@@ -1503,7 +1503,7 @@ function checkBudgetStatus(objHl4, hl5_id, new_hl5_budget) {
         var hl4 = dataHl4.getHl4ById(objHl.HL4_ID);
 
         var hl4AllocatedBudget = dataHl4.getHl4AllocatedBudget(objHl.HL4_ID, hl5_id);
-        return (Number(hl4.HL4_FNC_BUDGET_TOTAL_MKT) - Number(hl4AllocatedBudget) - Number(new_hl5_budget)) >= 0 ? 1 : 0;
+        return (Number(hl4.BUDGET) - Number(hl4AllocatedBudget) - Number(new_hl5_budget)) >= 0 ? 1 : 0;
     } else {
         var hl4Id = Number(objHl4) ? objHl4 : objHl4.in_hl4_id;
         var resultHl5 = dataHl5.getHl5ByHl4Id(hl4Id);
@@ -1514,6 +1514,43 @@ function checkBudgetStatus(objHl4, hl5_id, new_hl5_budget) {
                 var hl5 = resultHl5[i];
                 if (hl5.HL5_STATUS_DETAIL_ID != HL5_STATUS.DELETED_IN_CRM) {
                     if (objHl4.in_HL4_FNC_BUDGET_TOTAL_MKT < total + parseFloat(hl5.HL5_BUDGET)) {
+                        dataHl5.updateHl5BudgetStatus(hl5.HL5_ID, 0);
+                    } else {
+                        dataHl5.updateHl5BudgetStatus(hl5.HL5_ID, 1);
+                        total = total + parseFloat(hl5.HL5_BUDGET);
+                    }
+                }
+            }
+        }
+        return true;
+    }
+}
+
+function checkBudgetStatusRefactor(objHl4, hl5_id, new_hl5_budget) {
+    if (!hl5_id){
+        hl5_id = 0;
+    }
+
+    if (Number(objHl4) && (new_hl5_budget || new_hl5_budget == 0)) {
+        var objHl = {};
+        objHl.HL4_ID = Number(objHl4) ? objHl4 : objHl4.HL4_ID;
+        objHl.HL5_ID = hl5_id;
+        var hl4 = dataHl4.getHl4ById(objHl.HL4_ID);
+
+        var hl4AllocatedBudget = dataHl4.getHl4AllocatedBudget(objHl.HL4_ID, hl5_id);
+        return (Number(hl4.BUDGET) - Number(hl4AllocatedBudget) - Number(new_hl5_budget)) >= 0 ? 1 : 0;
+    } else {
+        var hl4Id = Number(objHl4) ? objHl4 : objHl4.in_hl4_id;
+        var resultHl5 = objHl4.HL4_INFORMATION.HL5_CHILDREN;
+
+        //throw JSON.stringify({resultHl5: resultHl5, objOhl4: objHl4.BUDGET});
+
+        if (resultHl5.length > 0) {
+            var total = 0;
+            for (var i = 0; i < resultHl5.length; i++) {
+                var hl5 = resultHl5[i];
+                if (Number(hl5.HL5_STATUS_DETAIL_ID) != HL5_STATUS.DELETED_IN_CRM) {
+                    if (objHl4.BUDGET < total + parseFloat(hl5.HL5_BUDGET)) {
                         dataHl5.updateHl5BudgetStatus(hl5.HL5_ID, 0);
                     } else {
                         dataHl5.updateHl5BudgetStatus(hl5.HL5_ID, 1);

@@ -12,7 +12,7 @@ BEGIN
 	
 	va_hl3_allocated_budget := 0;
 	
-	SELECT SUM(HL4.hl4_fnc_budget_total_mkt)
+	SELECT SUM(HL4.BUDGET)
 	INTO va_hl3_allocated_budget
 	FROM HL4
 	INNER JOIN HL3 ON HL3.hl3_id = HL4.hl3_id

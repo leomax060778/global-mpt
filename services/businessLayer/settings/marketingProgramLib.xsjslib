@@ -23,8 +23,8 @@ function insertMarketingProgram(payload, userId) {
         , userId);
 }
 
-function insertMarketingProgramForUpload(name, description, userId){
-    return insertMarketingProgram({IN_NAME: name, IN_DESCRIPTION: description}, userId);
+function insertMarketingProgramForUpload(name, description, show_validation_wizard, userId){
+    return insertMarketingProgram({IN_NAME: name, IN_DESCRIPTION: description, SHOW_VALIDATION_WIZARD: show_validation_wizard}, userId);
 }
 
 function existMarketingProgramByName(payload) {
@@ -98,11 +98,11 @@ function uploadMarketingProgram(data, userId) {
         var mp = dataMarketingProgram.getMarketingProgramByName(marketingProgram.in_name);
 
         if(!mp || !mp.MARKETING_PROGRAM_ID){
-            marketingProgramId = insertMarketingProgramForUpload(marketingProgram.in_name, marketingProgram.in_description, userId);
+            marketingProgramId = insertMarketingProgramForUpload(marketingProgram.in_name, marketingProgram.in_description, marketingProgram.show_validation_wizard, userId);
             marketingProgramCreated++;
         } else {
             dataMarketingProgram.updateMarketingProgram(mp.MARKETING_PROGRAM_ID, marketingProgram.in_name
-                , marketingProgram.in_description || marketingProgram.in_name, userId);
+                , marketingProgram.in_description || marketingProgram.in_name, marketingProgram.show_validation_wizard, userId);
             marketingProgramUpdated++;
         }
     });

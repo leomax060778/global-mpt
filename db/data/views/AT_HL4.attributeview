@@ -31,85 +31,45 @@
       <descriptions defaultDescription="HL4_STATUS_DETAIL_ID"/>
       <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL4" columnName="HL4_STATUS_DETAIL_ID"/>
     </attribute>
-    <attribute id="IS_SEND_MAIL" order="8" attributeHierarchyActive="false" displayAttribute="false">
-      <descriptions defaultDescription="IS_SEND_MAIL"/>
-      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL4" columnName="IS_SEND_MAIL"/>
-    </attribute>
-    <attribute id="HL4_PARENT_ID" order="9" attributeHierarchyActive="false" displayAttribute="false">
-      <descriptions defaultDescription="HL4_PARENT_ID"/>
-      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL4" columnName="HL4_PARENT_ID"/>
-    </attribute>
-    <attribute id="IS_HL4" order="10" attributeHierarchyActive="false" displayAttribute="false">
-      <descriptions defaultDescription="IS_HL4"/>
-      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL4" columnName="IS_HL4"/>
-    </attribute>
-    <attribute id="READ_ONLY" order="11" attributeHierarchyActive="false" displayAttribute="false">
-      <descriptions defaultDescription="READ_ONLY"/>
-      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL4" columnName="READ_ONLY"/>
-    </attribute>
-    <attribute id="USER_ID_SEND_MAIL" order="12" attributeHierarchyActive="false" displayAttribute="false">
-      <descriptions defaultDescription="USER_ID_SEND_MAIL"/>
-      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL4" columnName="USER_ID_SEND_MAIL"/>
-    </attribute>
-    <attribute id="COMMENTS" order="13" attributeHierarchyActive="false" displayAttribute="false">
-      <descriptions defaultDescription="COMMENTS"/>
-      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL4" columnName="COMMENTS"/>
-    </attribute>
-    <attribute id="CREATED_USER_ID" order="14" attributeHierarchyActive="false" displayAttribute="false">
+    <attribute id="CREATED_USER_ID" order="8" attributeHierarchyActive="false" displayAttribute="false">
       <descriptions defaultDescription="CREATED_USER_ID"/>
       <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL4" columnName="CREATED_USER_ID"/>
     </attribute>
-    <attribute id="DELETED" order="15" attributeHierarchyActive="false" displayAttribute="false">
+    <attribute id="DELETED" order="9" attributeHierarchyActive="false" displayAttribute="false">
       <descriptions defaultDescription="DELETED"/>
       <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL4" columnName="DELETED"/>
     </attribute>
-    <attribute id="ENABLED" order="16" attributeHierarchyActive="false" displayAttribute="false">
+    <attribute id="ENABLED" order="10" attributeHierarchyActive="false" displayAttribute="false">
       <descriptions defaultDescription="ENABLED"/>
       <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL4" columnName="ENABLED"/>
     </attribute>
-    <attribute id="IS_ANNUAL_PLAN" order="17" attributeHierarchyActive="false" displayAttribute="false">
+    <attribute id="IS_ANNUAL_PLAN" order="11" attributeHierarchyActive="false" displayAttribute="false">
       <descriptions defaultDescription="IS_ANNUAL_PLAN"/>
       <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL4" columnName="IS_ANNUAL_PLAN"/>
     </attribute>
-    <attribute id="EURO_CONVERSION_ID" order="18" attributeHierarchyActive="false" displayAttribute="false">
+    <attribute id="EURO_CONVERSION_ID" order="12" attributeHierarchyActive="false" displayAttribute="false">
       <descriptions defaultDescription="EURO_CONVERSION_ID"/>
       <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL4" columnName="EURO_CONVERSION_ID"/>
     </attribute>
-    <attribute id="IN_BUDGET" order="19" attributeHierarchyActive="false" displayAttribute="false">
+    <attribute id="IN_BUDGET" order="13" attributeHierarchyActive="false" displayAttribute="false">
       <descriptions defaultDescription="IN_BUDGET"/>
       <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL4" columnName="IN_BUDGET"/>
     </attribute>
-    <attribute id="SPEND_CATEGORY_ID" order="20" attributeHierarchyActive="false" displayAttribute="false">
+    <attribute id="SPEND_CATEGORY_ID" order="14" attributeHierarchyActive="false" displayAttribute="false">
       <descriptions defaultDescription="SPEND_CATEGORY_ID"/>
       <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL4" columnName="SPEND_CATEGORY_ID"/>
     </attribute>
-    <attribute id="HL4_FNC_BUDGET_SPEND_Q1" order="21" attributeHierarchyActive="false" displayAttribute="false">
-      <descriptions defaultDescription="HL4_FNC_BUDGET_SPEND_Q1"/>
-      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL4" columnName="HL4_FNC_BUDGET_SPEND_Q1"/>
-    </attribute>
-    <attribute id="HL4_FNC_BUDGET_SPEND_Q2" order="22" attributeHierarchyActive="false" displayAttribute="false">
-      <descriptions defaultDescription="HL4_FNC_BUDGET_SPEND_Q2"/>
-      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL4" columnName="HL4_FNC_BUDGET_SPEND_Q2"/>
-    </attribute>
-    <attribute id="HL4_FNC_BUDGET_SPEND_Q3" order="23" attributeHierarchyActive="false" displayAttribute="false">
-      <descriptions defaultDescription="HL4_FNC_BUDGET_SPEND_Q3"/>
-      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL4" columnName="HL4_FNC_BUDGET_SPEND_Q3"/>
-    </attribute>
-    <attribute id="HL4_FNC_BUDGET_SPEND_Q4" order="24" attributeHierarchyActive="false" displayAttribute="false">
-      <descriptions defaultDescription="HL4_FNC_BUDGET_SPEND_Q4"/>
-      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL4" columnName="HL4_FNC_BUDGET_SPEND_Q4"/>
-    </attribute>
-    <attribute id="HL4_FNC_BUDGET_TOTAL_MKT" order="25" attributeHierarchyActive="false" displayAttribute="false">
-      <descriptions defaultDescription="HL4_FNC_BUDGET_TOTAL_MKT"/>
-      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL4" columnName="HL4_FNC_BUDGET_TOTAL_MKT"/>
-    </attribute>
-    <attribute id="CREATED_DATE_TZ" order="26" attributeHierarchyActive="false" displayAttribute="false">
+    <attribute id="CREATED_DATE_TZ" order="15" attributeHierarchyActive="false" displayAttribute="false">
       <descriptions defaultDescription="CREATED_DATE_TZ"/>
       <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL4" columnName="CREATED_DATE_TZ"/>
     </attribute>
-    <attribute id="MODIFIED_DATE_TZ" order="27" attributeHierarchyActive="false" displayAttribute="false">
+    <attribute id="MODIFIED_DATE_TZ" order="16" attributeHierarchyActive="false" displayAttribute="false">
       <descriptions defaultDescription="MODIFIED_DATE_TZ"/>
       <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL4" columnName="MODIFIED_DATE_TZ"/>
+    </attribute>
+    <attribute id="BUDGET" order="17" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="BUDGET"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL4" columnName="BUDGET"/>
     </attribute>
   </attributes>
   <calculatedAttributes/>

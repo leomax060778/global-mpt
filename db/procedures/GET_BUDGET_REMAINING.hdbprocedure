@@ -15,7 +15,7 @@ VA_TOTAL_BUDGET := 0;
 VA_TOTAL_ALLOCATED := 0;
 
     IF in_level = 'HL5' THEN
-                SELECT HL4.HL4_FNC_BUDGET_TOTAL_MKT
+                SELECT HL4.BUDGET
             	    INTO VA_TOTAL_BUDGET
             	    FROM HL4
             	    WHERE HL4.HL4_ID = in_hl_id;

@@ -129,7 +129,7 @@
 			 	WHERE hl3.ENABLED = 1 AND hl3.DELETED = 0;
 			 	
  	va_hl4 = SELECT hl4.HL4_ID, hl4.HL3_ID,	hl4.ACRONYM AS L4_ACRONYM, hl4.HL4_CRM_DESCRIPTION AS L4_DESCRIPTION, 
-				hl4.HL4_FNC_BUDGET_TOTAL_MKT AS L4_BUDGET
+				hl4.BUDGET AS L4_BUDGET
 				, hl4_extra_fields.HL4_KPI_PROP_EUR
 				, hl4_extra_fields.HL4_KPI_PROP_VOL
 				FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL4&quot; hl4

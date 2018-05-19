@@ -27,6 +27,7 @@ function processRequest(){
 function handleGet(params, userId) {
     var in_hl5_id = httpUtil.getUrlParameters().get("HL5_ID");
     var in_hl6_id = httpUtil.getUrlParameters().get("HL6_ID");
+    var search_section = httpUtil.getUrlParameters().get("METHOD");
     var param_section = httpUtil.getUrlParameters().get("section");
     var hl5_categories = httpUtil.getUrlParameters().get("HL5_CATEGORIES");
     var hl5_expectedOutcomes = httpUtil.getUrlParameters().get("HL5_EXPECTED_OUTCOMES");
@@ -44,7 +45,7 @@ function handleGet(params, userId) {
         result = hl6.getHl6ByHl5Id(in_hl5_id, userId, includeLegacy, isLegacy);
     }else if(in_hl6_id){
         result = hl6.getHl6ById(in_hl6_id);
-    }else if (param_section && param_section == section){
+    }else if (search_section && search_section == section){
         var budget_year_id = httpUtil.getUrlParameters().get("BUDGET_YEAR_ID") || null;
         var region_id = httpUtil.getUrlParameters().get("REGION_ID") || null;
         var subregion_id = httpUtil.getUrlParameters().get("SUBREGION_ID") || null;

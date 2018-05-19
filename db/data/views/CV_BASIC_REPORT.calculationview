@@ -34,7 +34,7 @@
 
             (SELECT
 					R.REGION_NAME AS BUDGET_REGION_NAME
-                    , SUM(IFNULL((HL4.HL4_FNC_BUDGET_TOTAL_MKT * HL4_BR.percentage)/100, 0)) AS BUDGET_DISTRIBUTION
+                    , SUM(IFNULL((HL4.BUDGET * HL4_BR.percentage)/100, 0)) AS BUDGET_DISTRIBUTION
                     , HL2.HL2_ID
                     , R.REGION_ID
             from &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL2&quot; HL2 
@@ -52,7 +52,7 @@
             LEFT JOIN
 
             (SELECT 
-        	 CASE WHEN SUM(IFNULL(HL4.HL4_FNC_BUDGET_TOTAL_MKT,0)) = 0 THEN 1 ELSE SUM(IFNULL(HL4.HL4_FNC_BUDGET_TOTAL_MKT,0)) END AS HL4_BUDGET
+        	 CASE WHEN SUM(IFNULL(HL4.BUDGET,0)) = 0 THEN 1 ELSE SUM(IFNULL(HL4.BUDGET,0)) END AS HL4_BUDGET
         	, HL2.HL2_ID
         	FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL4&quot; HL4
         	inner join &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL3&quot; HL3 ON HL3.HL3_ID = HL4.HL3_ID
@@ -72,7 +72,7 @@
 	GROUP BY HL3.HL2_ID;
 	
 	var_hl4_budget_by_hl2 = SELECT 
-	 SUM(HL4.HL4_FNC_BUDGET_TOTAL_MKT) AS HL4_BUDGET
+	 SUM(HL4.BUDGET) AS HL4_BUDGET
 	, HL2.HL2_ID
 	FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL4&quot; HL4
 	inner join &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL3&quot; HL3 ON HL3.HL3_ID = HL4.HL3_ID

@@ -1,0 +1,121 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL3_FOR_HL4_VALIDATION" (
+	IN in_hl3_id bigint,
+	IN in_hl4_id bigint,
+	OUT out_result_hl3 TABLE(
+	    HL3_ID BIGINT,
+	    HL2_ID BIGINT,
+	    HL3_FNC_BUDGET_TOTAL DECIMAL(19,2),
+	    ALLOCATED_BUDGET DECIMAL(19,2)
+	),
+	OUT out_result_hl3_kpis TABLE(
+	    EXPECTED_OUTCOME_ID BIGINT,
+        EXPECTED_OUTCOME_OPTION_ID BIGINT,
+        TOTAL_VALUE INTEGER,
+        TOTAL_VOLUME INTEGER
+	), --All HL3 KPIs
+	OUT out_result_hl4_children TABLE(
+	    HL4_ID BIGINT,
+	    ACRONYM NVARCHAR(10),
+	    BUDGET DECIMAL(19,2)
+	), --All HL4, childrens of the current HL3
+	OUT out_result_hl4_children_kpis TABLE (
+	    EXPECTED_OUTCOME_ID BIGINT,
+        EXPECTED_OUTCOME_OPTION_ID BIGINT,
+        VALUE_ALLOCATED INTEGER,
+        VOLUME_ALLOCATED INTEGER
+	), --All HL4 KPIs, childrens of the current HL3
+	OUT out_result_hl3_available_volume_value TABLE(
+	    EXPECTED_OUTCOME_ID BIGINT,
+        EXPECTED_OUTCOME_OPTION_ID BIGINT,
+        PARENT_TOTAL_VALUE INTEGER,
+        PARENT_TOTAL_VOLUME INTEGER,
+        VALUE_AVAILABLE_TO_ALLOCATE INTEGER,
+        VOLUME_AVAILABLE_TO_ALLOCATE INTEGER,
+        ALLOCATED_VALUE INTEGER,
+        ALLOCATED_VOLUME INTEGER
+	) --KPIs Available data results
+) 
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER 
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	AS
+BEGIN
+    out_result_hl3 = SELECT hl3.HL3_ID,
+                            hl3.HL2_ID,
+                            hl3.HL3_FNC_BUDGET_TOTAL,
+                            SUM(hl4.BUDGET) as ALLOCATED_BUDGET
+                     FROM HL3 hl3
+                        LEFT JOIN  HL4 hl4 -- It may not have L4 yet*
+                            ON hl4.HL3_ID = hl3.HL3_ID
+                                AND hl4.DELETED = 0
+                                AND hl4.ENABLED = 1
+                                AND hl4.IN_BUDGET = 1
+                                --- This means that will be included those records that aren´t in Deleted In CRM ---
+                                AND hl4.HL4_STATUS_DETAIL_ID != 10
+                                AND hl4.HL4_ID != in_hl4_id
+                     WHERE hl3.HL3_ID = in_hl3_id
+                        AND hl3.ENABLED = 1
+                        AND hl3.DELETED = 0
+                      GROUP BY hl3.HL3_ID,
+                            hl3.HL2_ID,
+                            hl3.HL3_FNC_BUDGET_TOTAL;
+
+    out_result_hl3_kpis = SELECT eol.EXPECTED_OUTCOME_ID,
+                                 eol.EXPECTED_OUTCOME_OPTION_ID,
+                                 hl3_eod.EURO_VALUE AS TOTAL_VALUE,
+                                 hl3_eod.VOLUME_VALUE AS TOTAL_VOLUME
+                           FROM HL3_EXPECTED_OUTCOMES hl3_eo
+                               INNER JOIN hl3
+                                    ON hl3_eo.hl3_id = hl3.hl3_id
+                                        AND HL3.DELETED = 0
+                                        AND HL3.ENABLED = 1
+                               INNER JOIN HL3_EXPECTED_OUTCOMES_DETAIL hl3_eod
+                                    ON hl3_eo.HL3_EXPECTED_OUTCOMES_ID = hl3_eod.HL3_EXPECTED_OUTCOMES_ID
+                               INNER JOIN EXPECTED_OUTCOME_LEVEL eol
+                                    ON hl3_eod.EXPECTED_OUTCOME_LEVEL_ID = eol.EXPECTED_OUTCOME_LEVEL_ID
+                           WHERE    HL3.HL3_ID = in_hl3_id
+                                AND hl3_eod.DELETED = 0
+                                AND hl3_eod.ENABLED = 1;
+
+    out_result_hl4_children = SELECT hl4.HL4_ID,
+                                     hl4.ACRONYM,
+                                     hl4.BUDGET
+                                FROM HL4 hl4
+                                WHERE hl4.HL3_ID = in_hl3_id
+                                    AND hl4.HL4_ID != in_hl4_id
+                                    AND hl4.ENABLED = 1
+                                    AND hl4.DELETED = 0;
+
+    out_result_hl4_children_kpis =    SELECT    eol.EXPECTED_OUTCOME_ID,
+                                                eol.EXPECTED_OUTCOME_OPTION_ID,
+                                                SUM(hl4_eod.EURO_VALUE) AS VALUE_ALLOCATED,
+                                                SUM(hl4_eod.AMOUNT_VALUE) AS VOLUME_ALLOCATED
+                                      FROM HL4_EXPECTED_OUTCOMES hl4_eo
+                                          INNER JOIN hl4
+                                            ON hl4_eo.hl4_id = hl4.hl4_id
+                                                AND HL4.DELETED = 0
+                                                AND HL4.ENABLED = 1
+                                                AND HL4.HL4_ID != in_hl4_id
+                                          INNER JOIN HL4_EXPECTED_OUTCOMES_DETAIL hl4_eod
+                                            ON hl4_eo.HL4_EXPECTED_OUTCOMES_ID = hl4_eod.HL4_EXPECTED_OUTCOMES_ID
+                                          INNER JOIN EXPECTED_OUTCOME_LEVEL eol
+                                            ON hl4_eod.OUTCOMES_ID = eol.EXPECTED_OUTCOME_LEVEL_ID
+                                      WHERE HL4.HL3_ID = in_hl3_id
+                                        AND hl4_eod.DELETED = 0
+                                        AND hl4_eod.ENABLED = 1
+                                      GROUP BY eol.EXPECTED_OUTCOME_ID,
+                                               eol.EXPECTED_OUTCOME_OPTION_ID;
+
+    out_result_hl3_available_volume_value = SELECT PARENT.EXPECTED_OUTCOME_ID
+                     , PARENT.EXPECTED_OUTCOME_OPTION_ID
+                     , COALESCE(PARENT.TOTAL_VALUE,0) AS PARENT_TOTAL_VALUE
+                     , COALESCE(PARENT.TOTAL_VOLUME,0) AS PARENT_TOTAL_VOLUME
+                     , COALESCE(PARENT.TOTAL_VALUE,0) - COALESCE(CHILDREN.VALUE_ALLOCATED,0) AS VALUE_AVAILABLE_TO_ALLOCATE
+                     , COALESCE(PARENT.TOTAL_VOLUME,0) - COALESCE(CHILDREN.VOLUME_ALLOCATED,0) AS VOLUME_AVAILABLE_TO_ALLOCATE
+                     , COALESCE(CHILDREN.VALUE_ALLOCATED,0) AS ALLOCATED_VALUE
+                     , COALESCE(CHILDREN.VOLUME_ALLOCATED,0) AS ALLOCATED_VOLUME
+                     FROM :out_result_hl4_children_kpis CHILDREN
+                     RIGHT JOIN :out_result_hl3_kpis PARENT
+                     ON PARENT.EXPECTED_OUTCOME_ID = CHILDREN.EXPECTED_OUTCOME_ID
+                     AND PARENT.EXPECTED_OUTCOME_OPTION_ID = CHILDREN.EXPECTED_OUTCOME_OPTION_ID;
+END;

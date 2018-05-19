@@ -1,0 +1,48 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL4_CATEGORY_OPTION" (
+	IN in_hl_id BIGINT,
+	OUT out_result TABLE (
+	 CATEGORY_ID INTEGER,
+	 HL4_ID INTEGER,
+	 CATEGORY_NAME NVARCHAR(60),
+	 OPTION_ID INTEGER,
+	 OPTION_NAME NVARCHAR(60),
+	 CATEGORY_OPTION_ID INTEGER,
+	 CATEGORY_OPTION_LEVEL_ID INTEGER,
+	 AMOUNT DECIMAL(19,2),
+	 SINGLE_OPTION_ONLY TINYINT,
+	 MAKE_CATEGORY_MANDATORY TINYINT,
+	 UPDATED TINYINT,
+	 CATEGORY_TYPE_ID INTEGER,
+	 OPTIONS_LIMIT INTEGER
+	)
+) 
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER 
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	READS SQL DATA AS
+BEGIN
+	out_result =
+                SELECT
+                     ac.ALLOCATION_CATEGORY_ID AS CATEGORY_ID,
+                     hl4co.HL4_ID,
+                     ac.NAME AS CATEGORY_NAME,
+                     ao.ALLOCATION_OPTION_ID AS OPTION_ID,
+                     ao.NAME AS OPTION_NAME,
+                     hl4co.HL4_CATEGORY_OPTION_ID AS CATEGORY_OPTION_ID,
+                     hl4co.ALLOCATION_CATEGORY_OPTION_LEVEL_ID AS CATEGORY_OPTION_LEVEL_ID,
+                     hl4co.AMOUNT,
+                     ac.SINGLE_OPTION_ONLY,
+                     acol.MAKE_CATEGORY_MANDATORY,
+                     hl4co.UPDATED,
+                     AC.CATEGORY_TYPE_ID,
+                     acol.OPTIONS_LIMIT
+                FROM HL4_CATEGORY_OPTION hl4co
+                    INNER JOIN allocation_category_option_level acol ON hl4co.ALLOCATION_CATEGORY_OPTION_LEVEL_ID = acol.ALLOCATION_CATEGORY_OPTION_LEVEL_ID
+                        AND acol.ENABLED = 1 AND acol.DELETED = 0
+                INNER JOIN ALLOCATION_OPTION ao ON acol.ALLOCATION_OPTION_ID = ao.ALLOCATION_OPTION_ID
+                INNER JOIN ALLOCATION_CATEGORY ac ON acol.ALLOCATION_CATEGORY_ID = ac.ALLOCATION_CATEGORY_ID
+                WHERE HL4_ID = in_hl_id
+                  AND hl4co.ENABLED = 1
+                  AND hl4co.DELETED = 0
+                ORDER BY ac.NAME, ao.NAME;
+END;

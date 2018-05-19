@@ -1,0 +1,151 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_CATEGORY_OPTION_FOR_HL4_VALIDATION" (
+	IN in_hl4_id BIGINT,
+	OUT out_result_categories TABLE(
+    	CATEGORY_ID INTEGER,
+    	IN_PROCESSING_REPORT TINYINT
+    ),
+    OUT out_result_hierarchy_level_categories TABLE(
+        CATEGORY_ID INTEGER,
+        IN_PROCESSING_REPORT TINYINT
+    ),
+	OUT out_result_allocation_category_count TABLE(
+	    ALLOCATION_CATEGORY_COUNT integer
+	),
+	OUT out_result_category_option_level TABLE(
+	    CATEGORY_ID INTEGER,
+	    HL4_ID INTEGER,
+	    CATEGORY_NAME NVARCHAR(60),
+	    SINGLE_OPTION_ONLY TINYINT,
+	    IN_PROCESSING_REPORT TINYINT,
+	    MAKE_CATEGORY_MANDATORY TINYINT,
+	    OPTIONS_LIMIT INTEGER
+	),
+    OUT out_result_allocation_option TABLE(
+            OPTION_ID BIGINT,
+            OPTION_NAME NVARCHAR(255),
+            CATEGORY_OPTION_LEVEL_ID INTEGER,
+            AMOUNT DECIMAL(19, 6),
+            CATEGORY_NAME NVARCHAR(60),
+            UPDATED TINYINT,
+            ALLOCATION_CATEGORY_ID BIGINT
+    ),
+	OUT out_result_allocation_option_versioned TABLE(
+        CATEGORY_ID INTEGER,
+        HL4_ID INTEGER,
+        CATEGORY_NAME NVARCHAR(60),
+        OPTION_ID INTEGER,
+        OPTION_NAME NVARCHAR(60),
+        CATEGORY_OPTION_ID INTEGER,
+        CATEGORY_OPTION_LEVEL_ID INTEGER,
+        AMOUNT DECIMAL(19,2),
+        SINGLE_OPTION_ONLY TINYINT,
+        MAKE_CATEGORY_MANDATORY TINYINT,
+        CATEGORY_TYPE_ID integer,
+        OPTIONS_LIMIT integer,
+        IN_PROCESSING_REPORT_ORIGINAL TINYINT,
+        IN_PROCESSING_REPORT_HIERARCHY_LEVEL TINYINT
+	)
+) 
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER 
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	AS
+BEGIN
+	DECLARE VA_HL4_IN_CRM_VERSION_ID INTEGER;
+            VA_HL4_IN_CRM_VERSION_ID := 0;
+
+    -- ALLOCATION CATEGORY OPTION LEVEL COUNT --
+    out_result_allocation_category_count = SELECT COUNT(DISTINCT ALLOCATION_CATEGORY_ID) AS ALLOCATION_CATEGORY_COUNT
+                                           FROM ALLOCATION_CATEGORY_OPTION_LEVEL
+                                           WHERE HIERARCHY_LEVEL_ID = 1 --HL4
+                                               AND DELETED = 0
+                                               AND ENABLED = 1;
+
+    -- CATEGORY OPTION LEVEL
+	out_result_category_option_level = SELECT DISTINCT  allocation_category.ALLOCATION_CATEGORY_ID AS CATEGORY_ID,
+	                                                    hl4CO.HL4_ID,
+	                                                    allocation_category.NAME AS CATEGORY_NAME,
+	                                                    allocation_category.SINGLE_OPTION_ONLY,
+	                                                    ACOL.IN_PROCESSING_REPORT,
+	                                                    ACOL.MAKE_CATEGORY_MANDATORY,
+	                                                    ACOL.OPTIONS_LIMIT
+                                                FROM hl4_category_option hl4CO
+                                                    INNER JOIN allocation_category_option_level ACOL ON hl4CO.ALLOCATION_CATEGORY_OPTION_LEVEL_ID = ACOL.ALLOCATION_CATEGORY_OPTION_LEVEL_ID
+                                                    INNER JOIN allocation_category ON ACOL.ALLOCATION_CATEGORY_ID = allocation_category.ALLOCATION_CATEGORY_ID
+                                                WHERE hl4_id = in_hl4_id
+                                                    AND hl4CO.ENABLED = 1
+                                                    AND hl4CO.DELETED = 0;
+    -- OPTIONS
+    out_result_allocation_option =  SELECT  option.ALLOCATION_OPTION_ID AS OPTION_ID,
+                                            option.NAME AS OPTION_NAME,
+                                            ACOL.ALLOCATION_CATEGORY_OPTION_LEVEL_ID AS CATEGORY_OPTION_LEVEL_ID,
+                                            hl4CO.AMOUNT,
+                                            category.NAME AS CATEGORY_NAME,
+                                            hl4CO.UPDATED,
+                                            ACOL.ALLOCATION_CATEGORY_ID
+
+                                    FROM hl4_category_option hl4CO
+                                        INNER JOIN allocation_category_option_level ACOL ON ACOL.allocation_category_option_level_id = hl4CO.allocation_category_option_level_id
+                                        INNER JOIN allocation_option option ON ACOL.allocation_option_id = option.allocation_option_id
+                                        INNER JOIN allocation_category category ON category.allocation_category_id = ACOL.allocation_category_id
+                                    WHERE HL4_ID = in_hl4_id
+                                    AND hl4CO.DELETED = 0 AND hl4CO.ENABLED = 1;
+
+
+
+    -- ******************* ONLY TO OBTAIN 'IN_PROCESSING_REPORT' FLAG ******************* --
+    --CATEGORIES
+    out_result_categories = SELECT DISTINCT
+                                  ac.ALLOCATION_CATEGORY_ID AS CATEGORY_ID,
+                                  acol.IN_PROCESSING_REPORT
+                            FROM ALLOCATION_CATEGORY ac
+                                INNER JOIN allocation_category_option_level acol ON acol.ALLOCATION_CATEGORY_ID = ac.ALLOCATION_CATEGORY_ID
+                                INNER JOIN HL4_CATEGORY_OPTION hl4_co ON acol.ALLOCATION_CATEGORY_OPTION_LEVEL_ID = hl4_co.ALLOCATION_CATEGORY_OPTION_LEVEL_ID
+                            WHERE hl4_co.HL4_ID = in_hl4_id
+                                AND hl4_co.ENABLED = 1
+                                AND hl4_co.DELETED = 0;
+
+    -- HIERARCHY LEVEL CATEGORIES
+    out_result_hierarchy_level_categories = SELECT distinct
+                                                  ac.ALLOCATION_CATEGORY_ID AS CATEGORY_ID,
+                                                  acol.IN_PROCESSING_REPORT
+                                                FROM ALLOCATION_CATEGORY ac
+                                                    INNER JOIN ALLOCATION_CATEGORY_OPTION_LEVEL acol ON acol.ALLOCATION_CATEGORY_ID = ac.ALLOCATION_CATEGORY_ID
+                                                WHERE   acol.HIERARCHY_LEVEL_ID = 1 --HL4
+                                                    AND acol.ENABLED = 1
+                                                    AND acol.DELETED = 0;
+
+    -- ******************* ONLY TO OBTAIN 'IN_PROCESSING_REPORT' FLAG ******************* --
+
+    SELECT MAX(HL4_IN_CRM_VERSION_ID)
+        INTO VA_HL4_IN_CRM_VERSION_ID
+    FROM HL4_IN_CRM_VERSION
+    WHERE HL4_ID = in_hl4_id;
+
+    -- VERSIONED OPTIONS
+    out_result_allocation_option_versioned = SELECT  category.ALLOCATION_CATEGORY_ID as CATEGORY_ID,
+                                                     hl4CO.HL4_ID,
+                                                     category.NAME AS CATEGORY_NAME,
+                                                     option.ALLOCATION_OPTION_ID AS OPTION_ID,
+                                                     option.NAME AS OPTION_NAME,
+                                                     hl4CO.HL4_CATEGORY_OPTION_ID AS CATEGORY_OPTION_ID,
+                                                     hl4CO.ALLOCATION_CATEGORY_OPTION_LEVEL_ID AS CATEGORY_OPTION_LEVEL_ID,
+                                                     hl4CO.AMOUNT,
+                                                     category.SINGLE_OPTION_ONLY,
+                                                     ACOL.MAKE_CATEGORY_MANDATORY,
+                                                     category.CATEGORY_TYPE_ID,
+                                                     ACOL.OPTIONS_LIMIT,
+                                                     original_categories.IN_PROCESSING_REPORT AS IN_PROCESSING_REPORT_ORIGINAL,
+                                                     hierarchy_level_categories.IN_PROCESSING_REPORT AS IN_PROCESSING_REPORT_HIERARCHY_LEVEL
+                                             FROM hl4_category_option_in_crm_version hl4CO
+                                                 INNER JOIN allocation_category_option_level ACOL ON ACOL.ALLOCATION_CATEGORY_OPTION_LEVEL_ID = hl4CO.ALLOCATION_CATEGORY_OPTION_LEVEL_ID
+                                                 INNER JOIN allocation_option option ON ACOL.ALLOCATION_OPTION_ID = option.ALLOCATION_OPTION_ID
+                                                 INNER JOIN allocation_category category ON category.ALLOCATION_CATEGORY_ID = ACOL.ALLOCATION_CATEGORY_ID
+                                                 --Lets try to obtain the 'In processing Report' status from two tables
+                                                 LEFT JOIN :out_result_categories original_categories ON original_categories.CATEGORY_ID = category.ALLOCATION_CATEGORY_ID
+                                                 LEFT JOIN :out_result_hierarchy_level_categories hierarchy_level_categories ON hierarchy_level_categories.CATEGORY_ID = category.ALLOCATION_CATEGORY_ID
+                                             WHERE HL4_IN_CRM_VERSION_ID = VA_HL4_IN_CRM_VERSION_ID
+                                                 AND hl4CO.DELETED = 0
+                                                 AND hl4CO.ENABLED = 1;
+                                                    
+END;

@@ -18,6 +18,7 @@ var spDeleteExpOutcomeDetail = "DEL_HL4_EXPECTED_OUTCOMES_DETAIL_BY_HL4_ID";
 
 /**L5***********************************************/
 var spGetExpOutByHl5Id = "GET_EXPECTED_OUTCOMES_BY_HL5_ID";
+var spGetHl4ExpOutDetail = "GET_EXPECTED_OUTCOMES_DETAILS_EO_HL4_ID";
 var spGetHl5ExpOutDetail = "GET_EXPECTED_OUTCOMES_DETAILS_EO_HL5_ID";
 var spInsertHl5ExpOutcome = "INS_HL5_EXPECTED_OUTCOMES";
 var spInsertHl5ExpOutcomeDetail = "INS_HL5_EXPECTED_OUTCOMES_DETAIL";
@@ -100,6 +101,14 @@ function getExpectedOutcomeByHl5Id(id){
 	if(id){
 		var rdo = db.executeProcedure(spGetExpOutByHl5Id, {'in_hl5_id':id});
 		return db.extractArray(rdo.out_expected_outcomes);
+	}
+	return null;
+}
+
+function getHl4ExpectedOutcomeDetailById(id){
+	if(id){
+		var rdo = db.executeProcedure(spGetHl4ExpOutDetail, {'in_hl4_expected_outcomes_id':id});
+		return db.extractArray(rdo.out_result);
 	}
 	return null;
 }

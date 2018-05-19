@@ -50,6 +50,11 @@ function getLevel4(){
     return $.mktgplanningtool.services.businessLayer.teamPlanHierarchy.level4Lib;
 }
 
+function getRefactorLevel4(){
+    $.import("mktgplanningtool.services.businessLayer.teamPlanHierarchy","refactorL4_level4Lib");
+    return $.mktgplanningtool.services.businessLayer.teamPlanHierarchy.refactorL4_level4Lib;
+}
+
 function getCrmAcronym(){
     $.import("mktgplanningtool.services.businessLayer.teamPlanHierarchy","CrmAcronymLib");
     return $.mktgplanningtool.services.businessLayer.teamPlanHierarchy.CrmAcronymLib;
@@ -532,6 +537,11 @@ function getDataLevel3(){
 function getDataLevel4(){
     $.import("mktgplanningtool.services.dataLayer.teamPlanHierarchy","dataLevel4");
     return $.mktgplanningtool.services.dataLayer.teamPlanHierarchy.dataLevel4;
+}
+
+function getRefactorDataLevel4(){
+	$.import("mktgplanningtool.services.dataLayer.teamPlanHierarchy","refactorL4_dataLevel4");
+    return $.mktgplanningtool.services.dataLayer.teamPlanHierarchy.refactorL4_dataLevel4;
 }
 
 function getDataCrmAcronym(){
