@@ -4,6 +4,8 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_CATEGORY_OPT
 	IN in_filter_event_request_allocation TINYINT,
 	OUT out_result TABLE (
         category_id integer
+        , allocation_category_option_level_id integer
+        , ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID integer
         , hierarchy_level_id integer
         , measure_id integer
         , category_name nvarchar(60)
@@ -25,6 +27,8 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_CATEGORY_OPT
 BEGIN
 	va_allocation_category_option =
     (SELECT AC.ALLOCATION_CATEGORY_ID AS CATEGORY_ID
+    ,acol.ALLOCATION_CATEGORY_OPTION_LEVEL_ID
+    ,null as ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID
     ,ACOL.HIERARCHY_LEVEL_ID
     ,AC.MEASURE_ID
     ,AC.NAME AS CATEGORY_NAME
@@ -52,6 +56,8 @@ BEGIN
     UNION ALL
     (
         SELECT AC.ALLOCATION_CATEGORY_ID AS CATEGORY_ID
+            ,null as ALLOCATION_CATEGORY_OPTION_LEVEL_ID
+            ,acol.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID
             ,ACOL.HIERARCHY_LEVEL_ID
             ,AC.MEASURE_ID
             ,AC.NAME AS CATEGORY_NAME
@@ -84,6 +90,8 @@ BEGIN
 
 
     out_result = SELECT CATEGORY_ID
+    					, ALLOCATION_CATEGORY_OPTION_LEVEL_ID
+    					, ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID
                         , HIERARCHY_LEVEL_ID
                         , MEASURE_ID
                         , CATEGORY_NAME
@@ -101,6 +109,8 @@ BEGIN
 
     IF in_filter_event_request_allocation = 1 THEN
      out_result = SELECT CATEGORY_ID
+     						, ALLOCATION_CATEGORY_OPTION_LEVEL_ID
+     						, ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID
                             , HIERARCHY_LEVEL_ID
                             , MEASURE_ID
                             , CATEGORY_NAME

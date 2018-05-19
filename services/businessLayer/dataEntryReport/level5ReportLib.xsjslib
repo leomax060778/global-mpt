@@ -63,6 +63,10 @@ function getL5ChangedFieldsByHl5Id(hl5Id, userId) {
     var data = {"hl5": [], "category": []};
     data.STATUS_FLAG = dataHl5.getHl5StatusByHl5Id(hl5Id).HL5_STATUS_DETAIL_ID == HL5_STATUS.DELETION_REQUEST;
     if( data.STATUS_DETAIL_ID !== HL5_STATUS.DELETION_REQUEST){
+        var id = "L5idToCopy";
+        var optionId = "L5OptionIdToCopy";
+        var catId = "L5CatId";
+        
         var l5ReportFields = this.getProcessingReportFields();
         var changedFields = dataL5DER.getL5ChangedFieldsByHl5Id(hl5Id);
         var hl5Categories = dataCategoryOptionLevel.getAllocationCategory(hl5Id, 'hl5');
@@ -70,19 +74,21 @@ function getL5ChangedFieldsByHl5Id(hl5Id, userId) {
         var processingReportData = dataL5DER.getL5ForProcessingReportByHl5Id(hl5Id);
 
         var hl5 = processingReportData.hl5;
-        Object.keys(l5ReportFields).forEach(function (field) {
+        Object.keys(l5ReportFields).forEach(function (field, index) {
             if (field == "CATEGORY") {
-                hl5Categories.forEach(function (hl5Category) {
+                hl5Categories.forEach(function (hl5Category, catIndex) {
                     if (hl5Category.IN_PROCESSING_REPORT) {
                         var object = {};
                         object.option = [];
                         object.display_name = hl5Category.CATEGORY_NAME;
-                        hl5CategoryOptions[hl5Category.CATEGORY_ID].forEach(function (hl5CategoryOption) {
+                        
+                        hl5CategoryOptions[hl5Category.CATEGORY_ID].forEach(function (hl5CategoryOption, optionIndex) {
                             if (hl5CategoryOption.AMOUNT != 0 || hl5CategoryOption.UPDATED) {
                                 object.option.push({
                                     "option_name": hl5CategoryOption.OPTION_NAME,
-                                    "value": hl5CategoryOption.AMOUNT,
-                                    "changed": hl5CategoryOption.UPDATED
+                                    "value": hl5CategoryOption.AMOUNT, 
+                                    "changed": hl5CategoryOption.UPDATED,
+                                    "optionId": catId + catIndex + optionId + Math.floor((Math.random() * 1000000) + 1) + optionIndex
                                 });
                             }
                         });
@@ -93,6 +99,8 @@ function getL5ChangedFieldsByHl5Id(hl5Id, userId) {
             } else {
                 var object = {};
                 object.display_name = l5ReportFields[field];
+                object.columnId = id + index;
+
                 switch (field) {
                     case "ACRONYM":
                         object.value = hl5.CRM_ID;

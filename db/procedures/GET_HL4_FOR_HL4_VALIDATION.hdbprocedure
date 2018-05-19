@@ -1,0 +1,123 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL4_FOR_HL4_VALIDATION" (
+	IN in_hl4_id BIGINT,
+	OUT out_result_hl4 TABLE(
+		HL4_ID BIGINT,
+		HL3_ID BIGINT,
+		ACRONYM NVARCHAR(10),
+		EXIST_IN_CRM INTEGER,
+		PARENT_PATH NVARCHAR(255),
+		HL4_STATUS_DETAIL_ID BIGINT,
+		BUDGET DECIMAL(19,2),
+        HL4_CRM_DESCRIPTION NVARCHAR(100),
+        HL4_DETAILS NVARCHAR(3000),
+        HL4_BUSINESS_DETAILS NVARCHAR(3000),
+        MKT_ORG_ID BIGINT,
+        DIS_CHANNEL_ID BIGINT,
+        SHOPPING_CART_APPROVER NVARCHAR(10),
+        COST_CENTER NVARCHAR(10)
+	),
+	OUT out_result_hl4_in_crm_version TABLE(
+		HL4_ID BIGINT,
+		ACRONYM NVARCHAR(10),
+		HL4_STATUS_DETAIL_ID BIGINT,
+        BUDGET DECIMAL(19,2),
+        HL4_CRM_DESCRIPTION NVARCHAR(100),
+        HL4_DETAILS NVARCHAR(3000),
+        HL4_BUSINESS_DETAILS NVARCHAR(3000),
+        MKT_ORG_ID BIGINT,
+        DIS_CHANNEL_ID BIGINT,
+        SHOPPING_CART_APPROVER NVARCHAR(10),
+        COST_CENTER NVARCHAR(10)
+	),
+	OUT out_result_crm_binding_changed_fields TABLE(
+        ID BIGINT,
+        COLUMN_NAME NVARCHAR(255),
+        DISPLAY_NAME NVARCHAR(255)
+	),
+	OUT out_result_hl5_children TABLE(
+	    HL5_ID BIGINT,
+	    HL5_STATUS_DETAIL_ID BIGINT,
+	    HL5_BUDGET DECIMAL(19,2)
+	)
+) 
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER 
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	AS
+BEGIN
+    DECLARE VA_HL4_IN_CRM_VERSION_ID INTEGER;
+    VA_HL4_IN_CRM_VERSION_ID := 0;
+
+    SELECT MAX(HL4_IN_CRM_VERSION_ID) INTO VA_HL4_IN_CRM_VERSION_ID
+        FROM HL4_IN_CRM_VERSION WHERE HL4_ID = in_hl4_id;
+
+	out_result_hl4 = SELECT hl4.HL4_ID,
+	                        hl4.HL3_ID,
+							hl4.ACRONYM,
+							COUNT(hl4_status.HL4_ID) AS EXIST_IN_CRM,
+						    crm_ppath.PARENT_PATH,
+						    hl4.HL4_STATUS_DETAIL_ID,
+						    hl4.BUDGET,
+                            hl4.HL4_CRM_DESCRIPTION,
+                            hl4.HL4_DETAILS,
+                            hl4.HL4_BUSINESS_DETAILS,
+                            hl4.MKT_ORG_ID,
+                            hl4.DIS_CHANNEL_ID,
+                            hl4.SHOPPING_CART_APPROVER,
+                            hl4.COST_CENTER
+					 FROM HL4 hl4
+					 	LEFT JOIN HL4_STATUS_HISTORY hl4_status ON hl4.HL4_ID = hl4_status.HL4_ID
+					 		AND hl4_status.HL4_STATUS_DETAIL_ID = 3
+					 	INNER JOIN CRM_PARENT_PATH crm_ppath ON LEVEL_ID = in_hl4_id
+					 	    AND HIERARCHY_LEVEL_ID = 1 --HL4
+					 WHERE hl4.HL4_ID = in_hl4_id
+					 	AND hl4.ENABLED = 1
+					 	AND hl4.DELETED = 0
+					 GROUP BY hl4.HL4_ID,
+					          hl4.HL3_ID,
+					 		  hl4.ACRONYM,
+					 		  crm_ppath.PARENT_PATH,
+						      hl4.HL4_STATUS_DETAIL_ID,
+						      hl4.BUDGET,
+                              hl4.HL4_CRM_DESCRIPTION,
+                              hl4.HL4_DETAILS,
+                              hl4.HL4_BUSINESS_DETAILS,
+                              hl4.MKT_ORG_ID,
+                              hl4.DIS_CHANNEL_ID,
+                              hl4.SHOPPING_CART_APPROVER,
+                              hl4.COST_CENTER;
+
+	out_result_hl4_in_crm_version = SELECT 	hl4_crm.HL4_ID,
+											hl4_crm.ACRONYM,
+											hl4_crm.HL4_STATUS_DETAIL_ID,
+                                            hl4_crm.HL4_FNC_BUDGET_TOTAL_MKT AS BUDGET,
+                                            hl4_crm.HL4_CRM_DESCRIPTION,
+                                            hl4_crm.HL4_DETAILS,
+                                            hl4_crm.HL4_BUSINESS_DETAILS,
+                                            hl4_crm.MKT_ORG_ID,
+                                            hl4_crm.DIS_CHANNEL_ID,
+                                            hl4_crm.SHOPPING_CART_APPROVER,
+                                            hl4_crm.COST_CENTER
+									FROM HL4_IN_CRM_VERSION hl4_crm
+									WHERE hl4_crm.HL4_IN_CRM_VERSION_ID = VA_HL4_IN_CRM_VERSION_ID
+									    AND hl4_crm.HL4_ID = in_hl4_id
+										AND hl4_crm.ENABLED = 1
+										AND hl4_crm.DELETED = 0;
+
+	out_result_crm_binding_changed_fields = SELECT  HL4_CRM_BINDING_ID AS ID,
+	                                                COLUMN_NAME,
+	                                                DISPLAY_NAME
+	                                        FROM HL4_CRM_BINDING
+                                            WHERE HL4_ID = in_hl4_id
+                                                AND COLUMN_CHANGED = 1
+                                                AND DELETED = 0
+                                                AND ENABLED = 1;
+
+    out_result_hl5_children = SELECT hl5.HL5_ID,
+                                     hl5.HL5_STATUS_DETAIL_ID,
+                                     hl5.BUDGET AS HL5_BUDGET
+                              FROM HL5 hl5
+                              WHERE hl5.HL4_ID = in_hl4_id
+                                AND hl5.ENABLED = 1
+                                AND hl5.DELETED = 0;
+END;

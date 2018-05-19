@@ -152,7 +152,10 @@ function getHl3ByUserGroupByHl1(userId, budgetYearId, regionId, subRegionId) {
 }
 
 function getLevel3CarryOverById(hl3Id, userId) {
-    return data.getLevel3CarryOverById(hl3Id, userId);
+    var result = JSON.parse(JSON.stringify(data.getLevel3CarryOverById(hl3Id, userId)));
+
+    result.TARGET_KPIS = expectedOutcomesLib.filterKpiByLevel(expectedOutcomesLib.getExpectedOutcomesByParentIdLevelRefactor(hl3Id, "HL4"), "HL4");
+    return result;
 }
 
 // Get an Level 3 data by id
@@ -359,7 +362,12 @@ function updateHl3(objHl3, userId) {
     objHl3.IN_BUDGET = 1;
 
     if (Number(objHl3.BUDGET) !== Number(currentHL3.HL3_FNC_BUDGET_TOTAL)) {
-        hl4.checkBudgetStatus(objHl3.HL3_ID);
+    	var hl4Obj = {
+    			HL3_INFORMATION: {
+    				HL3: objHl3
+    			}
+    	};
+        hl4.checkBudgetStatus(hl4Obj);
     }
 
     result = data.updateLevel3(

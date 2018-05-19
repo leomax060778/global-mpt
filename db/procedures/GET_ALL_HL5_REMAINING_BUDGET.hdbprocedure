@@ -11,7 +11,7 @@ BEGIN
 	DECLARE va_remaining_budget DECIMAL(19, 6);
 	va_remaining_budget := 0;
 
-	SELECT (hl4.HL4_FNC_BUDGET_TOTAL_MKT - in_total_budget)
+	SELECT (hl4.BUDGET - in_total_budget)
 	into va_remaining_budget 
 	FROM hl4
 	where hl4.hl4_id = in_hl4_id;

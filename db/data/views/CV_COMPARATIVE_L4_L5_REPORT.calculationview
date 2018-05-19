@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Calculation:scenario xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:Calculation="http://www.sap.com/ndb/BiModelCalculation.ecore" schemaVersion="2.3" id="CV_COMPARATIVE_L4_L5" applyPrivilegeType="ANALYTIC_PRIVILEGE" checkAnalyticPrivileges="true" defaultClient="$$client$$" defaultLanguage="$$language$$" hierarchiesSQLEnabled="false" translationRelevant="true" visibility="reportingEnabled" calculationScenarioType="SCRIPT_BASED" dataCategory="CUBE" enforceSqlExecution="false" executionSemantic="UNDEFINED" scriptParametersCaseSensitive="true">
+<Calculation:scenario xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:Calculation="http://www.sap.com/ndb/BiModelCalculation.ecore" schemaVersion="2.3" id="CV_COMPARATIVE_L4_L5_REPORT" applyPrivilegeType="ANALYTIC_PRIVILEGE" checkAnalyticPrivileges="true" defaultClient="$$client$$" defaultLanguage="$$language$$" hierarchiesSQLEnabled="false" translationRelevant="true" visibility="reportingEnabled" calculationScenarioType="SCRIPT_BASED" dataCategory="CUBE" enforceSqlExecution="false" executionSemantic="UNDEFINED" scriptParametersCaseSensitive="true">
   <descriptions defaultDescription="CV_COMPARATIVE_L4_L5"/>
   <localVariables/>
   <variableMappings/>
@@ -30,10 +30,10 @@
  				 , hl4.HL3_ID
  				 , hl4.ACRONYM AS L4_ACRONYM
  				 , hl4.HL4_CRM_DESCRIPTION AS L4_DESCRIPTION
- 				 , hl4.HL4_FNC_BUDGET_TOTAL_MKT AS L4_BUDGET
+ 				 , hl4.BUDGET AS L4_BUDGET
  				 , hl4Status.DETAIL AS L4_STATUS_DETAIL
  				 , category.NAME AS CATEGORY_NAME
- 				 , (hl4.HL4_FNC_BUDGET_TOTAL_MKT * hl4CategoryOption.AMOUNT / 100) AS L4_BUDGET_DISTRIBUTION
+ 				 , (hl4.BUDGET * hl4CategoryOption.AMOUNT / 100) AS L4_BUDGET_DISTRIBUTION
  				 , options.NAME AS OPTION_NAME
  				 , options.ALLOCATION_OPTION_ID
  				 , category.ALLOCATION_CATEGORY_ID

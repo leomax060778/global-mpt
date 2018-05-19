@@ -98,7 +98,7 @@ function updateCategoryOptionLevel(data, userId) {
                         data.IN_PROCESSING_REPORT,
                         userId,
                         data.IN_MAKE_CATEGORY_MANDATORY,
-                        data.IN_OPTIONS_LIMIT,
+                        data.IN_OPTIONS_LIMIT || OPTIONS_LIMIT_DEFAULT,
                         Number(data.AVAILABLE_IN_EVENT_REQUEST) || 0);
                     //Update Make Category Mandatory and In Processing Report flags to avoid duplicated registers
                     var reqBody = {
@@ -106,7 +106,7 @@ function updateCategoryOptionLevel(data, userId) {
                         HIERARCHY_LEVEL_ID: hierarchylevel,
                         MAKE_CATEGORY_MANDATORY: data.IN_MAKE_CATEGORY_MANDATORY,
                         IN_PROCESSING_REPORT: data.IN_PROCESSING_REPORT,
-                        IN_OPTIONS_LIMIT: data.IN_OPTIONS_LIMIT,
+                        IN_OPTIONS_LIMIT: data.IN_OPTIONS_LIMIT || OPTIONS_LIMIT_DEFAULT,
                         AVAILABLE_IN_EVENT_REQUEST: Number(data.AVAILABLE_IN_EVENT_REQUEST) || 0
 
                     };
@@ -121,7 +121,7 @@ function updateCategoryOptionLevel(data, userId) {
                         userId,
 
                         data.IN_MAKE_CATEGORY_MANDATORY,
-                        data.IN_OPTIONS_LIMIT,
+                        data.IN_OPTIONS_LIMIT  || OPTIONS_LIMIT_DEFAULT,
                         Number(data.AVAILABLE_IN_EVENT_REQUEST) || 0);
 
                 }

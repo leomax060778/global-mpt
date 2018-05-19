@@ -12,19 +12,15 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL4_IN_CRM_V
 	is_annual_plan TINYINT
 	,euro_conversion_id integer
 	,in_budget TINYINT
-	,hl4_fnc_budget_spend_q1 DECIMAL(19, 2)
-	,hl4_fnc_budget_spend_q2 DECIMAL(19, 2)
-	,hl4_fnc_budget_spend_q3 DECIMAL(19, 2)
-	,hl4_fnc_budget_spend_q4 DECIMAL(19, 2)
-	,hl4_fnc_budget_total_mkt DECIMAL(19, 2)
+	,BUDGET DECIMAL(19, 2)
 	,SHOPPING_CART_APPROVER NVARCHAR(10)
     ,COST_CENTER NVARCHAR(10)
     ,MKT_ORG_ID integer
     ,DIS_CHANNEL_ID integer
-    , CRM_ID NVARCHAR(255)
+    ,CRM_ID NVARCHAR(255)
     ,CREATED_USER_ID integer
     ,MARKETING_ORGANIZATION  NVARCHAR(255)
-     ,DISTRIBUTION_CHANNEL  NVARCHAR(255)
+    ,DISTRIBUTION_CHANNEL  NVARCHAR(255)
 	) 
 ) 
 	LANGUAGE SQLSCRIPT
@@ -52,11 +48,7 @@ out_result =
 		 --new refactor 04112016
 		,HL4.euro_conversion_id
 		,HL4.in_budget
-		,HL4.hl4_fnc_budget_spend_q1
-		,HL4.hl4_fnc_budget_spend_q2
-		,HL4.hl4_fnc_budget_spend_q3
-		,HL4.hl4_fnc_budget_spend_q4
-		,HL4.hl4_fnc_budget_total_mkt
+		,HL4.hl4_fnc_budget_total_mkt AS BUDGET
 		,HL4.SHOPPING_CART_APPROVER
         ,HL4.COST_CENTER
         ,HL4.MKT_ORG_ID

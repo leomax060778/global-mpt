@@ -13,7 +13,7 @@ BEGIN
 	-- greater than 0
 	UPDATE HL4
 	SET in_budget = 0
-	WHERE hl4_fnc_budget_total_mkt <> 0
+	WHERE budget <> 0
 	  AND in_budget = 1
 	  AND hl4_id = in_hl4_id
 	  AND deleted = 0

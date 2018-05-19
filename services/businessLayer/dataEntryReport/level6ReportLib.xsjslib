@@ -63,6 +63,10 @@ function getL6ChangedFieldsByHl6Id(hl6Id, userId) {
     };
     data.STATUS_FLAG = dataHl6.getHl6StatusByHl6Id(hl6Id).HL6_STATUS_DETAIL_ID == HL6_STATUS.DELETION_REQUEST;
     if( data.STATUS_DETAIL_ID !== HL6_STATUS.DELETION_REQUEST){
+        var id = "L6idToCopy";
+        var optionId = "L6OptionIdToCopy";
+        var catId = "L6CatId";
+        
         var l6ReportFields = this.getProcessingReportFields();
 
         var changedFields = dataL6DER.getL6ChangedFieldsByHl6Id(hl6Id);
@@ -73,19 +77,20 @@ function getL6ChangedFieldsByHl6Id(hl6Id, userId) {
 
         var hl6 = processingReportData.hl6;
         var costCenter;
-        Object.keys(l6ReportFields).forEach(function (field) {
+        Object.keys(l6ReportFields).forEach(function (field, index) {
             if (field == "CATEGORY") {
-                hl6Categories.forEach(function (hl6Category) {
+                hl6Categories.forEach(function (hl6Category, catIndex) {
                     if (hl6Category.IN_PROCESSING_REPORT) {
                         var object = {};
                         object.option = [];
                         object.display_name = hl6Category.CATEGORY_NAME;
-                        hl6CategoryOptions[hl6Category.CATEGORY_ID].forEach(function (hl6CategoryOption) {
+                        hl6CategoryOptions[hl6Category.CATEGORY_ID].forEach(function (hl6CategoryOption, optionIndex) {
                             if (hl6CategoryOption.AMOUNT != 0 || hl6CategoryOption.UPDATED) {
                                 object.option.push({
                                     "option_name": hl6CategoryOption.OPTION_NAME,
                                     "value": hl6CategoryOption.AMOUNT,
-                                    "changed": hl6CategoryOption.UPDATED
+                                    "changed": hl6CategoryOption.UPDATED,
+                                    "optionId": catId + catIndex + optionId + Math.floor((Math.random() * 1000000) + 1) + optionIndex
                                 });
                             }
                         });
@@ -95,6 +100,8 @@ function getL6ChangedFieldsByHl6Id(hl6Id, userId) {
             } else {
                 var object = {};
                 object.display_name = l6ReportFields[field];
+                object.columnId = id + index;
+                
                 switch (field) {
                     case "ACRONYM":
                         object.value = hl6.CRM_ID;

@@ -160,6 +160,36 @@ function getExpectedOutcomesByParentIdLevel(parentId, level) {
     return result[0];
 }
 
+function getExpectedOutcomesByParentIdLevelRefactor(parentId, level) {
+    var result = [];
+
+    if (!hlExpectedOutcomesIdMap[level.toUpperCase()])
+        throw ErrorLib.getErrors().CustomError("", "expectedOutcomeServices/handleGet/getExpectedOutcomesByParentIdLevel", LEVEL_NOT_SUPPORTED);
+
+    var expectedOutcomes = getExpectedOutcomeByHlIdMap[level.toUpperCase()](parentId);
+    if (expectedOutcomes && expectedOutcomes.length) {
+        expectedOutcomes.forEach(function (eo) {
+            var aux = util.extractObject(eo);
+            aux.KPIS = [];
+            var detail = getExpectedOutcomeDetailByIdMap[level.toUpperCase()](parentId);
+            detail = detail.filter(function (expectedOutcomeDetail) {
+                return expectedOutcomeDetail.EURO_VALUE
+                    && expectedOutcomeDetail.VOLUME_VALUE
+                    && expectedOutcomeDetail.OUTCOMES_NAME
+                    && expectedOutcomeDetail.OUTCOMES_TYPE_NAME;
+            });
+            if(detail.length) {
+                aux.KPIS = addParentKpiDataToDetail(parentId, level, detail);
+            }
+            result.push(aux);
+        });
+
+    } else {
+        result.push({COMMENTS: '', KPIS: []});
+    }
+    return result[0];
+}
+
 function getExpectedOutcomesByHL1Id(hl1_id, fromGrid) {
     return getExpectedOutcomesByHlIdParentId(hl1_id, null, 'HL1', 'HL2', fromGrid);
     /*var result = {COMMENTS: '', KPIS: []};
@@ -265,6 +295,11 @@ function getExpectedOutcomesByHl4Id(hl4_id, hl3_id) {
     return result[0];
 }
 
+function getExpectedOutcomesByHl4IdRefactor(hl4_id, hl3_id) {
+    return getExpectedOutcomesByHlIdParentId(hl4_id, hl3_id, 'HL4', 'HL5');
+}
+
+
 function getExpectedOutcomesByHl5Id(hl5_id, hl4_id) {
     return getExpectedOutcomesByHlIdParentId(hl5_id, hl4_id, 'HL5', 'HL6');
 }
@@ -346,7 +381,7 @@ function filterKpiByLevel(kpis, level){
     });
 
     return result;
-}
+} 
 
 function getExpectedOutcomesByHlIdParentId(hlId, parentId, level, nextLevel, fromGrid){
     var result = {COMMENTS: '', KPIS: []};

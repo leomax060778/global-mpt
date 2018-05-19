@@ -22,7 +22,7 @@ BEGIN
  */
  out_result =       SELECT HL4.HL4_ID,
               		HL4.HL4_CRM_DESCRIPTION,
-              		HL4.HL4_FNC_BUDGET_TOTAL_MKT AS BUDGET,
+              		HL4.BUDGET,
                		HL4.MODIFIED_DATE_TZ AS hl4_modified_date
              		--CONCAT(CONCAT(CONCAT(hl2.ORGANIZATION_ACRONYM,SUBSTRING(TO_NVARCHAR(BGY.BUDGET_YEAR), 3, 2)), '-'),HL4.ACRONYM) AS hl4_path
              		, "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BGY.BUDGET_YEAR, HL1.ACRONYM, HL2.ORGANIZATION_ACRONYM, HL3.ACRONYM, HL4.ACRONYM, '', '') AS hl4_path

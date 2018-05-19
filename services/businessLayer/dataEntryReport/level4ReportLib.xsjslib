@@ -52,7 +52,11 @@ function getL4ChangedFieldsByHl4Id(hl4Id, userId) {
         var data = {"hl4": [], "category": []};
         data.STATUS_FLAG = dataHl4.getHl4StatusByHl4Id(hl4Id).HL4_STATUS_DETAIL_ID == HL4_STATUS.DELETION_REQUEST;
         if(dataHl4.getHl4StatusByHl4Id(hl4Id).HL4_STATUS_DETAIL_ID !== HL4_STATUS.DELETION_REQUEST){
-            var l4ReportFields = this.getProcessingReportFields().deReportDisplayName;
+            var id = "L4idToCopy";
+            var optionId = "L4OptionIdToCopy";
+            var catId = "L4CatId";
+        	
+        	var l4ReportFields = this.getProcessingReportFields().deReportDisplayName;
 
             var changedFields = dataL4DER.getL4ChangedFieldsByHl4Id(hl4Id);
             var hl4 = dataHl4.getHl4ById(hl4Id);
@@ -61,20 +65,22 @@ function getL4ChangedFieldsByHl4Id(hl4Id, userId) {
             var hl4Categories = dataCategoryOptionLevel.getAllocationCategory(hl4Id, 'hl4');
             var hl4Options = util.getAllocationOptionByCategoryAndLevelId('hl4', hl4Id);
 
-            Object.keys(l4ReportFields).forEach(function (field) {
+            Object.keys(l4ReportFields).forEach(function (field, index) {
                 if (field == "CATEGORY") {
-                    hl4Categories.forEach(function (hl4Category) {
+                    hl4Categories.forEach(function (hl4Category, catIndex) {
                         //var actualCategory = dataCategory.getCategoryById(hl4Category.CATEGORY_ID);
                         if (hl4Category.IN_PROCESSING_REPORT) {
                             var object = {};
                             object.option = [];
                             object.display_name = hl4Category.CATEGORY_NAME;
-                            hl4Options[hl4Category.CATEGORY_ID].forEach(function (hl4CategoryOption) {
+                            
+                            hl4Options[hl4Category.CATEGORY_ID].forEach(function (hl4CategoryOption, optionIndex) {
                                 if (hl4CategoryOption.AMOUNT != 0 || hl4CategoryOption.UPDATED) {
                                     object.option.push({
                                         "option_name": hl4CategoryOption.OPTION_NAME,
                                         "value": hl4CategoryOption.AMOUNT,
-                                        "changed": hl4CategoryOption.UPDATED
+                                        "changed": hl4CategoryOption.UPDATED,
+                                        "optionId": catId + catIndex + optionId + Math.floor((Math.random() * 1000000) + 1) + optionIndex
                                     });
                                 }
                             });
@@ -84,6 +90,7 @@ function getL4ChangedFieldsByHl4Id(hl4Id, userId) {
                 } else {
                     var object = {};
                     object.display_name = l4ReportFields[field];
+                    object.columnId = id + index;
                     // When Acronym/ID display the CRM path for L4 entry
 
                     switch (field) {
@@ -141,7 +148,7 @@ function getProcessingReportFields() {
             "HL4_CRM_DESCRIPTION": "CRM Description",
             "HL4_DETAILS": "Initiative/Campaign Details",
             "HL4_BUSINESS_DETAILS": "Business Value",
-            "HL4_FNC_BUDGET_TOTAL_MKT": "Budget",
+            "BUDGET": "Budget",
             "PARENT_PATH": "Parent",
             "MKT_ORG_ID": "Marketing Organization",
             "DIS_CHANNEL_ID": "Distribution Channel",

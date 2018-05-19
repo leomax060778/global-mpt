@@ -41,7 +41,7 @@ function handleGet(parameters, userSessionID){
 
 			httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
 		}
-		else if (httpUtil.getUrlParameters().get("section") == section){
+		else if (httpUtil.getUrlParameters().get("METHOD") == section){
             var budgetYearId = httpUtil.getUrlParameters().get("BUDGET_YEAR_ID") || null;
             var regionId = httpUtil.getUrlParameters().get("REGION_ID") || null;
             var limit = httpUtil.getUrlParameters().get("LIMIT") || null;

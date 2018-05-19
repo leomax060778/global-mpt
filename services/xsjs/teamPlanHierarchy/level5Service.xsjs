@@ -29,6 +29,7 @@ function handleGet(params, userId) {
     var newSerial = httpUtil.getUrlParameters().get(getNewSerialAcronym);
     var in_hl4_id = httpUtil.getUrlParameters().get("HL4_ID");
     var in_hl5_id = httpUtil.getUrlParameters().get("HL5_ID");
+    var search_section = httpUtil.getUrlParameters().get("METHOD");
     var param_section = httpUtil.getUrlParameters().get("section");
     var dataType = httpUtil.getUrlParameters().get("DATA");
     var in_sale_organization = httpUtil.getUrlParameters().get("SALE_ORGANIZATION_ID");
@@ -45,7 +46,7 @@ function handleGet(params, userId) {
     } else if (in_hl5_id) {
         var isCarryOver = httpUtil.getUrlParameters().get("METHOD") == "CARRY_OVER";
         result = hl5.getHl5ById(in_hl5_id, isCarryOver);
-    } else if (param_section && param_section == section){
+    } else if (search_section && search_section == section){
         budgetYearId = httpUtil.getUrlParameters().get("BUDGET_YEAR_ID") || null;
         var regionId = httpUtil.getUrlParameters().get("REGION_ID") || null;
         var subRegionId = httpUtil.getUrlParameters().get("SUBREGION_ID") || null;

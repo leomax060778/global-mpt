@@ -38,34 +38,8 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_REPORT_EXPOR
 	AS
 BEGIN
     IF  IN_STATUS IS NULL THEN
-        out_result = SELECT HIERARCHY_LEVEL_ID
-                            , CRM_ID
-                            , CAMP_OBJ_TYPE
-                            , BUDGET
-                            , BUDGET_Q1
-                            , BUDGET_Q2
-                            , BUDGET_Q3
-                            , BUDGET_Q4
-                            , INTERNAL_FUNDING
-                            , PARTNER_CONTRIBUTION
-                            , CURRENCY
-                            , MNP_VALUE
-                            , MNP_VOLUME
-                            , MTP_VALUE
-                            , MTP_VOLUME
-                            , MIP_VALUE
-                            , MIP_VOLUME
-                            , LEAD_VOLUME_VALUE
-                            , LEAD_VOLUME_VOLUME
-                            , BUDGET_YEAR
-                            , ON_PREM
-                            , CLOUD
-                            , MODIFIED_DATE
-                            , STATUS
-        FROM "_SYS_BIC"."mktgplanningtool.db.data.views/CV_REPORT_EXPORT_DATA";
-
              IF IN_IS_FULL_DOWNLOAD <> 1 THEN
-                out_result = SELECT HIERARCHY_LEVEL_ID
+                out_result = SELECT     HIERARCHY_LEVEL_VALUE AS HIERARCHY_LEVEL_ID
                                     , CRM_ID
                                     , CAMP_OBJ_TYPE
                                     , BUDGET
@@ -89,41 +63,40 @@ BEGIN
                                     , CLOUD
                                     , MODIFIED_DATE
                                     , STATUS
-                FROM :out_result T
-                WHERE HIERARCHY_LEVEL_ID IN (SELECT HIERARCHY_LEVEL_ID FROM :IN_HIERARCHY_LEVEL)
-                AND IN_DELTA_TIME_LAST_UPDATE <= MODIFIED_DATE;
+                 FROM "_SYS_BIC"."mktgplanningtool.db.data.views/CV_REPORT_EXPORT_DATA"
+                 WHERE HIERARCHY_LEVEL_ID IN (SELECT HIERARCHY_LEVEL_ID FROM :IN_HIERARCHY_LEVEL)
+                 AND IN_DELTA_TIME_LAST_UPDATE <= MODIFIED_DATE;
                 --AND ADD_SECONDS(CURRENT_TIMESTAMP, (-3600 * IN_DELTA_TIME_LAST_UPDATE)) <= MODIFIED_DATE;
+             ELSE
+             out_result = SELECT       HIERARCHY_LEVEL_VALUE AS HIERARCHY_LEVEL_ID
+                                         , CRM_ID
+                                         , CAMP_OBJ_TYPE
+                                         , BUDGET
+                                         , BUDGET_Q1
+                                         , BUDGET_Q2
+                                         , BUDGET_Q3
+                                         , BUDGET_Q4
+                                         , INTERNAL_FUNDING
+                                         , PARTNER_CONTRIBUTION
+                                         , CURRENCY
+                                         , MNP_VALUE
+                                         , MNP_VOLUME
+                                         , MTP_VALUE
+                                         , MTP_VOLUME
+                                         , MIP_VALUE
+                                         , MIP_VOLUME
+                                         , LEAD_VOLUME_VALUE
+                                         , LEAD_VOLUME_VOLUME
+                                         , BUDGET_YEAR
+                                         , ON_PREM
+                                         , CLOUD
+                                         , MODIFIED_DATE
+                                         , STATUS
+                     FROM "_SYS_BIC"."mktgplanningtool.db.data.views/CV_REPORT_EXPORT_DATA";
              END IF;
     ELSE
-         out_result = SELECT HIERARCHY_LEVEL_ID
-                                    , CRM_ID
-                                    , CAMP_OBJ_TYPE
-                                    , BUDGET
-                                    , BUDGET_Q1
-                                    , BUDGET_Q2
-                                    , BUDGET_Q3
-                                    , BUDGET_Q4
-                                    , INTERNAL_FUNDING
-                                    , PARTNER_CONTRIBUTION
-                                    , CURRENCY
-                                    , MNP_VALUE
-                                    , MNP_VOLUME
-                                    , MTP_VALUE
-                                    , MTP_VOLUME
-                                    , MIP_VALUE
-                                    , MIP_VOLUME
-                                    , LEAD_VOLUME_VALUE
-                                    , LEAD_VOLUME_VOLUME
-                                    , BUDGET_YEAR
-                                    , ON_PREM
-                                    , CLOUD
-                                    , MODIFIED_DATE
-                                    , STATUS
-                FROM "_SYS_BIC"."mktgplanningtool.db.data.views/CV_REPORT_EXPORT_DATA"
-                WHERE STATUS = IN_STATUS;
-
                      IF IN_IS_FULL_DOWNLOAD <> 1 THEN
-                        out_result = SELECT HIERARCHY_LEVEL_ID
+                        out_result = SELECT     HIERARCHY_LEVEL_VALUE AS HIERARCHY_LEVEL_ID
                                             , CRM_ID
                                             , CAMP_OBJ_TYPE
                                             , BUDGET
@@ -147,10 +120,37 @@ BEGIN
                                             , CLOUD
                                             , MODIFIED_DATE
                                             , STATUS
-                        FROM :out_result T
-                        WHERE HIERARCHY_LEVEL_ID IN (SELECT HIERARCHY_LEVEL_ID FROM :IN_HIERARCHY_LEVEL)
-                        AND IN_DELTA_TIME_LAST_UPDATE <= MODIFIED_DATE;
-                        --AND ADD_SECONDS(CURRENT_TIMESTAMP, (-3600 * IN_DELTA_TIME_LAST_UPDATE)) <= MODIFIED_DATE;
+                         FROM "_SYS_BIC"."mktgplanningtool.db.data.views/CV_REPORT_EXPORT_DATA"
+                          WHERE HIERARCHY_LEVEL_ID IN (SELECT HIERARCHY_LEVEL_ID FROM :IN_HIERARCHY_LEVEL)
+                             AND IN_DELTA_TIME_LAST_UPDATE <= MODIFIED_DATE
+                             AND STATUS = IN_STATUS;
+                     ELSE
+                      out_result = SELECT                 HIERARCHY_LEVEL_VALUE AS HIERARCHY_LEVEL_ID
+                                                         , CRM_ID
+                                                         , CAMP_OBJ_TYPE
+                                                         , BUDGET
+                                                         , BUDGET_Q1
+                                                         , BUDGET_Q2
+                                                         , BUDGET_Q3
+                                                         , BUDGET_Q4
+                                                         , INTERNAL_FUNDING
+                                                         , PARTNER_CONTRIBUTION
+                                                         , CURRENCY
+                                                         , MNP_VALUE
+                                                         , MNP_VOLUME
+                                                         , MTP_VALUE
+                                                         , MTP_VOLUME
+                                                         , MIP_VALUE
+                                                         , MIP_VOLUME
+                                                         , LEAD_VOLUME_VALUE
+                                                         , LEAD_VOLUME_VOLUME
+                                                         , BUDGET_YEAR
+                                                         , ON_PREM
+                                                         , CLOUD
+                                                         , MODIFIED_DATE
+                                                         , STATUS
+                                     FROM "_SYS_BIC"."mktgplanningtool.db.data.views/CV_REPORT_EXPORT_DATA"
+                                     WHERE STATUS = IN_STATUS;
                      END IF;
     END IF;
 END;

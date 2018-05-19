@@ -1,0 +1,32 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_EXPECTED_OUTCOMES_DETAILS_EO_HL4_ID" (
+		IN in_hl4_expected_outcomes_id BIGINT,
+		OUT out_result TABLE(
+			EURO_VALUE DECIMAL(19, 6),
+			VOLUME_VALUE DECIMAL(19, 6),
+			OUTCOMES_ID BIGINT,
+			OUTCOMES_NAME NVARCHAR(255),
+			OUTCOMES_TYPE_ID BIGINT,
+			OUTCOMES_TYPE_NAME  NVARCHAR(255)
+		)
+	)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	READS SQL DATA AS
+BEGIN
+	out_result =
+                 SELECT
+                      heod.EURO_VALUE,
+                      heod.AMOUNT_VALUE AS VOLUME_VALUE,
+                      outcomes.EXPECTED_OUTCOME_OPTION_ID   AS OUTCOMES_ID,
+                      outcomes.NAME                         AS OUTCOMES_NAME,
+                      outcomes_type.EXPECTED_OUTCOME_ID     AS OUTCOMES_TYPE_ID,
+                      outcomes_type.NAME                    AS OUTCOMES_TYPE_NAME
+                     FROM HL4_EXPECTED_OUTCOMES_DETAIL heod
+                         INNER JOIN EXPECTED_OUTCOME_LEVEL eol ON heod.OUTCOMES_ID = eol.EXPECTED_OUTCOME_LEVEL_ID
+                         INNER JOIN EXPECTED_OUTCOME_OPTION outcomes ON outcomes.EXPECTED_OUTCOME_OPTION_ID = eol.EXPECTED_OUTCOME_OPTION_ID
+                         INNER JOIN EXPECTED_OUTCOME outcomes_type ON outcomes_type.EXPECTED_OUTCOME_ID = eol.EXPECTED_OUTCOME_ID
+                  WHERE heod.DELETED = 0
+                    AND heod.ENABLED = 1
+                    AND heod.HL4_EXPECTED_OUTCOMES_ID = in_hl4_expected_outcomes_id;
+END;

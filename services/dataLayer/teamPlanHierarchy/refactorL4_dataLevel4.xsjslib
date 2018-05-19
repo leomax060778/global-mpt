@@ -165,14 +165,14 @@ function insertHl4(reqBody, userId) {
     params.in_hl4_business_details = reqBody.HL4_BUSINESS_DETAILS;
     params.in_hl3_id = reqBody.HL3_ID;
     params.in_created_user_id = userId;
-    params.in_budget_column = reqBody.IN_BUDGET; //The in_budget_column name is because Hana confuse both IN_BUDGET and BUDGET columns
-    params.budget_column = reqBody.BUDGET; //The budget_column name is because Hana confuse both IN_BUDGET and BUDGET columns
+    params.in_in_budget = reqBody.IN_BUDGET;
+    params.in_budget = reqBody.BUDGET;
     params.in_hl4_status_detail_id = reqBody.HL4_STATUS_DETAIL_ID;
     params.in_shopping_cart_approver = reqBody.SHOPPING_CART_APPROVER.trim();
     params.in_cost_center = reqBody.COST_CENTER.trim();
     params.in_mkt_org_id = reqBody.MKT_ORG_ID;
     params.in_dis_channel_id = reqBody.DIS_CHANNEL_ID;
-
+    
     var rdo = db.executeScalarManual(spInsertHl4, params, 'out_result');
     return rdo;
 }
@@ -207,7 +207,7 @@ function massInsertHl4LogStatus(hl4_ids, userId) {
 function updateHl4(reqBody, userId) {
     var params = {};
 
-    params.in_hl4_id = reqBody.HL4_ID; 
+    params.in_hl4_id = reqBody.HL4_ID;
     params.in_acronym = reqBody.ACRONYM;
     params.in_hl4_crm_description = reqBody.HL4_CRM_DESCRIPTION;
     params.in_hl4_details = reqBody.HL4_DETAILS;
@@ -219,8 +219,8 @@ function updateHl4(reqBody, userId) {
     params.in_mkt_org_id = reqBody.MKT_ORG_ID;
     params.in_dis_channel_id = reqBody.DIS_CHANNEL_ID;
     params.in_modified_user_id = userId;
-    params.budget_column = reqBody.BUDGET; //The budget_column name is because Hana confuse both IN_BUDGET and BUDGET columns
-
+    params.in_budget = reqBody.BUDGET;
+    
     var rdo = db.executeScalarManual(spUpdateHl4, params, 'out_result');
     return rdo;
 }
@@ -355,7 +355,7 @@ function getHl3ForHl4Validation(hl3Id, hl4Id){
     objResult.HL4_CHILDRENS = db.extractArray(result.out_result_hl4_children);
     objResult.HL4_CHILDRENS_KPIS = db.extractArray(result.out_result_hl4_children_kpis);
     objResult.HL3_AVAILABLE_VOLUME_VALUE = db.extractArray(result.out_result_hl3_available_volume_value)[0];
-
+    
     return objResult;
 }
 
@@ -370,7 +370,7 @@ function getHl4ForHl4Validation(hl4Id){
     objResult.HL4_IN_CRM_VERSION = db.extractArray(result.out_result_hl4_in_crm_version)[0] || {};
     objResult.HL4_CRM_BINDING_CHANGED_FIELDS = db.extractArray(result.out_result_crm_binding_changed_fields);
     objResult.HL5_CHILDREN = db.extractArray(result.out_result_hl5_children);
-
+    
     return objResult;
 }
 
