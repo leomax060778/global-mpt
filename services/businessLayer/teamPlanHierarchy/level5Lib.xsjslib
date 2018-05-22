@@ -493,6 +493,7 @@ function insertDataHl5(acronym, data) {
         , data.IMPORTED
         , data.IMPORT_ID
         , data.INHERITED_CREATION || 0
+        , data.DES_TYPE_ID || null
     );
 }
 
@@ -821,6 +822,7 @@ function updateHl5(data, userId) {
             , Number(data.IS_COMPLETE)
             , Number(data.FORECAST_AT_L5)
             , data.INHERITED_CREATION || 0
+            , data.DES_TYPE_ID || null
         );
 
         insertInCrmBinding(validationResult.crmBindingChangedFields, validationResult.crmBindingChangedFieldsUpdate, hl5_id);
@@ -2723,6 +2725,7 @@ function createFromEventRequest(eventRequest) {
     newHl5.CAMPAIGN_OBJECTIVE_ID = eventRequest.OBJECTIVE_ID;
     newHl5.CAMPAIGN_TYPE_ID = eventRequest.CAMPAIGN_TYPE_ID;
     newHl5.CAMPAIGN_SUBTYPE_ID = eventRequest.CAMPAIGN_SUB_TYPE_ID;
+    newHl5.DES_TYPE_ID = eventRequest.DES_TYPE_ID;
     newHl5.CATEGORIES = eventRequest.CATEGORIES;
     newHl5.IN_BUDGET = 0;
     newHl5.INHERITED_CREATION = 1;

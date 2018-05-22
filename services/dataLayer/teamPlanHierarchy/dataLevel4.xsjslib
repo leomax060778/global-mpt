@@ -207,7 +207,7 @@ function massInsertHl4LogStatus(hl4_ids, userId) {
 function updateHl4(reqBody, userId) {
     var params = {};
 
-    params.in_hl4_id = reqBody.HL4_ID; 
+    params.in_hl4_id = reqBody.HL4_ID;
     params.in_acronym = reqBody.ACRONYM;
     params.in_hl4_crm_description = reqBody.HL4_CRM_DESCRIPTION;
     params.in_hl4_details = reqBody.HL4_DETAILS;

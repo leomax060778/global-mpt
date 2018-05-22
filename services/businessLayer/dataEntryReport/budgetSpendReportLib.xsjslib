@@ -50,10 +50,10 @@ var HIERARCHY_LEVEL_BY_ID = {
     3: 'l6'
 };
 
-function calculateBudgetInEuros(data) {
-    var amount = data.BUDGET_SPEND_REQUEST_AMOUNT;
-    var kEurAmount = (amount * data.CURRENCY_VALUE);
-    return kEurAmount;
+function calculateCurrencyRates(data) {
+    // var amount = data.BUDGET_SPEND_REQUEST_AMOUNT;
+    return (Number(data.BUDGET_SPEND_REQUEST_AMOUNT) * Number(data.CURRENCY_VALUE));
+    // return kEurAmount;
 }
 
 function completeCRMPath(array, key, setDisplayName, parse, userId) {
@@ -79,15 +79,16 @@ function completeCRMPath(array, key, setDisplayName, parse, userId) {
 
     array.forEach(function (data) {
         if (data.BUDGET_SPEND_REQUEST_AMOUNT) {
-            data.BUDGET_SPEND_REQUEST_AMOUNT = (Number(data.BUDGET_SPEND_REQUEST_AMOUNT)).toFixed(2);
-            data.BUDGET_SPEND_REQUEST_AMOUNT_KEUR = (data.CURRENCY_ABBREVIATION !== "EUR") ? "( " + calculateBudgetInEuros(data) + " K EUR )" : "";
-            data.BUDGET_SPEND_REQUEST_AMOUNT = "" + data.BUDGET_SPEND_REQUEST_AMOUNT + " K " + data.CURRENCY_ABBREVIATION;
+            var convertedBudget = util.numberToLocaleString(Number(calculateCurrencyRates(data)).toFixed(2));
+            data.BUDGET_SPEND_REQUEST_AMOUNT = util.numberToLocaleString(Number(data.BUDGET_SPEND_REQUEST_AMOUNT).toFixed(2));
+            data.BUDGET_SPEND_REQUEST_AMOUNT_KEUR = (data.CURRENCY_ABBREVIATION !== "EUR") ? "( " + data.BUDGET_SPEND_REQUEST_AMOUNT + " EUR )" : "";
+            data.BUDGET_SPEND_REQUEST_AMOUNT = "" + convertedBudget + " " + data.CURRENCY_ABBREVIATION;
         } else if (data.BUDGET) {
-            data.BUDGET = "" + parseFloat(data.BUDGET);
+            data.BUDGET = "" + util.parseTwoDecimals(data.BUDGET);
         }
 
         if(setDisplayName) {
-            data.DISPLAY_NAME = data.BUDGET_SPEND_REQUEST_TYPE_DISPLAY_NAME + ' - ' + parseFloat(data.BUDGET) + ' (K EUR)';
+            data.DISPLAY_NAME = data.BUDGET_SPEND_REQUEST_TYPE_DISPLAY_NAME + ' - ' + util.numberToLocaleString(data.BUDGET) + ' (EUR)';
         }
 
         if(parse){
@@ -206,7 +207,7 @@ function getL5SpendBudgetReportById(l5Id, budgetSpendRequestId, userId) {
     result = JSON.parse(JSON.stringify(result));
     result = completeCRMPath([result], "HL5_PATH", false, false)[0];
     var hl4Id = dataHl5.getHl5ById(l5Id).HL4_ID;
-    result.PARENT_REMAINING_BUDGET = dataHl5.getHl5RemainingBudgetByHl4Id(hl4Id, dataHl5.getHl5TotalBudgetByHl4Id(hl4Id));
+    result.PARENT_REMAINING_BUDGET = util.numberToLocaleString(util.parseTwoDecimals(dataHl5.getHl5RemainingBudgetByHl4Id(hl4Id, dataHl5.getHl5TotalBudgetByHl4Id(hl4Id))));
     return result;
 }
 
@@ -259,7 +260,7 @@ function getL6SpendBudgetReportById(l6Id, budgetSpendRequestId, userId) {
 
     result = completeCRMPath([result], "HL6_PATH", false, false)[0];
     var hl5Id = dataHl6.getHl6ById(l6Id).HL5_ID;
-    result.PARENT_REMAINING_BUDGET = dataHl6.getHl6RemainingBudgetByHl5Id(hl5Id, dataHl6.getHl6TotalBudgetByHl5Id(hl5Id));
+    result.PARENT_REMAINING_BUDGET = util.numberToLocaleString(util.parseTwoDecimals(dataHl6.getHl6RemainingBudgetByHl5Id(hl5Id, dataHl6.getHl6TotalBudgetByHl5Id(hl5Id))));
     return result;
 }
 
@@ -699,7 +700,7 @@ function sendBudgetApproversDailyNotification() {
                 emailDetail[bsr.BUDGET_APPROVER_ID].budgetRequestList.push({
                     CRM_ID: bsr.CRM_ID,
                     BUDGET_RESOURCE: bsr.BUDGET_RESOURCE,
-                    BUDGET: bsr.BUDGET,
+                    BUDGET: util.numberToLocaleString(bsr.BUDGET),
                     HASH: bsr.HASH,
                     HL_ID: bsr.HL_ID,
                     LEVEL: HIERARCHY_LEVEL_BY_ID[bsr.HIERARCHY_LEVEL_ID],
@@ -713,7 +714,7 @@ function sendBudgetApproversDailyNotification() {
                     budgetRequestList: [{
                         CRM_ID: bsr.CRM_ID,
                         BUDGET_RESOURCE: bsr.BUDGET_RESOURCE,
-                        BUDGET: bsr.BUDGET,
+                        BUDGET: util.numberToLocaleString(bsr.BUDGET),
                         HASH: bsr.HASH,
                         HL_ID: bsr.HL_ID,
                         LEVEL: HIERARCHY_LEVEL_BY_ID[bsr.HIERARCHY_LEVEL_ID],

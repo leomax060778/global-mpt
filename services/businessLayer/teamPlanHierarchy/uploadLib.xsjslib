@@ -35,6 +35,7 @@ var MSG_INVALID_EMPLOYEE_RESPONSIBLE_ID = "The Employee Responsible number has a
 var MSG_INVALID_TOP_NODE = "The Top node is invalid.";
 var MSG_RECORD_WITHOUT_PARENT = "This record does not have a value parent.";
 var MSG_ACRONYM_NOT_FOUND = "Acronym does not match with Parent.";
+var EUR_VALUE_EXCEEDED = "The maximum number for EUR value was exceeded."
 //Mapper//
 var map = {};
 var mapKPY = {};
@@ -633,7 +634,7 @@ function level2Processor(userId, arrayPaths, IMPORT_ID) {
 
                             hl[cell.UPLOAD_KEY] = value;
                         }
-                    }else if (cell.UPLOAD_KEY == 'BUDGET') {
+                    }else if (cell.UPLOAD_KEY == 'HL2_BUDGET_TOTAL') {
                         budget = Number(parseNumberBudget(cell.UPLOAD_VALUE));
                         hl[cell.UPLOAD_KEY] = budget || 0;
                     } else {
@@ -1832,7 +1833,11 @@ function kpiProcessor(userId, arrayPaths, IMPORT_ID) {
                     else if (cell.UPLOAD_KEY == 'EXPECTED_OUTCOME_OPTION_VALUE') {
 
                         if (cell.UPLOAD_VALUE != '') {
-                            eod.EURO_VALUE = cell.UPLOAD_VALUE;
+                            var value = Number(parseNumberBudget(cell.UPLOAD_VALUE));
+                            if(!util.validateMaximValue(value)){
+                                throw ErrorLib.getErrors().ImportError("", "uploadService/handlePost/kpiProcessor", EUR_VALUE_EXCEEDED);
+                            }
+                            eod.EURO_VALUE = value;
                         }
                     }
                 });
@@ -1901,7 +1906,6 @@ function insertKpi(hlList, userId, IMPORT_ID, arrHl) {
             logImportKPISuccess(hl, IMPORT_ID, userId);
         }
         catch (e) {
-            throw e;
             arrHl.fails = arrHl.fails +  hl_length;
             if (e && e.code == 456) {
                 logImportError(e, IMPORT_ID, userId);
@@ -1909,6 +1913,7 @@ function insertKpi(hlList, userId, IMPORT_ID, arrHl) {
             } else {
                 logImportAnotherError(hl.PATH , hl.HIERARCHY_LEVEL_ID, e, IMPORT_ID, userId);
             }
+            throw e;
         }
     });
 

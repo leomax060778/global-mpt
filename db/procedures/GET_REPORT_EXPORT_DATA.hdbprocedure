@@ -30,6 +30,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_REPORT_EXPOR
             , CLOUD NVARCHAR(30)
             , MODIFIED_DATE TIMESTAMP
             , STATUS NVARCHAR(30)
+            , DES NVARCHAR(30)
 		)
 	)
 	LANGUAGE SQLSCRIPT
@@ -63,6 +64,7 @@ BEGIN
                                     , CLOUD
                                     , MODIFIED_DATE
                                     , STATUS
+                                    , DES
                  FROM "_SYS_BIC"."mktgplanningtool.db.data.views/CV_REPORT_EXPORT_DATA"
                  WHERE HIERARCHY_LEVEL_ID IN (SELECT HIERARCHY_LEVEL_ID FROM :IN_HIERARCHY_LEVEL)
                  AND IN_DELTA_TIME_LAST_UPDATE <= MODIFIED_DATE;
@@ -92,6 +94,7 @@ BEGIN
                                          , CLOUD
                                          , MODIFIED_DATE
                                          , STATUS
+                                         , DES
                      FROM "_SYS_BIC"."mktgplanningtool.db.data.views/CV_REPORT_EXPORT_DATA";
              END IF;
     ELSE
@@ -120,6 +123,7 @@ BEGIN
                                             , CLOUD
                                             , MODIFIED_DATE
                                             , STATUS
+                                            , DES
                          FROM "_SYS_BIC"."mktgplanningtool.db.data.views/CV_REPORT_EXPORT_DATA"
                           WHERE HIERARCHY_LEVEL_ID IN (SELECT HIERARCHY_LEVEL_ID FROM :IN_HIERARCHY_LEVEL)
                              AND IN_DELTA_TIME_LAST_UPDATE <= MODIFIED_DATE
@@ -149,6 +153,7 @@ BEGIN
                                                          , CLOUD
                                                          , MODIFIED_DATE
                                                          , STATUS
+                                                         , DES
                                      FROM "_SYS_BIC"."mktgplanningtool.db.data.views/CV_REPORT_EXPORT_DATA"
                                      WHERE STATUS = IN_STATUS;
                      END IF;

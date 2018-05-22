@@ -83,7 +83,7 @@ var L1_CATEGORY_OPTION_NOT_VALID = "Option is not valid.";
 var L1_CATEGORY_TOTAL_PERCENTAGE = "Budget Distribution should be equal to 100%.";
 var L1_BUDGET_ZERO_CATEGORY_TOTAL_PERCENTAGE_ZERO = "When Plan budget is zero then Category total percentage should be equal to 0%.";
 var L1_CATEGORY_OPTIONS_NOT_EMPTY = "Option percentage should be less than or equal to 100%.";
-
+var L1_BUDGET_EXCEEDED = "The maximum number for Budget was exceeded."
 
 /*function getAllLevel1() {
     return dataHl1.getAllLevel1();
@@ -576,12 +576,18 @@ function validateHl1ForUpload(data) {
                 }
             }
         });
+        //validate Assume that the maximum value to enter is **999,999,999.00**.
+        if(!util.validateMaximValue(data.BUDGET)){
+            throw ErrorLib.getErrors().ImportError("", "uploadService/handlePost/validateHl1ForUpload", L1_BUDGET_EXCEEDED);
+        }
     } catch (e) {
         if (e == BreakException) {
-            //throw ErrorLib.getErrors().CustomError("", "hl1Services/handlePost/validateHl1ForUpload", JSON.stringify(errors));
             var error = ErrorLib.getErrors().ImportError("", "hl1Services/handlePost/validateHl1ForUpload: (" + currentKey + ")", L1_MSG_TYPE_VALUE_ERROR);
             error.row = valuesToArray(errors);
             throw error;
+        }
+        else{
+            throw e;
         }
     }
 

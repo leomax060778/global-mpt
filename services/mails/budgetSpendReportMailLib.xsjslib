@@ -77,7 +77,7 @@ function parseBudgetSpendRRequestForDailyNotification(data, basicData){
 
     body += '<p style="margin-bottom: 1rem;">The table below is listing all the budget requests assigned to you. Please review them and take action.</p>';
 
-    body += '<table><tr><th>CRM</th><th>Budget Resource</th><th>Budget(K EUR)</th></tr>';
+    body += '<table><tr><th>CRM</th><th>Budget Resource</th><th>Budget(EUR)</th></tr>';
     data.budgetRequestList.forEach(function (budgetSpendRequest) {
         var link = data.IS_MPT_USER
             ? appUrl + '#/SpendBudgetRequests/' + budgetSpendRequest.LEVEL + '/' + budgetSpendRequest.HL_ID + '/bsr/'

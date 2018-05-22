@@ -11,34 +11,32 @@ var LEVEL = "LEVEL";
 var HL_ID = "HL_ID";
 
 function processRequest(){
-	httpUtil.processRequest(handleGet,handlePost,handlePut,handleDelete,false, "", true);
+    httpUtil.processRequest(handleGet,handlePost,handlePut,handleDelete,false, "", true);
 }
 
-//Implementation of GET call
+//Implementation of GET call 
 function handleGet(parameters, userSessionID){
-	if(parameters.length){
-		if(parameters[0].name === LEVEL && parameters[1].name === HL_ID){		
-			var rdo = blPath.getPathByLevelParent(parameters[0].value, parameters[1].value);
-			httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);				
-		}
-		else{
-			throw ErrorLib.getErrors().BadRequest("","","invalid parameters names (can be: LEVEL or HL_ID)");
-		}
-	}else {
-        throw ErrorLib.getErrors().BadRequest("", "", "invalid number of parameters");
+    if(parameters[0].name === LEVEL && parameters[1].name === HL_ID){
+        var isLegacy = httpUtil.getUrlParameters().get("IS_LEGACY");
+
+        var rdo = blPath.getPathByLevelParent(parameters[0].value, parameters[1].value, isLegacy);
+        httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
+    }
+    else{
+        throw ErrorLib.getErrors().BadRequest("","pathService/handleGet","invalid parameters names (can be: LEVEL or HL_ID)");
     }
 };
 
-function handlePost(reqBody,userSessionID) {	
-	return httpUtil.notImplementedMethod();
+function handlePost(reqBody,userSessionID) {
+    return httpUtil.notImplementedMethod();
 }
 
 function handlePut(reqBody,userSessionID){
-	return httpUtil.notImplementedMethod();
+    return httpUtil.notImplementedMethod();
 };
 
 function handleDelete(reqBody,userSessionID){
-	return httpUtil.notImplementedMethod();
+    return httpUtil.notImplementedMethod();
 };
 
 //Call request processing  

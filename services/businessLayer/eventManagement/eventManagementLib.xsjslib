@@ -175,6 +175,10 @@ function getAllEventRequestReport(hl1Id, hl2Id, hl3Id, userId){
                 , CHILDREN: []
             };
 
+        eventRequest.COST = util.numberToLocaleString(eventRequest.COST);
+        eventRequest.PARTNER_REVENUE = util.numberToLocaleString(eventRequest.PARTNER_REVENUE);
+        eventRequest.MNP_VALUE = util.numberToLocaleString(eventRequest.MNP_VALUE);
+
         var children = eventRequest;
 
         children = setPermission(children);

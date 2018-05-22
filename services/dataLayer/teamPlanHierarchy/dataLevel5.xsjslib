@@ -377,7 +377,7 @@ function insertHl5(hl5CrmDescription,acronym,distributionChannelId,budget,hl4Id
 	, region
 	, event_owner
 	, number_of_participants
-	, priority_id,co_funded,allow_budget_zero, is_power_user,emploreeResponsible, person_responsible, is_complete, multiTactic, autoCommit, imported, import_id, inherited_creation
+	, priority_id,co_funded,allow_budget_zero, is_power_user,emploreeResponsible, person_responsible, is_complete, multiTactic, autoCommit, imported, import_id, inherited_creation, des_type
 	){
 	var params = {
 		'in_hl5_crm_description' : hl5CrmDescription,
@@ -433,6 +433,7 @@ function insertHl5(hl5CrmDescription,acronym,distributionChannelId,budget,hl4Id
 		, 'in_forecast_at_l5': multiTactic ? 1:0
 		, 'in_country_id': country
 		, 'in_inherited_creation' : inherited_creation ? 1 : 0
+		, 'in_des_type_id' : des_type || null
 	};
 
 	var rdo;
@@ -513,7 +514,7 @@ function updateHl5(hl5Id,hl5CrmDescription,inAcronym,distributionChannelId,budge
 	, event_owner
 	, number_of_participants
 	, priority_id,co_funded, allow_budget_zero, is_power_user,employee_responsible_user,person_responsible, is_complete
-				   ,multiTactic, inherited_creation,autoCommit){
+				   ,multiTactic, inherited_creation, des_type,autoCommit){
 	var params = {
 		'in_hl5_id' : hl5Id,
 		'in_hl5_crm_description' : hl5CrmDescription,
@@ -565,6 +566,7 @@ function updateHl5(hl5Id,hl5CrmDescription,inAcronym,distributionChannelId,budge
 		, 'in_forecast_at_l5': multiTactic ? 1:0
         , 'in_country_id': country
         , 'in_inherited_creation': inherited_creation ? 1 : 0
+        , 'in_des_type_id' : des_type || null
 
 	};
 

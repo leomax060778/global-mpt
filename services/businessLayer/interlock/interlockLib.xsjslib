@@ -71,7 +71,14 @@ function getInterlockReport(userId) {
         isSA = userbl.isSuperAdmin(userId) ? 1 : 0;
     }
 
-    var interlockReport = dataInterlock.getInterlockReport(isSA, userId);
+    var interlockReport = JSON.parse(JSON.stringify(dataInterlock.getInterlockReport(isSA, userId)));
+
+    interlockReport.forEach(function (interlockRequest) {
+    	//if(Number(interlockRequest.REQUESTED_BUDGET)){
+    		interlockRequest.REQUESTED_BUDGET = util.numberToLocaleString(interlockRequest.REQUESTED_BUDGET);
+    	//}
+    });
+
     return interlockReport;
 }
 
