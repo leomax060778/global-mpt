@@ -52,6 +52,7 @@ var L3_CATEGORY_TOTAL_PERCENTAGE = "Budget Distribution should be equal to 100%.
 var L3_CATEGORY_OPTIONS_NOT_EMPTY = "Option percentage should be less than or equal to 100%.";
 var L3_BUDGET_ZERO_CATEGORY_TOTAL_PERCENTAGE_ZERO = "When Sub-Team budget is zero then Category total percentage should be equal to 0%.";
 var L3_APPROVERS_NOT_FOUND = "Approvers data was not found.";
+var L3_BUDGET_EXCEEDED = "The maximum number for Budget was exceeded."
 
 var HIERARCHY_LEVEL = {
     HL1: 6,
@@ -868,6 +869,11 @@ function insertHl3FromUpload(objHl3, userId) {
     var hl2_ID = dataHl2.getLevel2ById(objHl3.PARENT_ID);
     if (!hl2_ID)
         throw ErrorLib.getErrors().ImportError("", "", L2_MSG_PLAN_NOT_FOUND);
+
+    if(!util.validateMaximValue(objHl3.HL3_FNC_BUDGET_TOTAL)){
+        throw ErrorLib.getErrors().ImportError("", "", L3_BUDGET_EXCEEDED);
+    }
+
     objHl3.IN_HL3_ID = 0;
     objHl3.IN_ACRONYM = objHl3.ACRONYM;
     objHl3.imported = 1;

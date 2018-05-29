@@ -47,6 +47,7 @@ var HIERARCHY_LEVEL = {
 var L1_MSG_PLAN_EXISTS = "Another Plan with the same acronym already exists";
 var L1_MSG_LEVEL_1_EXISTS = "Another Team with the same organization acronym already exists";
 var L2_MSG_LEVEL_2_SUB_REGION = "The Market Unit is mandatory for this Plan.";
+var L2_BUDGET_EXCEEDED = "The maximum number for Budget was exceeded."
 var L1_MSG_PLAN_NO_CREATED = "The Plan could not be created.";
 var L1_MSG_NO_PRIVILEGE = "Not enough privilege to do this action.";
 var L1_MSG_PLAN_NOT_FOUND = "The Plan can not be found.";
@@ -932,6 +933,10 @@ function insertHl2FromUpload(hl2, userId) {
         if(!hl2.SUBREGION_ID){
             throw ErrorLib.getErrors().ImportError("", "uploadService/handlePost/insertHl2FromUpload", L2_MSG_LEVEL_2_SUB_REGION);
         }
+    }
+
+    if(!util.validateMaximValue(hl2.HL2_BUDGET_TOTAL)){
+        throw ErrorLib.getErrors().ImportError("", "uploadService/handlePost/insertHl2FromUpload", L2_BUDGET_EXCEEDED);
     }
 
     hl2.IN_IN_BUDGET = 0;//checkBudgetStatus(objLevel2.IN_PLAN_ID, userId, null, objLevel2.IN_HL2_BUDGET_TOTAL);

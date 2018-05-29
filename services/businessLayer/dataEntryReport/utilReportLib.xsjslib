@@ -1,5 +1,6 @@
 $.import("mktgplanningtool.services.commonLib", "mapper");
 var mapper = $.mktgplanningtool.services.commonLib.mapper;
+var util = mapper.getUtil();
 
 /**
  *
@@ -283,6 +284,10 @@ function parseChangedFields(HL, hlId, changedFields, changedOptions, hlList, cha
                     }
                     else if (key !== 'HL4_ID' && key !== 'HL5_ID' && key !== 'HL6_ID') {
                         obj[key] = '';
+                    }
+
+                    if(key === 'HL4_FNC_BUDGET_TOTAL_MKT' || key === 'BUDGET'){
+                        obj[key] = util.numberToLocaleString(obj[key]);
                     }
                 }
             });

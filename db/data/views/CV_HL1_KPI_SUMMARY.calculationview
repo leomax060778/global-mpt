@@ -11,9 +11,9 @@
       <viewAttributes>
         <viewAttribute datatype="NVARCHAR" id="KPI_TYPE_NAME" length="255"/>
         <viewAttribute datatype="NVARCHAR" id="KPI_OPTION_NAME" length="255"/>
-        <viewAttribute datatype="DECIMAL" id="TOTAL_VALUE" length="10" scale="2"/>
+        <viewAttribute datatype="DECIMAL" id="TOTAL_VALUE" length="19" scale="2"/>
         <viewAttribute datatype="DECIMAL" id="TOTAL_VOLUME" length="10" scale="2"/>
-        <viewAttribute datatype="DECIMAL" id="TOTAL_VALUE_ALLOCATED" length="10" scale="2"/>
+        <viewAttribute datatype="DECIMAL" id="TOTAL_VALUE_ALLOCATED" length="19" scale="2"/>
         <viewAttribute datatype="DECIMAL" id="TOTAL_VOLUME_ALLOCATED" length="10" scale="2"/>
         <viewAttribute datatype="NVARCHAR" id="L1_ACRONYM" length="255"/>
         <viewAttribute datatype="NVARCHAR" id="HL1_DESCRIPTION" length="255"/>

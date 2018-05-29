@@ -2,6 +2,7 @@
 $.import("mktgplanningtool.services.commonLib","mapper");
 var mapper = $.mktgplanningtool.services.commonLib.mapper;
 var dataDetailedReport = mapper.getDataDetailedReport();
+var util = mapper.getUtil();
 var ErrorLib = mapper.getErrors();
 /*************************************************/
 
@@ -55,7 +56,7 @@ function getDetailedReport(hl1_id, hl2_id, hl3_id){
         } else {
             outcomesNameL5 = hl5_kpi.HL5_OUTCOMES_NAME;
         }
-        map_hl5_kpi[hl5_kpi.HL5_ID][outcomesNameL5 + " VALUE"] = hl5_kpi.HL5_EURO_VALUE;
+        map_hl5_kpi[hl5_kpi.HL5_ID][outcomesNameL5 + " VALUE"] = util.numberToLocaleString(hl5_kpi.HL5_EURO_VALUE);
         map_hl5_kpi[hl5_kpi.HL5_ID][outcomesNameL5 + " VOLUME"] = hl5_kpi.HL5_VOLUME_VALUE;
     });
 
@@ -69,7 +70,7 @@ function getDetailedReport(hl1_id, hl2_id, hl3_id){
         } else {
             outcomesNameL6 = hl6_kpi.HL6_OUTCOMES_NAME;
         }
-        map_hl6_kpi[hl6_kpi.HL6_ID][outcomesNameL6 + " VALUE"] = hl6_kpi.HL6_EURO_VALUE;
+        map_hl6_kpi[hl6_kpi.HL6_ID][outcomesNameL6 + " VALUE"] = util.numberToLocaleString(hl6_kpi.HL6_EURO_VALUE);
         map_hl6_kpi[hl6_kpi.HL6_ID][outcomesNameL6 + " VOLUME"] = hl6_kpi.HL6_VOLUME_VALUE;
     });
 
@@ -77,6 +78,12 @@ function getDetailedReport(hl1_id, hl2_id, hl3_id){
     rdo.DATA = JSON.parse(JSON.stringify(rdo.DATA));
 
     rdo.DATA.forEach(function(row){
+        row.HL5_BUDGET = util.numberToLocaleString(row.HL5_BUDGET);
+        row.HL5_EXTERNAL_FUNDING = util.numberToLocaleString(row.HL5_EXTERNAL_FUNDING);
+        row.HL5_OTHER_BUDGET = util.numberToLocaleString(row.HL5_OTHER_BUDGET);
+        row.HL6_BUDGET = util.numberToLocaleString(row.HL6_BUDGET);
+        row.HL6_EXTERNAL_FUNDING = util.numberToLocaleString(row.HL6_EXTERNAL_FUNDING);
+        row.HL6_OTHER_BUDGET = util.numberToLocaleString(row.HL6_OTHER_BUDGET);
 
         if (map_hl6_cat[row.HL6_ID]) {
             Object.keys(map_hl6_cat[row.HL6_ID]).forEach(function (catKey) {

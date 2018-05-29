@@ -159,6 +159,10 @@
       <descriptions defaultDescription="EVENT_OWNER"/>
       <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL5" columnName="EVENT_OWNER"/>
     </attribute>
+    <attribute id="DES_TYPE_ID" order="40" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="DES_TYPE_ID"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL5" columnName="DES_TYPE_ID"/>
+    </attribute>
   </attributes>
   <calculatedAttributes/>
   <privateDataFoundation>

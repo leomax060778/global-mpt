@@ -11,6 +11,7 @@ var dataCategory = mapper.getDataCategory();
 
 var COPY_CRM_DESCRIPTION = "Copy";
 var CREATED_FROM_EVENT_REQUEST_CRM_DESCRIPTION = "Created from Event Request";
+var MAX_BUDGET = 999999999.00;
 
 function validateIsNumber(value){
     return !isNaN(value);
@@ -28,6 +29,52 @@ function validateIsEmail(value){
 function validateBudget(value){
     if(!value) return false;
     return value !== 0;
+}
+
+function validateMaximValue(value) {
+    return Number(value) <= MAX_BUDGET;
+}
+
+function numberToLocaleString (budget) {
+    var value = '0.00';
+    budget = Number(budget);
+    if (budget) {
+        var prefix = Number(budget < 0) ? '-' : '';
+        value = Math.abs(budget).toFixed(2).replace(/./g, function (c, i, a) {
+            return i && c !== "." && ((a.length - i) % 3 === 0) ? ',' + c : c;
+        });
+        value = prefix + value;
+    }
+    return value;
+}
+
+/**
+ *
+ * 5 => 0.05
+ * 0.50 => 0.50
+ * 5.00 => 5.00
+ * 50.001 => 500.01
+ *
+ *
+ * @param {string} number
+ * @returns {string} parsedNumber
+ */
+function parseTwoDecimals(number) {
+
+    var split = ("" + number).split(/[.,]/g);
+    //If there are decimals
+    if (split.length > 1) {
+        if (split[1].length === 3) {
+            number = number * 10;
+        } else if (split[1].length === 1) {
+            number = number / 10;
+        }
+
+    } else {
+        number = number / 100;
+    }
+
+    return Number(number).toFixed(2).length <= 16 ? Number(number).toFixed(2) : 0;
 }
 
 function validateIsSapEmail(email){

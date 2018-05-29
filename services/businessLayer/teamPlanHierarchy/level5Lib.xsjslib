@@ -177,11 +177,11 @@ function getHl5ByHl4Id(id, userId, includeLegacy) {
             hl5.ENABLE_EDIT = !!actionPermission.ENABLE_EDIT;
             hl5.ENABLE_CLONE = !!actionPermission.ENABLE_CLONE;
         });
-
-        hl5TotalBudget = dataHl4.getHl4ById(id).BUDGET;
-        totalAllocated = dataHl5.getHl5TotalBudgetByHl4Id(id);
-        hl5BudgetRemaining = hl5TotalBudget - totalAllocated;
     }
+
+    hl5TotalBudget = dataHl4.getHl4ById(id).BUDGET;
+    totalAllocated = dataHl5.getHl5TotalBudgetByHl4Id(id);
+    hl5BudgetRemaining = hl5TotalBudget - totalAllocated;
 
     var response = {
         "results": hl5List,

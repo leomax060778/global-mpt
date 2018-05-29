@@ -10,10 +10,10 @@
       <descriptions/>
       <viewAttributes>
         <viewAttribute datatype="BIGINT" id="HL1_ID"/>
-        <viewAttribute datatype="DECIMAL" id="L1_BUDGET" length="10" scale="2"/>
+        <viewAttribute datatype="DECIMAL" id="L1_BUDGET" length="19" scale="2"/>
         <viewAttribute datatype="DECIMAL" id="L1_BUDGET_PERCENTAGE" length="10" scale="2"/>
-        <viewAttribute datatype="DECIMAL" id="L1_BUDGET_REMAINING" length="10" scale="2"/>
-        <viewAttribute datatype="DECIMAL" id="L1_BUDGET_ALLOCATED" length="10" scale="2"/>
+        <viewAttribute datatype="DECIMAL" id="L1_BUDGET_REMAINING" length="19" scale="2"/>
+        <viewAttribute datatype="DECIMAL" id="L1_BUDGET_ALLOCATED" length="19" scale="2"/>
         <viewAttribute datatype="INTEGER" id="TOTAL_OF_PRIORITIES"/>
         <viewAttribute datatype="NVARCHAR" id="L1_ACRONYM" length="255"/>
         <viewAttribute datatype="NVARCHAR" id="BUDGET_YEAR" length="255"/>
