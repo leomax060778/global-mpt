@@ -84,7 +84,7 @@ out_result = SELECT
 		,va_hl4.HL4_BUDGET
 		,va_hl4.IMPLEMENT_EXECUTION_LEVEL
 
-		, COUNT(DISTINCT HL5.HL5_ID) AS TOTAL_HL5
+		, COUNT(DISTINCT HL5.HL5_ID) + COUNT(DISTINCT HL5L.HL5_LEGACY_ID) AS TOTAL_HL5
 		, SUM(CASE WHEN  HL5.IN_BUDGET IS NULL THEN 0 WHEN HL5.IN_BUDGET = 0 THEN 1 ELSE 0 END) QUANTITY_HL5_OUT_BUDGET --# of L5 out off budget
 		, va_hl5_budget.budget AS ALLOCATED
 		, COALESCE((va_hl4.HL4_BUDGET - va_hl5_budget.budget), va_hl4.HL4_BUDGET) AS REMAINING
@@ -95,6 +95,9 @@ out_result = SELECT
         LEFT JOIN HL5 hl5 ON hl5.HL4_ID = va_hl4.hl4_id AND hl5.enabled = 1 AND hl5.deleted = 0
             --- This means that will be included those records that aren´t in Deleted In CRM ---
             	  AND HL5.HL5_STATUS_DETAIL_ID != 10
+        LEFT JOIN HL5_LEGACY HL5L ON HL5L.HL4_ID = va_hl4.HL4_ID AND HL5L.ENABLED = 1 AND HL5L.DELETED = 0
+            --- This means that will be included those records that aren´t in Deleted In CRM ---
+                  AND HL5L.HL5_STATUS_DETAIL_ID != 10
         LEFT JOIN :va_hl6 va_hl6 ON hl5.HL5_ID = va_hl6.HL5_ID
         LEFT JOIN :va_hl5_budget va_hl5_budget ON va_hl5_budget.HL4_ID = va_hl4.hl4_id
 

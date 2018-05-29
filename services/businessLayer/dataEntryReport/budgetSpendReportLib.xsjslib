@@ -207,7 +207,13 @@ function getL5SpendBudgetReportById(l5Id, budgetSpendRequestId, userId) {
     result = JSON.parse(JSON.stringify(result));
     result = completeCRMPath([result], "HL5_PATH", false, false)[0];
     var hl4Id = dataHl5.getHl5ById(l5Id).HL4_ID;
-    result.PARENT_REMAINING_BUDGET = util.numberToLocaleString(util.parseTwoDecimals(dataHl5.getHl5RemainingBudgetByHl4Id(hl4Id, dataHl5.getHl5TotalBudgetByHl4Id(hl4Id))));
+    result.PARENT_REMAINING_BUDGET = util.numberToLocaleString(
+                                        util.parseTwoDecimals(
+                                            Number(
+                                                dataHl5.getHl5RemainingBudgetByHl4Id(hl4Id, dataHl5.getHl5TotalBudgetByHl4Id(hl4Id))
+                                            ).toFixed(2)
+                                        )
+                                    );
     return result;
 }
 
@@ -260,7 +266,13 @@ function getL6SpendBudgetReportById(l6Id, budgetSpendRequestId, userId) {
 
     result = completeCRMPath([result], "HL6_PATH", false, false)[0];
     var hl5Id = dataHl6.getHl6ById(l6Id).HL5_ID;
-    result.PARENT_REMAINING_BUDGET = util.numberToLocaleString(util.parseTwoDecimals(dataHl6.getHl6RemainingBudgetByHl5Id(hl5Id, dataHl6.getHl6TotalBudgetByHl5Id(hl5Id))));
+    result.PARENT_REMAINING_BUDGET = util.numberToLocaleString(
+        util.parseTwoDecimals(
+            Number(
+                dataHl6.getHl6RemainingBudgetByHl5Id(hl5Id, dataHl6.getHl6TotalBudgetByHl5Id(hl5Id))
+            ).toFixed(2)
+        )
+    );
     return result;
 }
 

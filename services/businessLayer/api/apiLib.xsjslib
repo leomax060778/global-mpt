@@ -203,8 +203,6 @@ function getReportExportData(filter, method) {
                     case 'MTP_VALUE':
                     case 'MIP_VALUE':
                     case 'LEAD_VOLUME_VALUE':
-                        elem[field] = Number(spResult[i][field]) ? util.numberToLocaleString(spResult[i][field]) : null;
-                        break;
                     case 'MNP_VOLUME':
                     case 'MTP_VOLUME':
                     case 'MIP_VOLUME':
@@ -312,8 +310,6 @@ function getReportExportDataRegion(filter, method) {
                 case 'BUDGET_Q2':
                 case 'BUDGET_Q3':
                 case 'BUDGET_Q4':
-                    elem[field] = Number(spResult[i][field]) ? util.numberToLocaleString(spResult[i][field]) : null;
-                    break;
                 case 'PERCENTAGE_ALLOCATION':
                     elem[field] = Number(spResult[i][field]) || (Number(spResult[i][field]) == 0 ? 0 : null);
                     break;
