@@ -611,7 +611,7 @@ function deleteHl4(hl4, userId) {
                 dataHl4.updateDeletionReason(hl4.HL4_ID, hl4.DELETION_REASON, userId);
             }
             setHl4Status(hl4.HL4_ID, HL4_STATUS.DELETION_REQUEST, userId);
-            dataL4Report.updateLevel4ReportForDownload(hl4Id);
+            dataL4Report.updateLevel4ReportForDownload(hl4.HL4_ID);
         } else {
             /*******The last parameters is to know if the L5 is deleted in cascade mode******/
             level5Lib.deleteHl5ByHl4(hl4.HL4_ID, userId, true);
