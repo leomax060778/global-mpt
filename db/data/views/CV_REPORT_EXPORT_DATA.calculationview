@@ -34,6 +34,7 @@
         <viewAttribute datatype="NVARCHAR" id="CLOUD" length="25"/>
         <viewAttribute datatype="TIMESTAMP" id="MODIFIED_DATE"/>
         <viewAttribute datatype="NVARCHAR" id="STATUS" length="25"/>
+        <viewAttribute datatype="NVARCHAR" id="DES" length="25"/>
       </viewAttributes>
       <calculatedViewAttributes/>
       <definition> 
@@ -51,8 +52,7 @@
 			    , '') AS CRM_ID
 			, 'MPL' AS CAMP_OBJ_TYPE
 			, (SELECT HIERARCHY_LEVEL_ID FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HIERARCHY_LEVEL&quot; HIERARCHY_LEVEL WHERE DESCRIPTION = 'HL1') AS HIERARCHY_LEVEL_ID
-						, (SELECT HIERARCHY_LEVEL_VALUE FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HIERARCHY_LEVEL&quot; HIERARCHY_LEVEL WHERE DESCRIPTION = 'HL1') AS HIERARCHY_LEVEL_VALUE
-
+			, (SELECT HIERARCHY_LEVEL_VALUE FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HIERARCHY_LEVEL&quot; HIERARCHY_LEVEL WHERE DESCRIPTION = 'HL1') AS HIERARCHY_LEVEL_VALUE
 			, HL1.BUDGET
 			, 0 AS BUDGET_Q1
 			, 0 AS BUDGET_Q2
@@ -159,6 +159,7 @@ va_l1_result = SELECT HL1.HL1_ID AS HL_ID
 				, HL1.CLOUD
 				, HL1.MODIFIED_DATE
 				, '' AS STATUS
+				, '' AS DES
 				FROM :va_l1 HL1
 				LEFT JOIN :va_l1_mnp MNP ON HL1.HL1_ID = MNP.HL1_ID
 				LEFT JOIN :va_l1_mtp MTP ON HL1.HL1_ID = MTP.HL1_ID
@@ -177,8 +178,7 @@ va_l2 = SELECT HL2_ID
 			    , '') AS CRM_ID
 			, 'MPL' AS CAMP_OBJ_TYPE
 			, (SELECT HIERARCHY_LEVEL_ID FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HIERARCHY_LEVEL&quot; HIERARCHY_LEVEL WHERE DESCRIPTION = 'HL2') AS HIERARCHY_LEVEL_ID
-						, (SELECT HIERARCHY_LEVEL_VALUE FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HIERARCHY_LEVEL&quot; HIERARCHY_LEVEL WHERE DESCRIPTION = 'HL2') AS HIERARCHY_LEVEL_VALUE
-
+			, (SELECT HIERARCHY_LEVEL_VALUE FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HIERARCHY_LEVEL&quot; HIERARCHY_LEVEL WHERE DESCRIPTION = 'HL2') AS HIERARCHY_LEVEL_VALUE
 			, HL2.HL2_BUDGET_TOTAL AS BUDGET
 			, 0 AS BUDGET_Q1
 			, 0 AS BUDGET_Q2
@@ -286,6 +286,7 @@ va_l2_result = SELECT HL2.HL2_ID AS HL_ID
 				, HL2.CLOUD
 				, HL2.MODIFIED_DATE
 				, '' AS STATUS
+				, '' AS DES
 				FROM :va_l2 HL2
 				LEFT JOIN :va_l2_mnp MNP ON HL2.HL2_ID = MNP.HL2_ID
 				LEFT JOIN :va_l2_mtp MTP ON HL2.HL2_ID = MTP.HL2_ID
@@ -304,7 +305,7 @@ va_l3 = SELECT HL3_ID
 			    , '') AS CRM_ID
 			, 'MPL' AS CAMP_OBJ_TYPE
 			, (SELECT HIERARCHY_LEVEL_ID FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HIERARCHY_LEVEL&quot; HIERARCHY_LEVEL WHERE DESCRIPTION = 'HL3') AS HIERARCHY_LEVEL_ID
-						, (SELECT HIERARCHY_LEVEL_VALUE FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HIERARCHY_LEVEL&quot; HIERARCHY_LEVEL WHERE DESCRIPTION = 'HL3') AS HIERARCHY_LEVEL_VALUE
+			, (SELECT HIERARCHY_LEVEL_VALUE FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HIERARCHY_LEVEL&quot; HIERARCHY_LEVEL WHERE DESCRIPTION = 'HL3') AS HIERARCHY_LEVEL_VALUE
 			, HL3.HL3_FNC_BUDGET_TOTAL AS BUDGET
 			, 0 AS BUDGET_Q1
 			, 0 AS BUDGET_Q2
@@ -414,6 +415,7 @@ va_l3_result = SELECT HL3.HL3_ID AS HL_ID
 				, HL3.CLOUD
 				, HL3.MODIFIED_DATE
 				, '' AS STATUS
+				, '' AS DES
 				FROM :va_l3 HL3
 				LEFT JOIN :va_l3_mnp MNP ON HL3.HL3_ID = MNP.HL3_ID
 				LEFT JOIN :va_l3_mtp MTP ON HL3.HL3_ID = MTP.HL3_ID
@@ -432,8 +434,7 @@ va_l4 = SELECT HL4_ID
 			    , '') AS CRM_ID
 			, 'MPL' AS CAMP_OBJ_TYPE
 			, (SELECT HIERARCHY_LEVEL_ID FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HIERARCHY_LEVEL&quot; HIERARCHY_LEVEL WHERE DESCRIPTION = 'HL4') AS HIERARCHY_LEVEL_ID
-						, (SELECT HIERARCHY_LEVEL_VALUE FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HIERARCHY_LEVEL&quot; HIERARCHY_LEVEL WHERE DESCRIPTION = 'HL4') AS HIERARCHY_LEVEL_VALUE
-
+			, (SELECT HIERARCHY_LEVEL_VALUE FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HIERARCHY_LEVEL&quot; HIERARCHY_LEVEL WHERE DESCRIPTION = 'HL4') AS HIERARCHY_LEVEL_VALUE
 			, HL4.BUDGET
 			, 0 AS BUDGET_Q1
 			, 0 AS BUDGET_Q2
@@ -546,6 +547,7 @@ va_l4_result = SELECT HL4.HL4_ID AS HL_ID
 				, HL4.CLOUD
 				, HL4.MODIFIED_DATE
 				, HL4.STATUS
+				, '' AS DES
 				FROM :va_l4 HL4
 				LEFT JOIN :va_l4_mnp MNP ON HL4.HL4_ID = MNP.HL4_ID
 				LEFT JOIN :va_l4_mtp MTP ON HL4.HL4_ID = MTP.HL4_ID
@@ -566,8 +568,7 @@ va_l5 = SELECT HL5_ID
 			, 'CPG' AS CAMP_OBJ_TYPE
 			, HL5.BUDGET
 			, (SELECT HIERARCHY_LEVEL_ID FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HIERARCHY_LEVEL&quot; HIERARCHY_LEVEL WHERE DESCRIPTION = 'HL5') AS HIERARCHY_LEVEL_ID
-						, (SELECT HIERARCHY_LEVEL_VALUE FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HIERARCHY_LEVEL&quot; HIERARCHY_LEVEL WHERE DESCRIPTION = 'HL5') AS HIERARCHY_LEVEL_VALUE
-
+			, (SELECT HIERARCHY_LEVEL_VALUE FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HIERARCHY_LEVEL&quot; HIERARCHY_LEVEL WHERE DESCRIPTION = 'HL5') AS HIERARCHY_LEVEL_VALUE
 			, (HL5.BUDGET * HL5.BUDGET_SPEND_Q1 / 100) AS BUDGET_Q1
 			, (HL5.BUDGET * HL5.BUDGET_SPEND_Q2 / 100) AS BUDGET_Q2
 			, (HL5.BUDGET * HL5.BUDGET_SPEND_Q3 / 100) AS BUDGET_Q3
@@ -580,6 +581,7 @@ va_l5 = SELECT HL5_ID
 			, '' AS CLOUD
 			, COALESCE(HL5.MODIFIED_DATE_TZ, HL5.CREATED_DATE_TZ) AS MODIFIED_DATE
 			, SD.DETAIL AS STATUS
+			, DT.NAME AS DES
 			FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL5&quot; HL5
 			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL4&quot; HL4 ON HL4.HL4_ID = HL5.HL4_ID
 			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL3&quot; HL3 ON HL3.HL3_ID = HL4.HL3_ID
@@ -587,6 +589,7 @@ va_l5 = SELECT HL5_ID
 			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL1&quot; HL1 ON HL1.HL1_ID = HL2.HL1_ID
 			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_BUDGET_YEAR&quot; BY ON BY.BUDGET_YEAR_ID = HL1.BUDGET_YEAR_ID
 			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL5_STATUS_DETAIL&quot; SD ON SD.HL5_STATUS_DETAIL_ID = HL5.HL5_STATUS_DETAIL_ID
+			LEFT JOIN  &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_DES_TYPE&quot; DT ON DT.DES_TYPE_ID = HL5.DES_TYPE_ID AND DT.ENABLED = 1 AND DT.DELETED = 0
 			
 			WHERE HL5.ENABLED = 1 AND HL5.DELETED = 0;
 
@@ -680,6 +683,7 @@ va_l5_result = SELECT HL5.HL5_ID AS HL_ID
 				, HL5.CLOUD
 				, HL5.MODIFIED_DATE
 				, HL5.STATUS
+				, HL5.DES
 				FROM :va_l5 HL5
 				LEFT JOIN :va_l5_mnp MNP ON HL5.HL5_ID = MNP.HL5_ID
 				LEFT JOIN :va_l5_mtp MTP ON HL5.HL5_ID = MTP.HL5_ID
@@ -698,8 +702,7 @@ va_l6 = SELECT HL6_ID
 			    , HL6.ACRONYM) AS CRM_ID
 			, 'CPG' AS CAMP_OBJ_TYPE
 			, (SELECT HIERARCHY_LEVEL_ID FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HIERARCHY_LEVEL&quot; HIERARCHY_LEVEL WHERE DESCRIPTION = 'HL6') AS HIERARCHY_LEVEL_ID
-						, (SELECT HIERARCHY_LEVEL_VALUE FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HIERARCHY_LEVEL&quot; HIERARCHY_LEVEL WHERE DESCRIPTION = 'HL6') AS HIERARCHY_LEVEL_VALUE
-
+			, (SELECT HIERARCHY_LEVEL_VALUE FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HIERARCHY_LEVEL&quot; HIERARCHY_LEVEL WHERE DESCRIPTION = 'HL6') AS HIERARCHY_LEVEL_VALUE
 			, HL6.BUDGET
 			, (HL6.BUDGET * HL6.BUDGET_SPEND_Q1 / 100) AS BUDGET_Q1
 			, (HL6.BUDGET * HL6.BUDGET_SPEND_Q2 / 100) AS BUDGET_Q2
@@ -814,6 +817,7 @@ va_l6_result = SELECT HL6.HL6_ID AS HL_ID
 				, HL6.CLOUD
 				, HL6.MODIFIED_DATE
 				, HL6.STATUS
+				, '' AS DES
 				FROM :va_l6 HL6
 				LEFT JOIN :va_l6_mnp MNP ON HL6.HL6_ID = MNP.HL6_ID
 				LEFT JOIN :va_l6_mtp MTP ON HL6.HL6_ID = MTP.HL6_ID
@@ -846,6 +850,7 @@ var_out = SELECT HIERARCHY_LEVEL_ID
             , CLOUD
             , MODIFIED_DATE
             , STATUS
+            , DES
 FROM ((SELECT HL_ID
 				, HIERARCHY_LEVEL_ID
 				, HIERARCHY_LEVEL_VALUE
@@ -872,6 +877,7 @@ FROM ((SELECT HL_ID
 				, CLOUD
 				, MODIFIED_DATE
 				, STATUS
+				, DES
 from :va_l1_result HL1)
 UNION
 (SELECT HL_ID
@@ -900,6 +906,7 @@ UNION
 				, CLOUD
 				, MODIFIED_DATE
 				, STATUS
+				, DES
 from :va_l2_result HL2)
 UNION
 (SELECT HL_ID
@@ -928,6 +935,7 @@ UNION
 				, CLOUD
 				, MODIFIED_DATE
 				, STATUS
+				, DES
 from :va_l3_result HL3)
 UNION
 (SELECT HL_ID
@@ -956,6 +964,7 @@ UNION
 				, CLOUD
 				, MODIFIED_DATE
 				, STATUS
+				, DES
 from :va_l4_result HL4)
 UNION
 (SELECT HL_ID
@@ -984,6 +993,7 @@ UNION
 				, CLOUD
 				, MODIFIED_DATE
 				, STATUS
+				, DES
 from :va_l5_result HL5)
 UNION
 (SELECT HL_ID
@@ -1012,6 +1022,7 @@ UNION
 				, CLOUD
 				, MODIFIED_DATE
 				, STATUS
+				, DES
 from :va_l6_result HL6));
 
 END /********* End Procedure Script ************/</definition>
@@ -1119,6 +1130,10 @@ END /********* End Procedure Script ************/</definition>
       <attribute id="STATUS" order="25">
         <descriptions defaultDescription="STATUS"/>
         <keyMapping columnObjectName="Script_View" columnName="STATUS"/>
+      </attribute>
+      <attribute id="DES" order="26">
+        <descriptions defaultDescription="DES"/>
+        <keyMapping columnObjectName="Script_View" columnName="DES"/>
       </attribute>
     </attributes>
     <calculatedAttributes/>

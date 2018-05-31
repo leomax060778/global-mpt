@@ -6,6 +6,7 @@ var ErrorLib = mapper.getErrors();
 var api = mapper.getDataApi();
 var dataHl6 = mapper.getDataLevel6();
 var config = mapper.getConfig();
+var util = mapper.getUtil();
 /** ***********END INCLUDE LIBRARIES*************** */
 
 var L6_MSG_INITIATIVE_NOT_FOUND = "The Campaign/Activity & Sub tactic can not be found.";
@@ -66,6 +67,7 @@ function getReportExportData(filter, method) {
         , 'CLOUD'
         , 'MODIFIED_DATE'
         , 'STATUS'
+        , 'DES'
     ];
 
     var commonFields = [
@@ -86,6 +88,7 @@ function getReportExportData(filter, method) {
         , 'INTERNAL_FUNDING'
         , 'PARTNER_CONTRIBUTION'
         , 'STATUS'
+        , 'DES'
     ];
 
     var kpiFields = [
@@ -100,6 +103,7 @@ function getReportExportData(filter, method) {
         , 'ON_PREM'
         , 'CLOUD'
         , 'STATUS'
+        , 'DES'
     ];
 
     if (!filter.SCOPE) {
@@ -196,12 +200,12 @@ function getReportExportData(filter, method) {
                     case 'BUDGET_Q3':
                     case 'BUDGET_Q4':
                     case 'MNP_VALUE':
-                    case 'MNP_VOLUME':
                     case 'MTP_VALUE':
-                    case 'MTP_VOLUME':
                     case 'MIP_VALUE':
-                    case 'MIP_VOLUME':
                     case 'LEAD_VOLUME_VALUE':
+                    case 'MNP_VOLUME':
+                    case 'MTP_VOLUME':
+                    case 'MIP_VOLUME':
                     case 'LEAD_VOLUME_VOLUME':
                         elem[field] = Number(spResult[i][field]) || (Number(spResult[i][field]) == 0 ? 0 : null);
                         break;
@@ -300,10 +304,18 @@ function getReportExportDataRegion(filter, method) {
     for (var i = 0; i < spResult.length; i++) {
         var elem = {};
         outputFields.forEach(function (field) {
-            if (field == 'PERCENTAGE_ALLOCATION') {
-                elem[field] = Number(spResult[i][field]) || (Number(spResult[i][field]) == 0 ? 0 : null);
-            } else {
-                elem[field] = spResult[i][field] || null;
+            switch (field){
+                case 'BUDGET':
+                case 'BUDGET_Q1':
+                case 'BUDGET_Q2':
+                case 'BUDGET_Q3':
+                case 'BUDGET_Q4':
+                case 'PERCENTAGE_ALLOCATION':
+                    elem[field] = Number(spResult[i][field]) || (Number(spResult[i][field]) == 0 ? 0 : null);
+                    break;
+                default:
+                    elem[field] = spResult[i][field] || null;
+                    break;
             }
         });
         result.push(elem);
