@@ -33,12 +33,12 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL6_FOR_PROC
                 , EMPLOYEE_RESPONSIBLE NVARCHAR(255)
                 , BUSINESS_OWNER NVARCHAR(255)
                 , ROUTE_TO_MARKET NVARCHAR(255)
-                , BUDGET_YEAR NVARCHAR(10)
-                , L1_ACRONYM NVARCHAR(255)
-                , L2_ACRONYM NVARCHAR(255)
-                , L3_ACRONYM NVARCHAR(255)
-                , L4_ACRONYM NVARCHAR(255)
-                , L5_ACRONYM NVARCHAR(255)
+                --, BUDGET_YEAR NVARCHAR(10)
+                --, L1_ACRONYM NVARCHAR(255)
+                --, L2_ACRONYM NVARCHAR(255)
+                --, L3_ACRONYM NVARCHAR(255)
+                --, L4_ACRONYM NVARCHAR(255)
+                --, L5_ACRONYM NVARCHAR(255)
                 , CAMPAIGN_OBJECTIVE_ID INTEGER
                 , CAMPAIGN_TYPE_ID INTEGER
                 , CAMPAIGN_SUBTYPE_ID INTEGER
@@ -75,7 +75,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL6_FOR_PROC
         BEGIN
         out_result = select
                           HL6.hl6_id
-                        , HL6.hl5_id
+                        , CASE WHEN HL6.hl5_id IS NULL THEN HL6_LEGACY.HL5_LEGACY_ID ELSE HL6.hl5_id END AS HL5_ID
                         , HL6.acronym
                         , HL6.hl6_crm_description
                         , HL6.show_on_dg_calendar
@@ -106,12 +106,12 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL6_FOR_PROC
                         , CONCAT(CONCAT(EMPLOYEE_RESPONSIBLE.FULL_NAME, ', '), EMPLOYEE_RESPONSIBLE.EMPLOYEE_NUMBER) AS EMPLOYEE_RESPONSIBLE
                         , BUSINESS_OWNER.DESCRIPTION AS BUSINESS_OWNER
                         , ROUTE_TO_MARKET.NAME AS ROUTE_TO_MARKET
-                        , SUBSTRING(TO_NVARCHAR(BGY.BUDGET_YEAR), 3, 2) AS BUDGET_YEAR
-                        , HL1.ACRONYM AS L1_ACRONYM
-                        , HL2.ORGANIZATION_ACRONYM AS L2_ACRONYM
-                        , HL3.ACRONYM AS L3_ACRONYM
-                        , HL4.ACRONYM AS L4_ACRONYM
-                        , HL5.ACRONYM AS L5_ACRONYM
+                        --, SUBSTRING(TO_NVARCHAR(BGY.BUDGET_YEAR), 3, 2) AS BUDGET_YEAR
+                        --, HL1.ACRONYM AS L1_ACRONYM
+                        --, HL2.ORGANIZATION_ACRONYM AS L2_ACRONYM
+                        --, HL3.ACRONYM AS L3_ACRONYM
+                        --, HL4.ACRONYM AS L4_ACRONYM
+                        --, HL5.ACRONYM AS L5_ACRONYM
                         , HL6.campaign_objective_id
                         , HL6.campaign_type_id
                         , HL6.campaign_subtype_id
@@ -125,18 +125,22 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL6_FOR_PROC
                         , HL6.EMPLOYEE_RESPONSIBLE_USER
                         , HL6.business_owner_id
                         , HL6.route_to_market_id
-                        , "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BGY.BUDGET_YEAR, HL1.ACRONYM, HL2.ORGANIZATION_ACRONYM, HL3.ACRONYM, HL4.ACRONYM, HL5.ACRONYM, '') AS PARENT_PATH
-                        , "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BGY.BUDGET_YEAR, HL1.ACRONYM, HL2.ORGANIZATION_ACRONYM, HL3.ACRONYM, HL4.ACRONYM, HL5.ACRONYM, HL6.ACRONYM) AS CRM_ID
+                        , CASE WHEN HL6.hl5_id IS NULL THEN HL5_LEGACY.PATH ELSE
+                            "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BGY.BUDGET_YEAR, HL1.ACRONYM, HL2.ORGANIZATION_ACRONYM, HL3.ACRONYM, HL4.ACRONYM, HL5.ACRONYM, '') END AS PARENT_PATH
+                        , CASE WHEN HL6.hl5_id IS NULL THEN CONCAT(HL5_LEGACY.PATH, HL6.ACRONYM) ELSE
+                            "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BGY.BUDGET_YEAR, HL1.ACRONYM, HL2.ORGANIZATION_ACRONYM, HL3.ACRONYM, HL4.ACRONYM, HL5.ACRONYM, HL6.ACRONYM) END AS CRM_ID
                         , HL6.CREATED_USER_ID
                         , HL6.COUNTRY_ID
                         , MARKETING_ACTIVITY.DESCRIPTION AS MARKETING_ACTIVITY_DESCRIPTION
                          FROM HL6
-                         INNER JOIN HL5 ON HL5.HL5_ID = HL6.HL5_ID
-                         INNER JOIN HL4 ON HL4.HL4_ID = HL5.HL4_ID
-                         INNER JOIN HL3 ON HL4.HL3_ID = HL3.HL3_ID
-                         INNER JOIN HL2 ON HL3.HL2_ID = HL2.HL2_ID
-                         INNER JOIN HL1 ON HL1.HL1_ID = HL2.HL1_ID
-                         INNER JOIN BUDGET_YEAR BGY ON HL1.BUDGET_YEAR_ID = BGY.BUDGET_YEAR_ID
+                         LEFT JOIN HL5 ON HL5.HL5_ID = HL6.HL5_ID
+                         LEFT JOIN HL6_LEGACY ON HL6_LEGACY.HL6_ID = HL6.HL6_ID
+                         LEFT JOIN HL5_LEGACY ON HL6_LEGACY.HL5_LEGACY_ID = HL5_LEGACY.HL5_LEGACY_ID
+                         LEFT JOIN HL4 ON HL4.HL4_ID = HL5.HL4_ID
+                         LEFT JOIN HL3 ON HL4.HL3_ID = HL3.HL3_ID
+                         LEFT JOIN HL2 ON HL3.HL2_ID = HL2.HL2_ID
+                         LEFT JOIN HL1 ON HL1.HL1_ID = HL2.HL1_ID
+                         LEFT JOIN BUDGET_YEAR BGY ON HL1.BUDGET_YEAR_ID = BGY.BUDGET_YEAR_ID
                          LEFT JOIN MARKETING_PROGRAM ON MARKETING_PROGRAM.MARKETING_PROGRAM_ID = HL6.MARKETING_PROGRAM_ID
                          LEFT JOIN MARKETING_ACTIVITY ON MARKETING_ACTIVITY.MARKETING_ACTIVITY_ID = HL6.MARKETING_ACTIVITY_ID
                          LEFT JOIN DISTRIBUTION_CHANNEL ON DISTRIBUTION_CHANNEL.DISTRIBUTION_CHANNEL_ID = HL6.DISTRIBUTION_CHANNEL_ID

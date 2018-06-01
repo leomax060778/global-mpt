@@ -29,10 +29,20 @@ function handleDelete() {
 function handleGet(parameters) {
 		var in_ec_id = httpUtil.getUrlParameters().get("CURRENCY_ID");
 
-		if(parameters.length === 2){
+		if(parameters.length === 2 || parameters[2] && parameters[2].name === "IS_LEGACY"){
 			if(parameters[0].name === LEVEL && parameters[1].name === HL_ID){
-				var budget_year = buyLib.getBudgetYearByLevelParent(parameters[0].value, parameters[1].value);
+				var isLegacy = (parameters[2] && parameters[2].name === "IS_LEGACY")? parameters[2].value : false;
+				isLegacy = isLegacy && isLegacy === "true";
 
+				var budget_year;
+
+				if(!isLegacy){
+					budget_year = buyLib.getBudgetYearByLevelParent(parameters[0].value, parameters[1].value);
+				}else{
+					var fullBudget = JSON.parse(JSON.stringify(buyLib.getBudgetYearByLevelParent(parameters[0].value, parameters[1].value, true, isLegacy? 1 : 0)));
+					budget_year = fullBudget.BUDGET_YEAR_ID;
+				}
+ 
 				var rdo =  CurrencyLib.getAllCurrency(budget_year);
 
 				if(!rdo.length)

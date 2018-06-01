@@ -7,6 +7,7 @@ var ErrorLib = mapper.getErrors();
 
 var spGetHl5ByHl4Id = "GET_HL5_BY_HL4_ID";
 var spGetHl5ById = "GET_HL5_BY_ID";
+var spGetHl5LegacyById = "GET_HL5_LEGACY_BY_ID";
 var spGetHl5VersionedById = "GET_HL5_IN_CRM_VERSION_BY_ID";
 var spGetHl5ByAcronym = "GET_HL5_BY_ACRONYM";
 var spGetCountHl6ByHl5Id = "GET_COUNT_HL6_BY_HL5_ID";
@@ -22,6 +23,7 @@ var HL5_MASS_CHANGE_STATUS = "HL5_MASS_CHANGE_STATUS";
 var GET_HL5_FOR_EMAIL = "GET_HL5_FOR_EMAIL";
 var spGetHl5SalesByHl5Id = "GET_HL5_SALES_BY_ID";
 var spGetHl5AllocatedBudget = "GET_HL5_ALLOCATED_BUDGET";
+var spGetHl5LegacyAllocatedBudget = "GET_HL5_LEGACY_ALLOCATED_BUDGET";
 var spGetHl5Category = "GET_HL5_CATEGORY";
 var spGetHl5CategoryByHl5CategoryId = "GET_HL5_CATEGORY_BY_HL5_CATEGORY_ID";
 var spGET_ALL_MARKETING_PROGRAM = "GET_ALL_MARKETING_PROGRAM";
@@ -157,6 +159,14 @@ function getHl5ById(id){
 		return db.extractArray(rdo.out_result)[0];
 	}
 	return null;
+}
+
+function getHl5LegacyById(id){
+	var params = {
+		'in_hl5_id': id
+	};
+	var rdo = db.executeProcedureManual(spGetHl5LegacyById,params);
+	return db.extractArray(rdo.out_result)[0];
 }
 
 /**
@@ -709,6 +719,15 @@ function deleteHl5RequestCategoryOption(hl5Id, userId){
 function getHl5AllocatedBudget(hl5Id, hl6Id) {
 	if(hl5Id){
 		var rdo = db.executeDecimalManual(spGetHl5AllocatedBudget
+					, {'in_hl5_id': hl5Id, 'in_hl6_id': hl6Id}, 'out_hl5_allocated_budget');
+		return rdo;
+	}
+	return null;
+}
+
+function getHl5LegacyAllocatedBudget(hl5Id, hl6Id) {
+	if(hl5Id){
+		var rdo = db.executeDecimalManual(spGetHl5LegacyAllocatedBudget
 					, {'in_hl5_id': hl5Id, 'in_hl6_id': hl6Id}, 'out_hl5_allocated_budget');
 		return rdo;
 	}

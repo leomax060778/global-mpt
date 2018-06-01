@@ -107,6 +107,13 @@ var HIERARCHY_LEVEL = {
     HL6: 3
 };
 
+var USER_ROLE = {
+		SUPER_ADMIN: 1,
+		ADMIN: 2,
+		DATA_ENTRY: 3,
+		CAMPAIGN_MANAGER: 4
+};
+
 var LEVEL_STRING = 'HL4';
 
 /*********************** END CONSTANTS ***********************/
@@ -639,6 +646,8 @@ function deleteRelatedData(hl4, userId) {
 /** VALIDATIONS **/
 
 function validateRequiredFields(data, userId) {
+	var userRoleId = Number(userDataRole.getUserRoleByUserId(userId)[0].ROLE_ID);
+	
     //Validate payload
     if (!data) {
         throw ErrorLib.getErrors().CustomError("", "", L3_MSG_INITIATIVE_NOT_FOUND);
@@ -673,14 +682,24 @@ function validateRequiredFields(data, userId) {
     if (data.BUDGET < 0) {
         throw ErrorLib.getErrors().CustomError("", "", L3_MSG_INITIATIVE_BUDGET_VALUE);
     }
-    //validate SHOPPING_CART_APPROVER
-    if (!data.SHOPPING_CART_APPROVER || !data.SHOPPING_CART_APPROVER.trim() || (data.SHOPPING_CART_APPROVER && !/[id]\d{6}/gi.test(data.SHOPPING_CART_APPROVER))) {
-        throw ErrorLib.getErrors().CustomError("", "", "Shopping cart approver is invalid");
+    
+  //validate SHOPPING_CART_APPROVER
+    if(userRoleId === USER_ROLE.DATA_ENTRY){
+    	//Special validation for Data Entry users, they can create an L4 without Shopping Cart Approver
+    	if (data.SHOPPING_CART_APPROVER && !!data.SHOPPING_CART_APPROVER.trim() && !/[id]\d{6}/gi.test(data.SHOPPING_CART_APPROVER)) {
+            throw ErrorLib.getErrors().CustomError("", "", "Shopping cart approver is invalid");
+        }
+    }else{
+        if (!data.SHOPPING_CART_APPROVER || !data.SHOPPING_CART_APPROVER.trim() || (data.SHOPPING_CART_APPROVER && !/[id]\d{6}/gi.test(data.SHOPPING_CART_APPROVER))) {
+            throw ErrorLib.getErrors().CustomError("", "", "Shopping cart approver is invalid");
+        }
+        
+        //validate COST_CENTER
+        if (!data.COST_CENTER || !data.COST_CENTER.trim() || (data.COST_CENTER && !/\d+/gi.test(data.COST_CENTER))) {
+            throw ErrorLib.getErrors().CustomError("", "", "Cost Center approver is invalid");
+        }
     }
-    //validate COST_CENTER
-    if (!data.COST_CENTER || !data.COST_CENTER.trim() || (data.COST_CENTER && !/\d+/gi.test(data.COST_CENTER))) {
-        throw ErrorLib.getErrors().CustomError("", "", "Cost Center approver is invalid");
-    }
+    
     //validate MKT_ORG_ID
     if (data.MKT_ORG_ID && data.MKT_ORG_ID <= 0) {
         throw ErrorLib.getErrors().CustomError("", "", "Sale Organization is invalid");

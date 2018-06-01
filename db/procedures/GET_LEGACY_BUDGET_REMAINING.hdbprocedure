@@ -1,0 +1,56 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_LEGACY_BUDGET_REMAINING" (
+	IN in_hl_id BIGINT,
+	IN in_level NVARCHAR(3),
+	OUT BUDGET_SPEND_REQUEST_REMAING DECIMAL(19,2)
+
+ ) 
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+AS
+BEGIN
+DECLARE VA_TOTAL_BUDGET DECIMAL(19,2);
+DECLARE VA_TOTAL_ALLOCATED DECIMAL(19,2);
+VA_TOTAL_BUDGET := 0;
+VA_TOTAL_ALLOCATED := 0;
+
+    /*IF in_level = 'HL5' THEN
+                SELECT HL4.BUDGET
+            	    INTO VA_TOTAL_BUDGET
+            	    FROM HL4
+            	    WHERE HL4.HL4_ID = in_hl_id;
+
+            	SELECT COALESCE(SUM(HL5.BUDGET), 0)
+            	    INTO VA_TOTAL_ALLOCATED
+            	    FROM HL5
+            	    INNER JOIN HL4 ON HL5.HL4_ID = HL4.HL4_ID
+            	    INNER JOIN HL5_STATUS_DETAIL SD ON SD.HL5_STATUS_DETAIL_ID = HL5.HL5_STATUS_DETAIL_ID
+            	    WHERE HL4.HL4_ID = in_hl_id
+            	    AND HL5.DELETED = 0
+            	    AND HL5.ENABLED = 1
+            	    AND SD.HL5_STATUS_DETAIL_ID <> 10;--exclude Deleted In Crm
+
+            BUDGET_SPEND_REQUEST_REMAING := VA_TOTAL_BUDGET - VA_TOTAL_ALLOCATED;*/ -- NOT SUPPORTED FOR L5
+
+    IF in_level = 'HL6' THEN
+                 SELECT hl5_legacy.BUDGET
+                    INTO VA_TOTAL_BUDGET
+                    FROM HL5_LEGACY hl5_legacy
+                    WHERE hl5_legacy.HL5_LEGACY_ID = in_hl_id;
+
+                SELECT COALESCE(SUM(hl6.BUDGET), 0)
+                    INTO VA_TOTAL_ALLOCATED
+                    FROM HL6_LEGACY hl6_legacy
+                    INNER JOIN HL6 hl6 ON hl6_legacy.HL6_ID = hl6.HL6_ID
+                    INNER JOIN HL6_STATUS_DETAIL SD ON SD.HL6_STATUS_DETAIL_ID = hl6.HL6_STATUS_DETAIL_ID
+                    INNER JOIN HL5_LEGACY hl5_legacy ON hl6_legacy.HL5_LEGACY_ID = hl5_legacy.HL5_LEGACY_ID
+                    WHERE hl5_legacy.HL5_LEGACY_ID = in_hl_id
+                     AND hl6_legacy.DELETED = 0
+                     AND hl6_legacy.ENABLED = 1
+                     AND hl6.DELETED = 0
+                     AND hl6.ENABLED = 1
+                     AND SD.HL6_STATUS_DETAIL_ID <> 10;--exclude Deleted In Crm;
+
+            BUDGET_SPEND_REQUEST_REMAING := VA_TOTAL_BUDGET - VA_TOTAL_ALLOCATED;
+    END IF;
+END;
