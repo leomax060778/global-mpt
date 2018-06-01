@@ -453,10 +453,12 @@ BEGIN
                                     WHERE HL5_ID = IN_HL_ID;
 
                     ELSE --GET FROM HL6
-                            CALL "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_PATH_BY_LEVEL_PARENT"(6,VA_PARENT_ID,VA_PATH_TABLE); --GET ACRONYMS
+                            IF VA_PARENT_ID IS NOT NULL THEN
+                                CALL "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_PATH_BY_LEVEL_PARENT"(6,VA_PARENT_ID,VA_PATH_TABLE); --GET ACRONYMS
 
-                            --SELECT TOP 1 CONCAT('CRM-',CONCAT(L1_ACRONYM,CONCAT(BUDGET_YEAR,CONCAT('-',CONCAT(L3_ACRONYM,CONCAT('-',CONCAT(L4_ACRONYM,CONCAT('',CONCAT(L5_ACRONYM,''))))))))) INTO VA_PATH FROM :VA_PATH_TABLE;--BUILD PARENT ACRONYM
-                            SELECT TOP 1 "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BUDGET_YEAR, L1_ACRONYM, L2_ACRONYM, L3_ACRONYM, L4_ACRONYM, L5_ACRONYM, '') INTO VA_PATH FROM :VA_PATH_TABLE; --BUILD PARENT ACRONYM
+                                --SELECT TOP 1 CONCAT('CRM-',CONCAT(L1_ACRONYM,CONCAT(BUDGET_YEAR,CONCAT('-',CONCAT(L3_ACRONYM,CONCAT('-',CONCAT(L4_ACRONYM,CONCAT('',CONCAT(L5_ACRONYM,''))))))))) INTO VA_PATH FROM :VA_PATH_TABLE;--BUILD PARENT ACRONYM
+                                SELECT TOP 1 "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BUDGET_YEAR, L1_ACRONYM, L2_ACRONYM, L3_ACRONYM, L4_ACRONYM, L5_ACRONYM, '') INTO VA_PATH FROM :VA_PATH_TABLE; --BUILD PARENT ACRONYM
+                            END IF;
                             --GET MARKETING ACTIVITY FOR HL6
                             --SELECT MARKETING_ACTIVITY_ID INTO VA_MA_HL FROM HL6 WHERE HL6_ID = IN_HL_ID;
                             --IF(:VA_MA_HL <> 0) THEN
@@ -468,11 +470,12 @@ BEGIN
                             -- GET BUYING CLASSIFICATION CRM_KEY
                             CALL "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_PROCESSING_REPORT_BUYING_CLASSIFICATION"(IN_HL_ID, 'HL6', VA_BUYING_CLASSIFICATION);
 
-                            VA_GET_HL = SELECT HL6_ID AS HL_ID,
-                                        :VA_PATH AS EXTERNAL_ID_PARENT,
+                            VA_GET_HL = SELECT HL6.HL6_ID AS HL_ID,
+                                        CASE WHEN HL6.HL5_ID IS NULL THEN HL5_LEGACY.PATH ELSE :VA_PATH END AS EXTERNAL_ID_PARENT,
                                         :VA_OBJECT_TYPE AS OBJECT_TYPE,
-                                        (SELECT TOP 1 "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BUDGET_YEAR, L1_ACRONYM, L2_ACRONYM, L3_ACRONYM, L4_ACRONYM, L5_ACRONYM, ACRONYM) FROM :VA_PATH_TABLE) AS EXTERNAL_ID,
-                                        HL6_CRM_DESCRIPTION AS TEXT1,
+                                        CASE WHEN HL6.HL5_ID IS NULL THEN CONCAT(HL5_LEGACY.PATH, HL6.ACRONYM) ELSE
+                                            (SELECT TOP 1 "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BUDGET_YEAR, L1_ACRONYM, L2_ACRONYM, L3_ACRONYM, L4_ACRONYM, L5_ACRONYM, ACRONYM) FROM :VA_PATH_TABLE) END AS EXTERNAL_ID,
+                                        HL6.HL6_CRM_DESCRIPTION AS TEXT1,
                                         HL6.EMPLOYEE_RESPONSIBLE_USER AS BNAME,
                                         OB.CRM_KEY AS OBJECTIVE,
                                         CT.CRM_KEY AS CAMP_TYPE,
@@ -492,89 +495,89 @@ BEGIN
                                         RTM.CRM_KEY AS ROUTE_TO_MARKET,
                                         CC.COST_CENTER_CODE AS COST_CENTER,
                                         CASE WHEN (CO.ZZIMP_PERCENTAGE1 = '0.00') THEN '' ELSE CO.IMP1 END AS IMP1,
-                                                                       CASE WHEN (CO.ZZIMP_PERCENTAGE1 = '0.00') THEN '' ELSE CO.ZZIMP_PERCENTAGE1 END AS ZZIMP_PERCENTAGE1,
-                                                                       CASE WHEN (CO.ZZIMP_PERCENTAGE2 = '0.00') THEN '' ELSE CO.IMP2 END AS IMP2,
-                                                                       CASE WHEN (CO.ZZIMP_PERCENTAGE2 = '0.00') THEN '' ELSE CO.ZZIMP_PERCENTAGE2 END AS ZZIMP_PERCENTAGE2,
-                                                                       CASE WHEN (CO.ZZIMP_PERCENTAGE3 = '0.00') THEN '' ELSE CO.IMP3 END AS IMP3,
-                                                                       CASE WHEN (CO.ZZIMP_PERCENTAGE3 = '0.00') THEN '' ELSE CO.ZZIMP_PERCENTAGE3 END AS ZZIMP_PERCENTAGE3,
-                                                                       CASE WHEN (CO.ZZIMP_PERCENTAGE4 = '0.00') THEN '' ELSE CO.IMP4 END AS IMP4,
-                                                                       CASE WHEN (CO.ZZIMP_PERCENTAGE4 = '0.00') THEN '' ELSE CO.ZZIMP_PERCENTAGE4 END AS ZZIMP_PERCENTAGE4,
-                                                                       CASE WHEN (CO.ZZIMP_PERCENTAGE5 = '0.00') THEN '' ELSE CO.IMP5 END AS IMP5,
-                                                                       CASE WHEN (CO.ZZIMP_PERCENTAGE5 = '0.00') THEN '' ELSE CO.ZZIMP_PERCENTAGE5 END AS ZZIMP_PERCENTAGE5,
-                                                                       CASE WHEN (CO.ZZIMP_PERCENTAGE6 = '0.00') THEN '' ELSE CO.IMP6 END AS IMP6,
-                                                                       CASE WHEN (CO.ZZIMP_PERCENTAGE6 = '0.00') THEN '' ELSE CO.ZZIMP_PERCENTAGE6 END AS ZZIMP_PERCENTAGE6,
-                                                                       CASE WHEN (CO.ZZIMP_PERCENTAGE7 = '0.00') THEN '' ELSE CO.IMP7 END AS IMP7,
-                                                                       CASE WHEN (CO.ZZIMP_PERCENTAGE7 = '0.00') THEN '' ELSE CO.ZZIMP_PERCENTAGE7 END AS ZZIMP_PERCENTAGE7,
-                                                                       CASE WHEN (CO.ZZIMP_PERCENTAGE8 = '0.00') THEN '' ELSE CO.IMP8 END AS IMP8,
-                                                                       CASE WHEN (CO.ZZIMP_PERCENTAGE8 = '0.00') THEN '' ELSE CO.ZZIMP_PERCENTAGE8 END AS ZZIMP_PERCENTAGE8,
-                                                                       CASE WHEN (CO.ZZIMP_PERCENTAGE9 = '0.00') THEN '' ELSE CO.IMP9 END AS IMP9,
-                                                                       CASE WHEN (CO.ZZIMP_PERCENTAGE9 = '0.00') THEN '' ELSE CO.ZZIMP_PERCENTAGE9 END AS ZZIMP_PERCENTAGE9,
-                                                                       CASE WHEN (CO.ZZIMP_PERCENTAGE10 = '0.00') THEN '' ELSE CO.IMP10 END AS IMP10,
-                                                                       CASE WHEN (CO.ZZIMP_PERCENTAGE10 = '0.00') THEN '' ELSE CO.ZZIMP_PERCENTAGE10 END AS ZZIMP_PERCENTAGE10,
+                                       CASE WHEN (CO.ZZIMP_PERCENTAGE1 = '0.00') THEN '' ELSE CO.ZZIMP_PERCENTAGE1 END AS ZZIMP_PERCENTAGE1,
+                                       CASE WHEN (CO.ZZIMP_PERCENTAGE2 = '0.00') THEN '' ELSE CO.IMP2 END AS IMP2,
+                                       CASE WHEN (CO.ZZIMP_PERCENTAGE2 = '0.00') THEN '' ELSE CO.ZZIMP_PERCENTAGE2 END AS ZZIMP_PERCENTAGE2,
+                                       CASE WHEN (CO.ZZIMP_PERCENTAGE3 = '0.00') THEN '' ELSE CO.IMP3 END AS IMP3,
+                                       CASE WHEN (CO.ZZIMP_PERCENTAGE3 = '0.00') THEN '' ELSE CO.ZZIMP_PERCENTAGE3 END AS ZZIMP_PERCENTAGE3,
+                                       CASE WHEN (CO.ZZIMP_PERCENTAGE4 = '0.00') THEN '' ELSE CO.IMP4 END AS IMP4,
+                                       CASE WHEN (CO.ZZIMP_PERCENTAGE4 = '0.00') THEN '' ELSE CO.ZZIMP_PERCENTAGE4 END AS ZZIMP_PERCENTAGE4,
+                                       CASE WHEN (CO.ZZIMP_PERCENTAGE5 = '0.00') THEN '' ELSE CO.IMP5 END AS IMP5,
+                                       CASE WHEN (CO.ZZIMP_PERCENTAGE5 = '0.00') THEN '' ELSE CO.ZZIMP_PERCENTAGE5 END AS ZZIMP_PERCENTAGE5,
+                                       CASE WHEN (CO.ZZIMP_PERCENTAGE6 = '0.00') THEN '' ELSE CO.IMP6 END AS IMP6,
+                                       CASE WHEN (CO.ZZIMP_PERCENTAGE6 = '0.00') THEN '' ELSE CO.ZZIMP_PERCENTAGE6 END AS ZZIMP_PERCENTAGE6,
+                                       CASE WHEN (CO.ZZIMP_PERCENTAGE7 = '0.00') THEN '' ELSE CO.IMP7 END AS IMP7,
+                                       CASE WHEN (CO.ZZIMP_PERCENTAGE7 = '0.00') THEN '' ELSE CO.ZZIMP_PERCENTAGE7 END AS ZZIMP_PERCENTAGE7,
+                                       CASE WHEN (CO.ZZIMP_PERCENTAGE8 = '0.00') THEN '' ELSE CO.IMP8 END AS IMP8,
+                                       CASE WHEN (CO.ZZIMP_PERCENTAGE8 = '0.00') THEN '' ELSE CO.ZZIMP_PERCENTAGE8 END AS ZZIMP_PERCENTAGE8,
+                                       CASE WHEN (CO.ZZIMP_PERCENTAGE9 = '0.00') THEN '' ELSE CO.IMP9 END AS IMP9,
+                                       CASE WHEN (CO.ZZIMP_PERCENTAGE9 = '0.00') THEN '' ELSE CO.ZZIMP_PERCENTAGE9 END AS ZZIMP_PERCENTAGE9,
+                                       CASE WHEN (CO.ZZIMP_PERCENTAGE10 = '0.00') THEN '' ELSE CO.IMP10 END AS IMP10,
+                                       CASE WHEN (CO.ZZIMP_PERCENTAGE10 = '0.00') THEN '' ELSE CO.ZZIMP_PERCENTAGE10 END AS ZZIMP_PERCENTAGE10,
 
-                                                                       CASE WHEN (CO.ZZMSEG_PERCENTAGE1 = '0.00') THEN '' ELSE CO.MKTSEG1 END AS MKTSEG1,
-                                                                       CASE WHEN (CO.ZZMSEG_PERCENTAGE1 = '0.00') THEN '' ELSE CO.ZZMSEG_PERCENTAGE1 END AS ZZMSEG_PERCENTAGE1,
-                                                                       CASE WHEN (CO.ZZMSEG_PERCENTAGE2 = '0.00') THEN '' ELSE CO.MKTSEG2 END AS MKTSEG2,
-                                                                       CASE WHEN (CO.ZZMSEG_PERCENTAGE2 = '0.00') THEN '' ELSE CO.ZZMSEG_PERCENTAGE2 END AS ZZMSEG_PERCENTAGE2,
-                                                                       CASE WHEN (CO.ZZMSEG_PERCENTAGE3 = '0.00') THEN '' ELSE CO.MKTSEG3 END AS MKTSEG3,
-                                                                       CASE WHEN (CO.ZZMSEG_PERCENTAGE3 = '0.00') THEN '' ELSE CO.ZZMSEG_PERCENTAGE3 END AS ZZMSEG_PERCENTAGE3,
-                                                                       CASE WHEN (CO.ZZMSEG_PERCENTAGE4 = '0.00') THEN '' ELSE CO.MKTSEG4 END AS MKTSEG4,
-                                                                       CASE WHEN (CO.ZZMSEG_PERCENTAGE4 = '0.00') THEN '' ELSE CO.ZZMSEG_PERCENTAGE4 END AS ZZMSEG_PERCENTAGE4,
-                                                                       CASE WHEN (CO.ZZMSEG_PERCENTAGE5 = '0.00') THEN '' ELSE CO.MKTSEG5 END AS MKTSEG5,
-                                                                       CASE WHEN (CO.ZZMSEG_PERCENTAGE5 = '0.00') THEN '' ELSE CO.ZZMSEG_PERCENTAGE5 END AS ZZMSEG_PERCENTAGE5,
-                                                                       CASE WHEN (CO.ZZMSEG_PERCENTAGE6 = '0.00') THEN '' ELSE CO.MKTSEG6 END AS MKTSEG6,
-                                                                       CASE WHEN (CO.ZZMSEG_PERCENTAGE6 = '0.00') THEN '' ELSE CO.ZZMSEG_PERCENTAGE6 END AS ZZMSEG_PERCENTAGE6,
-                                                                       CASE WHEN (CO.ZZMSEG_PERCENTAGE7 = '0.00') THEN '' ELSE CO.MKTSEG7 END AS MKTSEG7,
-                                                                       CASE WHEN (CO.ZZMSEG_PERCENTAGE7 = '0.00') THEN '' ELSE CO.ZZMSEG_PERCENTAGE7 END AS ZZMSEG_PERCENTAGE7,
-                                                                       CASE WHEN (CO.ZZMSEG_PERCENTAGE8 = '0.00') THEN '' ELSE CO.MKTSEG8 END AS MKTSEG8,
-                                                                       CASE WHEN (CO.ZZMSEG_PERCENTAGE8 = '0.00') THEN '' ELSE CO.ZZMSEG_PERCENTAGE8 END AS ZZMSEG_PERCENTAGE8,
-                                                                       CASE WHEN (CO.ZZMSEG_PERCENTAGE9 = '0.00') THEN '' ELSE CO.MKTSEG9 END AS MKTSEG9,
-                                                                       CASE WHEN (CO.ZZMSEG_PERCENTAGE9 = '0.00') THEN '' ELSE CO.ZZMSEG_PERCENTAGE9 END AS ZZMSEG_PERCENTAGE9,
-                                                                       CASE WHEN (CO.ZZMSEG_PERCENTAGE10 = '0.00') THEN '' ELSE CO.MKTSEG10 END AS MKTSEG10,
-                                                                       CASE WHEN (CO.ZZMSEG_PERCENTAGE10 = '0.00') THEN '' ELSE CO.ZZMSEG_PERCENTAGE10 END AS ZZMSEG_PERCENTAGE10,
+                                       CASE WHEN (CO.ZZMSEG_PERCENTAGE1 = '0.00') THEN '' ELSE CO.MKTSEG1 END AS MKTSEG1,
+                                       CASE WHEN (CO.ZZMSEG_PERCENTAGE1 = '0.00') THEN '' ELSE CO.ZZMSEG_PERCENTAGE1 END AS ZZMSEG_PERCENTAGE1,
+                                       CASE WHEN (CO.ZZMSEG_PERCENTAGE2 = '0.00') THEN '' ELSE CO.MKTSEG2 END AS MKTSEG2,
+                                       CASE WHEN (CO.ZZMSEG_PERCENTAGE2 = '0.00') THEN '' ELSE CO.ZZMSEG_PERCENTAGE2 END AS ZZMSEG_PERCENTAGE2,
+                                       CASE WHEN (CO.ZZMSEG_PERCENTAGE3 = '0.00') THEN '' ELSE CO.MKTSEG3 END AS MKTSEG3,
+                                       CASE WHEN (CO.ZZMSEG_PERCENTAGE3 = '0.00') THEN '' ELSE CO.ZZMSEG_PERCENTAGE3 END AS ZZMSEG_PERCENTAGE3,
+                                       CASE WHEN (CO.ZZMSEG_PERCENTAGE4 = '0.00') THEN '' ELSE CO.MKTSEG4 END AS MKTSEG4,
+                                       CASE WHEN (CO.ZZMSEG_PERCENTAGE4 = '0.00') THEN '' ELSE CO.ZZMSEG_PERCENTAGE4 END AS ZZMSEG_PERCENTAGE4,
+                                       CASE WHEN (CO.ZZMSEG_PERCENTAGE5 = '0.00') THEN '' ELSE CO.MKTSEG5 END AS MKTSEG5,
+                                       CASE WHEN (CO.ZZMSEG_PERCENTAGE5 = '0.00') THEN '' ELSE CO.ZZMSEG_PERCENTAGE5 END AS ZZMSEG_PERCENTAGE5,
+                                       CASE WHEN (CO.ZZMSEG_PERCENTAGE6 = '0.00') THEN '' ELSE CO.MKTSEG6 END AS MKTSEG6,
+                                       CASE WHEN (CO.ZZMSEG_PERCENTAGE6 = '0.00') THEN '' ELSE CO.ZZMSEG_PERCENTAGE6 END AS ZZMSEG_PERCENTAGE6,
+                                       CASE WHEN (CO.ZZMSEG_PERCENTAGE7 = '0.00') THEN '' ELSE CO.MKTSEG7 END AS MKTSEG7,
+                                       CASE WHEN (CO.ZZMSEG_PERCENTAGE7 = '0.00') THEN '' ELSE CO.ZZMSEG_PERCENTAGE7 END AS ZZMSEG_PERCENTAGE7,
+                                       CASE WHEN (CO.ZZMSEG_PERCENTAGE8 = '0.00') THEN '' ELSE CO.MKTSEG8 END AS MKTSEG8,
+                                       CASE WHEN (CO.ZZMSEG_PERCENTAGE8 = '0.00') THEN '' ELSE CO.ZZMSEG_PERCENTAGE8 END AS ZZMSEG_PERCENTAGE8,
+                                       CASE WHEN (CO.ZZMSEG_PERCENTAGE9 = '0.00') THEN '' ELSE CO.MKTSEG9 END AS MKTSEG9,
+                                       CASE WHEN (CO.ZZMSEG_PERCENTAGE9 = '0.00') THEN '' ELSE CO.ZZMSEG_PERCENTAGE9 END AS ZZMSEG_PERCENTAGE9,
+                                       CASE WHEN (CO.ZZMSEG_PERCENTAGE10 = '0.00') THEN '' ELSE CO.MKTSEG10 END AS MKTSEG10,
+                                       CASE WHEN (CO.ZZMSEG_PERCENTAGE10 = '0.00') THEN '' ELSE CO.ZZMSEG_PERCENTAGE10 END AS ZZMSEG_PERCENTAGE10,
 
-                                                                       CASE WHEN (CO.ZZIND_PERCENTAGE1 = '0.00') THEN '' ELSE CO.INDUSTRY1 END AS INDUSTRY1,
-                                                                       CASE WHEN (CO.ZZIND_PERCENTAGE1 = '0.00') THEN '' ELSE CO.ZZIND_PERCENTAGE1 END AS ZZIND_PERCENTAGE1,
-                                                                       CASE WHEN (CO.ZZIND_PERCENTAGE2 = '0.00') THEN '' ELSE CO.INDUSTRY2 END AS INDUSTRY2,
-                                                                       CASE WHEN (CO.ZZIND_PERCENTAGE2 = '0.00') THEN '' ELSE CO.ZZIND_PERCENTAGE2 END AS ZZIND_PERCENTAGE2,
-                                                                       CASE WHEN (CO.ZZIND_PERCENTAGE3 = '0.00') THEN '' ELSE CO.INDUSTRY3 END AS INDUSTRY3,
-                                                                       CASE WHEN (CO.ZZIND_PERCENTAGE3 = '0.00') THEN '' ELSE CO.ZZIND_PERCENTAGE3 END AS ZZIND_PERCENTAGE3,
-                                                                       CASE WHEN (CO.ZZIND_PERCENTAGE4 = '0.00') THEN '' ELSE CO.INDUSTRY4 END AS INDUSTRY4,
-                                                                       CASE WHEN (CO.ZZIND_PERCENTAGE4 = '0.00') THEN '' ELSE CO.ZZIND_PERCENTAGE4 END AS ZZIND_PERCENTAGE4,
-                                                                       CASE WHEN (CO.ZZIND_PERCENTAGE5 = '0.00') THEN '' ELSE CO.INDUSTRY5 END AS INDUSTRY5,
-                                                                       CASE WHEN (CO.ZZIND_PERCENTAGE5 = '0.00') THEN '' ELSE CO.ZZIND_PERCENTAGE5 END AS ZZIND_PERCENTAGE5,
-                                                                       CASE WHEN (CO.ZZIND_PERCENTAGE6 = '0.00') THEN '' ELSE CO.INDUSTRY6 END AS INDUSTRY6,
-                                                                       CASE WHEN (CO.ZZIND_PERCENTAGE6 = '0.00') THEN '' ELSE CO.ZZIND_PERCENTAGE6 END AS ZZIND_PERCENTAGE6,
-                                                                       CASE WHEN (CO.ZZIND_PERCENTAGE7 = '0.00') THEN '' ELSE CO.INDUSTRY7 END AS INDUSTRY7,
-                                                                       CASE WHEN (CO.ZZIND_PERCENTAGE7 = '0.00') THEN '' ELSE CO.ZZIND_PERCENTAGE7 END AS ZZIND_PERCENTAGE7,
-                                                                       CASE WHEN (CO.ZZIND_PERCENTAGE8 = '0.00') THEN '' ELSE CO.INDUSTRY8 END AS INDUSTRY8,
-                                                                       CASE WHEN (CO.ZZIND_PERCENTAGE8 = '0.00') THEN '' ELSE CO.ZZIND_PERCENTAGE8 END AS ZZIND_PERCENTAGE8,
-                                                                       CASE WHEN (CO.ZZIND_PERCENTAGE9 = '0.00') THEN '' ELSE CO.INDUSTRY9 END AS INDUSTRY9,
-                                                                       CASE WHEN (CO.ZZIND_PERCENTAGE9 = '0.00') THEN '' ELSE CO.ZZIND_PERCENTAGE9 END AS ZZIND_PERCENTAGE9,
-                                                                       CASE WHEN (CO.ZZIND_PERCENTAGE10 = '0.00') THEN '' ELSE CO.INDUSTRY10 END AS INDUSTRY10,
-                                                                       CASE WHEN (CO.ZZIND_PERCENTAGE10 = '0.00') THEN '' ELSE CO.ZZIND_PERCENTAGE10 END AS ZZIND_PERCENTAGE10,
+                                       CASE WHEN (CO.ZZIND_PERCENTAGE1 = '0.00') THEN '' ELSE CO.INDUSTRY1 END AS INDUSTRY1,
+                                       CASE WHEN (CO.ZZIND_PERCENTAGE1 = '0.00') THEN '' ELSE CO.ZZIND_PERCENTAGE1 END AS ZZIND_PERCENTAGE1,
+                                       CASE WHEN (CO.ZZIND_PERCENTAGE2 = '0.00') THEN '' ELSE CO.INDUSTRY2 END AS INDUSTRY2,
+                                       CASE WHEN (CO.ZZIND_PERCENTAGE2 = '0.00') THEN '' ELSE CO.ZZIND_PERCENTAGE2 END AS ZZIND_PERCENTAGE2,
+                                       CASE WHEN (CO.ZZIND_PERCENTAGE3 = '0.00') THEN '' ELSE CO.INDUSTRY3 END AS INDUSTRY3,
+                                       CASE WHEN (CO.ZZIND_PERCENTAGE3 = '0.00') THEN '' ELSE CO.ZZIND_PERCENTAGE3 END AS ZZIND_PERCENTAGE3,
+                                       CASE WHEN (CO.ZZIND_PERCENTAGE4 = '0.00') THEN '' ELSE CO.INDUSTRY4 END AS INDUSTRY4,
+                                       CASE WHEN (CO.ZZIND_PERCENTAGE4 = '0.00') THEN '' ELSE CO.ZZIND_PERCENTAGE4 END AS ZZIND_PERCENTAGE4,
+                                       CASE WHEN (CO.ZZIND_PERCENTAGE5 = '0.00') THEN '' ELSE CO.INDUSTRY5 END AS INDUSTRY5,
+                                       CASE WHEN (CO.ZZIND_PERCENTAGE5 = '0.00') THEN '' ELSE CO.ZZIND_PERCENTAGE5 END AS ZZIND_PERCENTAGE5,
+                                       CASE WHEN (CO.ZZIND_PERCENTAGE6 = '0.00') THEN '' ELSE CO.INDUSTRY6 END AS INDUSTRY6,
+                                       CASE WHEN (CO.ZZIND_PERCENTAGE6 = '0.00') THEN '' ELSE CO.ZZIND_PERCENTAGE6 END AS ZZIND_PERCENTAGE6,
+                                       CASE WHEN (CO.ZZIND_PERCENTAGE7 = '0.00') THEN '' ELSE CO.INDUSTRY7 END AS INDUSTRY7,
+                                       CASE WHEN (CO.ZZIND_PERCENTAGE7 = '0.00') THEN '' ELSE CO.ZZIND_PERCENTAGE7 END AS ZZIND_PERCENTAGE7,
+                                       CASE WHEN (CO.ZZIND_PERCENTAGE8 = '0.00') THEN '' ELSE CO.INDUSTRY8 END AS INDUSTRY8,
+                                       CASE WHEN (CO.ZZIND_PERCENTAGE8 = '0.00') THEN '' ELSE CO.ZZIND_PERCENTAGE8 END AS ZZIND_PERCENTAGE8,
+                                       CASE WHEN (CO.ZZIND_PERCENTAGE9 = '0.00') THEN '' ELSE CO.INDUSTRY9 END AS INDUSTRY9,
+                                       CASE WHEN (CO.ZZIND_PERCENTAGE9 = '0.00') THEN '' ELSE CO.ZZIND_PERCENTAGE9 END AS ZZIND_PERCENTAGE9,
+                                       CASE WHEN (CO.ZZIND_PERCENTAGE10 = '0.00') THEN '' ELSE CO.INDUSTRY10 END AS INDUSTRY10,
+                                       CASE WHEN (CO.ZZIND_PERCENTAGE10 = '0.00') THEN '' ELSE CO.ZZIND_PERCENTAGE10 END AS ZZIND_PERCENTAGE10,
 
-                                                                       CASE WHEN (CO.ZZSOL_PERCENTAGE1 = '0.00') THEN '' ELSE CO.SOLUTION1 END AS SOLUTION1,
-                                                                       CASE WHEN (CO.ZZSOL_PERCENTAGE1 = '0.00') THEN '' ELSE CO.ZZSOL_PERCENTAGE1 END AS ZZSOL_PERCENTAGE1,
-                                                                       CASE WHEN (CO.ZZSOL_PERCENTAGE2 = '0.00') THEN '' ELSE CO.SOLUTION2 END AS SOLUTION2,
-                                                                       CASE WHEN (CO.ZZSOL_PERCENTAGE2 = '0.00') THEN '' ELSE CO.ZZSOL_PERCENTAGE2 END AS ZZSOL_PERCENTAGE2,
-                                                                       CASE WHEN (CO.ZZSOL_PERCENTAGE3 = '0.00') THEN '' ELSE CO.SOLUTION3 END AS SOLUTION3,
-                                                                       CASE WHEN (CO.ZZSOL_PERCENTAGE3 = '0.00') THEN '' ELSE CO.ZZSOL_PERCENTAGE3 END AS ZZSOL_PERCENTAGE3,
-                                                                       CASE WHEN (CO.ZZSOL_PERCENTAGE4 = '0.00') THEN '' ELSE CO.SOLUTION4 END AS SOLUTION4,
-                                                                       CASE WHEN (CO.ZZSOL_PERCENTAGE4 = '0.00') THEN '' ELSE CO.ZZSOL_PERCENTAGE4 END AS ZZSOL_PERCENTAGE4,
-                                                                       CASE WHEN (CO.ZZSOL_PERCENTAGE5 = '0.00') THEN '' ELSE CO.SOLUTION5 END AS SOLUTION5,
-                                                                       CASE WHEN (CO.ZZSOL_PERCENTAGE5 = '0.00') THEN '' ELSE CO.ZZSOL_PERCENTAGE5 END AS ZZSOL_PERCENTAGE5,
-                                                                       CASE WHEN (CO.ZZSOL_PERCENTAGE6 = '0.00') THEN '' ELSE CO.SOLUTION6 END AS SOLUTION6,
-                                                                       CASE WHEN (CO.ZZSOL_PERCENTAGE6 = '0.00') THEN '' ELSE CO.ZZSOL_PERCENTAGE6 END AS ZZSOL_PERCENTAGE6,
-                                                                       CASE WHEN (CO.ZZSOL_PERCENTAGE7 = '0.00') THEN '' ELSE CO.SOLUTION7 END AS SOLUTION7,
-                                                                       CASE WHEN (CO.ZZSOL_PERCENTAGE7 = '0.00') THEN '' ELSE CO.ZZSOL_PERCENTAGE7 END AS ZZSOL_PERCENTAGE7,
-                                                                       CASE WHEN (CO.ZZSOL_PERCENTAGE8 = '0.00') THEN '' ELSE CO.SOLUTION8 END AS SOLUTION8,
-                                                                       CASE WHEN (CO.ZZSOL_PERCENTAGE8 = '0.00') THEN '' ELSE CO.ZZSOL_PERCENTAGE8 END AS ZZSOL_PERCENTAGE8,
-                                                                       CASE WHEN (CO.ZZSOL_PERCENTAGE9 = '0.00') THEN '' ELSE CO.SOLUTION9 END AS SOLUTION9,
-                                                                       CASE WHEN (CO.ZZSOL_PERCENTAGE9 = '0.00') THEN '' ELSE CO.ZZSOL_PERCENTAGE9 END AS ZZSOL_PERCENTAGE9,
-                                                                       CASE WHEN (CO.ZZSOL_PERCENTAGE10 = '0.00') THEN '' ELSE CO.SOLUTION10 END AS SOLUTION10,
-                                                                       CASE WHEN (CO.ZZSOL_PERCENTAGE10 = '0.00') THEN '' ELSE CO.ZZSOL_PERCENTAGE10 END AS ZZSOL_PERCENTAGE10,
-        '' AS R3_TRANS_STATUS, --NO ENTRY NEEDED
+                                       CASE WHEN (CO.ZZSOL_PERCENTAGE1 = '0.00') THEN '' ELSE CO.SOLUTION1 END AS SOLUTION1,
+                                       CASE WHEN (CO.ZZSOL_PERCENTAGE1 = '0.00') THEN '' ELSE CO.ZZSOL_PERCENTAGE1 END AS ZZSOL_PERCENTAGE1,
+                                       CASE WHEN (CO.ZZSOL_PERCENTAGE2 = '0.00') THEN '' ELSE CO.SOLUTION2 END AS SOLUTION2,
+                                       CASE WHEN (CO.ZZSOL_PERCENTAGE2 = '0.00') THEN '' ELSE CO.ZZSOL_PERCENTAGE2 END AS ZZSOL_PERCENTAGE2,
+                                       CASE WHEN (CO.ZZSOL_PERCENTAGE3 = '0.00') THEN '' ELSE CO.SOLUTION3 END AS SOLUTION3,
+                                       CASE WHEN (CO.ZZSOL_PERCENTAGE3 = '0.00') THEN '' ELSE CO.ZZSOL_PERCENTAGE3 END AS ZZSOL_PERCENTAGE3,
+                                       CASE WHEN (CO.ZZSOL_PERCENTAGE4 = '0.00') THEN '' ELSE CO.SOLUTION4 END AS SOLUTION4,
+                                       CASE WHEN (CO.ZZSOL_PERCENTAGE4 = '0.00') THEN '' ELSE CO.ZZSOL_PERCENTAGE4 END AS ZZSOL_PERCENTAGE4,
+                                       CASE WHEN (CO.ZZSOL_PERCENTAGE5 = '0.00') THEN '' ELSE CO.SOLUTION5 END AS SOLUTION5,
+                                       CASE WHEN (CO.ZZSOL_PERCENTAGE5 = '0.00') THEN '' ELSE CO.ZZSOL_PERCENTAGE5 END AS ZZSOL_PERCENTAGE5,
+                                       CASE WHEN (CO.ZZSOL_PERCENTAGE6 = '0.00') THEN '' ELSE CO.SOLUTION6 END AS SOLUTION6,
+                                       CASE WHEN (CO.ZZSOL_PERCENTAGE6 = '0.00') THEN '' ELSE CO.ZZSOL_PERCENTAGE6 END AS ZZSOL_PERCENTAGE6,
+                                       CASE WHEN (CO.ZZSOL_PERCENTAGE7 = '0.00') THEN '' ELSE CO.SOLUTION7 END AS SOLUTION7,
+                                       CASE WHEN (CO.ZZSOL_PERCENTAGE7 = '0.00') THEN '' ELSE CO.ZZSOL_PERCENTAGE7 END AS ZZSOL_PERCENTAGE7,
+                                       CASE WHEN (CO.ZZSOL_PERCENTAGE8 = '0.00') THEN '' ELSE CO.SOLUTION8 END AS SOLUTION8,
+                                       CASE WHEN (CO.ZZSOL_PERCENTAGE8 = '0.00') THEN '' ELSE CO.ZZSOL_PERCENTAGE8 END AS ZZSOL_PERCENTAGE8,
+                                       CASE WHEN (CO.ZZSOL_PERCENTAGE9 = '0.00') THEN '' ELSE CO.SOLUTION9 END AS SOLUTION9,
+                                       CASE WHEN (CO.ZZSOL_PERCENTAGE9 = '0.00') THEN '' ELSE CO.ZZSOL_PERCENTAGE9 END AS ZZSOL_PERCENTAGE9,
+                                       CASE WHEN (CO.ZZSOL_PERCENTAGE10 = '0.00') THEN '' ELSE CO.SOLUTION10 END AS SOLUTION10,
+                                       CASE WHEN (CO.ZZSOL_PERCENTAGE10 = '0.00') THEN '' ELSE CO.ZZSOL_PERCENTAGE10 END AS ZZSOL_PERCENTAGE10,
+                                        '' AS R3_TRANS_STATUS, --NO ENTRY NEEDED
                                         HL6.URL AS ORG_WWW,
                                         HL6.VENUE AS VENUE,
                                         HL6.NUMBER_OF_PARTICIPANTS AS NO_OF_PARTICIPANTS,
@@ -586,6 +589,8 @@ BEGIN
                                         HL6.PERSON_RESPONSIBLE AS PARTNER_NO
                                         , MARKETING_PROGRAM.NAME AS MKT_PROGRAM_ID
                                         FROM HL6
+                                        LEFT JOIN HL6_LEGACY ON HL6_LEGACY.HL6_ID = HL6.HL6_ID
+                                        LEFT JOIN HL5_LEGACY ON HL6_LEGACY.HL5_LEGACY_ID = HL5_LEGACY.HL5_LEGACY_ID
                                         LEFT JOIN OBJECTIVE OB ON OB.OBJECTIVE_ID = HL6.CAMPAIGN_OBJECTIVE_ID
                                         LEFT JOIN CAMPAIGN_TYPE CT ON CT.CAMPAIGN_TYPE_ID = HL6.CAMPAIGN_TYPE_ID
                                         LEFT JOIN CAMPAIGN_SUB_TYPE CST ON CST.CAMPAIGN_SUB_TYPE_ID = HL6.CAMPAIGN_SUBTYPE_ID
@@ -599,7 +604,7 @@ BEGIN
                                         LEFT JOIN :VA_CATEGORY_OPTION CO ON 1=1
                                         LEFT JOIN MARKETING_ACTIVITY MARKETING_ACTIVITY ON MARKETING_ACTIVITY.MARKETING_ACTIVITY_ID = HL6.MARKETING_ACTIVITY_ID
                                         LEFT JOIN COUNTRY COUNTRY ON COUNTRY.COUNTRY_ID = HL6.COUNTRY_ID
-                                        WHERE HL6_ID = IN_HL_ID;
+                                        WHERE HL6.HL6_ID = IN_HL_ID;
             END IF;
 
         --**********************************************--

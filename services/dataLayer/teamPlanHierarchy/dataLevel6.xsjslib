@@ -23,6 +23,7 @@ var GET_HL6_FOR_EMAIL = "GET_HL6_FOR_EMAIL";
 var spInsHl6CrmBinding = "INS_HL6_CRM_BINDING";
 var spInsHl6LogStatus = "INS_HL6_LOG_STATUS";
 var spInsHl6 = "INS_HL6";
+var INS_HL6_LEGACY = "INS_HL6_LEGACY";
 var spInsHl6Versioned = "INS_HL6_IN_CRM_VERSION";
 
 
@@ -40,6 +41,7 @@ var spUpdHl6 = "UPD_HL6";
 
 /**********DELETE************************/
 var spDelHl6ById = "DEL_HL6_BY_ID";
+var spDelHl6LegacyById = "DEL_HL6_LEGACY_BY_ID";
 var spDelHl6Budget = "DEL_HL6_BUDGET";
 var spDelHl6BudgetHard = "DEL_HL6_BUDGET_HARD";
 var spDelHl6Sales = "DEL_HL6_SALES";
@@ -75,7 +77,7 @@ function insertHl6(hl6CrmDescription,hl6Acronym,budget,hl5Id, routeToMarket
     , region
     , event_owner
     , number_of_participants
-    , priority_id,co_funded,allow_budget_zero, is_power_user, employeeResponsible, personResponsible, is_complete, autoCommit, imported,import_id, inherited_creation){
+    , priority_id,co_funded,allow_budget_zero, is_power_user, employeeResponsible, personResponsible, is_complete, autoCommit, imported,import_id, inherited_creation, parent_path){
     var params = {
         'in_hl6_crm_description' : hl6CrmDescription,
         'in_acronym': hl6Acronym,
@@ -132,6 +134,7 @@ function insertHl6(hl6CrmDescription,hl6Acronym,budget,hl5Id, routeToMarket
         , 'in_is_complete': is_complete
         , 'in_country_id': country
         , 'in_inherited_creation' : inherited_creation ? 1 : 0
+        ,  'in_parent_path' : parent_path || null
     };
 
     var rdo;
@@ -141,6 +144,15 @@ function insertHl6(hl6CrmDescription,hl6Acronym,budget,hl5Id, routeToMarket
         rdo = db.executeScalarManual(spInsHl6,params,'out_hl6_id');
     }
     return rdo;
+}
+
+function insertHl6Legacy(hl6Id, hl5LegacyId){
+    var params = {
+        in_hl6_id: hl6Id,
+        in_hl5_legacy_id: hl5LegacyId
+    };
+
+    return db.executeScalarManual(INS_HL6_LEGACY,params,'out_result');
 }
 
 /*en inserts*/
@@ -163,8 +175,8 @@ function getHl6LegacyByHl5Id(hl5Id) {
     return db.extractArray(rdo.out_result);
 }
 
-function getHl6TotalBudgetByHl5Id(hl5Id) {
-	var params = { 'in_hl5_id': hl5Id };
+function getHl6TotalBudgetByHl5Id(hl5Id, isLegacy) {
+	var params = { 'in_hl5_id': hl5Id, 'in_is_legacy': isLegacy};
 	return db.executeDecimalManual(spGetHl6TotalBudgetByHl5Id, params, 'out_result');
 	return rdo;
 }
@@ -509,8 +521,15 @@ function delHl6(hl6Id, userId){
 	return null;
 }
 
-function getNewHl6Id(HL5_ID){
-    var rdo =  db.extractArray(db.executeProcedureManual(spGetNewHL6ID, {'IN_HL5_ID':HL5_ID}).out_result);
+function deleteHl6LegacyByHl6Id(hl6Id, userId){
+    if(hl6Id){
+        return db.executeScalarManual(spDelHl6LegacyById, {'in_hl6_id': hl6Id, 'in_modified_user_id': userId}, 'out_result');
+    }
+    return null;
+}
+
+function getNewHl6Id(HL5_ID, isLegacy){
+    var rdo =  db.extractArray(db.executeProcedureManual(spGetNewHL6ID, {'IN_HL5_ID':HL5_ID, IN_IS_LEGACY: Number(isLegacy)}).out_result);
     var newId = rdo.length + 1;
     for (var i = 0; i < rdo.length; i++) {
         var aux = Number(rdo[i].ACRONYM);

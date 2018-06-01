@@ -130,12 +130,17 @@ function getFullPathByLevelParent(level, parentId) {
     return result;
 }
 
-function insParentPath(level, id, parentId, userId) {
-    var path = dataPath.getPathByLevelParent(LEVEL[level], parentId)[0];
+function insParentPath(level, id, parentId, userId, parentLegacyPath) {
+    var parentPath = '';
+    if(parentLegacyPath) {
+        parentPath = parentLegacyPath;
+    } else {
+        var path = dataPath.getPathByLevelParent(LEVEL[level], parentId)[0];
 
-    var parentPath = "CRM-" + path.L1_ACRONYM + path.BUDGET_YEAR + "-" + path.L3_ACRONYM
-        + (path.L4_ACRONYM ? '-' + path.L4_ACRONYM : '')
-        + (path.L5_ACRONYM || '');
+        parentPath = "CRM-" + path.L1_ACRONYM + path.BUDGET_YEAR + "-" + path.L3_ACRONYM
+            + (path.L4_ACRONYM ? '-' + path.L4_ACRONYM : '')
+            + (path.L5_ACRONYM || '');
+    }
 
     dataPath.insParentPath(level, id, parentPath, userId);
 };

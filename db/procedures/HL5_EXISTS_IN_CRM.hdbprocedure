@@ -7,11 +7,17 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::HL5_EXISTS_IN_CR
 	READS SQL DATA AS
 BEGIN
 
+temp_ds = SELECT HL5_STATUS_DETAIL_ID
+          FROM HL5_STATUS_HISTORY
+          WHERE HL5_ID = IN_HL5_ID
+          UNION
+          SELECT HL5_STATUS_DETAIL_ID
+          FROM HL5
+          WHERE HL5_ID = IN_HL5_ID;
+
 -- Check if the HL5 has been in the "In CRM" or "In CRM-Need New Budget Approval" status
-	SELECT COUNT(*)
-	INTO out_result
-	FROM HL5_STATUS_HISTORY
-	WHERE (hl5_status_detail_id = 3 or hl5_status_detail_id = 8)
-	  AND hl5_id = in_hl5_id;
+	SELECT COUNT(T.HL5_STATUS_DETAIL_ID) INTO out_result
+	FROM :temp_ds T
+	WHERE (T.hl5_status_detail_id = 3 or T.hl5_status_detail_id = 8);
 	  
 END;

@@ -63,29 +63,25 @@ function handleGet(params, userId) {
 //Implementation of PUT call -- Update HL6
 function handlePut(reqBody, userId){
     var parameters = httpUtil.getUrlParameters();
-    if(parameters.length > 0){
-        var aCmd = parameters.get('method');
-        var hl6Id = !reqBody ? parameters.get('HL6_ID') : reqBody.hl6Ids;
-        switch (aCmd) {
-            case setStatusInCRM: //set status In CRM
-                var rdo = hl6.setStatusInCRM(hl6Id, userId);
-                return	httpUtil.handleResponse(rdo,httpUtil.OK,httpUtil.AppJson);
-                break;
-            case setStatusInCRMByUpload:
-                var rdo = hl6.setStatusInCRMByUpload(reqBody, userId);
-                return	httpUtil.handleResponse(rdo,httpUtil.OK,httpUtil.AppJson);
-                break;
-            case changeStatus:
-                var CANCEL_CONFIRMATION = parameters.get('CANCEL_CONFIRMATION');
-                var rdo = hl6.changeStatusOnDemand(hl6Id, userId, CANCEL_CONFIRMATION);
-                return	httpUtil.handleResponse(rdo,httpUtil.OK,httpUtil.AppJson);
-                break;
-            default:
-                throw ErrorLib.getErrors().BadRequest("","level6Services/handlePut","insufficient parameters");
-        }
-    }else{
-        var result =  hl6.updateHl6(reqBody, userId);
-        return httpUtil.handleResponse(result,httpUtil.OK,httpUtil.AppJson);
+    var aCmd = parameters.get('method');
+    var hl6Id = !reqBody ? parameters.get('HL6_ID') : reqBody.hl6Ids;
+    switch (aCmd) {
+        case setStatusInCRM: //set status In CRM
+            var rdo = hl6.setStatusInCRM(hl6Id, userId);
+            return	httpUtil.handleResponse(rdo,httpUtil.OK,httpUtil.AppJson);
+            break;
+        case setStatusInCRMByUpload:
+            var rdo = hl6.setStatusInCRMByUpload(reqBody, userId);
+            return	httpUtil.handleResponse(rdo,httpUtil.OK,httpUtil.AppJson);
+            break;
+        case changeStatus:
+            var CANCEL_CONFIRMATION = parameters.get('CANCEL_CONFIRMATION');
+            var rdo = hl6.changeStatusOnDemand(hl6Id, userId, CANCEL_CONFIRMATION);
+            return	httpUtil.handleResponse(rdo,httpUtil.OK,httpUtil.AppJson);
+            break;
+        default:
+            var result =  hl6.updateHl6(reqBody, userId, aCmd == 'UPDATE_LEGACY');
+            return httpUtil.handleResponse(result,httpUtil.OK,httpUtil.AppJson);
     }
 }
 
@@ -102,7 +98,7 @@ function handlePost(reqBody, userId) {
     if(method === CLONE){
         result = hl6.clone(reqBody.HL6_ID, userId); //return new L6 Id
     }else{
-        result = hl6.insertHl6(reqBody, userId); //return new L6 Id
+        result = hl6.insertHl6(reqBody, userId, method == 'NEW_LEGACY'); //return new L6 Id
     }
 
     return httpUtil.handleResponse(result,httpUtil.OK,httpUtil.AppJson);

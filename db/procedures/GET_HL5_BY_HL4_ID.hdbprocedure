@@ -126,6 +126,87 @@ aux_out_result = SELECT
                                    WHERE hl5.enabled=1
                                         AND hl5.deleted=0
                                         AND hl5.hl4_id = in_hl4_id;
+                                        
+           va_legacy_with_children = (SELECT
+			                                   va_hl5.HL5_ID,
+			                                   va_hl5.HL5_LEGACY_ID,
+			                                   va_hl5.CRM_ID,
+			                                   va_hl5.STATUS_DETAIL,
+			                                   va_hl5.HL5_STATUS_DETAIL_ID,
+			                                   va_hl5.CREATED_BY,
+			                                   va_hl5.HL5_BUDGET,
+			                                   COUNT(DISTINCT hl6.HL6_legacy_ID) AS TOTAL_HL6,
+			                                   SUM(CASE WHEN  hl6.IN_BUDGET IS NULL THEN 0 WHEN hl6.IN_BUDGET = 0 THEN 1 ELSE 0 END) QUANTITY_HL6_OUT_BUDGET, --# of L6 out off budget,
+			                                   COALESCE(SUM(hl6.BUDGET),0) AS ALLOCATED,
+			                                   COALESCE((va_hl5.HL5_BUDGET - SUM(hl6.BUDGET)), va_hl5.HL5_BUDGET) AS REMAINING,
+			                                   SUM(CASE WHEN (hl6.HL6_STATUS_DETAIL_ID = 2 OR hl6.HL6_STATUS_DETAIL_ID = 3 OR hl6.HL6_STATUS_DETAIL_ID = 4) THEN 1 ELSE 0 END) AS IN_CRM_CHILD,
+			                                   va_hl5.IMPORTED,
+			                                   va_hl5.ACRONYM,
+			                                   va_hl5.HL5_CRM_DESCRIPTION,
+			                                   va_hl5.PARENT_STATUS_ID,
+			                                   va_hl5.IS_LEGACY
+			                            FROM :va_intermidate_legacy va_hl5
+			                                INNER JOIN HL6_LEGACY hl6 ON hl6.HL5_LEGACY_ID = va_hl5.HL5_LEGACY_ID
+			                                    AND hl6.enabled=1
+			                                    AND hl6.deleted=0
+			                                    AND HL6.HL6_STATUS_DETAIL_ID != 10
+			                                    AND HL6.HL6_ID is null
+			                            GROUP BY
+			                                va_hl5.HL5_ID,
+			                                va_HL5.HL5_LEGACY_ID,
+			                                va_hl5.CRM_ID,
+			                                va_hl5.STATUS_DETAIL,
+			                                va_hl5.HL5_STATUS_DETAIL_ID,
+			                                va_hl5.CREATED_BY,
+			                                va_hl5.HL5_BUDGET,
+			                                va_hl5.IMPORTED,
+			                                va_hl5.ACRONYM,
+			                                va_hl5.HL5_CRM_DESCRIPTION,
+			                                va_hl5.PARENT_STATUS_ID,
+			                                va_hl5.IS_LEGACY)
+			
+			                           UNION
+
+			                           (SELECT
+			                                  va_hl5.HL5_ID,
+			                                  va_hl5.HL5_LEGACY_ID,
+			                                  va_hl5.CRM_ID,
+			                                  va_hl5.STATUS_DETAIL,
+			                                  va_hl5.HL5_STATUS_DETAIL_ID,
+			                                  va_hl5.CREATED_BY,
+			                                  va_hl5.HL5_BUDGET,
+			                                  COUNT(DISTINCT hl6_legacy.HL6_LEGACY_ID) AS TOTAL_HL6,
+			                                  SUM(CASE WHEN  HL6.IN_BUDGET IS NULL THEN 0 WHEN HL6.IN_BUDGET = 0 THEN 1 ELSE 0 END) QUANTITY_HL6_OUT_BUDGET, --# of L6 out off budget,
+						                      COALESCE(SUM(hl6.BUDGET),0) AS ALLOCATED,
+						                      COALESCE((va_hl5.HL5_BUDGET - SUM(hl6.BUDGET)), va_hl5.HL5_BUDGET) AS REMAINING,
+						                      SUM(CASE WHEN (hl6.HL6_STATUS_DETAIL_ID = 2 OR hl6.HL6_STATUS_DETAIL_ID = 3 OR hl6.HL6_STATUS_DETAIL_ID = 4) THEN 1 ELSE 0 END) AS IN_CRM_CHILD,
+						                      va_hl5.IMPORTED,
+			                                  va_hl5.ACRONYM,
+			                                  va_hl5.HL5_CRM_DESCRIPTION,
+			                                  va_hl5.PARENT_STATUS_ID,
+			                                  va_hl5.IS_LEGACY
+			                           FROM :va_intermidate_legacy va_hl5
+			                               INNER JOIN HL6_LEGACY hl6_legacy ON hl6_legacy.HL5_LEGACY_ID = va_hl5.HL5_LEGACY_ID
+			                               	   AND hl6_legacy.enabled=1
+			                                   AND hl6_legacy.deleted=0
+			                                   AND hl6_legacy.HL6_ID is not null
+			                               INNER JOIN HL6 hl6 ON hl6.HL6_ID = hl6_legacy.HL6_ID
+			                                   AND hl6.enabled=1
+			                                   AND hl6.deleted=0
+			                                   AND hl6.HL6_STATUS_DETAIL_ID != 10
+			                           GROUP BY
+			                               va_hl5.HL5_ID,
+			                               va_HL5.HL5_LEGACY_ID,
+			                               va_hl5.CRM_ID,
+			                               va_hl5.STATUS_DETAIL,
+			                               va_hl5.HL5_STATUS_DETAIL_ID,
+			                               va_hl5.CREATED_BY,
+			                               va_hl5.HL5_BUDGET,
+			                               va_hl5.IMPORTED,
+			                               va_hl5.ACRONYM,
+			                               va_hl5.HL5_CRM_DESCRIPTION,
+			                               va_hl5.PARENT_STATUS_ID,
+			                               va_hl5.IS_LEGACY);
 
            aux_out_result =
                            (SELECT  HL5_ID,
@@ -150,42 +231,65 @@ aux_out_result = SELECT
 
                            UNION ALL
 
-                           (SELECT
-                                   va_hl5.HL5_ID,
-                                   va_hl5.HL5_LEGACY_ID,
-                                   va_hl5.CRM_ID,
-                                   va_hl5.STATUS_DETAIL,
-                                   va_hl5.HL5_STATUS_DETAIL_ID,
-                                   va_hl5.CREATED_BY,
-                                   va_hl5.HL5_BUDGET,
-                                   COUNT(DISTINCT hl6.HL6_legacy_ID) AS TOTAL_HL6,
-                                   SUM(CASE WHEN  hl6.IN_BUDGET IS NULL THEN 0 WHEN hl6.IN_BUDGET = 0 THEN 1 ELSE 0 END) QUANTITY_HL6_OUT_BUDGET, --# of L6 out off budget,
-                                   COALESCE(SUM(hl6.BUDGET),0) AS ALLOCATED,
-                                   COALESCE((va_hl5.HL5_BUDGET - SUM(hl6.BUDGET)), va_hl5.HL5_BUDGET) AS REMAINING,
-                                   SUM(CASE WHEN (hl6.HL6_STATUS_DETAIL_ID = 2 OR hl6.HL6_STATUS_DETAIL_ID = 3 OR hl6.HL6_STATUS_DETAIL_ID = 4) THEN 1 ELSE 0 END) AS IN_CRM_CHILD,
-                                   va_hl5.IMPORTED,
-                                   va_hl5.ACRONYM,
-                                   va_hl5.HL5_CRM_DESCRIPTION,
-                                   va_hl5.PARENT_STATUS_ID,
-                                   va_hl5.IS_LEGACY
-                            FROM :va_intermidate_legacy va_hl5
-                                LEFT JOIN HL6_LEGACY hl6 ON hl6.HL5_LEGACY_ID = va_hl5.HL5_LEGACY_ID
-                                    AND hl6.enabled=1
-                                    AND hl6.deleted=0
-                                    AND HL6.HL6_STATUS_DETAIL_ID != 10
-                            GROUP BY
-                                va_hl5.HL5_ID,
-                                va_HL5.HL5_LEGACY_ID,
-                                va_hl5.CRM_ID,
-                                va_hl5.STATUS_DETAIL,
-                                va_hl5.HL5_STATUS_DETAIL_ID,
-                                va_hl5.CREATED_BY,
-                                va_hl5.HL5_BUDGET,
-                                va_hl5.IMPORTED,
-                                va_hl5.ACRONYM,
-                                va_hl5.HL5_CRM_DESCRIPTION,
-                                va_hl5.PARENT_STATUS_ID,
-                                va_hl5.IS_LEGACY);
+                           (SELECT  HL5_ID,
+                                    HL5_LEGACY_ID,
+                                    CRM_ID,
+                                    STATUS_DETAIL,
+                                    HL5_STATUS_DETAIL_ID,
+                                    CREATED_BY,
+                                    HL5_BUDGET,
+                                    SUM(TOTAL_HL6) AS TOTAL_HL6,
+                                    SUM(QUANTITY_HL6_OUT_BUDGET) AS QUANTITY_HL6_OUT_BUDGET,
+                                    SUM(ALLOCATED) AS ALLOCATED,
+                                    SUM(REMAINING) AS REMAINING,
+                                    SUM(IN_CRM_CHILD) AS IN_CRM_CHILD,
+                                    IMPORTED,
+                                    ACRONYM,
+                                    HL5_CRM_DESCRIPTION,
+                                    PARENT_STATUS_ID,
+                                    IS_LEGACY
+                            FROM :va_legacy_with_children
+                            GROUP BY HL5_ID,
+                                    HL5_LEGACY_ID,
+                                    CRM_ID,
+                                    STATUS_DETAIL,
+                                    HL5_STATUS_DETAIL_ID,
+                                    CREATED_BY,
+                                    HL5_BUDGET,
+                                    IMPORTED,
+                                    ACRONYM,
+                                    HL5_CRM_DESCRIPTION,
+                                    PARENT_STATUS_ID,
+                                    IS_LEGACY
+                            )
+                           
+                           UNION ALL
+                           
+                           (
+                           SELECT
+                                  va_hl5.HL5_ID,
+                                  va_hl5.HL5_LEGACY_ID,
+                                  va_hl5.CRM_ID,
+                                  va_hl5.STATUS_DETAIL,
+                                  va_hl5.HL5_STATUS_DETAIL_ID,
+                                  va_hl5.CREATED_BY,
+                                  va_hl5.HL5_BUDGET,
+                                  0 AS TOTAL_HL6,
+                                  0 QUANTITY_HL6_OUT_BUDGET, --# of L6 out off budget,
+			                      0 AS ALLOCATED,
+			                      COALESCE((va_hl5.HL5_BUDGET - 0), va_hl5.HL5_BUDGET) AS REMAINING,
+			                      0 IN_CRM_CHILD,
+			                      va_hl5.IMPORTED,
+                                  va_hl5.ACRONYM,
+                                  va_hl5.HL5_CRM_DESCRIPTION,
+                                  va_hl5.PARENT_STATUS_ID,
+                                  va_hl5.IS_LEGACY
+                           FROM :va_intermidate_legacy va_hl5
+
+                           WHERE HL5_LEGACY_ID NOT IN (SELECT legacy_aux.HL5_LEGACY_ID FROM :va_legacy_with_children legacy_aux)
+                          
+                           )
+                           ;
 	END IF;
 
 out_result =

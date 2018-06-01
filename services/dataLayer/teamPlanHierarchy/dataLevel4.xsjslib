@@ -168,8 +168,8 @@ function insertHl4(reqBody, userId) {
     params.in_budget_column = reqBody.IN_BUDGET; //The in_budget_column name is because Hana confuse both IN_BUDGET and BUDGET columns
     params.budget_column = reqBody.BUDGET; //The budget_column name is because Hana confuse both IN_BUDGET and BUDGET columns
     params.in_hl4_status_detail_id = reqBody.HL4_STATUS_DETAIL_ID;
-    params.in_shopping_cart_approver = reqBody.SHOPPING_CART_APPROVER.trim();
-    params.in_cost_center = reqBody.COST_CENTER.trim();
+    params.in_shopping_cart_approver = reqBody.SHOPPING_CART_APPROVER? reqBody.SHOPPING_CART_APPROVER.trim() : null;
+    params.in_cost_center = reqBody.COST_CENTER ? reqBody.COST_CENTER.trim(): null;
     params.in_mkt_org_id = reqBody.MKT_ORG_ID;
     params.in_dis_channel_id = reqBody.DIS_CHANNEL_ID;
 
@@ -214,8 +214,8 @@ function updateHl4(reqBody, userId) {
     params.in_hl4_business_details = reqBody.HL4_BUSINESS_DETAILS;
     params.in_hl4_status_detail_id = reqBody.HL4_STATUS_DETAIL_ID;
     params.in_is_annual_plan = reqBody.IS_ANNUAL_PLAN;
-    params.in_shopping_cart_approver = reqBody.SHOPPING_CART_APPROVER.trim();
-    params.in_cost_center = reqBody.COST_CENTER.trim();
+    params.in_shopping_cart_approver = reqBody.SHOPPING_CART_APPROVER? reqBody.SHOPPING_CART_APPROVER.trim(): null;
+    params.in_cost_center = reqBody.COST_CENTER ? reqBody.COST_CENTER.trim(): null;
     params.in_mkt_org_id = reqBody.MKT_ORG_ID;
     params.in_dis_channel_id = reqBody.DIS_CHANNEL_ID;
     params.in_modified_user_id = userId;

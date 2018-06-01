@@ -1,0 +1,14 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_HL6_LEGACY"
+(
+	in in_hl6_id bigint
+	,in in_hl5_legacy_id bigint
+	,OUT out_result bigint
+	) 
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER 
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL" AS
+BEGIN
+	INSERT INTO HL6_LEGACY (hl6_id, hl5_legacy_id) VALUES (in_hl6_id, in_hl5_legacy_id);
+	
+	SELECT TOP 1 CURRENT_IDENTITY_VALUE() INTO out_result FROM "MKTG_PLANNING_TOOL"."HL6";
+END;

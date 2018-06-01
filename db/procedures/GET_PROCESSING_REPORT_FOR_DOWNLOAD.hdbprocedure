@@ -156,7 +156,7 @@ BEGIN
                                             WHERE HL5.HL5_STATUS_DETAIL_ID = 2
                                             AND HL5.ENABLED = 1 AND HL5.DELETED = 0;
                     ELSEIF in_object_type = 'CPT' THEN
-                        va_intermedate = SELECT
+                        va_intermedate = (SELECT
                                             T.START_TIME,
                                             T.END_TIME,
                                             T.TIME_ZONE_OFFSET,
@@ -165,7 +165,19 @@ BEGIN
                                             INNER JOIN HL5 ON T.HL_ID = HL5.HL4_ID
                                             INNER JOIN HL6 ON HL5.HL5_ID = HL6.HL5_ID
                                             WHERE HL6.HL6_STATUS_DETAIL_ID = 2
-                                            AND HL6.ENABLED = 1 AND HL6.DELETED = 0;
+                                            AND HL6.ENABLED = 1 AND HL6.DELETED = 0)
+                                            UNION ALL
+                                            (SELECT
+                                            T.START_TIME,
+                                            T.END_TIME,
+                                            T.TIME_ZONE_OFFSET,
+                                            HL6.HL6_ID AS HL_ID
+                                            FROM :va_intermedate T
+                                            INNER JOIN HL5_LEGACY HL5 ON T.HL_ID = HL5.HL4_ID
+                                            INNER JOIN HL6_LEGACY ON HL6_LEGACY.HL5_LEGACY_ID = HL5.HL5_LEGACY_ID
+                                            INNER JOIN HL6 ON HL6_LEGACY.HL6_ID = HL6.HL6_ID
+                                            WHERE HL6.HL6_STATUS_DETAIL_ID = 2
+                                            AND HL6.ENABLED = 1 AND HL6.DELETED = 0);
                     END IF;
 
 

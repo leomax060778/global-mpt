@@ -52,6 +52,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_HL6"
     , IN in_is_complete TINYINT
     , IN in_country_id bigint
     , IN in_inherited_creation tinyint
+    , IN in_parent_path nvarchar(255)
 	,OUT out_hl6_id bigint 
 	) 
 	LANGUAGE SQLSCRIPT
@@ -112,6 +113,7 @@ BEGIN
 , is_complete
 ,country_id
 , inherited_creation
+, parent_path
 	)
 	VALUES (
  in_hl6_crm_description
@@ -166,6 +168,7 @@ BEGIN
 , in_is_complete
 , in_country_id
 , in_inherited_creation
+, in_parent_path
 );
 	
 	SELECT TOP 1 CURRENT_IDENTITY_VALUE() INTO out_hl6_id FROM "MKTG_PLANNING_TOOL"."HL6";

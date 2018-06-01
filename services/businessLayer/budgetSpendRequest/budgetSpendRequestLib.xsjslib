@@ -779,6 +779,6 @@ function getBudgetRequestByIdFromList(budgetSpendRequestId, budgetSpendRequestLi
 
 }
 
-function getBudgetRemaining(hlId, level){
-    return dataBudgetSpendRequest.getBudgetRemaining(hlId, level);
+function getBudgetRemaining(hlId, level, isLegacy){
+    return (!!isLegacy)? dataBudgetSpendRequest.getBudgetRemainingForLegacy(hlId, level) : dataBudgetSpendRequest.getBudgetRemaining(hlId, level);
 }

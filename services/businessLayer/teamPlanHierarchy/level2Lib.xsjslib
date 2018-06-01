@@ -527,10 +527,19 @@ function existHl2(objLevel2) {
     return getLevel2ById(objLevel2);
 }
 
-function getAllCentralTeam(centralTeamId, hlid, level) {
+function getAllCentralTeam(centralTeamId, hlid, level, isLegacy) {
     var budgetYearId;
-    if (hlid && level)
-        budgetYearId = budgetYear.getBudgetYearByLevelParent(level, hlid, false);
+    var legacy = isLegacy? 1: 0;
+    
+    if (hlid && level){
+    	if(!isLegacy){
+    		budgetYearId = budgetYear.getBudgetYearByLevelParent(level, hlid, false);
+		}else{
+			var fullBudget = JSON.parse(JSON.stringify(budgetYear.getBudgetYearByLevelParent(level, hlid, true, legacy)));
+			budgetYearId = fullBudget.BUDGET_YEAR_ID;
+		}
+    }
+        
     return dataHl2.getAllCentralTeam(centralTeamId, budgetYearId);
 }
 

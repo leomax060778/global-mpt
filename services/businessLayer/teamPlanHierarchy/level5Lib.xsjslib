@@ -194,59 +194,70 @@ function getHl5ByHl4Id(id, userId, includeLegacy) {
     return response;
 }
 
-function getHl5ById(hl5Id, carryOver) {
+function getHl5ById(hl5Id, carryOver, isLegacy) {
     if (!hl5Id)
         throw ErrorLib.getErrors().BadRequest("The Parameter ID is not found", "hl5Services/handleGet/getHl5ById", L5_MSG_INITIATIVE_NOT_FOUND);
+    var hl5Info = !isLegacy ? dataHl5.getHl5ById(hl5Id) : dataHl5.getHl5LegacyById(hl5Id);
+    var hl5 = JSON.parse(JSON.stringify(hl5Info));
 
-    var hl5 = JSON.parse(JSON.stringify(dataHl5.getHl5ById(hl5Id)));
+    if(!isLegacy) {
+        if (hl5.HL5_STATUS_DETAIL_ID == HL5_STATUS.DELETED_IN_CRM) {
+            throw ErrorLib.getErrors().BadRequest("", "", L5_MSG_CANNOT_GET_BY_ID);
+        }
+        hl5.TARGET_KPIS = !hl5.FORECAST_AT_L5 ? expectedOutcomesLib.getAggregatedKPIByHl5Id(hl5Id) : expectedOutcomesLib.getExpectedOutcomesByHl5Id(hl5Id, hl5.HL4_ID);
+        hl5.FORECAST_AT_L5 = !!Number(hl5.FORECAST_AT_L5);
+        if (!carryOver) {
+            var internalCofunding = getInternalCofunding(hl5Id);
+            var externalCofunding = getExternalCofunding(hl5Id);
+            hl5.BUDGET_EUROS = (Number(hl5.BUDGET)).toFixed(2);
+            hl5.BUDGET_CURRENCY = {
+                ID: hl5.EURO_CONVERSION_ID,
+                VALUE: Number(hl5.CURRENCY_VALUE).toFixed(2),
+                ABBREVIATION: hl5.CURRENCY_ABBREVIATION
+            };
+            hl5.PARTNERS = externalCofunding.PARTNERS;
+            hl5.INTEL_TOTAL_BUDGET = externalCofunding.PARTNER_INTEL_TOTAL;
+            hl5.INTEL_TOTAL_BUDGET_EUROS = externalCofunding.PARTNER_INTEL_TOTAL_EUROS;
+            hl5.PARTNER_CURRENCY = {
+                ID: externalCofunding.PARTNER_CURRENCY_ID,
+                VALUE: externalCofunding.PARTNER_CURRENCY_VALUE
+            };
+            hl5.EXTERNAL_TOTAL_BUDGET = externalCofunding.PARTNER_EXTERNAL_TOTAL;
+            hl5.EXTERNAL_TOTAL_BUDGET_EUROS = externalCofunding.PARTNER_EXTERNAL_TOTAL_EUROS;
 
-    if (hl5.HL5_STATUS_DETAIL_ID == HL5_STATUS.DELETED_IN_CRM) {
-        throw ErrorLib.getErrors().BadRequest("", "", L5_MSG_CANNOT_GET_BY_ID);
-    }
+            hl5.BUDGET_DISTRIBUTION = dataHl5.getHl5MyBudgetByHl5Id(hl5Id);
 
-    hl5.TARGET_KPIS = !hl5.FORECAST_AT_L5 ? expectedOutcomesLib.getAggregatedKPIByHl5Id(hl5Id) : expectedOutcomesLib.getExpectedOutcomesByHl5Id(hl5Id, hl5.HL4_ID);
-    hl5.FORECAST_AT_L5 = !!Number(hl5.FORECAST_AT_L5);
-    if (!carryOver) {
-        var internalCofunding = getInternalCofunding(hl5Id);
-        var externalCofunding = getExternalCofunding(hl5Id);
-        hl5.BUDGET_EUROS = (Number(hl5.BUDGET)).toFixed(2);
-        hl5.BUDGET_CURRENCY = {
-            ID: hl5.EURO_CONVERSION_ID,
-            VALUE: Number(hl5.CURRENCY_VALUE).toFixed(2),
-            ABBREVIATION: hl5.CURRENCY_ABBREVIATION
-        };
-        hl5.PARTNERS = externalCofunding.PARTNERS;
-        hl5.INTEL_TOTAL_BUDGET = externalCofunding.PARTNER_INTEL_TOTAL;
-        hl5.INTEL_TOTAL_BUDGET_EUROS = externalCofunding.PARTNER_INTEL_TOTAL_EUROS;
-        hl5.PARTNER_CURRENCY = {
-            ID: externalCofunding.PARTNER_CURRENCY_ID,
-            VALUE: externalCofunding.PARTNER_CURRENCY_VALUE
-        };
-        hl5.EXTERNAL_TOTAL_BUDGET = externalCofunding.PARTNER_EXTERNAL_TOTAL;
-        hl5.EXTERNAL_TOTAL_BUDGET_EUROS = externalCofunding.PARTNER_EXTERNAL_TOTAL_EUROS;
+            hl5.SALES = internalCofunding.SALE;
+            hl5.SALE_TOTAL_EUROS = internalCofunding.SALE_TOTAL_EUROS;
+            hl5.SALE_TOTAL = internalCofunding.SALE_TOTAL;
+            hl5.SALE_CURRENCY = {ID: internalCofunding.SALE_CURRENCY_ID, VALUE: internalCofunding.SALE_CURRENCY_VALUE};
+            hl5.SALE_REQUESTS = internalCofunding.SALE_REQUESTS;
 
-        hl5.BUDGET_DISTRIBUTION = dataHl5.getHl5MyBudgetByHl5Id(hl5Id);
+            hl5.CATEGORIES = getCategoryOption(hl5Id);
+            hl5.SERVICE_REQUEST_CATEGORIES = getServiceRequestCategoryOptionByHl5Id(hl5Id);
 
-        hl5.SALES = internalCofunding.SALE;
-        hl5.SALE_TOTAL_EUROS = internalCofunding.SALE_TOTAL_EUROS;
-        hl5.SALE_TOTAL = internalCofunding.SALE_TOTAL;
-        hl5.SALE_CURRENCY = {ID: internalCofunding.SALE_CURRENCY_ID, VALUE: internalCofunding.SALE_CURRENCY_VALUE};
-        hl5.SALE_REQUESTS = internalCofunding.SALE_REQUESTS;
+            hl5.TOTAL_BUDGET = ((Number(hl5.BUDGET_EUROS) + Number(hl5.INTEL_TOTAL_BUDGET_EUROS)
+                + Number(hl5.EXTERNAL_TOTAL_BUDGET_EUROS) + Number(hl5.SALE_TOTAL_EUROS)) * hl5.BUDGET_CURRENCY.VALUE).toFixed(2);
 
-        hl5.CATEGORIES = getCategoryOption(hl5Id);
-        hl5.SERVICE_REQUEST_CATEGORIES = getServiceRequestCategoryOptionByHl5Id(hl5Id);
+            hl5.TOTAL_BUDGET_EUR = (Number(hl5.BUDGET_EUROS) + Number(hl5.INTEL_TOTAL_BUDGET_EUROS)
+                + Number(hl5.EXTERNAL_TOTAL_BUDGET_EUROS) + Number(hl5.SALE_TOTAL_EUROS)).toFixed(2);
 
-        hl5.TOTAL_BUDGET = ((Number(hl5.BUDGET_EUROS) + Number(hl5.INTEL_TOTAL_BUDGET_EUROS)
-            + Number(hl5.EXTERNAL_TOTAL_BUDGET_EUROS) + Number(hl5.SALE_TOTAL_EUROS)) * hl5.BUDGET_CURRENCY.VALUE).toFixed(2);
-
-        hl5.TOTAL_BUDGET_EUR = (Number(hl5.BUDGET_EUROS) + Number(hl5.INTEL_TOTAL_BUDGET_EUROS)
-            + Number(hl5.EXTERNAL_TOTAL_BUDGET_EUROS) + Number(hl5.SALE_TOTAL_EUROS)).toFixed(2);
-
-        hl5.BUDGET = (Number(hl5.BUDGET) * Number(hl5.CURRENCY_VALUE)).toFixed(2);
-        hl5.IS_IN_CRM = !!dataHl5.hl5ExistsInCrm(hl5Id);
+            hl5.BUDGET = (Number(hl5.BUDGET) * Number(hl5.CURRENCY_VALUE)).toFixed(2);
+            hl5.IS_IN_CRM = !!dataHl5.hl5ExistsInCrm(hl5Id);
+        } else {
+            hl5.CATEGORIES = level6Lib.getCarryOverHl5CategoryOption(hl5Id, hl5.HL4_ID);
+            hl5.BUDGET = 0;
+            hl5.HL5_CRM_DESCRIPTION = undefined;
+            hl5.ACRONYM = undefined;
+            hl5.BUDGET_SPEND_REQUEST_STATUS_ID = undefined;
+            hl5.BUDGET_SPEND_REQUEST_STATUS = undefined;
+            hl5.CO_FUNDED = 0;
+            hl5.ALLOW_BUDGET_ZERO = 0;
+            hl5.STATUS = undefined;
+        }
+        hl5 = serverToUiParser(hl5);
     } else {
         hl5.BUDGET = 0;
-        hl5.CATEGORIES = level6Lib.getCarryOverHl5CategoryOption(hl5Id, hl5.HL4_ID);
         hl5.HL5_CRM_DESCRIPTION = undefined;
         hl5.ACRONYM = undefined;
         hl5.BUDGET_SPEND_REQUEST_STATUS_ID = undefined;
@@ -256,7 +267,7 @@ function getHl5ById(hl5Id, carryOver) {
         hl5.STATUS = undefined;
     }
 
-    return serverToUiParser(hl5);
+    return hl5;
 }
 
 function getHl5ByUserId(userId, isMarketingTacticView) {

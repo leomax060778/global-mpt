@@ -18,6 +18,9 @@ function handleGet(param){
     var method = httpUtil.getUrlParameters().get("method");
     var hlId = httpUtil.getUrlParameters().get("HL_ID");
     var level = httpUtil.getUrlParameters().get("LEVEL");
+    var isLegacy = httpUtil.getUrlParameters().get("IS_LEGACY");
+    isLegacy = isLegacy && isLegacy === "true";
+    
     var result = {};
     switch (method) {
 		case 'NO_CO_FUNDED':
@@ -28,7 +31,7 @@ function handleGet(param){
             result = budgetReportLib.getSpendBudgetReportByHash(hash);
             break;
         case 'GET_REMAINING':
-            result = budgetSpendRequest.getBudgetRemaining(hlId, level);
+            result = budgetSpendRequest.getBudgetRemaining(hlId, level, isLegacy);
             break;
 		default:
             throw ErrorLib.getErrors().BadRequest("","BudgetSpendRequestService/handleGet","Invalid parameter name");

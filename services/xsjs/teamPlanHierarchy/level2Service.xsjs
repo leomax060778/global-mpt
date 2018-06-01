@@ -34,7 +34,10 @@ function handleGet(parameters, userSessionID){
 		else if (parameters[0].name == GET_ALL_CENTRAL_TEAM){
 			var hl_id = httpUtil.getUrlParameters().get("HL_ID") || null;
 			var level = httpUtil.getUrlParameters().get("LEVEL") || null;
-			var rdo = blLevel2.getAllCentralTeam(0, hl_id, level);
+			var isLegacy = httpUtil.getUrlParameters().get("IS_LEGACY") || null;
+			isLegacy = isLegacy && isLegacy === "true";
+
+			var rdo = blLevel2.getAllCentralTeam(0, hl_id, level, isLegacy);
 			httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
 		}
 		else if (parameters[0].name == HL1_ID){
