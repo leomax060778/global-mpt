@@ -67,21 +67,7 @@ AND BSR.HIERARCHY_LEVEL_ID = 2;
 SELECT DISTINCT	BSR.BUDGET_SPEND_REQUEST_ID,
 									BSR.DESCRIPTION AS BUDGET_RESOURCE,
 									BSR.AMOUNT AS BUDGET,
-									CONCAT(
-                                        CONCAT(
-                                            CONCAT(
-                                                CONCAT(
-                                                    CONCAT(
-                                                        CONCAT(
-                                                            CONCAT(
-                                                                HL1.ACRONYM,
-                                                            SUBSTRING(TO_NVARCHAR(BGY.BUDGET_YEAR), 3, 2)),
-                                                        '-'),
-                                                    HL3.ACRONYM),
-                                                '-'),
-                                            HL4.ACRONYM),
-                                        HL5.ACRONYM),
-                                    HL6.ACRONYM) AS CRM_ID
+                                    CASE WHEN HL6.hl5_id IS NULL THEN CONCAT(HL5_LEGACY.PATH, HL6.ACRONYM) ELSE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BGY.BUDGET_YEAR, HL1.ACRONYM, HL2.ORGANIZATION_ACRONYM, HL3.ACRONYM, HL4.ACRONYM, HL5.ACRONYM, HL6.ACRONYM) END AS CRM_ID
 , coalesce(oba.full_name, concat(concat(u.last_name, ', '),  u.first_name)) as BUDGET_APPROVER_NAME
 , coalesce(oba.email, u.email) AS BUDGET_APPROVER_EMAIL
 , case when oba.email is null then 1 else 0 end as IS_MPT_USER
@@ -93,13 +79,15 @@ SELECT DISTINCT	BSR.BUDGET_SPEND_REQUEST_ID,
 --,case when BUDGET_SPEND_REQUEST_TYPE_ID = 1 then 1 when BUDGET_SPEND_REQUEST_TYPE_ID = 3 then 2 else 3 end as BUDGET_SPEND_REQUEST_TYPE_ID
 FROM BUDGET_SPEND_REQUEST BSR
 INNER JOIN HL6 HL6 ON HL6.HL6_ID = BSR.HL_ID
-INNER JOIN HL5 HL5 ON HL5.HL5_ID = BSR.HL_ID
-INNER JOIN HL4 hl4 ON hl4.hl4_id = HL5.hl4_id
-INNER JOIN HL3 ON HL4.hl3_id = HL3.hl3_id
-INNER JOIN HL3_USER ON HL3.HL3_ID = HL3_USER.HL3_ID
-INNER JOIN HL2 ON HL3.hl2_id = HL2.hl2_id
-INNER JOIN HL1 ON HL2.hl1_id = HL1.hl1_id
-INNER JOIN BUDGET_YEAR BGY ON HL1.budget_year_id = BGY.budget_year_id
+LEFT JOIN HL6_LEGACY ON HL6_LEGACY.HL6_ID = HL6.HL6_ID
+LEFT JOIN HL5_LEGACY ON HL6_LEGACY.HL5_LEGACY_ID = HL5_LEGACY.HL5_LEGACY_ID
+left JOIN HL5 HL5 ON HL5.HL5_ID = BSR.HL_ID
+left JOIN HL4 hl4 ON hl4.hl4_id = HL5.hl4_id
+left JOIN HL3 ON HL4.hl3_id = HL3.hl3_id
+--INNER JOIN HL3_USER ON HL3.HL3_ID = HL3_USER.HL3_ID
+left JOIN HL2 ON HL3.hl2_id = HL2.hl2_id
+left JOIN HL1 ON HL2.hl1_id = HL1.hl1_id
+left JOIN BUDGET_YEAR BGY ON HL1.budget_year_id = BGY.budget_year_id
 
 left join BUDGET_SPEND_REQUEST_OTHER_BUDGET_APPROVER bsoba on bsoba.BUDGET_SPEND_REQUEST_ID = BSR.BUDGET_SPEND_REQUEST_ID
 left join OTHER_BUDGET_APPROVER oba on oba.OTHER_BUDGET_APPROVER_ID = bsoba.OTHER_BUDGET_APPROVER_ID

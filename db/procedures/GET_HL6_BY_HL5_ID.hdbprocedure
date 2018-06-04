@@ -65,10 +65,10 @@ va_intermidate = SELECT
 	
 	IF in_include_legacy_records = 1 THEN
            va_intermidate_legacy =
-             SELECT hl6.hl6_legacy_ID AS HL6_ID
+             SELECT hl6_legacy.hl6_legacy_id AS HL6_ID -- Before this used hl6_legacy.hl6_legacy_id as HL6_ID
         ,hl6.hl6_crm_description AS HL6_CRM_DESCRIPTION
-        ,null AS HL6_ACRONYM       
-        , HL6.PATH AS HL5_PATH
+        ,hl6.ACRONYM AS HL6_ACRONYM
+        ,HL6.PARENT_PATH AS HL5_PATH
         ,hl6.IN_BUDGET as IN_BUDGET
         ,hl6.hl6_status_detail_id AS STATUS_ID
         ,hl6_status_detail.detail AS STATUS_DETAIL
@@ -85,16 +85,17 @@ va_intermidate = SELECT
         
         
         
-        FROM HL6_LEGACY Hl6
-	    INNER JOIN HL5_LEGACY hl5 ON hl5.hl5_LEGACY_id=hl6.hl5_LEGACY_id AND hl5.enabled=1 AND hl5.deleted=0
-	    INNER JOIN HL4 hl4 ON hl4.hl4_id=hl5.hl4_id AND hl4.enabled=1 AND hl4.deleted=0
-	    INNER JOIN HL3 hl3 ON hl3.hl3_id=hl4.hl3_id AND hl3.enabled=1 AND hl3.deleted=0
+        FROM HL6_LEGACY hl6_legacy
+	    INNER JOIN HL5_LEGACY hl5 ON hl5.hl5_LEGACY_id = hl6_legacy.hl5_LEGACY_id AND hl5.enabled=1 AND hl5.deleted=0
+	    INNER JOIN HL4 hl4 ON hl4.hl4_id = hl5.hl4_id AND hl4.enabled=1 AND hl4.deleted=0
+	    INNER JOIN HL3 hl3 ON hl3.hl3_id = hl4.hl3_id AND hl3.enabled=1 AND hl3.deleted=0
     	INNER JOIN HL2 hl2 ON hl2.hl2_id = hl3.hl2_id AND hl2.enabled=1 AND hl2.deleted=0
+    	INNER JOIN HL6 hl6 ON hl6_legacy.hl6_id = hl6.hl6_id AND hl2.enabled=1 AND hl2.deleted=0
 	    INNER JOIN hl6_status_detail hl6_status_detail ON hl6_status_detail.hl6_status_detail_id = hl6.hl6_status_detail_id
 	    INNER JOIN "MKTG_PLANNING_TOOL"."USER" userTable ON userTable.USER_ID = hl6.created_user_id
 	    LEFT JOIN SALE_ORGANIZATION saleOrganization ON saleOrganization.SALES_ORGANIZATION_ID = HL6.SALES_ORGANIZATION_ID
 	    WHERE hl6.enabled=1 AND hl6.deleted=0
-		AND hl6.hl5_LEGACY_id = in_hl5_id;
+		AND hl6_legacy.hl5_LEGACY_id = in_hl5_id;
 
            va_intermidate =
            (SELECT HL6_ID

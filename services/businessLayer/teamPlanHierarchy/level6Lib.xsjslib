@@ -173,10 +173,11 @@ function getHl6ByHl5Id(hl5Id, userId, includeLegacy, isLegacy) {
                     aux.CRM_ID = hl6[key];
                 }
             });
-            aux.ENABLE_DELETION = !!actionPermission.ENABLE_DELETION && !!hl6.HL6_ID;
-            aux.ENABLE_CHANGE_STATUS = !!actionPermission.ENABLE_CHANGE_STATUS && !!hl6.HL6_ID;
-            aux.ENABLE_EDIT = !!actionPermission.ENABLE_EDIT && !!hl6.HL6_ID;
-            aux.ENABLE_CLONE = !!actionPermission.ENABLE_CLONE && !!hl6.HL6_ID;
+
+            aux.ENABLE_DELETION = !!actionPermission.ENABLE_DELETION && (!!hl6.ENABLE_ACTIONS || !hl6.IS_LEGACY);
+            aux.ENABLE_CHANGE_STATUS = !!actionPermission.ENABLE_CHANGE_STATUS && (!!hl6.ENABLE_ACTIONS || !hl6.IS_LEGACY);
+            aux.ENABLE_EDIT = !!actionPermission.ENABLE_EDIT && (!!hl6.ENABLE_ACTIONS || !hl6.IS_LEGACY);
+            aux.ENABLE_CLONE = !!actionPermission.ENABLE_CLONE && (!!hl6.ENABLE_ACTIONS || !hl6.IS_LEGACY);
             allHl6.push(aux);
         });
     }
