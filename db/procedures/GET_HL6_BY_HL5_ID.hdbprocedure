@@ -1,6 +1,5 @@
 PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL6_BY_HL5_ID" (
         IN in_hl5_id BIGINT,
-        IN in_include_legacy_records TINYINT,
         OUT out_result TABLE(
               HL6_ID INTEGER
             , HL6_CRM_DESCRIPTION NVARCHAR(100)
@@ -11,7 +10,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL6_BY_HL5_I
             , STATUS_DETAIL NVARCHAR(255)
             , CREATED_BY NVARCHAR(255)
             , OWNER_EMAIL NVARCHAR(500)
-            , HL6_BUDGET DECIMAL(19,2)
+            , HL6_BUDGET DECIMAL(19,6)
             , CRT_RELATED TINYINT
             , SALE_ORGANIZATION NVARCHAR(255)
             , IMPORTED tinyint
@@ -19,6 +18,8 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL6_BY_HL5_I
             , PARENT_STATUS_ID integer
             , GRAN_PARENT_STATUS_ID INTEGER
             , IS_LEGACY TINYINT
+            , ENABLE_CRM_CREATION TINYINT
+            , ENABLE_ACTIONS TINYINT
         )
 )
 LANGUAGE SQLSCRIPT
@@ -47,6 +48,7 @@ va_intermidate = SELECT
         , HL5.HL5_STATUS_DETAIL_ID AS PARENT_STATUS_ID
         , HL4.HL4_STATUS_DETAIL_ID AS GRAN_PARENT_STATUS_ID
         , 0 AS IS_LEGACY
+        , HL6.ENABLE_CRM_CREATION
     FROM HL6 Hl6
     INNER JOIN HL5 hl5 ON hl5.hl5_id=hl6.hl5_id AND hl5.enabled=1 AND hl5.deleted=0
     INNER JOIN HL4 hl4 ON hl4.hl4_id=hl5.hl4_id AND hl4.enabled=1 AND hl4.deleted=0
@@ -60,82 +62,6 @@ va_intermidate = SELECT
     WHERE hl6.enabled=1 AND hl6.deleted=0
 	AND hl6.hl5_id = in_hl5_id
 	ORDER BY hl6.acronym ASC;
-	
-	
-	
-	IF in_include_legacy_records = 1 THEN
-           va_intermidate_legacy =
-             SELECT hl6_legacy.hl6_legacy_id AS HL6_ID -- Before this used hl6_legacy.hl6_legacy_id as HL6_ID
-        ,hl6.hl6_crm_description AS HL6_CRM_DESCRIPTION
-        ,hl6.ACRONYM AS HL6_ACRONYM
-        ,HL6.PARENT_PATH AS HL5_PATH
-        ,hl6.IN_BUDGET as IN_BUDGET
-        ,hl6.hl6_status_detail_id AS STATUS_ID
-        ,hl6_status_detail.detail AS STATUS_DETAIL
-        ,CONCAT(CONCAT(userTable.FIRST_NAME, ' '),userTable.LAST_NAME) AS CREATED_BY
-        ,userTable.EMAIL AS OWNER_EMAIL
-        ,hl6.BUDGET AS HL6_BUDGET
-        ,HL2.CRT_RELATED
-        ,saleOrganization.NAME as SALE_ORGANIZATION
-        ,null as IMPORTED
-        ,null as IMPORT_ID
-        , HL5.HL5_STATUS_DETAIL_ID AS PARENT_STATUS_ID
-        , HL4.HL4_STATUS_DETAIL_ID AS GRAN_PARENT_STATUS_ID
-        , 1 AS IS_LEGACY
-        
-        
-        
-        FROM HL6_LEGACY hl6_legacy
-	    INNER JOIN HL5_LEGACY hl5 ON hl5.hl5_LEGACY_id = hl6_legacy.hl5_LEGACY_id AND hl5.enabled=1 AND hl5.deleted=0
-	    INNER JOIN HL4 hl4 ON hl4.hl4_id = hl5.hl4_id AND hl4.enabled=1 AND hl4.deleted=0
-	    INNER JOIN HL3 hl3 ON hl3.hl3_id = hl4.hl3_id AND hl3.enabled=1 AND hl3.deleted=0
-    	INNER JOIN HL2 hl2 ON hl2.hl2_id = hl3.hl2_id AND hl2.enabled=1 AND hl2.deleted=0
-    	INNER JOIN HL6 hl6 ON hl6_legacy.hl6_id = hl6.hl6_id AND hl2.enabled=1 AND hl2.deleted=0
-	    INNER JOIN hl6_status_detail hl6_status_detail ON hl6_status_detail.hl6_status_detail_id = hl6.hl6_status_detail_id
-	    INNER JOIN "MKTG_PLANNING_TOOL"."USER" userTable ON userTable.USER_ID = hl6.created_user_id
-	    LEFT JOIN SALE_ORGANIZATION saleOrganization ON saleOrganization.SALES_ORGANIZATION_ID = HL6.SALES_ORGANIZATION_ID
-	    WHERE hl6.enabled=1 AND hl6.deleted=0
-		AND hl6_legacy.hl5_LEGACY_id = in_hl5_id;
-
-           va_intermidate =
-           (SELECT HL6_ID
-		,HL6_CRM_DESCRIPTION
-		,HL6_ACRONYM
-		,HL5_PATH
-		,IN_BUDGET
-		,STATUS_ID
-		,STATUS_DETAIL
-		,CREATED_BY
-		,OWNER_EMAIL
-		,HL6_BUDGET
-		,CRT_RELATED
-		,SALE_ORGANIZATION
-		,IMPORTED
-        ,IMPORT_ID
-        ,PARENT_STATUS_ID
-        ,GRAN_PARENT_STATUS_ID
-        ,IS_LEGACY 
-                   FROM :va_intermidate)
-           UNION ALL
-           (SELECT HL6_ID
-		,HL6_CRM_DESCRIPTION
-		,HL6_ACRONYM
-		,HL5_PATH
-		,IN_BUDGET
-		,STATUS_ID
-		,STATUS_DETAIL
-		,CREATED_BY
-		,OWNER_EMAIL
-		,HL6_BUDGET
-		,CRT_RELATED
-		,SALE_ORGANIZATION
-		,IMPORTED
-        ,IMPORT_ID
-        ,PARENT_STATUS_ID
-        ,GRAN_PARENT_STATUS_ID
-        ,IS_LEGACY 
-                   FROM :va_intermidate_legacy);
-   	END IF;
 
 out_result = SELECT
         va_hl6.HL6_ID
@@ -155,6 +81,8 @@ out_result = SELECT
         ,va_hl6.PARENT_STATUS_ID
         ,va_hl6.GRAN_PARENT_STATUS_ID
         ,va_hl6.IS_LEGACY
+        ,va_hl6.ENABLE_CRM_CREATION
+        ,1 AS ENABLE_ACTIONS
 
     FROM :va_intermidate va_hl6;
 		

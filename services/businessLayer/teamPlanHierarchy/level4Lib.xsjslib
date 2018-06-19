@@ -82,7 +82,7 @@ var L3_MSG_MISSING_DATA = "File is empty.";
 var L3_CAMPAIGN_FORECASTING_KPIS_COMMENT = "Please enter a comment to explain expected outcomes as you didn't select any Campaign type.";
 var L3_NOT_IMPLEMENT_EXECUTION_LEVEL = "This PROGRAMS/CAMPAIGNS does not implement execution level.";
 var L4_ID_NOT_FOUND = "The HL4 ID could not be found.";
-
+var MSG_ENABLE_CRM_CREATION = "CRM creation is disabled for this Budget Year. Your Program/Campaign was successfully saved.";
 
 /*********************** CONSTANTS ***********************/
 
@@ -265,7 +265,8 @@ function insertHl4(data, userId) {
 
     //If everything is OK
     if (data.HL4_STATUS_DETAIL_ID > 0) {
-
+        var budgetYear = dataValidation.getBudgetYearByIdLevel(data.HL3_ID, 'HL3')[0];
+        data.ENABLE_CRM_CREATION = budgetYear ? Number(budgetYear.ENABLE_CRM_CREATION) : 0;
         //INSERT HL4
         var hl4Id = dataHl4.insertHl4(data, userId);
 
@@ -290,8 +291,11 @@ function insertHl4(data, userId) {
 
         //Update Processing Report Export Data
         dataL4Report.updateLevel4ReportForDownload(hl4Id);
-
-        return hl4Id;
+        if(data.ENABLE_CRM_CREATION) {
+            return hl4Id;
+        } else {
+            return {SUCCESS_MESSAGE: MSG_ENABLE_CRM_CREATION, EXECUTE_CANCEL_CONFIRMATION: 1, HL4_ID: hl4Id};
+        }
     }
 
 }
@@ -511,6 +515,14 @@ function updateHl4(data, userId) {
             dataHl4.insertHl4LogStatus(hl4_id, objHL4.HL4_STATUS_DETAIL_ID, userId);
             dataHl4.updateDeletionReason(hl4_id, null, userId);
         }
+        var budgetYear = dataValidation.getBudgetYearByIdLevel(data.HL4_ID, 'HL4')[0];
+
+        var changedFields = crmFieldsHaveChanged(data, validationResult.isComplete, userId, objHL4);
+        if(!changedFields.crmFieldsHaveChanged || changedFields.onlyBudget){
+            data.ENABLE_CRM_CREATION = 1;
+        } else {
+            data.ENABLE_CRM_CREATION = data.HL4_STATUS_DETAIL_ID == HL4_STATUS.VALID_FOR_CRM ? Number(budgetYear.ENABLE_CRM_CREATION) : 1;
+        }
 
         //UPDATE HL4
         var result = dataHl4.updateHl4(data, userId);
@@ -520,12 +532,10 @@ function updateHl4(data, userId) {
             insertInCrmBinding(validationResult.crmBindingChangedFields, validationResult.crmBindingChangedFieldsUpdate);
 
             //If old Budget is different than new Budget
-            /** TODO: Till refactor this, then change it to BUDGET**/
             if (Number(objHL4.BUDGET) !== Number(data.BUDGET)) {
                 level5Lib.checkBudgetStatusRefactor(data);
             }
 
-            /** TODO: is this ok? **/
             //Delete Target KPIs and Comments
             dataExOut.deleteHl4ExpectedOutcomesDetail(deleteParameters);
             dataExOut.deleteHl4ExpectedOutcomes(deleteParameters);
@@ -542,7 +552,15 @@ function updateHl4(data, userId) {
         //Update Processing Report Export Data
         dataL4Report.updateLevel4ReportForDownload(hl4_id);
 
-        return result;
+
+        if(data.ENABLE_CRM_CREATION) {
+            if (!validationResult.crmFieldsHaveChanged && (validationResult.budgetChanged) && Number(validationResult.statusId) === Number(HL4_STATUS.IN_CRM)) {
+                return {SUCCESS_MESSAGE: "Your Program/Campaign has automatically updated to CRM"};
+            }
+            return result;
+        } else {
+            return {SUCCESS_MESSAGE: MSG_ENABLE_CRM_CREATION, EXECUTE_CANCEL_CONFIRMATION: 1, HL4_ID: hl4_id};
+        }
     }
 }
 
@@ -767,13 +785,13 @@ function validateUpdateRequiredFields(data, userId) {
     }
 }
 
-function validateStatus(crmFieldsHaveChanged, data) {
+function validateStatus(crmFieldsHaveChanged, budgetChanged, data) {
     var existInCrm = 0;
     var statusId = null;
 
     if (data.HL4_ID) {
         var objHL4 = data.HL4_INFORMATION ? data.HL4_INFORMATION.HL4 : {};
-        existInCrm = objHL4.EXIST_IN_CRM || objHL4.HL4_STATUS_DETAIL_ID == HL4_STATUS.IN_CRM;
+        existInCrm = objHL4.EXIST_IN_CRM || Number(objHL4.HL4_STATUS_DETAIL_ID) == HL4_STATUS.IN_CRM;
 
         if (existInCrm && data.ACRONYM.toUpperCase() != objHL4.ACRONYM.toUpperCase()) {
             throw ErrorLib.getErrors().CustomError("", "", L3_MSG_INITIATIVE_IN_CRM);
@@ -783,7 +801,9 @@ function validateStatus(crmFieldsHaveChanged, data) {
         //Check if the categories have changed
         var categoryHasChanged = categoryChanged(data, existInCrm);
 
-        if (!crmFieldsHaveChanged && !categoryHasChanged && existInCrm) {
+        if (!crmFieldsHaveChanged && !categoryHasChanged && budgetChanged && Number(data.HL4_STATUS_DETAIL_ID) == HL4_STATUS.IN_CRM) {
+            statusId = objHL4.HL4_STATUS_DETAIL_ID;
+        } else if (!crmFieldsHaveChanged && !categoryHasChanged && existInCrm) {
             statusId = HL4_STATUS.IN_CRM;
         } else if (!crmFieldsHaveChanged && !categoryHasChanged) {
             statusId = objHL4.HL4_STATUS_DETAIL_ID;
@@ -802,7 +822,9 @@ function validateHl4(data, userId) {
         statusId: null,
         isComplete: false,
         crmBindingChangedFields: false,
-        crmBindingChangedFieldsUpdate: false
+        crmBindingChangedFieldsUpdate: false,
+        budgetChanged: false,
+        onlyBudget: false
     };
 
     //Validate empty objects, fields and regex
@@ -817,20 +839,19 @@ function validateHl4(data, userId) {
     //Complete result binding based on CRM Fields changes
     result.crmBindingChangedFields = crmFieldsHasChangedResult.crmBindingChangedFields;
     result.crmBindingChangedFieldsUpdate = crmFieldsHasChangedResult.crmBindingChangedFieldsUpdate;
-    result.statusId = validateStatus(crmFieldsHasChangedResult.crmFieldsHaveChanged, data);
+    result.statusId = validateStatus(crmFieldsHasChangedResult.crmFieldsHaveChanged, crmFieldsHasChangedResult.budgetChanged, data);
+    result.budgetChanged = crmFieldsHasChangedResult.budgetChanged;
+    result.onlyBudget = crmFieldsHasChangedResult.onlyBudget;
+    result.crmFieldsHaveChanged = crmFieldsHasChangedResult.crmFieldsHaveChanged;
 
     return result;
 }
 
 function categoryChanged(data, existInCrm) {
-    var optionChange = false;
-
     //obtain the CATEGORY options in bd
     var hl4_categoryBD = data.HL4_INFORMATION.CATEGORY_INFORMATION.HL4_CATEGORY_OPTION_VERSIONED;
 
-    var optionChange = CompareCategories(data.CATEGORIES, hl4_categoryBD, existInCrm, data.HL4_INFORMATION.CATEGORY_INFORMATION, Object.keys(hl4_categoryBD).length);
-
-    return optionChange;
+    return CompareCategories(data.CATEGORIES, hl4_categoryBD, existInCrm, data.HL4_INFORMATION.CATEGORY_INFORMATION, Object.keys(hl4_categoryBD).length);
 }
 
 
@@ -1324,10 +1345,12 @@ function getHl4SalesByHl4Id(id, currencyValue) {
     return aux;
 }
 
-function crmFieldsHaveChanged(data, isComplete, userId) {
+function crmFieldsHaveChanged(data, isComplete, userId, hl4) {
     var crmFieldsHaveChanged = false;
     var crmBindingChangedFields = [];
     var crmBindingChangedFieldsUpdate = [];
+    var budgetChanged = false;
+
     if (!isComplete)
         return {
             crmFieldsHaveChanged: true,
@@ -1352,11 +1375,16 @@ function crmFieldsHaveChanged(data, isComplete, userId) {
             });
         });
     } else {
-        level4DER.deleteL4ChangedFieldsByHl4Id(data.HL4_ID);
+        if(!hl4) {
+            level4DER.deleteL4ChangedFieldsByHl4Id(data.HL4_ID);
+        }
 
-        var oldHl4 = data.HL4_INFORMATION ? data.HL4_INFORMATION.HL4_IN_CRM_VERSION : {};
-        //throw JSON.stringify({ondHl4InCRM:  data.HL4_INFORMATION.HL4_IN_CRM_VERSION, current: data});
-        // var existInCrm = data.HL4_INFORMATION.HL4.EXIST_IN_CRM;
+        var oldHl4 = {};
+        if(hl4){
+            oldHl4 = hl4;
+        } else {
+            oldHl4 = data.HL4_INFORMATION ? data.HL4_INFORMATION.HL4_IN_CRM_VERSION : {};
+        }
 
         Object.keys(crmBindingFields).forEach(function (object) {
             crmBindingFields[object].forEach(function (field) {
@@ -1379,7 +1407,14 @@ function crmFieldsHaveChanged(data, isComplete, userId) {
 
                 switch (field) {
                     case "BUDGET":
-                        fieldChanged = Number(oldHl4[field]) != Number(data[field]);
+                        //When the HL4 is "In CRM", the budget can not change de status, but we need to validate it later to show the correct message.
+                        if (Number(data.HL4_STATUS_DETAIL_ID) !== Number(HL4_STATUS.IN_CRM)) {
+                            fieldChanged = Number(oldHl4[field]).toFixed(2) != Number(data[field]).toFixed(2)
+                        } else {
+                            fieldChanged = false;
+                            budgetChanged = Number(oldHl4[field]).toFixed(2) != Number(data[field]).toFixed(2);
+                        }
+
                         break;
                     case "SHOPPING_CART_APPROVER":
                     case "COST_CENTER":
@@ -1390,7 +1425,7 @@ function crmFieldsHaveChanged(data, isComplete, userId) {
                         break;
                 }
 
-                if (fieldChanged || oldParentPath != parentPath) {
+                if (fieldChanged || oldParentPath != parentPath || (field == "BUDGET" && budgetChanged)) {
                     if (field == "PARENT_PATH") {
                         if (oldParentPath) {
                             if (oldParentPath != parentPath) {
@@ -1402,7 +1437,11 @@ function crmFieldsHaveChanged(data, isComplete, userId) {
                     }
 
                     crmBindingChangedFields.push(parameters);
-                    crmFieldsHaveChanged = true;
+
+                    if (field !== "BUDGET" || fieldChanged || oldParentPath != parentPath) {
+                        crmFieldsHaveChanged = true;
+                    }
+
                 }
             });
         });
@@ -1411,7 +1450,9 @@ function crmFieldsHaveChanged(data, isComplete, userId) {
     return {
         crmFieldsHaveChanged: crmFieldsHaveChanged, //en true
         crmBindingChangedFields: crmBindingChangedFields, //todos los campos
-        crmBindingChangedFieldsUpdate: crmBindingChangedFieldsUpdate //una coleccion vacia
+        crmBindingChangedFieldsUpdate: crmBindingChangedFieldsUpdate, //una coleccion vacia
+        budgetChanged: budgetChanged,
+        onlyBudget: budgetChanged && !crmFieldsHaveChanged
     };
 }
 
@@ -1489,4 +1530,8 @@ function insertInCrmVersion(hl4Id) {
     var hl4VersionedId = dataHl4.insertHl4VersionInCRM(hl4Id);
     // Save the version of CategoryOptions IN_CRM o UPDATE_IN_CRM to compare later
     return dataCategoryOptionLevel.insertCategoryOptionVersioned("HL4", hl4Id, hl4VersionedId);
+}
+
+function updEnableCrmCreation(hl4Id, flag) {
+    return dataHl4.updEnableCrmCreation(hl4Id, flag);
 }

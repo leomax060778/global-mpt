@@ -1,14 +1,14 @@
 PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL5_ALLOCATED_BUDGET" (
 	IN in_hl5_id BIGINT,
 	IN in_hl6_id BIGINT,
-	OUT out_hl5_allocated_budget DECIMAL(19,5)
+	OUT out_hl5_allocated_budget DECIMAL(19,6)
 ) 
 	LANGUAGE SQLSCRIPT
 	SQL SECURITY INVOKER 
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
 	AS
 BEGIN
-	DECLARE va_hl5_allocated_budget DECIMAL(19,5);
+	DECLARE va_hl5_allocated_budget DECIMAL(19,6);
 	
 	va_hl5_allocated_budget := 0;
 	

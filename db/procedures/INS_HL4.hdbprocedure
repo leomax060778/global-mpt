@@ -7,11 +7,12 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_HL4" (
 	IN in_hl4_status_detail_id bigint,
 	IN in_created_user_id bigint,
 	IN in_budget_column tinyint,
-	IN budget_column DECIMAL (19, 2),
+	IN budget_column DECIMAL (19, 6),
 	IN in_shopping_cart_approver nvarchar(10),
     IN in_cost_center nvarchar(10),
     IN in_mkt_org_id bigint,
     IN in_dis_channel_id bigint,
+    IN in_enable_crm_creation tinyint,
 	OUT out_result bigint
 	) 
 	LANGUAGE SQLSCRIPT
@@ -31,7 +32,8 @@ BEGIN
 											SHOPPING_CART_APPROVER,
 											COST_CENTER,
 											MKT_ORG_ID,
-											DIS_CHANNEL_ID
+											DIS_CHANNEL_ID,
+											ENABLE_CRM_CREATION
 											)
 	VALUES (	in_hl3_id,
 	            in_acronym,
@@ -45,7 +47,8 @@ BEGIN
 				in_shopping_cart_approver,
 				in_cost_center,
 				in_mkt_org_id,
-				in_dis_channel_id
+				in_dis_channel_id,
+				in_enable_crm_creation
 	);
 	SELECT TOP 1 CURRENT_IDENTITY_VALUE() INTO out_result FROM "MKTG_PLANNING_TOOL"."HL4";
 END;

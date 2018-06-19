@@ -48,6 +48,8 @@ var UPD_DELETION_REASON = "UPD_HL4_DELETION_REASON";
 var INS_HL4_IN_CRM_VERSION = "INS_HL4_IN_CRM_VERSION";
 var GET_HL4_IN_CRM_VERSION_BY_ID = "GET_HL4_IN_CRM_VERSION_BY_ID";
 
+var spUPDEnableCrmCreation = "UPD_ENABLE_CRM_CREATION_BY_ID_BY_LEVEL";
+
 /******************************************************/
 
 function getAllHl4() {
@@ -172,6 +174,7 @@ function insertHl4(reqBody, userId) {
     params.in_cost_center = reqBody.COST_CENTER ? reqBody.COST_CENTER.trim(): null;
     params.in_mkt_org_id = reqBody.MKT_ORG_ID;
     params.in_dis_channel_id = reqBody.DIS_CHANNEL_ID;
+    params.in_enable_crm_creation = reqBody.ENABLE_CRM_CREATION;
 
     var rdo = db.executeScalarManual(spInsertHl4, params, 'out_result');
     return rdo;
@@ -220,6 +223,7 @@ function updateHl4(reqBody, userId) {
     params.in_dis_channel_id = reqBody.DIS_CHANNEL_ID;
     params.in_modified_user_id = userId;
     params.budget_column = reqBody.BUDGET; //The budget_column name is because Hana confuse both IN_BUDGET and BUDGET columns
+    params.in_enable_crm_creation = reqBody.ENABLE_CRM_CREATION;
 
     var rdo = db.executeScalarManual(spUpdateHl4, params, 'out_result');
     return rdo;
@@ -423,4 +427,14 @@ function insertHl4VersionInCRM(hl4_id) {
 function getHl4InCrmVersionById(hl4_id) {
     var rdo = db.executeProcedureManual(GET_HL4_IN_CRM_VERSION_BY_ID, {'in_hl4_id': hl4_id});
     return db.extractArray(rdo.out_result)[0];
+}
+
+function updEnableCrmCreation(hl4Id, flag) {
+    var params = {
+        in_hl_id: hl4Id,
+        in_level: "HL4",
+        in_enable_crm_creation: flag
+    };
+    var rdo = db.executeScalarManual(spUPDEnableCrmCreation, params, 'out_result');
+    return rdo;
 }

@@ -109,6 +109,9 @@ function getHLBySearch(params, userSessionID){
 		searchResult = JSON.parse(JSON.stringify(searchResult));
 		var isSuperAdmin = util.isSuperAdmin(userSessionID) ? 1 : 0;
 		searchResult.result.forEach(function (elem) {
+			if(elem.IS_LEGACY && localParams.HL == "L5"){
+				elem.ACRONYM = util.getAcronymForHl5Legacy(elem.PATH);
+			}
 			elem.ENABLE_EDIT = util.getEnableEdit(elem.STATUS_ID, HL_STATUS[localParams.HL], userSessionID, isSuperAdmin);
 		});
 	}

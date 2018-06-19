@@ -21,7 +21,7 @@ function getValidateDateRule(campaignTypeId, campaignSubTypeId){
  * @param {NVARCHAR(3)}Level - HL1,HL2....HL6
  * @returns {*}
  */
-function getBudgetYearByIdLevel(HlId, Level){
-    var data = db.executeProcedureManual(GET_BUDGET_YEAR_BY_HL_ID_BY_LEVEL, {in_hl_id: HlId, in_level: Level.toUpperCase()});
+function getBudgetYearByIdLevel(HlId, Level, isLegacy){
+    var data = db.executeProcedureManual(GET_BUDGET_YEAR_BY_HL_ID_BY_LEVEL, {in_hl_id: HlId, in_level: Level.toUpperCase(), in_is_legacy: isLegacy || 0});
     return db.extractArray(data.out_result);
 }

@@ -19,7 +19,7 @@ function handleGet(parameters, userId) {
 		switch(jsonParams.METHOD){
 			case "GET_HL5_LEGACY_BY_ID":
 				
-				result = level5Legacy.getHl5LegacyById(jsonParams.HL5_LEGACY_ID, userId);
+				result = level5Legacy.getHl5LegacyById(jsonParams.HL5_LEGACY_ID,jsonParams.HL4_ID, userId);
 				break;
 			default:
 

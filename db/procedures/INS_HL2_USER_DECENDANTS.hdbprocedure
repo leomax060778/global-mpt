@@ -1,0 +1,53 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_HL2_USER_DECENDANTS" (
+	in arrHlUser TABLE (
+	    in_hl2_id bigint,
+	    in_user_id bigint,
+	    in_created_user_id bigint),
+	in in_user_id bigint,
+    in in_created_user_id bigint
+	,   OUT out_hl2_user_id integer
+	)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL" AS
+BEGIN
+
+    var_L2_L3 = select
+                    hl2.hl2_id
+                   , hl3.hl3_id
+                   from hl2
+                   left join hl3 on hl3.hl2_id = hl2.hl2_id AND HL3.ENABLED = 1 AND HL3.DELETED = 0
+                   WHERE HL2.ENABLED = 1 AND HL2.DELETED = 0 AND hl2.hl2_id in (select in_hl2_id from :arrHlUser);
+
+    INSERT INTO "MKTG_PLANNING_TOOL"."HL2_USER" (
+    	 hl2_id
+    	,user_id
+    	,created_date_tz
+    	,created_user_id
+    	)
+    	(
+         select
+    	 distinct hl2_id
+    	,in_user_id
+    	,CURRENT_TIMESTAMP
+    	,in_created_user_id
+    	from :var_L2_L3
+    	where hl2_id is not null);
+
+    INSERT INTO "MKTG_PLANNING_TOOL"."HL3_USER" (
+    	 hl3_id
+    	,user_id
+    	,created_date_tz
+    	,created_user_id
+    	)
+    	(
+         select
+    	 hl3_id
+    	,in_user_id
+    	,CURRENT_TIMESTAMP
+    	,in_created_user_id
+    	from :var_L2_L3
+    	where hl3_id is not null);
+
+	SELECT TOP 1 CURRENT_IDENTITY_VALUE() INTO out_hl2_user_id FROM "MKTG_PLANNING_TOOL"."HL2_USER";
+END;

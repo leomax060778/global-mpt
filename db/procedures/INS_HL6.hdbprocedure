@@ -2,7 +2,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_HL6"
 (
 	 in in_hl6_crm_description nvarchar(100)
 	,in in_acronym nvarchar(25)
-	,in in_budget decimal(19, 2)
+	,in in_budget decimal(19, 6)
 	,in in_hl5_id bigint
 	,in in_route_to_market_id bigint
 	,in in_campaign_objective_id bigint
@@ -53,7 +53,8 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_HL6"
     , IN in_country_id bigint
     , IN in_inherited_creation tinyint
     , IN in_parent_path nvarchar(255)
-	,OUT out_hl6_id bigint 
+    , IN in_enable_crm_creation tinyint
+	,OUT out_hl6_id bigint
 	) 
 	LANGUAGE SQLSCRIPT
 	SQL SECURITY INVOKER 
@@ -114,6 +115,7 @@ BEGIN
 ,country_id
 , inherited_creation
 , parent_path
+, enable_crm_creation
 	)
 	VALUES (
  in_hl6_crm_description
@@ -169,6 +171,7 @@ BEGIN
 , in_country_id
 , in_inherited_creation
 , in_parent_path
+, in_enable_crm_creation
 );
 	
 	SELECT TOP 1 CURRENT_IDENTITY_VALUE() INTO out_hl6_id FROM "MKTG_PLANNING_TOOL"."HL6";

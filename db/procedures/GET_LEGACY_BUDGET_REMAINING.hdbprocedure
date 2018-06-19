@@ -43,7 +43,7 @@ VA_TOTAL_L5_LEGACY_ALLOCATED := 0;
                                         AND HL5_LEGACY.ENABLED = 1
                                         AND SD.HL5_STATUS_DETAIL_ID <> 10;--exclude Deleted In Crm
 
-                                BUDGET_SPEND_REQUEST_REMAING := VA_TOTAL_BUDGET - VA_TOTAL_ALLOCATED + VA_TOTAL_L5_LEGACY_ALLOCATED;
+                                BUDGET_SPEND_REQUEST_REMAING := VA_TOTAL_BUDGET - VA_TOTAL_ALLOCATED - VA_TOTAL_L5_LEGACY_ALLOCATED;
 
     ELSEIF in_level = 'HL6' THEN
                              SELECT hl5_legacy.BUDGET

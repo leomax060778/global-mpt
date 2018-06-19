@@ -23,12 +23,13 @@
         <viewAttribute datatype="NVARCHAR" id="DESCRIPTION" length="255"/>
         <viewAttribute datatype="TINYINT" id="ENABLED"/>
         <viewAttribute datatype="TINYINT" id="DELETED"/>
+        <viewAttribute datatype="TINYINT" id="IS_LEGACY"/>
       </viewAttributes>
       <calculatedViewAttributes/>
       <definition>/********* Begin Procedure Script ************/ 
  BEGIN 
  	var_out = 
-		SELECT 
+		(SELECT 
 	  		ATHS.HL6_ID,
 	  		ATHS.HL5_ID AS PARENT_ID,
 			ATHS.ACRONYM,
@@ -42,10 +43,55 @@
 			ATHS.DETAIL AS STATUS,
 			ATHS.HL6_CRM_DESCRIPTION AS DESCRIPTION,
 			ATHS.ENABLED, 
-			ATHS.DELETED
+			ATHS.DELETED,
+			0 as IS_LEGACY
 		FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL6_SEARCH&quot; ATHS 
- 		WHERE		
-			ATHS.DELETED = 0 AND ATHS.ENABLED = 1;
+ 		WHERE ATHS.DELETED = 0 
+			AND ATHS.ENABLED = 1
+			AND ATHS.DELETED_1 = 0 
+			AND ATHS.ENABLED_1 = 1
+			AND ATHS.DELETED_2 = 0 
+			AND ATHS.ENABLED_2 = 1
+			AND ATHS.DELETED_3 = 0 
+			AND ATHS.ENABLED_3 = 1
+			AND ATHS.DELETED_4 = 0 
+			AND ATHS.ENABLED_4 = 1
+			AND ATHS.DELETED_5 = 0 
+			AND ATHS.ENABLED_5 = 1)
+			
+		UNION
+		
+		(SELECT 
+	  		ATHS.HL6_LEGACY_ID AS HL6_ID,
+	  		ATHS.HL5_LEGACY_ID AS PARENT_ID,
+			ATHS.ACRONYM,
+			ATHS.PATH,
+			ATHS.REGION_ID,
+			ATHS.REGION_NAME,
+			ATHS.SUBREGION_ID,
+			ATHS.SUBREGION_NAME,
+			ATHS.BUDGET_YEAR_ID,
+			ATHS.HL6_STATUS_DETAIL_ID AS STATUS_ID,
+			ATHS.DETAIL AS STATUS,
+			ATHS.HL6_CRM_DESCRIPTION AS DESCRIPTION,
+			ATHS.ENABLED, 
+			ATHS.DELETED,
+			(CASE WHEN ATHS.ENABLE_ACTIONS = 0 THEN 1 ELSE 0 END) AS IS_LEGACY
+		FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL6_LEGACY_SEARCH&quot; ATHS 
+ 		WHERE ATHS.DELETED = 0 
+ 			AND ATHS.ENABLED = 1
+ 			AND ATHS.DELETED_1 = 0 
+			AND ATHS.ENABLED_1 = 1
+			AND ATHS.DELETED_2 = 0 
+			AND ATHS.ENABLED_2 = 1
+			AND ATHS.DELETED_3 = 0 
+			AND ATHS.ENABLED_3 = 1
+			AND ATHS.DELETED_4 = 0 
+			AND ATHS.ENABLED_4 = 1
+			AND ATHS.DELETED_5 = 0 
+			AND ATHS.ENABLED_5 = 1
+			AND ATHS.DELETED_6 = 0 
+			AND ATHS.ENABLED_6 = 1);
 
 
 END 
@@ -120,6 +166,10 @@ END
       <measure id="DELETED" order="14" aggregationType="sum" measureType="simple">
         <descriptions defaultDescription="DELETED"/>
         <measureMapping columnObjectName="Script_View" columnName="DELETED"/>
+      </measure>
+      <measure id="IS_LEGACY" order="15" aggregationType="sum" measureType="simple">
+        <descriptions defaultDescription="IS_LEGACY"/>
+        <measureMapping columnObjectName="Script_View" columnName="IS_LEGACY"/>
       </measure>
     </baseMeasures>
     <calculatedMeasures/>

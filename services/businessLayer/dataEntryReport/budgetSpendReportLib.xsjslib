@@ -84,7 +84,7 @@ function completeCRMPath(array, key, setDisplayName, parse, userId) {
             data.BUDGET_SPEND_REQUEST_AMOUNT_KEUR = (data.CURRENCY_ABBREVIATION !== "EUR") ? "( " + data.BUDGET_SPEND_REQUEST_AMOUNT + " EUR )" : "";
             data.BUDGET_SPEND_REQUEST_AMOUNT = "" + convertedBudget + " " + data.CURRENCY_ABBREVIATION;
         } else if (data.BUDGET) {
-            data.BUDGET = "" + util.parseTwoDecimals(data.BUDGET);
+            data.BUDGET = "" + util.parseTwoDecimals(Number(data.BUDGET).toFixed(2));
         }
 
         if(setDisplayName) {

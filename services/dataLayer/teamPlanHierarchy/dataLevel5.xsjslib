@@ -15,6 +15,7 @@ var spGetCountHl6InCRMByHl5Id = "GET_COUNT_HL6_IN_CRM_BY_HL5_ID";
 var spGetHl5StatusByHl5Id = "GET_HL5_STATUS_BY_HL5_ID";
 var spGetHl5ForSearch = "GET_HL5_FOR_SEARCH";
 var spGetHl5TotalBudgetByHl4Id = "GET_ALL_HL5_TOTAL_BUDGET";
+var spGetHl5LegacyTotalBudgetByHl4Id = "GET_ALL_HL5_LEGACY_TOTAL_BUDGET";
 var spGetHl5RemainingBudgetByHl4Id = "GET_ALL_HL5_REMAINING_BUDGET";
 var spExistsInCrm = "HL5_EXISTS_IN_CRM";
 var spGetHl5MyBudgetByHl5Id = "GET_HL5_BUDGET_BY_ID";
@@ -72,6 +73,7 @@ var GET_MULTI_TACTIC_BY_HL5_ID = "GET_MULTI_TACTIC_BY_HL5_ID";
 var UPD_HL5_STATUS_TO_IN_CRM = "UPD_HL5_STATUS_TO_IN_CRM";
 
 var UPD_DELETION_REASON = "UPD_HL5_DELETION_REASON";
+var spUPDEnableCrmCreation = "UPD_ENABLE_CRM_CREATION_BY_ID_BY_LEVEL";
 
 function getMarketingActivityHl5(budgetYearId,currentHl5Id){
 	var params = {
@@ -119,6 +121,14 @@ function getHl5ByHl4Id(hl4Id, includeLegacy){
 function getHl5TotalBudgetByHl4Id(hl4Id) {
 	if(hl4Id){
 		var rdo = db.executeDecimalManual(spGetHl5TotalBudgetByHl4Id, {'in_hl4_id': hl4Id}, 'out_result');
+		return rdo;
+	}
+	return null;
+}
+
+function getHl5LegacyTotalBudgetByHl4Id(hl4Id) {
+	if(hl4Id){
+		var rdo = db.executeDecimalManual(spGetHl5LegacyTotalBudgetByHl4Id, {'in_hl4_id': hl4Id}, 'out_result');
 		return rdo;
 	}
 	return null;
@@ -387,7 +397,8 @@ function insertHl5(hl5CrmDescription,acronym,distributionChannelId,budget,hl4Id
 	, region
 	, event_owner
 	, number_of_participants
-	, priority_id,co_funded,allow_budget_zero, is_power_user,emploreeResponsible, person_responsible, is_complete, multiTactic, autoCommit, imported, import_id, inherited_creation, des_type
+	, priority_id,co_funded,allow_budget_zero, is_power_user,emploreeResponsible, person_responsible, is_complete
+	, multiTactic, autoCommit, imported, import_id, inherited_creation, des_type, enable_crm_creation
 	){
 	var params = {
 		'in_hl5_crm_description' : hl5CrmDescription,
@@ -444,6 +455,7 @@ function insertHl5(hl5CrmDescription,acronym,distributionChannelId,budget,hl4Id
 		, 'in_country_id': country
 		, 'in_inherited_creation' : inherited_creation ? 1 : 0
 		, 'in_des_type_id' : des_type || null
+        , 'in_enable_crm_creation': enable_crm_creation
 	};
 
 	var rdo;
@@ -524,7 +536,7 @@ function updateHl5(hl5Id,hl5CrmDescription,inAcronym,distributionChannelId,budge
 	, event_owner
 	, number_of_participants
 	, priority_id,co_funded, allow_budget_zero, is_power_user,employee_responsible_user,person_responsible, is_complete
-				   ,multiTactic, inherited_creation, des_type,autoCommit){
+				   ,multiTactic, inherited_creation, des_type, enable_crm_creation,autoCommit){
 	var params = {
 		'in_hl5_id' : hl5Id,
 		'in_hl5_crm_description' : hl5CrmDescription,
@@ -577,6 +589,7 @@ function updateHl5(hl5Id,hl5CrmDescription,inAcronym,distributionChannelId,budge
         , 'in_country_id': country
         , 'in_inherited_creation': inherited_creation ? 1 : 0
         , 'in_des_type_id' : des_type || null
+		, 'in_enable_crm_creation': enable_crm_creation
 
 	};
 
@@ -807,5 +820,15 @@ function insertHl5VersionInCRM(hl5_id) {
         in_hl5_id: hl5_id
     };
     var rdo = db.executeScalarManual(spInsHl5Versioned, parameters, 'out_result');
+    return rdo;
+}
+
+function updEnableCrmCreation(hl5Id, flag) {
+    var params = {
+        in_hl_id: hl5Id,
+        in_level: "HL5",
+        in_enable_crm_creation: flag
+    };
+    var rdo = db.executeScalarManual(spUPDEnableCrmCreation, params, 'out_result');
     return rdo;
 }

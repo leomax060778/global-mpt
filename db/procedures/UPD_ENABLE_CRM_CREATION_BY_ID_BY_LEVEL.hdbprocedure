@@ -1,0 +1,37 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::UPD_ENABLE_CRM_CREATION_BY_ID_BY_LEVEL" (
+	  IN in_hl_id BIGINT
+	, IN in_level NVARCHAR(3)
+	, IN in_enable_crm_creation TINYINT
+	, OUT out_result int
+	)
+	LANGUAGE SQLSCRIPT
+   SQL SECURITY INVOKER
+   DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+   AS
+BEGIN
+IF in_level = 'HL4' THEN
+
+                    UPDATE HL4 SET
+                        ENABLE_CRM_CREATION = in_enable_crm_creation
+                    WHERE HL4_ID = in_hl_id;
+
+                    SELECT ::ROWCOUNT INTO out_result FROM DUMMY;
+
+    ELSEIF in_level = 'HL5' THEN
+
+                    UPDATE HL5 SET
+                        ENABLE_CRM_CREATION = in_enable_crm_creation
+                    WHERE HL5_ID = in_hl_id;
+
+                    SELECT ::ROWCOUNT INTO out_result FROM DUMMY;
+
+    ELSEIF in_level = 'HL6' THEN
+
+                    UPDATE HL6 SET
+                       ENABLE_CRM_CREATION = in_enable_crm_creation
+                    WHERE HL6_ID = in_hl_id;
+
+                    SELECT ::ROWCOUNT INTO out_result FROM DUMMY;
+    END IF;
+
+END;

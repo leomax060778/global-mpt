@@ -53,6 +53,7 @@ var uploadLib = mapper.getUploadLib();
 var allocationCategory = mapper.getAllocationCategoryLib();
 var dataUtil = mapper.getDataUtil();
 var dataHierarchyCategoryCountry = mapper.getDataHierarchyCategoryCountry();
+var dataValidation = mapper.getDataValidation();
 /*************************************************/
 
 var levelCampaign = "Marketing Tactic ";
@@ -114,6 +115,7 @@ var L5_MSG_REQUIRE_SPEND_BUDGET_VALIDATION = "You have answered “YES” to the
     "If you do not require spend budget for your tactic/sub-tactic, please change your selection to “NO”.";
 var L5_MSG_MISSING_DATA = "File is empty.";
 var L5_MSG_COULDNT_CHANGE_STATUS_INVALID_CRM_DESCRIPTION = "CRM description must be modified before sending this Marketing Tactic to Processing Report.";
+var MSG_ENABLE_CRM_CREATION = "Please note this is a code for a future year. It has been successfully saved with a status “VALID FOR CRM” but cannot be created in CRM at this time. Please contact your local BMO if you have any questions.";
 
 var HL5_STATUS = {
     IN_PROGRESS: 1,
@@ -164,6 +166,7 @@ function getHl5ByHl4Id(id, userId, includeLegacy) {
     var isSuperAdmin = util.isSuperAdmin(userId) ? 1 : 0;
     var hl5List = dataHl5.getHl5ByHl4Id(id, Number(!!includeLegacy));
     var hl5TotalBudget = 0;
+    var hl5TotalBudgetLegacy = 0;
     var totalAllocated = 0;
     var hl5BudgetRemaining = 0;
     var allHl5 = [];
@@ -181,13 +184,17 @@ function getHl5ByHl4Id(id, userId, includeLegacy) {
 
     hl5TotalBudget = dataHl4.getHl4ById(id).BUDGET;
     totalAllocated = dataHl5.getHl5TotalBudgetByHl4Id(id);
-    hl5BudgetRemaining = hl5TotalBudget - totalAllocated;
+
+    if(!!includeLegacy){
+        hl5TotalBudgetLegacy = dataHl5.getHl5LegacyTotalBudgetByHl4Id(id);
+    }
+    hl5BudgetRemaining = hl5TotalBudget - totalAllocated - hl5TotalBudgetLegacy;
 
     var response = {
         "results": hl5List,
         "total_budget": hl5TotalBudget,
         "remaining_budget": hl5BudgetRemaining,
-        "total_allocated": totalAllocated,
+        "total_allocated": totalAllocated + hl5TotalBudgetLegacy,
         "ENABLE_CREATION": level4Lib.addChildPermission(id)
     };
     response.budget_year = budgetYear.getBudgetYearByLevelParent(5, id, true);
@@ -209,7 +216,7 @@ function getHl5ById(hl5Id, carryOver, isLegacy) {
         if (!carryOver) {
             var internalCofunding = getInternalCofunding(hl5Id);
             var externalCofunding = getExternalCofunding(hl5Id);
-            hl5.BUDGET_EUROS = (Number(hl5.BUDGET)).toFixed(2);
+            hl5.BUDGET_EUROS = (Number(hl5.BUDGET));
             hl5.BUDGET_CURRENCY = {
                 ID: hl5.EURO_CONVERSION_ID,
                 VALUE: Number(hl5.CURRENCY_VALUE).toFixed(2),
@@ -237,10 +244,10 @@ function getHl5ById(hl5Id, carryOver, isLegacy) {
             hl5.SERVICE_REQUEST_CATEGORIES = getServiceRequestCategoryOptionByHl5Id(hl5Id);
 
             hl5.TOTAL_BUDGET = ((Number(hl5.BUDGET_EUROS) + Number(hl5.INTEL_TOTAL_BUDGET_EUROS)
-                + Number(hl5.EXTERNAL_TOTAL_BUDGET_EUROS) + Number(hl5.SALE_TOTAL_EUROS)) * hl5.BUDGET_CURRENCY.VALUE).toFixed(2);
+                + Number(hl5.EXTERNAL_TOTAL_BUDGET_EUROS) + Number(hl5.SALE_TOTAL_EUROS)) * hl5.BUDGET_CURRENCY.VALUE);
 
             hl5.TOTAL_BUDGET_EUR = (Number(hl5.BUDGET_EUROS) + Number(hl5.INTEL_TOTAL_BUDGET_EUROS)
-                + Number(hl5.EXTERNAL_TOTAL_BUDGET_EUROS) + Number(hl5.SALE_TOTAL_EUROS)).toFixed(2);
+                + Number(hl5.EXTERNAL_TOTAL_BUDGET_EUROS) + Number(hl5.SALE_TOTAL_EUROS));
 
             hl5.BUDGET = (Number(hl5.BUDGET) * Number(hl5.CURRENCY_VALUE)).toFixed(2);
             hl5.IS_IN_CRM = !!dataHl5.hl5ExistsInCrm(hl5Id);
@@ -365,6 +372,10 @@ function getLevel5ForSearch(budgetYearId, regionId, subRegionId, limit, offset, 
     results = JSON.parse(JSON.stringify(results));
     results.result.forEach(function (elem) {
         elem.ENABLE_EDIT = util.getEnableEdit(elem.HL5_STATUS_DETAIL_ID, HL5_STATUS, userSessionID, isSuperAdmin);
+
+        if(elem.IS_LEGACY){
+            elem.ACRONYM = util.getAcronymForHl5Legacy(elem.PATH);
+        }
     });
     return results;
 }
@@ -423,6 +434,8 @@ function insertHl5(data, userId) {
         data.BUDGET_SPEND_Q4 = Number(data.BUDGET_SPEND_Q4);
 
         data.CREATED_USER_ID = userId;
+        var budgetYear = dataValidation.getBudgetYearByIdLevel(data.HL4_ID, 'HL4')[0];
+        data.ENABLE_CRM_CREATION = budgetYear ? Number(budgetYear.ENABLE_CRM_CREATION) : 0;
         hl5_id = insertDataHl5(acronym, data);
 
         if (hl5_id) {
@@ -444,7 +457,11 @@ function insertHl5(data, userId) {
         dataL5Report.updateLevel5ReportForDownload(hl5_id); //Update Processing Report Export Data
 
         if (data.ACRONYM) {
-            return hl5_id;
+            if(data.ENABLE_CRM_CREATION){
+                return hl5_id;
+            } else {
+                return {SUCCESS_MESSAGE: MSG_ENABLE_CRM_CREATION, EXECUTE_CANCEL_CONFIRMATION: 1, HL5_ID: hl5_id};
+            }
         } else {
             return {CRM_ID: dataPath.getPathByLevelHlId(LEVEL_STRING.toLowerCase(), hl5_id)}
         }
@@ -505,6 +522,7 @@ function insertDataHl5(acronym, data) {
         , data.IMPORT_ID
         , data.INHERITED_CREATION || 0
         , data.DES_TYPE_ID || null
+        , data.ENABLE_CRM_CREATION || 0
     );
 }
 
@@ -579,6 +597,7 @@ function insertHl5FromUpload(data, userId) {
 
     if (validateHl5Upload(data)) {
         var mapCOL = util.getMapCategoryOption(LEVEL_STRING.toLowerCase());//Set Map for Category Option Level
+        var budgetYear = dataValidation.getBudgetYearByIdLevel(data.HL4_ID, 'HL4')[0];
         data.BUDGET = (data.BUDGET == "" || !data.BUDGET) ? 0 : data.BUDGET;
         data.EMPLOYEE_RESPONSIBLE_USER = JSON.parse(JSON.stringify(data.EMPLOYEE_RESPONSIBLE_ID));
         data.EMPLOYEE_RESPONSIBLE_ID = null;
@@ -589,6 +608,7 @@ function insertHl5FromUpload(data, userId) {
         data.PERSON_RESPONSIBLE = null;
         data.IS_COMPLETE = 0;
         data.IMPORTED = 1;
+        data.ENABLE_CRM_CREATION = budgetYear ? Number(budgetYear.ENABLE_CRM_CREATION) : 0;
 
         hl5_id = insertDataHl5(data.ACRONYM, data);
 
@@ -784,6 +804,13 @@ function updateHl5(data, userId) {
             data.BUDGET = Number(data.BUDGET) / conversionValue;
             data.IN_BUDGET = checkBudgetStatus(data.HL4_ID, hl5_id, Number(data.BUDGET) / conversionValue);
         }*/
+        var budgetYear = dataValidation.getBudgetYearByIdLevel(data.HL4_ID, 'HL4')[0];
+        var changedFields = crmFieldsHaveChanged(data, Number(data.IS_COMPLETE), userId, false, objHL5);
+        if(!changedFields.crmFieldsHaveChanged || changedFields.onlyBudget){
+            data.ENABLE_CRM_CREATION = 1;
+        } else {
+            data.ENABLE_CRM_CREATION = data.STATUS_DETAIL_ID == HL5_STATUS.IN_PROGRESS? Number(budgetYear.ENABLE_CRM_CREATION) : 1;
+        }
 
         dataHl5.updateHl5(
             data.HL5_ID
@@ -834,6 +861,7 @@ function updateHl5(data, userId) {
             , Number(data.FORECAST_AT_L5)
             , data.INHERITED_CREATION || 0
             , data.DES_TYPE_ID || null
+            , data.ENABLE_CRM_CREATION
         );
 
         insertInCrmBinding(validationResult.crmBindingChangedFields, validationResult.crmBindingChangedFieldsUpdate, hl5_id);
@@ -867,16 +895,21 @@ function updateHl5(data, userId) {
         var changedFields = (validationResult.crmBindingChangedFields && validationResult.crmBindingChangedFields.length > 0);
         var changedFieldsUpdate = (validationResult.crmBindingChangedFieldsUpdate && validationResult.crmBindingChangedFieldsUpdate.length > 0);
 
-        if (!validationResult.crmFieldsHasChanged && (validationResult.budgetChanged || changedKPIs) && Number(validationResult.statusId) === Number(HL5_STATUS.IN_CRM)) {
-            return {SUCCESS_MESSAGE: "Your Tactic has automatically updated to CRM"};
-        } else {
-            if (data.ACRONYM) {
-                return data;
-            } else {
-                return {CRM_ID: dataPath.getPathByLevelHlId(LEVEL_STRING.toLowerCase(), hl5_id)}
+        if(data.ENABLE_CRM_CREATION){
+            if (!validationResult.crmFieldsHasChanged && (validationResult.budgetChanged || changedKPIs) && Number(validationResult.statusId) === Number(HL5_STATUS.IN_CRM)) {
+                return {SUCCESS_MESSAGE: "Your Tactic has automatically updated to CRM"};
+            } else if (!validationResult.crmFieldsHasChanged && Number(validationResult.statusId) === Number(HL5_STATUS.IN_CRM)) {
+                return {SUCCESS_MESSAGE: "Your Tactic was successfully saved. The status will stay In CRM."};
+            }else {
+                if (data.ACRONYM) {
+                    return data;
+                } else {
+                    return {CRM_ID: dataPath.getPathByLevelHlId(LEVEL_STRING.toLowerCase(), hl5_id)}
+                }
             }
+        } else {
+            return {SUCCESS_MESSAGE: MSG_ENABLE_CRM_CREATION, EXECUTE_CANCEL_CONFIRMATION: 1, HL5_ID: data.HL5_ID};
         }
-
     }
 }
 
@@ -1293,7 +1326,8 @@ function validateHl5(data, userId) {
             } else if (!crmFieldsHasChanged && !categoryHasChanged && validateBudget(data)) {
                 if (data.STATUS_DETAIL_ID == HL5_STATUS.IN_CRM
                     && !data.AUTOMATIC_APPROVAL
-                    && ((data.SALE_REQUESTS && data.SALE_REQUESTS.length) || (data.PARTNERS && data.PARTNERS.length))) {
+                    && ((data.SALE_REQUESTS && data.SALE_REQUESTS.length) || (data.PARTNERS && data.PARTNERS.length))
+                    && !validateBudgetStatus(hl5)) {
                     statusId = HL5_STATUS.IN_CRM_NEED_NEW_BUDGET_APPROVAL;
                 } else {
                     if (!crmFieldsHasChanged && !categoryHasChanged && !budgetChanged
@@ -1308,6 +1342,7 @@ function validateHl5(data, userId) {
             }
         }
     }
+
     return {
         statusId: statusId
         , isComplete: isHl5Complete
@@ -1317,6 +1352,23 @@ function validateHl5(data, userId) {
         , onlyBudget: onlyBudget
         , crmFieldsHasChanged: crmFieldsHasChanged || categoryHasChanged
     };
+}
+
+function validateBudgetStatus(hl5){
+    var hl5_id = hl5.HL5_ID;
+    var valid = true;
+    if (!hl5.ALLOW_BUDGET_ZERO) {
+        var budgetSpendRequestStatus = budgetSpendRequest.getBudgetSpendRequestsStatus();
+
+        var ownMoneyBudgetSpendRequestStatus = budgetSpendRequest.getOwnMoneyBudgetSpendRequestStatusByHlIdLevel(hl5_id, LEVEL_STRING);
+
+        if ((!ownMoneyBudgetSpendRequestStatus || (ownMoneyBudgetSpendRequestStatus && ownMoneyBudgetSpendRequestStatus != budgetSpendRequestStatus.APPROVED)
+            && !budgetSpendRequest.countApprovedCoFundedBudgetSpendRequestByHlIdLevel(hl5_id, LEVEL_STRING))) {
+            valid = false;
+        }
+    }
+
+    return valid;
 }
 
 function categoryChanged(data, existInCrm, userId) {
@@ -1732,6 +1784,9 @@ function changeStatusOnDemand(hl5_id, userId, cancelConfirmation) {
         }
 
         var data = JSON.parse(JSON.stringify(hl5));
+
+        data.BUDGET_DISTRIBUTION = dataHl5.getHl5MyBudgetByHl5Id(hl5_id);
+
         if (statusId == HL5_STATUS.VALID_FOR_CRM || statusId == HL5_STATUS.CREATE_IN_CRM || statusId == HL5_STATUS.UPDATE_IN_CRM) {
             var targetKpis = expectedOutcomesLib.getExpectedOutcomesByHl5Id(hl5_id, hl5.HL4_ID);
             var hl5Category = getCategoryOption(hl5_id);
@@ -1743,7 +1798,6 @@ function changeStatusOnDemand(hl5_id, userId, cancelConfirmation) {
             var externalCofunding = getExternalCofunding(hl5_id);
             data.PARTNERS = externalCofunding.PARTNERS;
             data.SALE_REQUESTS = internalCofunding.SALE_REQUESTS;
-            data.BUDGET_DISTRIBUTION = dataHl5.getHl5MyBudgetByHl5Id(hl5_id);
             isDataComplete = isComplete(data, true);
         }
 
@@ -1793,7 +1847,7 @@ function getServiceRequestCategoryOptionByHl5Id(hl5Id) {
     return util.objectToArray(result);
 }
 
-function crmFieldsHaveChanged(data, isComplete, userId, isNew) {
+function crmFieldsHaveChanged(data, isComplete, userId, isNew, hl5Db) {
     var crmFieldsHaveChanged = false;
     var crmBindingChangedFields = [];
     var crmBindingChangedFieldsUpdate = [];
@@ -1822,7 +1876,7 @@ function crmFieldsHaveChanged(data, isComplete, userId, isNew) {
             });
         });
     } else {
-        var oldHl5 = dataHl5.getHL5VersionedById(data.HL5_ID); // TODO Change this to HL5Versioned
+        var oldHl5 = hl5Db ? hl5Db : dataHl5.getHL5VersionedById(data.HL5_ID);
         oldHl5 = oldHl5 ? oldHl5 : {};
         var existInCrm = dataHl5.hl5ExistsInCrm(data.HL5_ID);
         var l5CrmBindigFields = util.getMapHl5ChangedFieldsByHl5Id(data.HL5_ID);
@@ -1865,28 +1919,18 @@ function crmFieldsHaveChanged(data, isComplete, userId, isNew) {
                             fieldChanged = oldHl5.HL5_CRM_DESCRIPTION != data.CRM_DESCRIPTION;
                             break;
                         case "BUDGET":
-                            var oldCurrencyValue = Number(dataCurrency.getCurrencyValueId(oldHl5.EURO_CONVERSION_ID));
-                            var newCurrencyValue = Number(dataCurrency.getCurrencyValueId(data.EURO_CONVERSION_ID));
-
                             //When the HL5 is "In CRM", the budget can not change de status, but we need to validate it later to show the correct message.
                             if (Number(data.STATUS_DETAIL_ID) !== Number(HL5_STATUS.IN_CRM)) {
-                                fieldChanged = Number(oldHl5[field]) / oldCurrencyValue != Number(data[field]) / newCurrencyValue;
+                                fieldChanged = Number(oldHl5[field]).toFixed(2) != Number(data[field]).toFixed(2);
                             } else {
                                 fieldChanged = false;
-                                budgetChanged = Number(oldHl5[field]) / oldCurrencyValue != Number(data[field]) / newCurrencyValue;
+                                budgetChanged = Number(oldHl5[field]).toFixed(2) != Number(data[field]).toFixed(2);
                             }
 
                             break;
                         default:
                             fieldChanged = oldHl5[field] != data[field];
                     }
-                    /*if (field == 'BUDGET') {
-                        var oldCurrencyValue = Number(dataCurrency.getCurrencyValueId(oldHl5.EURO_CONVERSION_ID));
-                        var newCurrencyValue = Number(dataCurrency.getCurrencyValueId(data.EURO_CONVERSION_ID));
-                        fieldChanged = Number(oldHl5[field]) / oldCurrencyValue != Number(data[field]) / newCurrencyValue;
-                    } else {
-                        fieldChanged = oldHl5[field] != data[field];
-                    }*/
                 } else {
                     fieldChanged = new Date(oldHl5[field]).valueOf() !== new Date(data[field]).valueOf();
                 }
@@ -1894,7 +1938,7 @@ function crmFieldsHaveChanged(data, isComplete, userId, isNew) {
                 if (isNew) {
                     fieldChanged = true;
                 }
-                // debug.push({field: field, fieldChanged: fieldChanged, oldParentPath: oldParentPath, parentPath: parentPath});
+
                 if (fieldChanged || oldParentPath != parentPath || (field == "BUDGET" && budgetChanged)) {
                     if (field == "PARENT_PATH") {
                         if (oldParentPath) {
@@ -1906,8 +1950,7 @@ function crmFieldsHaveChanged(data, isComplete, userId, isNew) {
                         }
                     }
 
-                    var in_hl5_crm_binding_id = l5CrmBindigFields[field] ? l5CrmBindigFields[field].HL5_CRM_BINDING_ID : null;
-
+                    var in_hl5_crm_binding_id = l5CrmBindigFields[field] || null;
                     if (in_hl5_crm_binding_id) {
                         parameters.in_hl5_crm_binding_id = in_hl5_crm_binding_id;
                         crmBindingChangedFieldsUpdate.push(parameters);
@@ -2640,6 +2683,8 @@ function serverToUiParser(object) {
 function clone(cloneHl5Id, userId) {
     var data = getHl5ById(cloneHl5Id);
     var currencyId = uploadLib.getDefaultCurrencyForBudgetYearByPath(data);
+    var budgetYear = dataValidation.getBudgetYearByIdLevel(data.HL4_ID, 'HL4')[0];
+    data.ENABLE_CRM_CREATION = budgetYear ? Number(budgetYear.ENABLE_CRM_CREATION) : 0;
     data = uiToServerParser(data, true);
     data.STATUS_DETAIL_ID = HL5_STATUS.IN_PROGRESS;
     var acronym = getNewSerialAcronym(data.HL4_ID);
@@ -2708,7 +2753,9 @@ function getActionPermission(hl5, userId, isSuperAdmin) {
 function createFromEventRequest(eventRequest) {
     var newHl5 = {};
     var CURRENCY_ID = uploadLib.getDefaultCurrencyForBudgetYearByPath(eventRequest);
+    var budgetYear = dataValidation.getBudgetYearByIdLevel(eventRequest.HL4_ID, 'HL4')[0];
     eventRequest = completeCategories(eventRequest);
+    newHl5.ENABLE_CRM_CREATION = budgetYear ? Number(budgetYear.ENABLE_CRM_CREATION) : 0;
     newHl5.HL2_ID = dataHl2.getHl2ByHl4Id(eventRequest.HL4_ID).HL2_ID;
     newHl5.HL4_ID = eventRequest.HL4_ID;
     newHl5.ACRONYM = getNewSerialAcronym(eventRequest.HL4_ID);
@@ -2808,4 +2855,8 @@ function insertInCrmVersion(hl5Id) {
     dataCategoryOptionLevel.insertCategoryOptionVersioned("HL5", hl5Id, hl5VersionedId);
     // Save the version of Country-CategoryOptions IN_CRM o UPDATE_IN_CRM to compare later
     return dataCategoryOptionLevel.insertCountryCategoryOptionVersioned("HL5", hl5Id, hl5VersionedId);
+}
+
+function updEnableCrmCreation(hl5Id, flag) {
+    return dataHl5.updEnableCrmCreation(hl5Id, flag);
 }

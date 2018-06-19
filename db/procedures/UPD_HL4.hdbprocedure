@@ -7,12 +7,12 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::UPD_HL4" (
 	IN in_hl4_status_detail_id bigint,
 	IN in_is_annual_plan tinyint,
 	IN in_modified_user_id bigint,
-	IN budget_column DECIMAL (19, 2),
+	IN budget_column DECIMAL (19, 6),
 	IN in_shopping_cart_approver nvarchar(10),
     IN in_cost_center nvarchar(10),
     IN in_mkt_org_id bigint,
     IN in_dis_channel_id bigint,
-
+    IN in_enable_crm_creation tinyint,
 	OUT out_result int
 )
    LANGUAGE SQLSCRIPT
@@ -34,7 +34,8 @@ BEGIN
                         COST_CENTER = in_cost_center,
                         MKT_ORG_ID = in_mkt_org_id,
                         DIS_CHANNEL_ID = in_dis_channel_id,
-                        BUDGET = budget_column
+                        BUDGET = budget_column,
+                        ENABLE_CRM_CREATION = in_enable_crm_creation
 
 		where hl4_id = in_hl4_id;
         

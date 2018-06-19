@@ -263,7 +263,10 @@ function updateSalesBudgetSpendRequest(sales, id, level, conversionValue, automa
                         budgetSpendRequest = budgetSpendRequest[0];
                     }
 
-                    if (budgetSpendRequest && (Number(sale.AMOUNT) / conversionValue).toFixed(2) != Number(budgetSpendRequest.AMOUNT).toFixed(2)) {
+                    var budgetSpendValueInEuros = (Number(budgetSpendRequest.AMOUNT) / Number(budgetSpendRequest.CURRENCY_VALUE)).toFixed(2);
+                    //throw JSON.stringify({comparison: (Number(sale.AMOUNT) / conversionValue).toFixed(2) != Number(budgetSpendRequest.AMOUNT).toFixed(2), sale: (Number(sale.AMOUNT) / conversionValue).toFixed(2), budgetSpendRequest: budgetSpendValueInEuros});
+
+                    if (budgetSpendRequest && (Number(sale.AMOUNT) / conversionValue).toFixed(2) != budgetSpendValueInEuros) {
                         insertMessage = true;
                     } else {
                         statusId = budgetSpendRequest.BUDGET_SPEND_REQUEST_STATUS_ID
@@ -414,7 +417,7 @@ function updatePartnerBudgetSpendRequest(budgetSpendRequest, id, level, automati
     var statusId = automaticBudgetApproval ? BUDGET_SPEND_REQUEST_STATUS.APPROVED : BUDGET_SPEND_REQUEST_STATUS.PENDING;
     var budgetSpendRequestList = level == 'HL5' ? dataPartner.getPartnerByHl5Id(id, HIERARCHY_LEVEL.HL5).out_result : dataPartner.getPartnerByHl6Id(id);
     var arrBudgetSpendRequestToUpdate = [];
-    
+
     budgetSpendRequest.forEach(function (request) {
             var budgetSpendRequest = getBudgetRequestByIdFromList(request.in_budget_spend_request_id, budgetSpendRequestList);
             if (budgetSpendRequest.length) {
@@ -422,13 +425,14 @@ function updatePartnerBudgetSpendRequest(budgetSpendRequest, id, level, automati
             }
             var statusAux = statusId;
 
-            if (budgetSpendRequest && Number(request.in_amount).toFixed(2) != Number(budgetSpendRequest.VALUE).toFixed(2)) {
+            var budgetSpendValueInEuros = (Number(budgetSpendRequest.VALUE) / Number(budgetSpendRequest.CURRENCY_VALUE)).toFixed(2);
+            //throw JSON.stringify({comparison: Number(request.in_amount).toFixed(2) != Number(budgetSpendRequest.VALUE).toFixed(2), request: Number(request.in_amount).toFixed(2), budgetSpendRequest: (Number(budgetSpendRequest.VALUE) / Number(budgetSpendRequest.CURRENCY_VALUE)).toFixed(2)});
+
+            if (budgetSpendRequest && Number(request.in_amount).toFixed(2) != budgetSpendValueInEuros) {
                 updateMessage = true;
             }else{
                 statusAux = budgetSpendRequest.BUDGET_SPEND_REQUEST_STATUS_ID;
             }
-
-
 
             if(updateMessage || (statusId == BUDGET_SPEND_REQUEST_STATUS.PENDING && request.in_message != budgetSpendRequest.MESSAGE)) {
                 arrBudgetSpendRequestToUpdate.push({

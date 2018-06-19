@@ -248,10 +248,10 @@ function getMapHl6ChangedFieldsByHl6Id(hl6_id){
     for (var i = 0; i < sp_result.length; i++) {
         var obj = sp_result[i];
 
-        if(!mapFields[obj.column_name])
-            mapFields[obj.column_name] = {};
+        if(!mapFields[obj.COLUMN_NAME])
+            mapFields[obj.COLUMN_NAME] = {};
 
-        mapFields[obj.column_name] = [obj.hl6_crm_binding_id];
+        mapFields[obj.COLUMN_NAME] = obj.HL6_CRM_BINDING_ID;
     }
     return mapFields;
 }
@@ -262,10 +262,10 @@ function getMapHl5ChangedFieldsByHl5Id(hl5_id){
     for (var i = 0; i < sp_result.length; i++) {
         var obj = sp_result[i];
 
-        if(!mapFields[obj.column_name])
-            mapFields[obj.column_name] = {};
+        if(!mapFields[obj.COLUMN_NAME])
+            mapFields[obj.COLUMN_NAME] = {};
 
-        mapFields[obj.column_name] = [obj.hl5_crm_binding_id];
+        mapFields[obj.COLUMN_NAME] = obj.HL5_CRM_BINDING_ID;
     }
     return mapFields;
 }
@@ -371,4 +371,15 @@ function convertToCSV(headers, rdo) {
     }
 
     return str;
+}
+
+function getAcronymForHl5Legacy(pathHl5Legacy) {
+    var acronym = pathHl5Legacy.split('-');
+
+    if(acronym.length){
+        return acronym[acronym.length - 1];
+    }
+    else{
+        return '';
+    }
 }

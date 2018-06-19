@@ -4,8 +4,8 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL3_FOR_HL4_
 	OUT out_result_hl3 TABLE(
 	    HL3_ID BIGINT,
 	    HL2_ID BIGINT,
-	    HL3_FNC_BUDGET_TOTAL DECIMAL(19,2),
-	    ALLOCATED_BUDGET DECIMAL(19,2)
+	    HL3_FNC_BUDGET_TOTAL DECIMAL(19,6),
+	    ALLOCATED_BUDGET DECIMAL(19,6)
 	),
 	OUT out_result_hl3_kpis TABLE(
 	    EXPECTED_OUTCOME_ID BIGINT,
@@ -16,7 +16,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL3_FOR_HL4_
 	OUT out_result_hl4_children TABLE(
 	    HL4_ID BIGINT,
 	    ACRONYM NVARCHAR(10),
-	    BUDGET DECIMAL(19,2)
+	    BUDGET DECIMAL(19,6)
 	), --All HL4, childrens of the current HL3
 	OUT out_result_hl4_children_kpis TABLE (
 	    EXPECTED_OUTCOME_ID BIGINT,

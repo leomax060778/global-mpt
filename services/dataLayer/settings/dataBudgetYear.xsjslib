@@ -1,5 +1,5 @@
 /***************Import Library*******************/
-$.import("mktgplanningtool.services.commonLib","mapper");
+$.import("mktgplanningtool.services.commonLib", "mapper");
 var mapper = $.mktgplanningtool.services.commonLib.mapper;
 var db = mapper.getdbHelper();
 var ErrorLib = mapper.getErrors();
@@ -17,103 +17,106 @@ var spInsBudgetYear = "INS_BUDGET_YEAR";
 var RESET_ALL_BUDGET_YEAR_DEFAULT_YEAR = "RESET_ALL_BUDGET_YEAR_DEFAULT_YEAR";
 var spGET_BUDGET_YEAR_BY_LEVEL_PARENT = "GET_BUDGET_YEAR_BY_LEVEL_PARENT";
 var GET_LOCK_FLAG_BY_HL_ID_LEVEL = "GET_LOCK_FLAG_BY_HL_ID_LEVEL";
+
 /******************************************************/
 
-function getHl1QuantityByBudgetYear(budget_year_id){
-    return db.executeScalarManual(spGET_HL1_QUANTITY_BY_BUDGET_YEAR_ID,{'in_budget_year_id':budget_year_id}, 'out_result');
+function getHl1QuantityByBudgetYear(budget_year_id) {
+    return db.executeScalarManual(spGET_HL1_QUANTITY_BY_BUDGET_YEAR_ID, {'in_budget_year_id': budget_year_id}, 'out_result');
 }
 
-function getAllBudgetYear(){
-	var result = db.executeProcedure(spGetAllBudgetYear,{});
-	return db.extractArray(result['out_result']);
+function getAllBudgetYear() {
+    var result = db.executeProcedure(spGetAllBudgetYear, {});
+    return db.extractArray(result['out_result']);
 }
 
-function getLockFlagByHlIdLevel(hlId, level){
-    return db.executeScalarManual(GET_LOCK_FLAG_BY_HL_ID_LEVEL,{'in_hl_id':hlId, 'in_level': level}, 'out_result');
+function getLockFlagByHlIdLevel(hlId, level) {
+    return db.executeScalarManual(GET_LOCK_FLAG_BY_HL_ID_LEVEL, {'in_hl_id': hlId, 'in_level': level}, 'out_result');
 }
 
-function insertBudgetYear(budgetYear,startDate,endDate,defaultYear,description, versionedStartDate, versionedEndDate, userId,autoCommit){
-	var params = {
-		'in_budget_year' : budgetYear,
-		'in_start_date'  : startDate,
-		'in_end_date' : endDate,
-        'in_versioned_start_date'  : versionedStartDate,
-        'in_versioned_end_date' : versionedEndDate,
-		'in_default_year' : defaultYear,
-		'in_description': description,
-		'in_created_user_id' : userId
-	};
-	var rdo;
-	if(autoCommit){
-		rdo = db.executeScalar(spInsBudgetYear,params,'out_budget_year_id');
-	}else{
-		rdo = db.executeScalarManual(spInsBudgetYear,params,'out_budget_year_id');
-	}
-	return rdo;
+function insertBudgetYear(budgetYear, startDate, endDate, defaultYear, description, versionedStartDate, versionedEndDate, userId, autoCommit) {
+    var params = {
+        'in_budget_year': budgetYear,
+        'in_start_date': startDate,
+        'in_end_date': endDate,
+        'in_versioned_start_date': versionedStartDate,
+        'in_versioned_end_date': versionedEndDate,
+        'in_default_year': defaultYear,
+        'in_description': description,
+        'in_created_user_id': userId
+    };
+    var rdo;
+    if (autoCommit) {
+        rdo = db.executeScalar(spInsBudgetYear, params, 'out_budget_year_id');
+    } else {
+        rdo = db.executeScalarManual(spInsBudgetYear, params, 'out_budget_year_id');
+    }
+    return rdo;
 }
 
-function updateBudgetYear(budgetYearId, budgetYear, startDate, endDate, defaultYear, description, versionedStartDate, versionedEndDate, userId){
-	var params = {
-			"in_budget_year_id": budgetYearId,
-			"in_start_date" : startDate,
-			"in_end_date": endDate,
-			'in_versioned_start_date'  : versionedStartDate,
-			'in_versioned_end_date' : versionedEndDate,
-			"in_default_year": defaultYear,
-			"in_description": description,
-			"in_modified_user_id": userId,
-			"in_budget_year": budgetYear
-	};
-	
-	return db.executeScalarManual(spUdpBudgetYear,params, 'out_result');
+function updateBudgetYear(budgetYearId, budgetYear, startDate, endDate, defaultYear, description, enableCrmCreation, versionedStartDate, versionedEndDate, userId) {
+
+    var params = {
+        "in_budget_year_id": budgetYearId,
+        "in_start_date": startDate,
+        "in_end_date": endDate,
+        'in_versioned_start_date': versionedStartDate,
+        'in_versioned_end_date': versionedEndDate,
+        "in_default_year": defaultYear,
+        "in_description": description,
+        "in_enable_crm_creation": enableCrmCreation,
+        "in_modified_user_id": userId,
+        "in_budget_year": budgetYear
+    };
+
+    return db.executeScalarManual(spUdpBudgetYear, params, 'out_result');
 }
 
 
-function getBudgetYear(budgetYear){
-	var params = {
-			"in_budget_year" : budgetYear
-	};
-	var result = db.executeProcedureManual(GET_BUDGET_YEAR,params);
-	return db.extractArray(result['out_result'])[0];
+function getBudgetYear(budgetYear) {
+    var params = {
+        "in_budget_year": budgetYear
+    };
+    var result = db.executeProcedureManual(GET_BUDGET_YEAR, params);
+    return db.extractArray(result['out_result'])[0];
 }
 
-function getBudgetYearId(budgetYearid){
-	var params = {
-		"in_budget_year" : budgetYearid
-	};
-	var result = db.executeProcedureManual(GET_BUDGET_YEAR_ID,params);
-	return db.extractArray(result['out_result'])[0];
+function getBudgetYearId(budgetYearid) {
+    var params = {
+        "in_budget_year": budgetYearid
+    };
+    var result = db.executeProcedureManual(GET_BUDGET_YEAR_ID, params);
+    return db.extractArray(result['out_result'])[0];
 }
 
-function getBudgetYearByHl4Id(hl4_id){
-	var params = {
-		"IN_HL4_ID" : hl4_id
-	};
-	return db.executeScalarManual(spGET_BUDGET_YEAR_BY_HL4_ID,params,'OUT_BUDGET_YEAR_ID');
+function getBudgetYearByHl4Id(hl4_id) {
+    var params = {
+        "IN_HL4_ID": hl4_id
+    };
+    return db.executeScalarManual(spGET_BUDGET_YEAR_BY_HL4_ID, params, 'OUT_BUDGET_YEAR_ID');
 }
 
-function deleteBudgetYear(budgetYearId, userId){
-	var params = {
-		'in_budget_year_id' : budgetYearId,
-		'in_user_id' : userId
-	};
-	return db.executeScalarManual(DEL_BUDGET_YEAR,params,'out_result');
+function deleteBudgetYear(budgetYearId, userId) {
+    var params = {
+        'in_budget_year_id': budgetYearId,
+        'in_user_id': userId
+    };
+    return db.executeScalarManual(DEL_BUDGET_YEAR, params, 'out_result');
 }
 
-function resetAllBudgetYearDefaultYear(budgetYearId, userId){
-	var params = {
-		'in_budget_year_id' : budgetYearId,
-		'in_user_id' : userId
-	};
-	return db.executeScalarManual(RESET_ALL_BUDGET_YEAR_DEFAULT_YEAR,params,'out_result');
+function resetAllBudgetYearDefaultYear(budgetYearId, userId) {
+    var params = {
+        'in_budget_year_id': budgetYearId,
+        'in_user_id': userId
+    };
+    return db.executeScalarManual(RESET_ALL_BUDGET_YEAR_DEFAULT_YEAR, params, 'out_result');
 }
 
-function getBudgetYearByLevelParent(level, hlId, isLegacy){
-	var params = {
-		"in_lh" : level
-		, "in_parent_id": hlId
-		, "in_is_legacy": isLegacy || 0
-	};
-	var result = db.executeProcedureManual(spGET_BUDGET_YEAR_BY_LEVEL_PARENT, params);
-	return db.extractArray(result['out_result'])[0];
+function getBudgetYearByLevelParent(level, hlId, isLegacy) {
+    var params = {
+        "in_lh": level
+        , "in_parent_id": hlId
+        , "in_is_legacy": isLegacy || 0
+    };
+    var result = db.executeProcedureManual(spGET_BUDGET_YEAR_BY_LEVEL_PARENT, params);
+    return db.extractArray(result['out_result'])[0];
 }

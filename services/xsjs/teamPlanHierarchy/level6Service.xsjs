@@ -6,6 +6,8 @@ var hl5 = mapper.getLevel5();
 var hl6 = mapper.getLevel6();
 var ErrorLib = mapper.getErrors();
 var config = mapper.getDataConfig();
+var dataBudgetYear = mapper.getDataBudgetYear();
+var dataValidation = mapper.getDataValidation();
 /******************************************/
 var section = "FOR_SEARCH";
 var method = "method";
@@ -32,6 +34,15 @@ function handleGet(params, userId) {
     var hl5_categories = httpUtil.getUrlParameters().get("HL5_CATEGORIES");
     var hl5_expectedOutcomes = httpUtil.getUrlParameters().get("HL5_EXPECTED_OUTCOMES");
     var result = {};
+
+    if(httpUtil.getUrlParameters().get("METHOD") == "CHECK_ENABLED_CRM_CREATION"){
+        var budgetYear = dataValidation.getBudgetYearByIdLevel(in_hl6_id, "HL6");
+
+        var budgetYearObj = dataBudgetYear.getBudgetYearId(budgetYear[0].BUDGET_YEAR_ID);
+
+        result = {'ENABLE_CRM_CREATION' : budgetYearObj.ENABLE_CRM_CREATION === 1};
+        return httpUtil.handleResponse(result,httpUtil.OK,httpUtil.AppJson);
+    }
 
     if(in_hl5_id && in_hl6_id === "0" ){
 
@@ -77,6 +88,12 @@ function handlePut(reqBody, userId){
         case changeStatus:
             var CANCEL_CONFIRMATION = parameters.get('CANCEL_CONFIRMATION');
             var rdo = hl6.changeStatusOnDemand(hl6Id, userId, CANCEL_CONFIRMATION);
+            return	httpUtil.handleResponse(rdo,httpUtil.OK,httpUtil.AppJson);
+            break;
+        case "UPD_ENABLED_CRM_CREATION":
+            var enable_crm_creation = parameters.get('ENABLE_CRM_CREATION');
+
+            rdo = hl6.updEnableCrmCreation(hl6Id, enable_crm_creation);
             return	httpUtil.handleResponse(rdo,httpUtil.OK,httpUtil.AppJson);
             break;
         default:

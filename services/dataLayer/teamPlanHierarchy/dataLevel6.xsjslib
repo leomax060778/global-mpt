@@ -66,6 +66,7 @@ var DEL_HL6_CATEGORY_OPTION_HARD = "DEL_HL6_CATEGORY_OPTION_HARD";
 var UPD_HL6_STATUS_TO_IN_CRM = "UPD_HL6_STATUS_TO_IN_CRM";
 
 var UPD_DELETION_REASON = "UPD_HL6_DELETION_REASON";
+var spUPDEnableCrmCreation = "UPD_ENABLE_CRM_CREATION_BY_ID_BY_LEVEL";
 
 /*inserts*/
 function insertHl6(hl6CrmDescription,hl6Acronym,budget,hl5Id, routeToMarket
@@ -77,7 +78,8 @@ function insertHl6(hl6CrmDescription,hl6Acronym,budget,hl5Id, routeToMarket
     , region
     , event_owner
     , number_of_participants
-    , priority_id,co_funded,allow_budget_zero, is_power_user, employeeResponsible, personResponsible, is_complete, autoCommit, imported,import_id, inherited_creation, parent_path){
+    , priority_id,co_funded,allow_budget_zero, is_power_user, employeeResponsible, personResponsible, is_complete
+    , autoCommit, imported,import_id, inherited_creation, parent_path, enable_crm_creation){
     var params = {
         'in_hl6_crm_description' : hl6CrmDescription,
         'in_acronym': hl6Acronym,
@@ -135,6 +137,7 @@ function insertHl6(hl6CrmDescription,hl6Acronym,budget,hl5Id, routeToMarket
         , 'in_country_id': country
         , 'in_inherited_creation' : inherited_creation ? 1 : 0
         ,  'in_parent_path' : parent_path || null
+        , 'in_enable_crm_creation': enable_crm_creation
     };
 
     var rdo;
@@ -158,10 +161,9 @@ function insertHl6Legacy(hl6Id, hl5LegacyId){
 /*en inserts*/
 
 
-function getHl6ByHl5Id(hl5Id, includeLegacy) {
+function getHl6ByHl5Id(hl5Id) {
     var params = {
         'in_hl5_id': hl5Id
-        , 'in_include_legacy_records': includeLegacy || 0
     };
     var rdo = db.executeProcedureManual(spGetHl6Byhl5Id, params);
     return db.extractArray(rdo.out_result);
@@ -454,7 +456,7 @@ function updateHl6(hl6Id,acronym, hl6CrmDescription,budget, routeToMarket
     , region
     , event_owner
     , number_of_participants
-    , priority_id, co_funded, allow_budget_zero,is_power_user,employee_responsible_user,person_responsible, is_complete, inherited_creation,autoCommit){
+    , priority_id, co_funded, allow_budget_zero,is_power_user,employee_responsible_user,person_responsible, is_complete, inherited_creation, enable_crm_creation,autoCommit){
     var params = {
         'in_hl6_id': hl6Id,
         'in_hl6_acronym': acronym,
@@ -508,6 +510,7 @@ function updateHl6(hl6Id,acronym, hl6CrmDescription,budget, routeToMarket
         , 'in_is_complete': is_complete
         , 'in_country_id': country
         , 'in_inherited_creation': inherited_creation ? 1 : 0
+        , 'in_enable_crm_creation': enable_crm_creation
     };
 
     var rdo = db.executeScalarManual(spUpdHl6,params,'out_result');
@@ -695,5 +698,15 @@ function insertHl6VersionInCRM(hl6_id) {
         in_hl6_id: hl6_id
     }
     var rdo = db.executeScalarManual(spInsHl6Versioned, parameters, 'out_result');
+    return rdo;
+}
+
+function updEnableCrmCreation(hl6Id, flag) {
+    var params = {
+        in_hl_id: hl6Id,
+        in_level: "HL6",
+        in_enable_crm_creation: flag
+    };
+    var rdo = db.executeScalarManual(spUPDEnableCrmCreation, params, 'out_result');
     return rdo;
 }

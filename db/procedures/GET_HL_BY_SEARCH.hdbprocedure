@@ -8,6 +8,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL_BY_SEARCH
  	IN IN_OFFSET INTEGER,
  	OUT OUT_RESULT TABLE(
  		HL_ID BIGINT,
+ 		IS_LEGACY TINYINT,
  		PARENT_ID BIGINT,
  		ACRONYM NVARCHAR(255),
  		PATH NVARCHAR(255),
@@ -30,6 +31,7 @@ BEGIN
 					SEARCH_RESULT =	(
 									SELECT 
 										CVHS.HL1_ID AS HL_ID,
+										NULL AS IS_LEGACY,
 										0 AS PARENT_ID,
 								 		CVHS.ACRONYM,
 								 		CVHS.PATH,
@@ -48,6 +50,7 @@ BEGIN
 						 	
 									(
 									SELECT CVHS.HL1_ID AS HL_ID,
+									NULL AS IS_LEGACY,
 										0 AS PARENT_ID,
 								 		CVHS.ACRONYM,
 								 		CVHS.PATH,
@@ -66,6 +69,7 @@ BEGIN
 					SEARCH_RESULT =	(
 									SELECT 
 										CVHS.HL2_ID AS HL_ID,
+										NULL AS IS_LEGACY,
 										CVHS.PARENT_ID,
 								 		CVHS.ACRONYM,
 								 		CVHS.PATH,
@@ -85,6 +89,7 @@ BEGIN
 						 	
 									(
 									SELECT CVHS.HL2_ID AS HL_ID,
+									NULL AS IS_LEGACY,
 										CVHS.PARENT_ID,
 								 		CVHS.ACRONYM,
 								 		CVHS.PATH,
@@ -104,6 +109,7 @@ BEGIN
 					SEARCH_RESULT =	(
 									SELECT 
 										CVHS.HL3_ID AS HL_ID,
+										NULL AS IS_LEGACY,
 										CVHS.PARENT_ID,
 								 		CVHS.ACRONYM,
 								 		CVHS.PATH,
@@ -123,6 +129,7 @@ BEGIN
 						 	
 									(
 									SELECT CVHS.HL3_ID AS HL_ID,
+									NULL AS IS_LEGACY,
 										CVHS.PARENT_ID,
 								 		CVHS.ACRONYM,
 								 		CVHS.PATH,
@@ -143,6 +150,7 @@ BEGIN
 					SEARCH_RESULT =	(
 									SELECT 
 										CVHS.HL4_ID AS HL_ID,
+										NULL AS IS_LEGACY,
 										CVHS.PARENT_ID,
 								 		CVHS.ACRONYM,
 								 		CVHS.PATH,
@@ -161,6 +169,7 @@ BEGIN
 						 	
 									(
 									SELECT CVHS.HL4_ID AS HL_ID,
+									NULL AS IS_LEGACY,
 										CVHS.PARENT_ID,
 								 		CVHS.ACRONYM,
 								 		CVHS.PATH,
@@ -180,7 +189,8 @@ BEGIN
 				THEN
 					SEARCH_RESULT =	(
 									SELECT 
-										CVHS.HL5_ID AS HL_ID,
+										COALESCE(CVHS.HL5_ID,CVHS.HL5_LEGACY_ID) AS HL_ID,
+										CVHS.IS_LEGACY,
 										CVHS.PARENT_ID,
 								 		CVHS.ACRONYM,
 								 		CVHS.PATH,
@@ -198,7 +208,8 @@ BEGIN
 						 					UNION
 						 	
 									(
-									SELECT CVHS.HL5_ID AS HL_ID,
+									SELECT COALESCE(CVHS.HL5_ID,CVHS.HL5_LEGACY_ID) AS HL_ID,
+									    CVHS.IS_LEGACY,
 										CVHS.PARENT_ID,
 								 		CVHS.ACRONYM,
 								 		CVHS.PATH,
@@ -219,6 +230,7 @@ BEGIN
 					SEARCH_RESULT =	(
 									SELECT 
 										CVHS.HL6_ID AS HL_ID,
+										CVHS.IS_LEGACY,
 										CVHS.PARENT_ID,
 								 		CVHS.ACRONYM,
 								 		CVHS.PATH,
@@ -237,6 +249,7 @@ BEGIN
 						 	
 									(
 									SELECT 	CVHS.HL6_ID AS HL_ID,
+									        CVHS.IS_LEGACY,
 											CVHS.PARENT_ID,
 									 		CVHS.ACRONYM,
 									 		CVHS.PATH,
@@ -255,6 +268,7 @@ BEGIN
 
 			OUT_RESULT =    SELECT
                                 SR.HL_ID,
+                                SR.IS_LEGACY,
                                 SR.PARENT_ID,
                                 SR.ACRONYM,
                                 SR.PATH,
@@ -264,6 +278,7 @@ BEGIN
                                 SR.REGION_NAME,
                                 SR.SUBREGION_NAME
                             FROM :SEARCH_RESULT SR
+                            ORDER BY SR.PATH
                             LIMIT :IN_LIMIT
                             OFFSET :IN_OFFSET;
 
