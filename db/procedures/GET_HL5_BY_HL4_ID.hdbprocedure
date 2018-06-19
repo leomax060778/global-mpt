@@ -30,8 +30,8 @@ BEGIN
 va_intermidate = SELECT
                          hl5.hl5_ID AS HL5_ID,
                          NULL AS HL5_LEGACY_ID,
-                         "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BGY.BUDGET_YEAR, HL1.acronym, hl2.ORGANIZATION_ACRONYM, HL3.acronym, hl4.acronym, hl5.acronym, '') AS CRM_ID,
-                         hl5_status_detail.detail AS STATUS_DETAIL,
+                         "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BGY.BUDGET_YEAR, HL1.ACRONYM, hl2.ORGANIZATION_ACRONYM, HL3.ACRONYM, hl4.ACRONYM, hl5.ACRONYM, '') AS CRM_ID,
+                         hl5_status_detail.DETAIL AS STATUS_DETAIL,
                          CONCAT(CONCAT(userTable.FIRST_NAME, ' '),userTable.LAST_NAME) AS CREATED_BY,
                          hl5.BUDGET AS HL5_BUDGET,
                          HL5.IMPORTED as IMPORTED,
@@ -41,26 +41,26 @@ va_intermidate = SELECT
                          HL4.HL4_STATUS_DETAIL_ID AS PARENT_STATUS_ID,
                          0 AS IS_LEGACY
                     FROM HL5 Hl5
-                        INNER JOIN HL4 hl4 ON hl4.hl4_id=hl5.hl4_id
-                            AND hl4.enabled=1
-                            AND hl4.deleted=0
-                        INNER JOIN HL3 hl3 ON hl3.hl3_id=hl4.hl3_id
-                            AND hl3.enabled=1
-                            AND hl3.deleted=0
-                        INNER JOIN HL2 hl2 ON hl2.hl2_id = hl3.hl2_id
-                            AND hl2.enabled=1
-                            AND hl2.deleted=0
-                        INNER JOIN HL1 hl1 ON hl1.hl1_id = hl2.hl1_id
-                            AND hl1.enabled=1
-                            AND hl1.deleted=0
-                        INNER JOIN BUDGET_YEAR BGY ON hl1.budget_year_id = BGY.budget_year_id
-                            AND BGY.enabled=1
-                            AND BGY.deleted=0
-                        INNER JOIN hl5_status_detail hl5_status_detail ON hl5_status_detail.hl5_status_detail_id = hl5.hl5_status_detail_id
-                        INNER JOIN "MKTG_PLANNING_TOOL"."USER" userTable ON userTable.USER_ID = hl5.created_user_id
-                    WHERE hl5.enabled=1
-                        AND hl5.deleted=0
-                        AND hl5.hl4_id = in_hl4_id;
+                        INNER JOIN HL4 hl4 ON hl4.HL4_ID = hl5.HL4_ID
+                            AND hl4.ENABLED = 1
+                            AND hl4.DELETED = 0
+                        INNER JOIN HL3 hl3 ON hl3.HL3_ID = hl4.HL3_ID
+                            AND hl3.ENABLED = 1
+                            AND hl3.DELETED = 0
+                        INNER JOIN HL2 hl2 ON hl2.HL2_ID = hl3.HL2_ID
+                            AND hl2.ENABLED = 1
+                            AND hl2.DELETED = 0
+                        INNER JOIN HL1 hl1 ON hl1.HL1_ID = hl2.HL1_ID
+                            AND hl1.ENABLED = 1
+                            AND hl1.DELETED = 0
+                        INNER JOIN BUDGET_YEAR BGY ON hl1.BUDGET_YEAR_ID = BGY.BUDGET_YEAR_ID
+                            AND BGY.ENABLED = 1
+                            AND BGY.DELETED = 0
+                        INNER JOIN hl5_status_detail hl5_status_detail ON hl5_status_detail.HL5_STATUS_DETAIL_ID = hl5.HL5_STATUS_DETAIL_ID
+                        INNER JOIN "MKTG_PLANNING_TOOL"."USER" userTable ON userTable.USER_ID = hl5.CREATED_USER_ID
+                    WHERE hl5.ENABLED = 1
+                        AND hl5.DELETED = 0
+                        AND hl5.HL4_ID = in_hl4_id;
 
 aux_out_result = SELECT
                         va_hl5.HL5_ID,
@@ -82,8 +82,8 @@ aux_out_result = SELECT
                         va_hl5.IS_LEGACY
                     FROM :va_intermidate va_hl5
                         LEFT JOIN HL6 hl6 ON hl6.HL5_ID = va_hl5.hl5_id
-                            AND hl6.enabled=1
-                            AND hl6.deleted=0
+                            AND hl6.ENABLED = 1
+                            AND hl6.DELETED = 0
                     --- This means that will be included those records that aren´t in Deleted In CRM ---
                             AND HL6.HL6_STATUS_DETAIL_ID != 10
 
@@ -108,7 +108,7 @@ aux_out_result = SELECT
                                         null as HL5_ID,
                                         hl5.HL5_LEGACY_ID,
                                         PATH AS CRM_ID,
-                                        hl5_status_detail.detail AS STATUS_DETAIL,
+                                        hl5_status_detail.DETAIL AS STATUS_DETAIL,
                                         CONCAT(CONCAT(userTable.FIRST_NAME, ' '),userTable.LAST_NAME) AS CREATED_BY,
                                         hl5.BUDGET AS HL5_BUDGET,
                                         null as IMPORTED,
@@ -118,16 +118,16 @@ aux_out_result = SELECT
                                         HL4.HL4_STATUS_DETAIL_ID AS PARENT_STATUS_ID,
                                         1 AS IS_LEGACY
                                    FROM HL5_LEGACY Hl5
-                                        INNER JOIN HL4 hl4 ON hl4.hl4_id=hl5.hl4_id
-                                            AND hl4.enabled=1
-                                            AND hl4.deleted=0
-                                        INNER JOIN hl5_status_detail hl5_status_detail ON hl5_status_detail.hl5_status_detail_id = hl5.hl5_status_detail_id
-                                        INNER JOIN "MKTG_PLANNING_TOOL"."USER" userTable ON userTable.USER_ID = hl5.created_user_id
-                                   WHERE hl5.enabled=1
-                                        AND hl5.deleted=0
-                                        AND hl5.hl4_id = in_hl4_id;
+                                        INNER JOIN HL4 hl4 ON hl4.HL4_ID = hl5.HL4_ID
+                                            AND hl4.ENABLED = 1
+                                            AND hl4.DELETED = 0
+                                        INNER JOIN hl5_status_detail hl5_status_detail ON hl5_status_detail.HL5_STATUS_DETAIL_ID = hl5.HL5_STATUS_DETAIL_ID
+                                        INNER JOIN "MKTG_PLANNING_TOOL"."USER" userTable ON userTable.USER_ID = hl5.CREATED_USER_ID
+                                   WHERE hl5.ENABLED = 1
+                                        AND hl5.DELETED = 0
+                                        AND hl5.HL4_ID = in_hl4_id;
                                         
-           va_legacy_with_children = (SELECT
+           va_legacy_with_children = SELECT
 			                                   va_hl5.HL5_ID,
 			                                   va_hl5.HL5_LEGACY_ID,
 			                                   va_hl5.CRM_ID,
@@ -135,7 +135,7 @@ aux_out_result = SELECT
 			                                   va_hl5.HL5_STATUS_DETAIL_ID,
 			                                   va_hl5.CREATED_BY,
 			                                   va_hl5.HL5_BUDGET,
-			                                   COUNT(DISTINCT hl6.HL6_legacy_ID) AS TOTAL_HL6,
+			                                   COUNT(DISTINCT hl6_legacy.HL6_LEGACY_ID) AS TOTAL_HL6,
 			                                   SUM(CASE WHEN  hl6.IN_BUDGET IS NULL THEN 0 WHEN hl6.IN_BUDGET = 0 THEN 1 ELSE 0 END) QUANTITY_HL6_OUT_BUDGET, --# of L6 out off budget,
 			                                   COALESCE(SUM(hl6.BUDGET),0) AS ALLOCATED,
 			                                   COALESCE((va_hl5.HL5_BUDGET - SUM(hl6.BUDGET)), va_hl5.HL5_BUDGET) AS REMAINING,
@@ -146,11 +146,14 @@ aux_out_result = SELECT
 			                                   va_hl5.PARENT_STATUS_ID,
 			                                   va_hl5.IS_LEGACY
 			                            FROM :va_intermidate_legacy va_hl5
-			                                INNER JOIN HL6_LEGACY hl6 ON hl6.HL5_LEGACY_ID = va_hl5.HL5_LEGACY_ID
-			                                    AND hl6.enabled=1
-			                                    AND hl6.deleted=0
-			                                    AND HL6.HL6_STATUS_DETAIL_ID != 10
-			                                    AND HL6.HL6_ID is null
+			                                INNER JOIN HL6_LEGACY hl6_legacy ON hl6_legacy.HL5_LEGACY_ID = va_hl5.HL5_LEGACY_ID
+			                                    AND hl6_legacy.ENABLED = 1
+			                                    AND hl6_legacy.DELETED = 0
+			                                    AND hl6_legacy.HL6_ID is not null
+                                            INNER JOIN HL6 hl6 ON hl6.HL6_ID = hl6_legacy.HL6_ID
+                                               AND hl6.ENABLED = 1
+                                               AND hl6.DELETED = 0
+                                               AND hl6.HL6_STATUS_DETAIL_ID != 10
 			                            GROUP BY
 			                                va_hl5.HL5_ID,
 			                                va_HL5.HL5_LEGACY_ID,
@@ -163,50 +166,7 @@ aux_out_result = SELECT
 			                                va_hl5.ACRONYM,
 			                                va_hl5.HL5_CRM_DESCRIPTION,
 			                                va_hl5.PARENT_STATUS_ID,
-			                                va_hl5.IS_LEGACY)
-			
-			                           UNION
-
-			                           (SELECT
-			                                  va_hl5.HL5_ID,
-			                                  va_hl5.HL5_LEGACY_ID,
-			                                  va_hl5.CRM_ID,
-			                                  va_hl5.STATUS_DETAIL,
-			                                  va_hl5.HL5_STATUS_DETAIL_ID,
-			                                  va_hl5.CREATED_BY,
-			                                  va_hl5.HL5_BUDGET,
-			                                  COUNT(DISTINCT hl6_legacy.HL6_LEGACY_ID) AS TOTAL_HL6,
-			                                  SUM(CASE WHEN  HL6.IN_BUDGET IS NULL THEN 0 WHEN HL6.IN_BUDGET = 0 THEN 1 ELSE 0 END) QUANTITY_HL6_OUT_BUDGET, --# of L6 out off budget,
-						                      COALESCE(SUM(hl6.BUDGET),0) AS ALLOCATED,
-						                      COALESCE((va_hl5.HL5_BUDGET - SUM(hl6.BUDGET)), va_hl5.HL5_BUDGET) AS REMAINING,
-						                      SUM(CASE WHEN (hl6.HL6_STATUS_DETAIL_ID = 2 OR hl6.HL6_STATUS_DETAIL_ID = 3 OR hl6.HL6_STATUS_DETAIL_ID = 4) THEN 1 ELSE 0 END) AS IN_CRM_CHILD,
-						                      va_hl5.IMPORTED,
-			                                  va_hl5.ACRONYM,
-			                                  va_hl5.HL5_CRM_DESCRIPTION,
-			                                  va_hl5.PARENT_STATUS_ID,
-			                                  va_hl5.IS_LEGACY
-			                           FROM :va_intermidate_legacy va_hl5
-			                               INNER JOIN HL6_LEGACY hl6_legacy ON hl6_legacy.HL5_LEGACY_ID = va_hl5.HL5_LEGACY_ID
-			                               	   AND hl6_legacy.enabled=1
-			                                   AND hl6_legacy.deleted=0
-			                                   AND hl6_legacy.HL6_ID is not null
-			                               INNER JOIN HL6 hl6 ON hl6.HL6_ID = hl6_legacy.HL6_ID
-			                                   AND hl6.enabled=1
-			                                   AND hl6.deleted=0
-			                                   AND hl6.HL6_STATUS_DETAIL_ID != 10
-			                           GROUP BY
-			                               va_hl5.HL5_ID,
-			                               va_HL5.HL5_LEGACY_ID,
-			                               va_hl5.CRM_ID,
-			                               va_hl5.STATUS_DETAIL,
-			                               va_hl5.HL5_STATUS_DETAIL_ID,
-			                               va_hl5.CREATED_BY,
-			                               va_hl5.HL5_BUDGET,
-			                               va_hl5.IMPORTED,
-			                               va_hl5.ACRONYM,
-			                               va_hl5.HL5_CRM_DESCRIPTION,
-			                               va_hl5.PARENT_STATUS_ID,
-			                               va_hl5.IS_LEGACY);
+			                                va_hl5.IS_LEGACY;
 
            aux_out_result =
                            (SELECT  HL5_ID,

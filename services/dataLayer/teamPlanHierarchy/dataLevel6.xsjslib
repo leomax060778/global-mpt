@@ -158,10 +158,9 @@ function insertHl6Legacy(hl6Id, hl5LegacyId){
 /*en inserts*/
 
 
-function getHl6ByHl5Id(hl5Id, includeLegacy) {
+function getHl6ByHl5Id(hl5Id) {
     var params = {
         'in_hl5_id': hl5Id
-        , 'in_include_legacy_records': includeLegacy || 0
     };
     var rdo = db.executeProcedureManual(spGetHl6Byhl5Id, params);
     return db.extractArray(rdo.out_result);

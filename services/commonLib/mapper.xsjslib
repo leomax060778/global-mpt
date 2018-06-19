@@ -65,6 +65,11 @@ function getLevel5(){
     return $.mktgplanningtool.services.businessLayer.teamPlanHierarchy.level5Lib;
 }
 
+function getLevel5Legacy(){
+    $.import("mktgplanningtool.services.businessLayer.teamPlanHierarchy","level5LegacyLib");
+    return $.mktgplanningtool.services.businessLayer.teamPlanHierarchy.level5LegacyLib;
+}
+
 function refactorL5L6_getLevel5(){
     $.import("mktgplanningtool.services.businessLayer.teamPlanHierarchy","refactorL5L6_level5Lib");
     return $.mktgplanningtool.services.businessLayer.teamPlanHierarchy.refactorL5L6_level5Lib;
@@ -761,11 +766,16 @@ function getDataMarketingOrganization(){
     return $.mktgplanningtool.services.dataLayer.settings.dataMarketingOrganization;
 }
 
-
 function getDataLevel5(){
     $.import("mktgplanningtool.services.dataLayer.teamPlanHierarchy","dataLevel5");
     return $.mktgplanningtool.services.dataLayer.teamPlanHierarchy.dataLevel5;
 }
+
+function getDataLevel5Legacy(){
+    $.import("mktgplanningtool.services.dataLayer.teamPlanHierarchy","dataLevel5Legacy");
+    return $.mktgplanningtool.services.dataLayer.teamPlanHierarchy.dataLevel5Legacy;
+}
+
 function getDataLevel6(){
     $.import("mktgplanningtool.services.dataLayer.teamPlanHierarchy","dataLevel6");
     return $.mktgplanningtool.services.dataLayer.teamPlanHierarchy.dataLevel6;

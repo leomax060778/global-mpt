@@ -265,11 +265,16 @@ function getL6SpendBudgetReportById(l6Id, budgetSpendRequestId, userId) {
     // return completeCRMPath([result], "HL6_PATH", false, false)[0];
 
     result = completeCRMPath([result], "HL6_PATH", false, false)[0];
-    var hl5Id = dataHl6.getHl6ById(l6Id).HL5_ID;
+    var hl6 = dataHl6.getHl6ById(l6Id);
+    var isLegacy = !Number(hl6.HL5_ID);
+    var hl5 = isLegacy ? dataHl5.getHl5LegacyById(hl6.HL5_LEGACY_ID) : dataHl5.getHl5ById(hl6.HL5_ID);
+    var hl5Id = hl5.HL5_ID || hl5.HL5_LEGACY_ID;
+
+
     result.PARENT_REMAINING_BUDGET = util.numberToLocaleString(
         util.parseTwoDecimals(
             Number(
-                dataHl6.getHl6RemainingBudgetByHl5Id(hl5Id, dataHl6.getHl6TotalBudgetByHl5Id(hl5Id))
+                budgetSpendRequestLib.getBudgetRemaining(hl5Id, 'HL6', isLegacy)
             ).toFixed(2)
         )
     );

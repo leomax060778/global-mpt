@@ -164,6 +164,7 @@ function getHl5ByHl4Id(id, userId, includeLegacy) {
     var isSuperAdmin = util.isSuperAdmin(userId) ? 1 : 0;
     var hl5List = dataHl5.getHl5ByHl4Id(id, Number(!!includeLegacy));
     var hl5TotalBudget = 0;
+    var hl5TotalBudgetLegacy = 0;
     var totalAllocated = 0;
     var hl5BudgetRemaining = 0;
     var allHl5 = [];
@@ -181,13 +182,17 @@ function getHl5ByHl4Id(id, userId, includeLegacy) {
 
     hl5TotalBudget = dataHl4.getHl4ById(id).BUDGET;
     totalAllocated = dataHl5.getHl5TotalBudgetByHl4Id(id);
-    hl5BudgetRemaining = hl5TotalBudget - totalAllocated;
+
+    if(!!includeLegacy){
+        hl5TotalBudgetLegacy = dataHl5.getHl5LegacyTotalBudgetByHl4Id(id);
+    }
+    hl5BudgetRemaining = hl5TotalBudget - totalAllocated - hl5TotalBudgetLegacy;
 
     var response = {
         "results": hl5List,
         "total_budget": hl5TotalBudget,
         "remaining_budget": hl5BudgetRemaining,
-        "total_allocated": totalAllocated,
+        "total_allocated": totalAllocated + hl5TotalBudgetLegacy,
         "ENABLE_CREATION": level4Lib.addChildPermission(id)
     };
     response.budget_year = budgetYear.getBudgetYearByLevelParent(5, id, true);

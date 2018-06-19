@@ -15,6 +15,7 @@ var spGetCountHl6InCRMByHl5Id = "GET_COUNT_HL6_IN_CRM_BY_HL5_ID";
 var spGetHl5StatusByHl5Id = "GET_HL5_STATUS_BY_HL5_ID";
 var spGetHl5ForSearch = "GET_HL5_FOR_SEARCH";
 var spGetHl5TotalBudgetByHl4Id = "GET_ALL_HL5_TOTAL_BUDGET";
+var spGetHl5LegacyTotalBudgetByHl4Id = "GET_ALL_HL5_LEGACY_TOTAL_BUDGET";
 var spGetHl5RemainingBudgetByHl4Id = "GET_ALL_HL5_REMAINING_BUDGET";
 var spExistsInCrm = "HL5_EXISTS_IN_CRM";
 var spGetHl5MyBudgetByHl5Id = "GET_HL5_BUDGET_BY_ID";
@@ -119,6 +120,14 @@ function getHl5ByHl4Id(hl4Id, includeLegacy){
 function getHl5TotalBudgetByHl4Id(hl4Id) {
 	if(hl4Id){
 		var rdo = db.executeDecimalManual(spGetHl5TotalBudgetByHl4Id, {'in_hl4_id': hl4Id}, 'out_result');
+		return rdo;
+	}
+	return null;
+}
+
+function getHl5LegacyTotalBudgetByHl4Id(hl4Id) {
+	if(hl4Id){
+		var rdo = db.executeDecimalManual(spGetHl5LegacyTotalBudgetByHl4Id, {'in_hl4_id': hl4Id}, 'out_result');
 		return rdo;
 	}
 	return null;

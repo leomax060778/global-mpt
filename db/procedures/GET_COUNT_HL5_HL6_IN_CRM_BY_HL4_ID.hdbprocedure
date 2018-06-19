@@ -3,7 +3,9 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_COUNT_HL5_HL
 		OUT out_result TABLE (
 		    HL4_ID BIGINT,
 		    HL5_IN_CRM INTEGER,
-		    HL6_IN_CRM INTEGER
+		    HL6_IN_CRM INTEGER,
+		    HL5_LEGACY_IN_CRM INTEGER,
+		    HL6_LEGACY_IN_CRM INTEGER
 		)
 	)
 	LANGUAGE SQLSCRIPT
@@ -21,13 +23,33 @@ BEGIN
                     OR HL5.HL5_STATUS_DETAIL_ID = 3
                     OR HL5.HL5_STATUS_DETAIL_ID = 4;
 
+    va_hl5_legacy = SELECT HL5Legacy.HL5_LEGACY_ID, HL5Legacy.HL4_ID FROM HL5_LEGACY HL5Legacy
+                WHERE HL5Legacy.HL5_STATUS_DETAIL_ID = 2
+                    OR HL5Legacy.HL5_STATUS_DETAIL_ID = 3
+                    OR HL5Legacy.HL5_STATUS_DETAIL_ID = 4;
 
-	out_result = SELECT HL4.HL4_ID, COUNT(DISTINCT va_hl5.HL5_ID) AS HL5_IN_CRM, COUNT(va_hl6.HL6_ID) AS HL6_IN_CRM
+    va_hl6_legacy = SELECT HL6Legacy.HL6_LEGACY_ID, HL6Legacy.HL5_LEGACY_ID FROM HL6_LEGACY HL6Legacy
+                LEFT JOIN HL6 hl6 ON HL6Legacy.HL6_ID = hl6.HL6_ID
+                INNER JOIN :va_hl5_legacy va_hl5_legacy ON Hl6Legacy.HL5_LEGACY_ID = va_hl5_legacy.HL5_LEGACY_ID
+                WHERE hl6.HL6_STATUS_DETAIL_ID = 2
+                    OR hl6.HL6_STATUS_DETAIL_ID = 3
+                    OR hl6.HL6_STATUS_DETAIL_ID = 4
+                    AND HL6Legacy.HL5_LEGACY_ID = va_hl5_legacy.HL5_LEGACY_ID;
+
+
+	out_result = SELECT
+	    HL4.HL4_ID
+	    , COUNT(DISTINCT va_hl5.HL5_ID) AS HL5_IN_CRM
+	    , COUNT(va_hl6.HL6_ID) AS HL6_IN_CRM
+	    , COUNT(DISTINCT va_hl5_legacy.HL5_LEGACY_ID) AS HL5_LEGACY_IN_CRM
+	    , COUNT(DISTINCT va_hl6_legacy.HL6_LEGACY_ID) AS HL6_LEGACY_IN_CRM
 	    FROM HL4
 		    --Select L4's children
 		    LEFT JOIN HL5 HL5 ON HL5.HL4_ID = in_hl4_id
 		    --Select L4's children with status In CRM
 	        LEFT JOIN :va_hl5 va_hl5 ON va_hl5.HL4_ID = HL4.HL4_ID
+	        LEFT JOIN :va_hl5_legacy va_hl5_legacy ON va_hl5_legacy.HL4_ID = HL4.HL4_ID
+	        LEFT JOIN :va_hl6_legacy va_hl6_legacy ON va_hl6_legacy.HL5_LEGACY_ID = va_hl5_legacy.HL5_LEGACY_ID
 	        --Select L5's children with status In CRM taking in consideration only the L5 children of the selected L4
 	        LEFT JOIN :va_hl6 va_hl6 ON va_hl6.HL5_ID = HL5.HL5_ID
 	    WHERE HL4.HL4_ID = in_hl4_id
