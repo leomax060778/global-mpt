@@ -724,6 +724,17 @@ function updateHl6(data, userId, isLegacy) {
 		}
 	}
 
+    if (data.ALLOW_BUDGET_ZERO) {
+        budgetSpendRequest.setBudgetSpendRequestStatusNoLongerRequested(
+            data.HL6_ID, LEVEL_STRING, userId);
+    } else if (!data.CO_FUNDED) {
+        budgetSpendRequest.disableCoFundedBudgetSpendRequests(data.HL6_ID,
+            LEVEL_STRING, userId);
+    } else {
+        updateInternalCofunding(data, automaticApproval, userId);
+        updateExternalCoFunding(data, automaticApproval, userId);
+    }
+
 	var validationResult = validateHl6(data, userId, hl5, isLegacy);
 	data.STATUS_DETAIL_ID = validationResult.statusId;
 	if (data.STATUS_DETAIL_ID > 0) {
@@ -817,17 +828,6 @@ function updateHl6(data, userId, isLegacy) {
 
 		updateBudgetDistribution(data, userId);
 		updateCategoryOption(data, userId);
-
-		if (data.ALLOW_BUDGET_ZERO) {
-			budgetSpendRequest.setBudgetSpendRequestStatusNoLongerRequested(
-					data.HL6_ID, LEVEL_STRING, userId);
-		} else if (!data.CO_FUNDED) {
-			budgetSpendRequest.disableCoFundedBudgetSpendRequests(data.HL6_ID,
-					LEVEL_STRING, userId);
-		} else {
-			updateInternalCofunding(data, automaticApproval, userId);
-			updateExternalCoFunding(data, automaticApproval, userId);
-		}
 
 		dataL6Report.updateLevel6ReportForDownload(data.HL6_ID); // Update
 																	// Processing
@@ -1384,29 +1384,32 @@ function validateHl6(data, userId, hl5) {
 															// row for
 															// categoryChange
 			}
-			if (!crmFieldsHasChanged && !categoryHasChanged && !budgetChanged
-					&& existInCrm) {
-				statusId = HL6_STATUS.IN_CRM;
-			} else if (!crmFieldsHasChanged && !categoryHasChanged
-					&& budgetChanged
-					&& Number(hl6.HL6_STATUS_DETAIL_ID) == HL6_STATUS.IN_CRM) {
-				statusId = hl6.HL6_STATUS_DETAIL_ID;
-			} else if (!crmFieldsHasChanged && !categoryHasChanged
-					&& validateBudget(data)) {
-				if (Number(hl6.HL6_STATUS_DETAIL_ID) == HL6_STATUS.IN_CRM
-						&& !data.AUTOMATIC_APPROVAL
-						&& ((data.SALE_REQUESTS && data.SALE_REQUESTS.length) || (data.PARTNERS && data.PARTNERS.length))
-						&& !validateBudgetStatus(hl6)
-				) {
-					statusId = HL6_STATUS.IN_CRM_NEED_NEW_BUDGET_APPROVAL;
-				} else {
-					statusId = hl6.HL6_STATUS_DETAIL_ID;
-				}
-			} else {
-				statusId = HL6_STATUS.IN_PROGRESS;
-			}
+            if (!crmFieldsHasChanged && !categoryHasChanged
+                && budgetChanged
+                && Number(hl6.HL6_STATUS_DETAIL_ID) == HL6_STATUS.IN_CRM) {
+                statusId = hl6.HL6_STATUS_DETAIL_ID;
+            } else if (!crmFieldsHasChanged && !categoryHasChanged
+                && validateBudget(data)) {
+                if (Number(hl6.HL6_STATUS_DETAIL_ID) == HL6_STATUS.IN_CRM
+                    && !data.AUTOMATIC_APPROVAL
+                    && ((data.SALE_REQUESTS && data.SALE_REQUESTS.length) || (data.PARTNERS && data.PARTNERS.length))
+                    && !validateBudgetStatus(hl6)) {
+                    statusId = HL6_STATUS.IN_CRM_NEED_NEW_BUDGET_APPROVAL;
+
+                } else {
+                    if (!crmFieldsHasChanged && !categoryHasChanged && !budgetChanged
+                        && Number(hl6.HL6_STATUS_DETAIL_ID) === HL6_STATUS.UPDATE_IN_CRM) {
+                        statusId = HL6_STATUS.IN_CRM;
+                    } else {
+                        statusId = hl6.HL6_STATUS_DETAIL_ID;
+                    }
+                }
+            } else {
+                statusId = HL6_STATUS.IN_PROGRESS;
+            }
 		}
 	}
+
 	return {
 		statusId : statusId,
 		isComplete : isHl6Complete,
@@ -1426,10 +1429,12 @@ function validateBudgetStatus(hl6){
 
 		var ownMoneyBudgetSpendRequestStatus = budgetSpendRequest.getOwnMoneyBudgetSpendRequestStatusByHlIdLevel(hl6_id, LEVEL_STRING);
 
-		if ((!ownMoneyBudgetSpendRequestStatus || (ownMoneyBudgetSpendRequestStatus && ownMoneyBudgetSpendRequestStatus != budgetSpendRequestStatus.APPROVED)
-			&& !budgetSpendRequest.countApprovedCoFundedBudgetSpendRequestByHlIdLevel(hl6_id, LEVEL_STRING))) {
-			valid = false;
-		}
+        if ((!ownMoneyBudgetSpendRequestStatus || (!!ownMoneyBudgetSpendRequestStatus && Number(ownMoneyBudgetSpendRequestStatus) !== budgetSpendRequestStatus.APPROVED))
+            || budgetSpendRequest.checkPendingCoFundedBudgetSpendRequestByHlIdLevel(hl6_id, LEVEL_STRING)
+        ) {
+            valid = false;
+        }
+
 	}
 
 	return valid;
@@ -1843,23 +1848,20 @@ function changeStatusOnDemand(hl6_id, userId, cancelConfirmation, isLegacy) {
 		}
 
 		if (!hl6.ALLOW_BUDGET_ZERO) {
-			var budgetSpendRequestStatus = budgetSpendRequest
-					.getBudgetSpendRequestsStatus();
+            var budgetSpendRequestStatus = budgetSpendRequest.getBudgetSpendRequestsStatus();
 
-			var ownMoneyBudgetSpendRequestStatus = budgetSpendRequest
-					.getOwnMoneyBudgetSpendRequestStatusByHlIdLevel(hl6_id,
-							LEVEL_STRING);
-			if ((!ownMoneyBudgetSpendRequestStatus || (ownMoneyBudgetSpendRequestStatus && ownMoneyBudgetSpendRequestStatus != budgetSpendRequestStatus.APPROVED)
-					&& !budgetSpendRequest
-							.countApprovedCoFundedBudgetSpendRequestByHlIdLevel(
-									hl6_id, LEVEL_STRING))) {
-				throw ErrorLib
-						.getErrors()
-						.CustomError("", "",
-								L6_MSG_COULDNT_CHANGE_STATUS_DUE_OWN_MONEY_BUDGET_SPEND_REQUEST_STATUS);
-			}
+            var ownMoneyBudgetSpendRequestStatus = budgetSpendRequest.getOwnMoneyBudgetSpendRequestStatusByHlIdLevel(hl6_id, LEVEL_STRING);
+
+            if (
+                (!ownMoneyBudgetSpendRequestStatus || (ownMoneyBudgetSpendRequestStatus && ownMoneyBudgetSpendRequestStatus != budgetSpendRequestStatus.APPROVED))
+                ||
+                budgetSpendRequest.checkPendingCoFundedBudgetSpendRequestByHlIdLevel(hl6_id, LEVEL_STRING)
+            ) {
+                throw ErrorLib.getErrors().CustomError("", "", L6_MSG_COULDNT_CHANGE_STATUS_DUE_OWN_MONEY_BUDGET_SPEND_REQUEST_STATUS);
+            }
 		}
 		var data = JSON.parse(JSON.stringify(hl6));
+        data.BUDGET_DISTRIBUTION = dataHl6.getHl6MyBudgetByHl6Id(hl6_id);
 		var hl5 = !Number(data.HL5_ID) ? dataHl5
 				.getHl5LegacyById(data.HL5_LEGACY_ID) : dataHl5
 				.getHl5ById(data.HL5_ID);
@@ -1881,7 +1883,6 @@ function changeStatusOnDemand(hl6_id, userId, cancelConfirmation, isLegacy) {
 			var externalCofunding = getExternalCofunding(hl6_id);
 			data.PARTNERS = externalCofunding.PARTNERS;
 			data.SALE_REQUESTS = internalCofunding.SALE_REQUESTS;
-			data.BUDGET_DISTRIBUTION = dataHl6.getHl6MyBudgetByHl6Id(hl6_id);
 			isDataComplete = isComplete(data, true);
 		}
 
@@ -2327,7 +2328,7 @@ function updateInternalCofunding(data, automaticBudgetApproval, userId) {
 		var arrSaleHl6 = [];
 		data.SALES
 				.forEach(function(sale) {
-					if (aux[sale.ORGANIZATION_ID]) {
+					if (!aux[sale.ORGANIZATION_ID]) {
 						arrSaleHl6
 								.push({
 									in_hl6_sale_id : sale.HL6_SALE_ID

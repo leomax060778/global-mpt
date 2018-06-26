@@ -780,8 +780,17 @@ function updateHl5(data, userId) {
         }
         level6Lib.checkBudgetStatus(data);
     }
-
-
+    
+    //We need the new values because of the Pending Budget validations performed in the validateHL5 Function
+    if (Number(data.ALLOW_BUDGET_ZERO)) {
+        budgetSpendRequest.setBudgetSpendRequestStatusNoLongerRequested(data.HL5_ID, LEVEL_STRING, userId);
+    } else if (!Number(data.CO_FUNDED)) {
+        budgetSpendRequest.disableCoFundedBudgetSpendRequests(data.HL5_ID, LEVEL_STRING, userId);
+    } else {
+        updateInternalCofunding(data, automaticApproval, userId);  
+        updateExternalCoFunding(data, automaticApproval, userId); 
+    }
+    
     var validationResult = validateHl5(data, userId);
     data.STATUS_DETAIL_ID = validationResult.statusId;
 
@@ -881,14 +890,14 @@ function updateHl5(data, userId) {
         updateCategoryOption(data, userId);
         updateHl5RequestCategoryOption(hl5_id, data.SERVICE_REQUEST_CATEGORIES, userId);
 
-        if (Number(data.ALLOW_BUDGET_ZERO)) {
+        /*if (Number(data.ALLOW_BUDGET_ZERO)) {
             budgetSpendRequest.setBudgetSpendRequestStatusNoLongerRequested(hl5_id, LEVEL_STRING, userId);
         } else if (!Number(data.CO_FUNDED)) {
             budgetSpendRequest.disableCoFundedBudgetSpendRequests(hl5_id, LEVEL_STRING, userId);
         } else {
-            updateInternalCofunding(data, automaticApproval, userId);
-            updateExternalCoFunding(data, automaticApproval, userId);
-        }
+            //updateInternalCofunding(data, automaticApproval, userId);  --> Now we have it before validations.
+            //updateExternalCoFunding(data, automaticApproval, userId);  --> Now we have it before validations.
+        }*/
 
         dataL5Report.updateLevel5ReportForDownload(hl5_id); //Update Processing Report Export Data
 
@@ -1095,6 +1104,9 @@ function isComplete(data, fromChangeStatusOnDemand) {
                 break;
             case "HL5_CRM_DESCRIPTION":
                 isComplete = fromChangeStatusOnDemand ? !!data.HL5_CRM_DESCRIPTION : !!data.CRM_DESCRIPTION;
+                break;
+            case "ACRONYM":
+                isComplete = (/^[A-Z0-9_]{7}$/.test(data.ACRONYM));
                 break;
             default:
                 if (notValidate.indexOf(crmBindingField) < 0) {
@@ -1341,6 +1353,8 @@ function validateHl5(data, userId) {
                 statusId = HL5_STATUS.IN_PROGRESS;
             }
         }
+
+        //throw JSON.stringify({statusId: statusId, validation: validateBudgetStatus(hl5), L5: hl5});
     }
 
     return {
@@ -1362,8 +1376,17 @@ function validateBudgetStatus(hl5){
 
         var ownMoneyBudgetSpendRequestStatus = budgetSpendRequest.getOwnMoneyBudgetSpendRequestStatusByHlIdLevel(hl5_id, LEVEL_STRING);
 
-        if ((!ownMoneyBudgetSpendRequestStatus || (ownMoneyBudgetSpendRequestStatus && ownMoneyBudgetSpendRequestStatus != budgetSpendRequestStatus.APPROVED)
-            && !budgetSpendRequest.countApprovedCoFundedBudgetSpendRequestByHlIdLevel(hl5_id, LEVEL_STRING))) {
+        /*throw JSON.stringify({
+            ownMoneyBudgetSpendRequestStatus: ownMoneyBudgetSpendRequestStatus,
+            firstProp: !ownMoneyBudgetSpendRequestStatus,
+            secondProp: (ownMoneyBudgetSpendRequestStatus && ownMoneyBudgetSpendRequestStatus != budgetSpendRequestStatus.APPROVED),
+            thirdProp: budgetSpendRequest.checkPendingCoFundedBudgetSpendRequestByHlIdLevel(hl5_id, LEVEL_STRING)
+        });*/
+        if (
+        	(!ownMoneyBudgetSpendRequestStatus || (!!ownMoneyBudgetSpendRequestStatus && Number(ownMoneyBudgetSpendRequestStatus) !== budgetSpendRequestStatus.APPROVED))
+            || 
+            budgetSpendRequest.checkPendingCoFundedBudgetSpendRequestByHlIdLevel(hl5_id, LEVEL_STRING)
+            ) {
             valid = false;
         }
     }
@@ -1777,9 +1800,19 @@ function changeStatusOnDemand(hl5_id, userId, cancelConfirmation) {
             // throw JSON.stringify({ownMoneyBudgetSpendRequestStatus:ownMoneyBudgetSpendRequestStatus
             //     , countApprovedCoFundedBudgetSpendRequestByHlIdLevel:countApprovedCoFundedBudgetSpendRequestByHlIdLevel});
 
-            if ((!ownMoneyBudgetSpendRequestStatus || (ownMoneyBudgetSpendRequestStatus && ownMoneyBudgetSpendRequestStatus != budgetSpendRequestStatus.APPROVED)
-                    && !budgetSpendRequest.countApprovedCoFundedBudgetSpendRequestByHlIdLevel(hl5_id, LEVEL_STRING))) {
-                throw ErrorLib.getErrors().CustomError("", "", L5_MSG_COULDNT_CHANGE_STATUS_DUE_OWN_MONEY_BUDGET_SPEND_REQUEST_STATUS);
+            /*throw JSON.stringify({
+                ownMoneyBudgetSpendRequestStatus: ownMoneyBudgetSpendRequestStatus,
+                firstProp: !ownMoneyBudgetSpendRequestStatus,
+                secondProp: (ownMoneyBudgetSpendRequestStatus && ownMoneyBudgetSpendRequestStatus != budgetSpendRequestStatus.APPROVED),
+                thirdProp: budgetSpendRequest.checkPendingCoFundedBudgetSpendRequestByHlIdLevel(hl5_id, LEVEL_STRING)
+            });*/
+
+            if (
+            	(!ownMoneyBudgetSpendRequestStatus || (ownMoneyBudgetSpendRequestStatus && ownMoneyBudgetSpendRequestStatus != budgetSpendRequestStatus.APPROVED))
+                ||
+                budgetSpendRequest.checkPendingCoFundedBudgetSpendRequestByHlIdLevel(hl5_id, LEVEL_STRING)
+                ) {
+        	throw ErrorLib.getErrors().CustomError("", "", L5_MSG_COULDNT_CHANGE_STATUS_DUE_OWN_MONEY_BUDGET_SPEND_REQUEST_STATUS);
             }
         }
 

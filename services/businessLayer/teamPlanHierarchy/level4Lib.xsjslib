@@ -82,7 +82,7 @@ var L3_MSG_MISSING_DATA = "File is empty.";
 var L3_CAMPAIGN_FORECASTING_KPIS_COMMENT = "Please enter a comment to explain expected outcomes as you didn't select any Campaign type.";
 var L3_NOT_IMPLEMENT_EXECUTION_LEVEL = "This PROGRAMS/CAMPAIGNS does not implement execution level.";
 var L4_ID_NOT_FOUND = "The HL4 ID could not be found.";
-var MSG_ENABLE_CRM_CREATION = "CRM creation is disabled for this Budget Year. Your Program/Campaign was successfully saved.";
+var MSG_ENABLE_CRM_CREATION = "Please note this is a code for a future year. It has been successfully saved with a status “VALID FOR CRM” but cannot be created in CRM at this time. Please contact your local BMO if you have any questions.";
 
 /*********************** CONSTANTS ***********************/
 
