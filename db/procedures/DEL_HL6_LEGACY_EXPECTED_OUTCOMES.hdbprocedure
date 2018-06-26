@@ -1,0 +1,26 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::DEL_HL6_LEGACY_EXPECTED_OUTCOMES" (
+	IN in_hl6_legacy_id BIGINT,
+	IN in_modified_user_id BIGINT,
+	OUT out_result BIGINT
+	)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	AS
+BEGIN
+
+		UPDATE HL6_EXPECTED_OUTCOMES
+		SET DELETED = 1,
+			ENABLED = 0,
+			MODIFIED_USER_ID = in_modified_user_id,
+			MODIFIED_DATE_TZ = CURRENT_TIMESTAMP
+		WHERE HL6_ID = (
+		                SELECT legacy.HL6_ID
+		                FROM HL6_LEGACY legacy
+		                WHERE legacy.HL6_LEGACY_ID = in_hl6_legacy_id
+		                    AND legacy.ENABLED = 1
+		                    AND legacy.DELETED = 0);
+
+		SELECT ::ROWCOUNT INTO out_result FROM DUMMY;
+
+END;

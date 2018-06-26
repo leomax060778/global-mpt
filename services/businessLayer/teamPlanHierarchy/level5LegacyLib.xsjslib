@@ -8,10 +8,11 @@ var dataConfig = mapper.getDataConfig();
 
 var L5_MSG_ID_NOT_FOUND = "The Marketing Tactic Legacy ID can not be found.";
 var L5_MSG_USER_ID_NOT_FOUND = "The User ID can not be found";
+var L5_IS_INVALID = "The HL5 is not related with the HL4";
 
 /** *********** GET *************** **/
 
-function getHl5LegacyById(hl5LegacyId, userId){
+function getHl5LegacyById(hl5LegacyId, hl4Id, userId){
 	if(!hl5LegacyId){
 		throw ErrorLib.getErrors().BadRequest("The Parameter HL5 Legacy ID is not found", "level5LegacyService/handleGet/getHl5LegacyById", L5_MSG_ID_NOT_FOUND);
 	}
@@ -26,6 +27,11 @@ function getHl5LegacyById(hl5LegacyId, userId){
         result.BUDGET_EUROS = (Number(result.BUDGET)).toFixed(2);
         result.BUDGET = (Number(result.BUDGET) * Number(result.CURRENCY_VALUE)).toFixed(2);
     }
+
+	if(!!hl4Id && Number(result.HL4_ID) !== Number(hl4Id)){
+        throw ErrorLib.getErrors().BadRequest("", "level5LegacyService/handleGet/getHl5LegacyById", ""); // Don't have a message defined
+    }
+
 
 	return result;
 }

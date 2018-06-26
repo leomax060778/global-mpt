@@ -18,6 +18,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL4_BY_HL3_I
             , REMAINING DECIMAL
             , IN_CRM_CHILD_HL5 INTEGER
             , IN_CRM_CHILD_HL6 INTEGER
+            , ENABLE_CRM_CREATION TINYINT
         ),
 		OUT out_total_budget DECIMAL(19, 2),
 		OUT out_remaining_budget DECIMAL(19, 2),
@@ -45,6 +46,7 @@ va_intermidate = SELECT
         ,userTable.EMAIL AS OWNER_EMAIL
         ,hl4.BUDGET AS HL4_BUDGET
         ,HL2.IMPLEMENT_EXECUTION_LEVEL
+        ,HL4.ENABLE_CRM_CREATION AS ENABLE_CRM_CREATION
 
         FROM HL4 hl4
     INNER JOIN HL3 hl3 ON hl3.hl3_id=hl4.hl3_id AND hl3.enabled=1 AND hl3.deleted=0
@@ -90,6 +92,7 @@ out_result = SELECT
 		, COALESCE((va_hl4.HL4_BUDGET - va_hl5_budget.budget), va_hl4.HL4_BUDGET) AS REMAINING
 		, SUM(CASE WHEN (hl5.HL5_STATUS_DETAIL_ID = 2 OR hl5.HL5_STATUS_DETAIL_ID = 3 OR hl5.HL5_STATUS_DETAIL_ID = 4) THEN 1 ELSE 0 END) AS IN_CRM_CHILD_HL5
 		, SUM(CASE WHEN va_hl6.HL6_ID > 0 THEN 1 ELSE 0 END) AS IN_CRM_CHILD_HL6
+		,va_hl4.ENABLE_CRM_CREATION
 
     FROM :va_intermidate va_hl4
         LEFT JOIN HL5 hl5 ON hl5.HL4_ID = va_hl4.hl4_id AND hl5.enabled = 1 AND hl5.deleted = 0
@@ -105,7 +108,7 @@ out_result = SELECT
 	GROUP BY
 	va_hl4.HL4_ID,va_hl4.HL4_CRM_DESCRIPTION,va_hl4.HL4_ACRONYM,va_hl4.CRM_ID,va_hl4.IN_BUDGET,va_hl4.STATUS_ID,
 		va_hl4.STATUS_DETAIL,va_hl4.CREATED_BY,va_hl4.OWNER_EMAIL,va_hl4.HL4_BUDGET,
-		va_hl4.IMPLEMENT_EXECUTION_LEVEL, va_hl5_budget.budget
+		va_hl4.IMPLEMENT_EXECUTION_LEVEL, va_hl5_budget.budget, va_hl4.ENABLE_CRM_CREATION
 		ORDER BY va_hl4.HL4_ACRONYM ASC;
 		
 		

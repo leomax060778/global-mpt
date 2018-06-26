@@ -14,7 +14,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL5_FOR_PROC
                 , ACTUAL_START_DATE NVARCHAR(32)
                 , ACTUAL_END_DATE NVARCHAR(32)
                 , DISTRIBUTION_CHANNEL NVARCHAR(255)
-                , BUDGET DECIMAL(19,2)
+                , BUDGET DECIMAL(19,6)
                 , URL NVARCHAR(255)
                 , VENUE NVARCHAR(255)
                 , STREET NVARCHAR(255)

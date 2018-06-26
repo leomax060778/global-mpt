@@ -95,6 +95,46 @@
       <descriptions defaultDescription="SUBREGION_ID"/>
       <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="SUBREGION" columnName="SUBREGION_ID"/>
     </attribute>
+    <attribute id="ENABLED_1" order="25" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="ENABLED_1"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL1" columnName="ENABLED"/>
+    </attribute>
+    <attribute id="DELETED_1" order="26" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="DELETED_1"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL1" columnName="DELETED"/>
+    </attribute>
+    <attribute id="ENABLED_2" order="27" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="ENABLED_2"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL2" columnName="ENABLED"/>
+    </attribute>
+    <attribute id="DELETED_2" order="28" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="DELETED_2"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL2" columnName="DELETED"/>
+    </attribute>
+    <attribute id="ENABLED_3" order="29" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="ENABLED_3"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL3" columnName="ENABLED"/>
+    </attribute>
+    <attribute id="DELETED_3" order="30" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="DELETED_3"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL3" columnName="DELETED"/>
+    </attribute>
+    <attribute id="ENABLED_4" order="31" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="ENABLED_4"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL4" columnName="ENABLED"/>
+    </attribute>
+    <attribute id="DELETED_4" order="32" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="DELETED_4"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL4" columnName="DELETED"/>
+    </attribute>
+    <attribute id="ENABLED_5" order="33" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="ENABLED_5"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL5" columnName="ENABLED"/>
+    </attribute>
+    <attribute id="DELETED_5" order="34" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="DELETED_5"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL5" columnName="DELETED"/>
+    </attribute>
   </attributes>
   <calculatedAttributes>
     <calculatedAttribute id="PATH" hidden="false" order="20" semanticType="empty" attributeHierarchyActive="false" displayAttribute="false">
@@ -259,7 +299,7 @@
           <upperLeftCorner x="1719" y="55"/>
         </shape>
         <shape modelObjectName="HL6_STATUS_DETAIL" modelObjectNameSpace="MKTG_PLANNING_TOOL" modelObjectType="catalog">
-          <upperLeftCorner x="362" y="1035"/>
+          <upperLeftCorner x="369" y="1097"/>
         </shape>
         <shape modelObjectName="REGION" modelObjectNameSpace="MKTG_PLANNING_TOOL" modelObjectType="catalog">
           <upperLeftCorner x="2038" y="476"/>

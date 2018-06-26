@@ -3,7 +3,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_HL5"
 	in in_hl5_crm_description nvarchar(100)
 	,in in_acronym nvarchar(25)
 	,in in_distribution_channel_id bigint
-	,in in_budget decimal(19, 2)
+	,in in_budget decimal(19, 6)
 	,in in_hl4_id bigint
 	
 	,in in_campaign_objective_id bigint
@@ -54,6 +54,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_HL5"
     , IN in_country_id bigint
     , IN in_inherited_creation tinyint
     , IN in_des_type_id bigint
+    , IN in_enable_crm_creation tinyint
 	,OUT out_hl5_id bigint
 	) 
 	LANGUAGE SQLSCRIPT
@@ -116,6 +117,7 @@ BEGIN
     , country_id
     , inherited_creation
     , des_type_id
+    , enable_crm_creation
 	)
 	VALUES (
      in_hl5_crm_description
@@ -173,6 +175,7 @@ BEGIN
     , in_country_id
     , in_inherited_creation
     , in_des_type_id
+    , in_enable_crm_creation
 );
 	
 	SELECT TOP 1 CURRENT_IDENTITY_VALUE() INTO out_hl5_id FROM "MKTG_PLANNING_TOOL"."HL5";

@@ -12,7 +12,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL4_IN_CRM_V
 	is_annual_plan TINYINT
 	,euro_conversion_id integer
 	,in_budget TINYINT
-	,BUDGET DECIMAL(19, 2)
+	,BUDGET DECIMAL(19, 6)
 	,SHOPPING_CART_APPROVER NVARCHAR(10)
     ,COST_CENTER NVARCHAR(10)
     ,MKT_ORG_ID integer

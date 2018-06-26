@@ -2,6 +2,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL6_LEGACY_B
         IN in_hl5_id BIGINT,
         OUT out_result TABLE(
               HL6_ID INTEGER
+            , HL6_LEGACY_ID INTEGER
             , HL6_CRM_DESCRIPTION NVARCHAR(100)
             , HL6_ACRONYM NVARCHAR(25)
             , CRM_ID NVARCHAR(25)
@@ -10,7 +11,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL6_LEGACY_B
             , STATUS_DETAIL NVARCHAR(255)
             , CREATED_BY NVARCHAR(255)
             , OWNER_EMAIL NVARCHAR(500)
-            , HL6_BUDGET DECIMAL(19,2)
+            , HL6_BUDGET DECIMAL(19,6)
             , CRT_RELATED TINYINT
             , SALE_ORGANIZATION NVARCHAR(255)
             , IMPORTED tinyint
@@ -27,6 +28,7 @@ AS
 BEGIN
 	
 va_intermidate =                                      SELECT hl6.HL6_ID
+                                                             ,hl6_legacy.HL6_LEGACY_ID
                                                              ,hl6.HL6_CRM_DESCRIPTION AS HL6_CRM_DESCRIPTION
                                                              ,hl6.ACRONYM AS HL6_ACRONYM
                                                              ,CONCAT (hl6.PARENT_PATH, hl6.ACRONYM) AS CRM_ID
@@ -71,6 +73,7 @@ va_intermidate =                                      SELECT hl6.HL6_ID
 
 out_result = SELECT
         va_hl6.HL6_ID
+        ,va_hl6.HL6_LEGACY_ID
 		,va_hl6.HL6_CRM_DESCRIPTION
 		,va_hl6.HL6_ACRONYM
 		,va_hl6.CRM_ID

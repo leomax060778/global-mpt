@@ -95,6 +95,11 @@ function getLevel6(){
     return $.mktgplanningtool.services.businessLayer.teamPlanHierarchy.level6Lib;
 }
 
+function getLevel6Legacy(){
+    $.import("mktgplanningtool.services.businessLayer.teamPlanHierarchy","level6LegacyLib");
+    return $.mktgplanningtool.services.businessLayer.teamPlanHierarchy.level6LegacyLib;
+}
+
 function refactorL5L6_getLevel6(){
     $.import("mktgplanningtool.services.businessLayer.teamPlanHierarchy","refactorL5L6_level6Lib");
     return $.mktgplanningtool.services.businessLayer.teamPlanHierarchy.refactorL5L6_level6Lib;
@@ -779,6 +784,11 @@ function getDataLevel5Legacy(){
 function getDataLevel6(){
     $.import("mktgplanningtool.services.dataLayer.teamPlanHierarchy","dataLevel6");
     return $.mktgplanningtool.services.dataLayer.teamPlanHierarchy.dataLevel6;
+}
+
+function getDataLevel6Legacy(){
+    $.import("mktgplanningtool.services.dataLayer.teamPlanHierarchy","dataLevel6Legacy");
+    return $.mktgplanningtool.services.dataLayer.teamPlanHierarchy.dataLevel6Legacy;
 }
 
 function getDataCampaignType(){

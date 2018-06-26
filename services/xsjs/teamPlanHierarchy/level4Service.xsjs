@@ -6,6 +6,8 @@ var hl4 = mapper.getLevel4();
 var ErrorLib = mapper.getErrors();
 var config = mapper.getDataConfig();
 var businessLevel3 = mapper.getLevel3();
+var dataBudgetYear = mapper.getDataBudgetYear();
+var dataValidation = mapper.getDataValidation();
 /******************************************/
 var section = "FOR_SEARCH";
 var method = "method";
@@ -62,6 +64,13 @@ function handleGet(params, userId) {
 
                 result = hl4.getParentRemainingBudgetByParentId(parameters.PARENT_ID);
                 break;
+            case "CHECK_ENABLED_CRM_CREATION":
+                var budgetYear = dataValidation.getBudgetYearByIdLevel(parameters.HL4_ID, "HL4");
+
+                var budgetYearObj = dataBudgetYear.getBudgetYearId(budgetYear[0].BUDGET_YEAR_ID);
+
+                result = {'ENABLE_CRM_CREATION' : budgetYearObj.ENABLE_CRM_CREATION === 1};
+                break;
             default:
 
                 throw ErrorLib.getErrors().BadRequest("","","invalid METHOD, can be: GET_HL4_BY_HL3_ID, CARRY_OVER, GET_HL4_BY_ID or GET_PARENT_REMAINING_BUDGET.");
@@ -94,6 +103,11 @@ function handlePut(reqBody, userId){
             case changeStatus:
 
                 rdo = hl4.changeHl4StatusOnDemand(hl4Id, userId);
+                break;
+            case "UPD_ENABLED_CRM_CREATION":
+                var enable_crm_creation = parameters.get('ENABLE_CRM_CREATION');
+
+                rdo = hl4.updEnableCrmCreation(hl4Id, enable_crm_creation);
                 break;
             default:
                 throw ErrorLib.getErrors().BadRequest("","","insufficient parameters");

@@ -10,7 +10,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL6_BY_HL5_I
             , STATUS_DETAIL NVARCHAR(255)
             , CREATED_BY NVARCHAR(255)
             , OWNER_EMAIL NVARCHAR(500)
-            , HL6_BUDGET DECIMAL(19,2)
+            , HL6_BUDGET DECIMAL(19,6)
             , CRT_RELATED TINYINT
             , SALE_ORGANIZATION NVARCHAR(255)
             , IMPORTED tinyint
@@ -18,6 +18,8 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL6_BY_HL5_I
             , PARENT_STATUS_ID integer
             , GRAN_PARENT_STATUS_ID INTEGER
             , IS_LEGACY TINYINT
+            , ENABLE_CRM_CREATION TINYINT
+            , ENABLE_ACTIONS TINYINT
         )
 )
 LANGUAGE SQLSCRIPT
@@ -46,6 +48,7 @@ va_intermidate = SELECT
         , HL5.HL5_STATUS_DETAIL_ID AS PARENT_STATUS_ID
         , HL4.HL4_STATUS_DETAIL_ID AS GRAN_PARENT_STATUS_ID
         , 0 AS IS_LEGACY
+        , HL6.ENABLE_CRM_CREATION
     FROM HL6 Hl6
     INNER JOIN HL5 hl5 ON hl5.hl5_id=hl6.hl5_id AND hl5.enabled=1 AND hl5.deleted=0
     INNER JOIN HL4 hl4 ON hl4.hl4_id=hl5.hl4_id AND hl4.enabled=1 AND hl4.deleted=0
@@ -78,6 +81,8 @@ out_result = SELECT
         ,va_hl6.PARENT_STATUS_ID
         ,va_hl6.GRAN_PARENT_STATUS_ID
         ,va_hl6.IS_LEGACY
+        ,va_hl6.ENABLE_CRM_CREATION
+        ,1 AS ENABLE_ACTIONS
 
     FROM :va_intermidate va_hl6;
 		

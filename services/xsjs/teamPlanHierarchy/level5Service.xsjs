@@ -6,6 +6,8 @@ var hl5 = mapper.getLevel5();
 var ErrorLib = mapper.getErrors();
 var config = mapper.getDataConfig();
 var hl4 = mapper.getLevel4();
+var dataBudgetYear = mapper.getDataBudgetYear();
+var dataValidation = mapper.getDataValidation();
 /******************************************/
 var section = "FOR_SEARCH";
 var method = "method";
@@ -37,6 +39,16 @@ function handleGet(params, userId) {
     var currentHl5Id = httpUtil.getUrlParameters().get("CURRENT_HL5");
     var isMarketingTacticView = (httpUtil.getUrlParameters().get("IS_MARKETING_TACTIC_VIEW"))? 1: 0;
     var result = {};
+
+    if(httpUtil.getUrlParameters().get("METHOD") == "CHECK_ENABLED_CRM_CREATION"){
+        var budgetYear = dataValidation.getBudgetYearByIdLevel(in_hl5_id, "HL5");
+
+        var budgetYearObj = dataBudgetYear.getBudgetYearId(budgetYear[0].BUDGET_YEAR_ID);
+
+        result = {'ENABLE_CRM_CREATION' : budgetYearObj.ENABLE_CRM_CREATION === 1};
+        return httpUtil.handleResponse(result,httpUtil.OK,httpUtil.AppJson);
+    }
+
     if(newSerial)
     {
         result = hl5.getNewSerialAcronym(in_hl4_id);
@@ -77,6 +89,8 @@ function handlePut(reqBody, userId){
     if(parameters.length > 0){
         var aCmd = parameters.get('method');
         var hl5Id = !reqBody ? parameters.get('HL5_ID') : reqBody.hl5Ids;
+
+        /*throw JSON.stringify(aCmd);*/
         switch (aCmd) {
             case setStatusInCRM: //set status In CRM
                 var rdo = hl5.setStatusInCRM(hl5Id, userId);
@@ -89,6 +103,12 @@ function handlePut(reqBody, userId){
             case changeStatus:
                 var CANCEL_CONFIRMATION = parameters.get('CANCEL_CONFIRMATION');
                 var rdo = hl5.changeStatusOnDemand(hl5Id, userId, CANCEL_CONFIRMATION);
+                return	httpUtil.handleResponse(rdo,httpUtil.OK,httpUtil.AppJson);
+                break;
+            case "UPD_ENABLED_CRM_CREATION":
+                var enable_crm_creation = parameters.get('ENABLE_CRM_CREATION');
+
+                rdo = hl5.updEnableCrmCreation(hl5Id, enable_crm_creation);
                 return	httpUtil.handleResponse(rdo,httpUtil.OK,httpUtil.AppJson);
                 break;
             default:

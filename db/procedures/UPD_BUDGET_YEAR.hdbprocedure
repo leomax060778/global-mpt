@@ -6,6 +6,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::UPD_BUDGET_YEAR"
     IN in_versioned_end_date timestamp,
 	IN in_default_year TINYINT,
 	IN in_description NVARCHAR (255),
+	IN in_enable_crm_creation TINYINT,
 	IN in_modified_user_id BIGINT,
 	IN in_budget_year integer,
 	OUT out_result integer
@@ -21,6 +22,7 @@ BEGIN
         "MKTG_PLANNING_TOOL"."BUDGET_YEAR"."VERSIONED_END_DATE" = in_versioned_end_date,
         "MKTG_PLANNING_TOOL"."BUDGET_YEAR"."DEFAULT_YEAR" = in_default_year,
         "MKTG_PLANNING_TOOL"."BUDGET_YEAR"."DESCRIPTION" = in_description,
+        "MKTG_PLANNING_TOOL"."BUDGET_YEAR"."ENABLE_CRM_CREATION" = in_enable_crm_creation,
         "MKTG_PLANNING_TOOL"."BUDGET_YEAR"."MODIFIED_USER_ID" = in_modified_user_id,
         "MKTG_PLANNING_TOOL"."BUDGET_YEAR"."MODIFIED_DATE_TZ" = CURRENT_TIMESTAMP
 	WHERE "MKTG_PLANNING_TOOL"."BUDGET_YEAR"."BUDGET_YEAR_ID" = in_budget_year_id;

@@ -246,6 +246,16 @@ function insertLevelUser(arrData, level){
 	return db.executeScalarManual(INS_HL_USER, arrData, "out_hl" + level + "_user_id");
 }
 
+function insertLevelUserDecendants(arrData, level, userId, sessionUserId){
+    var INS_HL_USER = 'INS_HL' + level + '_USER_DECENDANTS';
+    return db.executeScalarManual(INS_HL_USER, {arrHlUser: arrData, in_user_id: userId, in_created_user_id: sessionUserId}, "out_hl" + level + "_user_id");
+}
+
+function deleteLevelUserDecendants(arrData, level, userId, sessionUserId){
+    var DEL_HL_USER = 'DEL_HL' + level + '_USER_DECENDANTS';
+    return db.executeScalarManual(DEL_HL_USER, {arrHlUser: arrData, in_user_id: userId, in_created_user_id: sessionUserId}, "out_result");
+}
+
 function deleteLevelUser(arrData, level){
 	var DEL_HL_USER = "";
 	switch (level){

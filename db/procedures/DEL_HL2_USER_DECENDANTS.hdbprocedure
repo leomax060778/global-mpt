@@ -1,0 +1,31 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::DEL_HL2_USER_DECENDANTS" (
+	in arrHlUser TABLE (
+	    in_hl2_id bigint,
+	    in_user_id bigint,
+	    in_created_user_id bigint),
+	in in_user_id bigint,
+    in in_created_user_id bigint,
+	OUT out_result integer
+	)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL" AS
+BEGIN
+
+    var_L2_L3 = select
+                     hl2.hl2_id
+                   , hl3.hl3_id
+                   from hl2
+                   left join hl3 on hl3.hl2_id = hl2.hl2_id AND HL3.ENABLED = 1 AND HL3.DELETED = 0
+                   WHERE HL2.ENABLED = 1 AND HL2.DELETED = 0
+                   and hl2.hl2_id in (select in_hl2_id from :arrHlUser);
+
+
+    delete from HL3_USER
+    WHERE hl3_id in (select hl3_id from :var_L2_L3) and HL3_USER.user_id = in_user_id;
+
+    delete from HL2_USER
+    WHERE hl2_id in (select hl2_id from :var_L2_L3) and HL2_USER.user_id = in_user_id;
+
+	SELECT ::ROWCOUNT INTO out_result FROM DUMMY;
+END;

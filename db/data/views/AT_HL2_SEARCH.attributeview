@@ -129,7 +129,7 @@
         <rightColumns>
           <columnName>SUBREGION_ID</columnName>
         </rightColumns>
-        <properties joinOperator="Equal" joinType="referential"/>
+        <properties joinOperator="Equal" joinType="leftOuter"/>
       </join>
     </joins>
     <layout>

@@ -12,7 +12,8 @@ budget_spend_request_id bigint,
 organization_name nvarchar(255),
 message nvarchar(255),
 full_name nvarchar(255),
-email nvarchar(255)
+email nvarchar(255),
+currency_value decimal(19,6)
 )
 )
 	LANGUAGE SQLSCRIPT
@@ -28,9 +29,11 @@ sub_out_result =
 	    hl6_sales.description,
 	    hl6_sales.amount,
 	    region.region_name as organization_name,
-	    hl6_sales.currency_id
+	    hl6_sales.currency_id,
+	    cur.currency_value
 	from hl6_sales
 	inner join region on region.region_id = hl6_sales.organization_id
+	inner join currency cur on cur.euro_conversion_id = hl6_sales.currency_id
 	where hl6_id = in_hl_id
 	and hl6_sales.enabled = 1 and hl6_sales.deleted = 0)
 
@@ -43,9 +46,11 @@ sub_out_result =
     	    hl6_sales.description,
     	    hl6_sales.amount,
     	    hl2.organization_acronym as organization_name,
-    	    hl6_sales.currency_id
+    	    hl6_sales.currency_id,
+    	    cur.currency_value
     	from hl6_sales
         inner join hl2 on hl2.hl2_id = hl6_sales.organization_id
+        inner join currency cur on cur.euro_conversion_id = hl6_sales.currency_id
     	where hl6_id = in_hl_id
     	and hl6_sales.enabled = 1 and hl6_sales.deleted = 0)
     	
@@ -58,8 +63,10 @@ sub_out_result =
  	    hl6_sales.description,
  	    hl6_sales.amount,
  	    null as organization_name,
- 	    hl6_sales.currency_id
+ 	    hl6_sales.currency_id,
+ 	    cur.currency_value
  	from hl6_sales
+ 	inner join currency cur on cur.euro_conversion_id = hl6_sales.currency_id
  	where hl6_id = in_hl_id and hl6_sales.organization_type = 3
  	and hl6_sales.enabled = 1 and hl6_sales.deleted = 0);
 
@@ -73,8 +80,9 @@ out_result = select
                 T3.BUDGET_SPEND_REQUEST_ID,
                 T.ORGANIZATION_NAME,
                 T3.DESCRIPTION AS MESSAGE,
-                 OBA.FULL_NAME,
-                 OBA.EMAIL
+                OBA.FULL_NAME,
+                OBA.EMAIL,
+                T.CURRENCY_VALUE
             from :sub_out_result T
             INNER JOIN HL6_SALE_BUDGET_SPEND_REQUEST T2 ON T.HL6_SALES_ID = T2.HL6_SALES_ID
             INNER JOIN CURRENCY ON CURRENCY.EURO_CONVERSION_ID = T.CURRENCY_ID

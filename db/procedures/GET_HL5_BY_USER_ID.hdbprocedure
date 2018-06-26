@@ -10,7 +10,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL5_BY_USER_
             , STATUS_DETAIL NVARCHAR(255)
             , STATUS_DETAIL_ID integer
             , CREATED_BY NVARCHAR(255)
-            , HL5_BUDGET DECIMAL(19,2)
+            , HL5_BUDGET DECIMAL(19,6)
             , TOTAL_HL6 INT
             --, QUANTITY_HL6_OUT_BUDGET INT
             --, ALLOCATED DECIMAL(19,2)

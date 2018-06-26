@@ -15,7 +15,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL6_BY_USER_
             , STATUS_DETAIL NVARCHAR(255)
             , CREATED_BY NVARCHAR(255)
             , OWNER_EMAIL NVARCHAR(500)
-            , HL6_BUDGET DECIMAL(19,2)
+            , HL6_BUDGET DECIMAL(19,6)
             , EURO_CONVERSION_ID BIGINT
             , CRT_RELATED TINYINT
             , IMPORTED tinyint

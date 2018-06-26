@@ -8,17 +8,18 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL5_BY_HL4_I
               STATUS_DETAIL NVARCHAR(255),
               STATUS_ID INTEGER,
               CREATED_BY NVARCHAR(255),
-              HL5_BUDGET DECIMAL(19,2),
+              HL5_BUDGET DECIMAL(19,6),
               TOTAL_HL6 INT,
               QUANTITY_HL6_OUT_BUDGET INT,
-              ALLOCATED DECIMAL(19,2),
-              REMAINING DECIMAL(19,2),
+              ALLOCATED DECIMAL(19,6),
+              REMAINING DECIMAL(19,6),
               IMPORTED tinyint,
               ACRONYM NVARCHAR(4),
               HL5_CRM_DESCRIPTION NVARCHAR(255) ,
               IN_CRM_CHILD integer,
               PARENT_STATUS_ID integer,
-              IS_LEGACY TINYINT
+              IS_LEGACY TINYINT,
+              ENABLE_CRM_CREATION TINYINT
         )
 )
 LANGUAGE SQLSCRIPT
@@ -39,7 +40,8 @@ va_intermidate = SELECT
                          HL5_CRM_DESCRIPTION,
                          HL5.HL5_STATUS_DETAIL_ID,
                          HL4.HL4_STATUS_DETAIL_ID AS PARENT_STATUS_ID,
-                         0 AS IS_LEGACY
+                         0 AS IS_LEGACY,
+                         HL5.ENABLE_CRM_CREATION
                     FROM HL5 Hl5
                         INNER JOIN HL4 hl4 ON hl4.HL4_ID = hl5.HL4_ID
                             AND hl4.ENABLED = 1
@@ -79,7 +81,8 @@ aux_out_result = SELECT
                         va_hl5.ACRONYM,
                         va_hl5.HL5_CRM_DESCRIPTION,
                         va_hl5.PARENT_STATUS_ID,
-                        va_hl5.IS_LEGACY
+                        va_hl5.IS_LEGACY,
+                        va_HL5.ENABLE_CRM_CREATION
                     FROM :va_intermidate va_hl5
                         LEFT JOIN HL6 hl6 ON hl6.HL5_ID = va_hl5.hl5_id
                             AND hl6.ENABLED = 1
@@ -99,7 +102,8 @@ aux_out_result = SELECT
                         va_hl5.ACRONYM,
                         va_hl5.HL5_CRM_DESCRIPTION,
                         va_hl5.PARENT_STATUS_ID,
-                        va_hl5.IS_LEGACY;
+                        va_hl5.IS_LEGACY,
+                        va_HL5.ENABLE_CRM_CREATION;
 
 
    IF in_include_legacy_records = 1 THEN
@@ -185,7 +189,8 @@ aux_out_result = SELECT
                                     ACRONYM,
                                     HL5_CRM_DESCRIPTION,
                                     PARENT_STATUS_ID,
-                                    IS_LEGACY
+                                    IS_LEGACY,
+                                    ENABLE_CRM_CREATION
                             FROM :aux_out_result
                            )
 
@@ -207,7 +212,8 @@ aux_out_result = SELECT
                                     ACRONYM,
                                     HL5_CRM_DESCRIPTION,
                                     PARENT_STATUS_ID,
-                                    IS_LEGACY
+                                    IS_LEGACY,
+                                    1
                             FROM :va_legacy_with_children
                             GROUP BY HL5_ID,
                                     HL5_LEGACY_ID,
@@ -243,7 +249,8 @@ aux_out_result = SELECT
                                   va_hl5.ACRONYM,
                                   va_hl5.HL5_CRM_DESCRIPTION,
                                   va_hl5.PARENT_STATUS_ID,
-                                  va_hl5.IS_LEGACY
+                                  va_hl5.IS_LEGACY,
+                                  1
                            FROM :va_intermidate_legacy va_hl5
 
                            WHERE HL5_LEGACY_ID NOT IN (SELECT legacy_aux.HL5_LEGACY_ID FROM :va_legacy_with_children legacy_aux)
@@ -270,7 +277,8 @@ out_result =
                  T.HL5_CRM_DESCRIPTION,
                  T.IN_CRM_CHILD,
                  T.PARENT_STATUS_ID,
-                 T.IS_LEGACY
+                 T.IS_LEGACY,
+                 T.ENABLE_CRM_CREATION
             FROM :aux_out_result T
             GROUP BY
                 T.HL5_ID,
@@ -285,7 +293,8 @@ out_result =
                 T.HL5_CRM_DESCRIPTION,
                 T.IN_CRM_CHILD,
                 T.PARENT_STATUS_ID,
-                T.IS_LEGACY
+                T.IS_LEGACY,
+                T.ENABLE_CRM_CREATION
             ORDER BY T.CRM_ID ASC;
 
 END;

@@ -26,7 +26,9 @@ var PERMISSIONS_NOT_FOUND = "Permissions cannot be empty.";
 var HIERARCHY_LEVEL_NOT_FOUND = "Hierarchy level was not found.";
 var INVALID_HIERARCHY_LEVEL_NUMBER = "Invalid Hierarchy level.";
 var NOT_PERMISSION_PARENT_LEVEL = "User should have permission for parent level.";
-
+var L1_MSG_PLAN_NOT_FOUND = "The Plan can not be found.";
+var L2_MSG_PLAN_NOT_FOUND = "The Plan to new Priority/Sub-Team can not be found.";
+var L3_MSG_TEAM_NOT_FOUND = "The Priority/Sub-Team can not be found.";
 
 var defaultPassword = config.getDefaultPassword();
 
@@ -41,13 +43,13 @@ function getAll() {
     return dbUser.getAllUser();
 }
 
-function getAllUserByUserName(userName){
-	if(!userName){
-		throw ErrorLib.getErrors().BadRequest("The Parameter User Name is not found",
-	            "userServices/handleGet/getAllUserByUserName", userName);
-	}
-	
-	return dbUser.getAllUserByUserName(userName);
+function getAllUserByUserName(userName) {
+    if (!userName) {
+        throw ErrorLib.getErrors().BadRequest("The Parameter User Name is not found",
+            "userServices/handleGet/getAllUserByUserName", userName);
+    }
+
+    return dbUser.getAllUserByUserName(userName);
 }
 
 function getUserById(id) {
@@ -57,7 +59,7 @@ function getUserById(id) {
     return dbUser.getUserById(id);
 }
 
-function getUserApproversByHL1Id(id){
+function getUserApproversByHL1Id(id) {
     if (!id)
         throw ErrorLib.getErrors().BadRequest("The Parameter ID is not found",
             "userServices/handleGet/getUserApproversByHL1Id", id);
@@ -107,8 +109,157 @@ function getUserByHl2IdToNewL3(hl2Id) {
     return dbUser.getUserByHl2IdToNewL3(hl2Id);
 }
 
+function getParseCollection(data, userId) {
+    var arrPermissionInsertL1 = [];
+    var arrPermissionDeleteL1 = [];
+    var arrPermissionInsertL2 = [];
+    var arrPermissionDeleteL2 = [];
+    var arrPermissionInsertL3 = [];
+    var arrPermissionDeleteL3 = [];
+
+    var arrPermissionInsertL2AndAllChildren = [];
+    var arrPermissionDeleteL2AndAllChildren = [];
+    var arrPermissionInsertL1AndAllChildren = [];
+    var arrPermissionDeleteL1AndAllChildren = [];
+
+    if (!data)
+        throw ErrorLib.getErrors().CustomError("", "", DATA_NOT_FOUND);
+
+    Object.keys(data).forEach(function (keyL1) {
+        var objPerm = {};
+        //ask how is first level
+        var nodeL1 = data[keyL1];
+        nodeValidation(nodeL1); //validate L1
+
+        if (nodeL1.NODES && Object.keys(nodeL1.NODES).length) {            //L1 has children
+            var L2Collection = nodeL1.NODES;
+            Object.keys(L2Collection).forEach(function (keyL2) {
+                var nodeL2 = L2Collection[keyL2];
+                nodeValidation(nodeL2, nodeL1.LEVEL_ID);    //validate L2 node and his parent
+
+                if (nodeL2.NODES && Object.keys(nodeL2.NODES).length) {    //L2 has children
+                    var L3Collection = nodeL2.NODES;
+                    Object.keys(L3Collection).forEach(function (keyL3) {
+                        var nodeL3 = L3Collection[keyL3];
+                        nodeValidation(nodeL3, nodeL2.LEVEL_ID);    //validate L3 node and his parent
+
+                        if (nodeL3.PERMISSION){
+                            //check id already exist into HL2_USER
+                            if (!dbUser.existsHlUserPair(nodeL3.USER_ID, nodeL3.LEVEL_ID, nodeL3.LEVEL)) {
+                                arrPermissionInsertL3.push(parseObjectForArray(nodeL3, userId));
+                            }
+                        } else {
+                            arrPermissionDeleteL3.push(parseObjectForArray(nodeL3, userId, true));
+                        }
+                    });
+                    if (nodeL2.PERMISSION){
+                        //check id already exist into HL2_USER
+                        if (!dbUser.existsHlUserPair(nodeL2.USER_ID, nodeL2.LEVEL_ID, nodeL2.LEVEL)) {
+                            arrPermissionInsertL2.push(parseObjectForArray(nodeL2, userId)); //add L2 and all L3 children
+                        }
+                    }
+                    else{
+                        arrPermissionDeleteL2.push(parseObjectForArray(nodeL2, userId, true)); //delete L2
+                    }
+                } else {
+                    //L2 has not children
+                    //if L2 has PERMISSION then insert All child
+                    //else (L2 has no PERMISSION) then delete All child
+                    if (nodeL2.PERMISSION){
+                        //check id already exist into HL2_USER
+                        arrPermissionInsertL2AndAllChildren.push(parseObjectForArray(nodeL2, userId)); //add L2 and all L3 children
+                    } else {
+                        arrPermissionDeleteL2AndAllChildren.push(parseObjectForArray(nodeL2, userId)); //delete L2 and all L3 children
+                    }
+                }
+            });
+            if (nodeL1.PERMISSION){
+                //check id already exist into HL1_USER
+                if (!dbUser.existsHlUserPair(nodeL1.USER_ID, nodeL1.LEVEL_ID, nodeL1.LEVEL)) {
+                    arrPermissionInsertL1.push(parseObjectForArray(nodeL1, userId)); //add L1
+                }
+            }
+            else{
+                arrPermissionDeleteL1.push(parseObjectForArray(nodeL1, userId, true)); //delete L1
+            }
+        }
+        else{
+            //insert L1 decendents (L2 and L3)
+            // if L1 has PERMISSION then insert All child (L2 & L3)
+            // else (L1 has no PERMISSION) then delete All child (L2 & L3)
+            if (nodeL1.PERMISSION){
+                //check id already exist into HL1_USER
+                arrPermissionInsertL1AndAllChildren.push(parseObjectForArray(nodeL1,userId));
+            }
+            else {
+                arrPermissionDeleteL1AndAllChildren.push(parseObjectForArray(nodeL1,userId));
+            }
+        }
+    });
+
+    if (arrPermissionDeleteL1AndAllChildren.length > 0){
+        deleteLevelUserDecendants(arrPermissionDeleteL1AndAllChildren, 1, arrPermissionDeleteL1AndAllChildren[0].in_user_id, userId);
+    }
+    if (arrPermissionInsertL1AndAllChildren.length > 0){
+        insertLevelUserDecendants(arrPermissionInsertL1AndAllChildren, 1, arrPermissionInsertL1AndAllChildren[0].in_user_id, userId);
+    }
+
+    if (arrPermissionDeleteL2AndAllChildren.length > 0){
+        deleteLevelUserDecendants(arrPermissionDeleteL2AndAllChildren, 2, arrPermissionDeleteL2AndAllChildren[0].in_user_id, userId);
+    }
+    if (arrPermissionInsertL2AndAllChildren.length > 0){
+        insertLevelUserDecendants(arrPermissionInsertL2AndAllChildren, 2, arrPermissionInsertL2AndAllChildren[0].in_user_id, userId);
+    }
+
+    if (arrPermissionInsertL1.length > 0)
+        dbUser.insertLevelUser(arrPermissionInsertL1, 1);
+    if (arrPermissionInsertL2.length > 0)
+        dbUser.insertLevelUser(arrPermissionInsertL2, 2);
+    if (arrPermissionInsertL3.length > 0)
+        dbUser.insertLevelUser(arrPermissionInsertL3, 3);
+
+    if (arrPermissionDeleteL1.length > 0)
+        dbUser.deleteLevelUser(arrPermissionDeleteL1, 1);
+    if (arrPermissionDeleteL2.length > 0)
+        dbUser.deleteLevelUser(arrPermissionDeleteL2, 2);
+    if (arrPermissionDeleteL3.length > 0)
+        dbUser.deleteLevelUser(arrPermissionDeleteL3, 3);
+
+
+    return {arrPermissionInsertL1:arrPermissionInsertL1, arrPermissionDeleteL1: arrPermissionDeleteL1
+        , arrPermissionInsertL2:arrPermissionInsertL2, arrPermissionDeleteL2: arrPermissionDeleteL2
+        , arrPermissionInsertL3:arrPermissionInsertL3, arrPermissionDeleteL3:arrPermissionDeleteL3
+        , arrPermissionInsertL1AndAllChildren: arrPermissionInsertL1AndAllChildren, arrPermissionDeleteL1AndAllChildren:arrPermissionDeleteL1AndAllChildren
+        , arrPermissionInsertL2AndAllChildren: arrPermissionInsertL2AndAllChildren, arrPermissionDeleteL2AndAllChildren:arrPermissionDeleteL2AndAllChildren
+    };
+}
+
+function deleteLevelUserDecendants(arrNodes, level, user_id, sessionUserId) {
+    dbUser.deleteLevelUserDecendants(arrNodes, level, user_id, sessionUserId);
+}
+
+function insertLevelUserDecendants(arrNodes, level, user_id, sessionUserId) {
+    dbUser.deleteLevelUserDecendants(arrNodes, level, user_id, sessionUserId);
+    dbUser.insertLevelUserDecendants(arrNodes, level, user_id, sessionUserId);
+}
+
+function parseObjectForArray(node, userId, forDelete) {
+    var objectToArray = {};
+    var hl_id = "in_hl" + node.LEVEL + "_id";
+    objectToArray[hl_id] = node.LEVEL_ID;
+    objectToArray.in_user_id = node.USER_ID;
+    if(!forDelete) {
+        objectToArray.in_created_user_id = userId;
+    }
+    return objectToArray;
+}
+
 function userLevelPermission(data, userId) {
+    return getParseCollection(data, userId);
+
+/*
     validate(data);
+
 
     var arrPermissionInsertL1 = [];
     var arrPermissionDeleteL1 = [];
@@ -118,15 +269,15 @@ function userLevelPermission(data, userId) {
     var arrPermissionDeleteL3 = [];
     data.forEach(function (PERMISSIONS) {
         var objPerm = {};
-        var hl_id = "in_hl"+PERMISSIONS.LEVEL+"_id";
+        var hl_id = "in_hl" + PERMISSIONS.LEVEL + "_id";
         objPerm[hl_id] = PERMISSIONS.LEVEL_ID;
         objPerm.in_user_id = PERMISSIONS.USER_ID;
 
-        switch(PERMISSIONS.LEVEL){
+        switch (PERMISSIONS.LEVEL) {
             case 1:
                 if (PERMISSIONS.PERMISSION) {
                     objPerm.in_created_user_id = userId;
-                    if(!dbUser.existsHlUserPair(PERMISSIONS.USER_ID, PERMISSIONS.LEVEL_ID, PERMISSIONS.LEVEL))
+                    if (!dbUser.existsHlUserPair(PERMISSIONS.USER_ID, PERMISSIONS.LEVEL_ID, PERMISSIONS.LEVEL))
                         arrPermissionInsertL1.push(objPerm);
                 } else {
                     arrPermissionDeleteL1.push(objPerm);
@@ -135,7 +286,7 @@ function userLevelPermission(data, userId) {
             case 2:
                 if (PERMISSIONS.PERMISSION) {
                     objPerm.in_created_user_id = userId;
-                    if(!dbUser.existsHlUserPair(PERMISSIONS.USER_ID, PERMISSIONS.LEVEL_ID, PERMISSIONS.LEVEL))
+                    if (!dbUser.existsHlUserPair(PERMISSIONS.USER_ID, PERMISSIONS.LEVEL_ID, PERMISSIONS.LEVEL))
                         arrPermissionInsertL2.push(objPerm);
                 } else {
                     arrPermissionDeleteL2.push(objPerm);
@@ -144,7 +295,7 @@ function userLevelPermission(data, userId) {
             case 3:
                 if (PERMISSIONS.PERMISSION) {
                     objPerm.in_created_user_id = userId;
-                    if(!dbUser.existsHlUserPair(PERMISSIONS.USER_ID, PERMISSIONS.LEVEL_ID, PERMISSIONS.LEVEL))
+                    if (!dbUser.existsHlUserPair(PERMISSIONS.USER_ID, PERMISSIONS.LEVEL_ID, PERMISSIONS.LEVEL))
                         arrPermissionInsertL3.push(objPerm);
                 } else {
                     arrPermissionDeleteL3.push(objPerm);
@@ -153,20 +304,67 @@ function userLevelPermission(data, userId) {
         }
     });
 
-    if(arrPermissionInsertL1.length > 0)
-        dbUser.insertLevelUser(arrPermissionInsertL1,1);
-    if(arrPermissionInsertL2.length > 0)
-        dbUser.insertLevelUser(arrPermissionInsertL2,2);
-    if(arrPermissionInsertL3.length > 0)
-        dbUser.insertLevelUser(arrPermissionInsertL3,3);
+    if (arrPermissionInsertL1.length > 0)
+        dbUser.insertLevelUser(arrPermissionInsertL1, 1);
+    if (arrPermissionInsertL2.length > 0)
+        dbUser.insertLevelUser(arrPermissionInsertL2, 2);
+    if (arrPermissionInsertL3.length > 0)
+        dbUser.insertLevelUser(arrPermissionInsertL3, 3);
 
-    if(arrPermissionDeleteL1.length > 0)
+    if (arrPermissionDeleteL1.length > 0)
         dbUser.deleteLevelUser(arrPermissionDeleteL1, 1);
-    if(arrPermissionDeleteL2.length > 0)
+    if (arrPermissionDeleteL2.length > 0)
         dbUser.deleteLevelUser(arrPermissionDeleteL2, 2);
-    if(arrPermissionDeleteL3.length > 0)
+    if (arrPermissionDeleteL3.length > 0)
         dbUser.deleteLevelUser(arrPermissionDeleteL3, 3);
     return data;
+    */
+}
+
+
+function nodeValidation(node, parentId) {
+    if (!node.USER_ID || !Number(node.USER_ID))
+        throw ErrorLib.getErrors().CustomError("", "", USER_NOT_FOUND);
+
+    if (!node.LEVEL || !Number(node.LEVEL))
+        throw ErrorLib.getErrors().CustomError("", "", INVALID_HIERARCHY_LEVEL_NUMBER);
+
+    if (!node.LEVEL_ID || !Number(node.LEVEL_ID))
+        throw ErrorLib.getErrors().CustomError("", "", HIERARCHY_LEVEL_NOT_FOUND);
+
+
+    if (!node.LEVEL_ID || !Number(node.LEVEL_ID))
+        throw ErrorLib.getErrors().CustomError("", "", HIERARCHY_LEVEL_NOT_FOUND);
+
+    if (!node.LEVEL || !Number(node.LEVEL) || node.LEVEL < 1 || node.LEVEL > 3)
+        throw ErrorLib.getErrors().CustomError("", "", INVALID_HIERARCHY_LEVEL_NUMBER);
+
+    switch (node.LEVEL) {
+        case 1:
+            var hl1 = dataHl1.getLevel1ById(node.LEVEL_ID);
+            if (!hl1.length)
+                throw ErrorLib.getErrors().ImportError("", "", L1_MSG_PLAN_NOT_FOUND);
+
+            break;
+        case 2:
+            var hl2 = dataHl2.getLevel2ById(node.LEVEL_ID);
+            if (!hl2 || !hl2.HL2_ID)
+                throw ErrorLib.getErrors().CustomError("", "", L2_MSG_PLAN_NOT_FOUND);
+
+            if (hl2.HL1_ID !== parentId)
+                throw ErrorLib.getErrors().CustomError("", "", NOT_PERMISSION_PARENT_LEVEL);
+
+            break;
+        case 3:
+            var hl3 = dataHl3.getLevel3ById(node.LEVEL_ID);
+            if (!hl3)
+                throw ErrorLib.getErrors().CustomError("", "", L3_MSG_TEAM_NOT_FOUND);
+
+            if (hl3.HL2_ID !== parentId)
+                throw ErrorLib.getErrors().CustomError("", "", NOT_PERMISSION_PARENT_LEVEL);
+
+            break;
+    }
 }
 
 function validate(data) {
@@ -253,8 +451,8 @@ function insertUser(user, createUser) {
         if (user.PHONE) {
             user.PHONE = user.PHONE.trim();
         }
-        user.PASSWORD = user.PASSWORD ? user.PASSWORD.trim(): '';
-        user.CONFIRM_PASSWORD = user.CONFIRM_PASSWORD ? user.CONFIRM_PASSWORD.trim(): '';
+        user.PASSWORD = user.PASSWORD ? user.PASSWORD.trim() : '';
+        user.CONFIRM_PASSWORD = user.CONFIRM_PASSWORD ? user.CONFIRM_PASSWORD.trim() : '';
 
         // validate user
         if (validateUser(user)) {
@@ -263,7 +461,7 @@ function insertUser(user, createUser) {
                     "userServices/handlePost/insertUser", "The User Name already exists");
             }
 
-            if(getUserByEmail(user.EMAIL)){
+            if (getUserByEmail(user.EMAIL)) {
                 throw ErrorLib.getErrors().CustomError("",
                     "userServices/handlePost/insertUser", "Another user with the same email already exists");
             }
@@ -315,12 +513,12 @@ function insertUser(user, createUser) {
 
 function updateUser(user, updateUser) {
 
-    user.USER_NAME =  user.USER_NAME ? user.USER_NAME.trim() : null;
-    user.FIRST_NAME =  user.FIRST_NAME ? user.FIRST_NAME.trim() : null;
-    user.LAST_NAME =  user.LAST_NAME ? user.LAST_NAME.trim() : null;
-    user.EMAIL =  user.EMAIL ? user.EMAIL.trim() : null;
-    user.PHONE =  user.PHONE ? user.PHONE.trim() : null;
-    user.DATA_PROTECTION_ENABLED =  user.DATA_PROTECTION_ENABLED ? 1 : 0;
+    user.USER_NAME = user.USER_NAME ? user.USER_NAME.trim() : null;
+    user.FIRST_NAME = user.FIRST_NAME ? user.FIRST_NAME.trim() : null;
+    user.LAST_NAME = user.LAST_NAME ? user.LAST_NAME.trim() : null;
+    user.EMAIL = user.EMAIL ? user.EMAIL.trim() : null;
+    user.PHONE = user.PHONE ? user.PHONE.trim() : null;
+    user.DATA_PROTECTION_ENABLED = user.DATA_PROTECTION_ENABLED ? 1 : 0;
 
     if (!user.USER_ID)
         throw ErrorLib.getErrors().CustomError("",
@@ -338,7 +536,7 @@ function updateUser(user, updateUser) {
     }
 
     var userByEmail = getUserByEmail(user.EMAIL);
-    if(userByEmail && userByEmail.USER_ID != user.USER_ID){
+    if (userByEmail && userByEmail.USER_ID != user.USER_ID) {
         throw ErrorLib.getErrors().CustomError("",
             "userServices/handlePost/insertUser", "Another user with the same email already exists");
     }
@@ -349,16 +547,16 @@ function updateUser(user, updateUser) {
 
         // insert user
         updUserId = dbUser.updateUser(user, updateUser);
-        
-        if(user.DATA_PROTECTION_ENABLED){
-        	dataProtectionLib.insertUserDataProtection(user.USER_ID, updateUser);
+
+        if (user.DATA_PROTECTION_ENABLED) {
+            dataProtectionLib.insertUserDataProtection(user.USER_ID, updateUser);
         }
 
         if (updUserId) {
             // Update user role
             var resultUserRole = dbUserRole.updateUserRoleByUserId(
                 user.USER_ID, user.ROLE_ID, updateUser);
-            
+
             // check if transaction was completed
             transactionDone = !!updUserId && !!resultUserRole;
         }
@@ -378,32 +576,32 @@ function updateUser(user, updateUser) {
     }
 }
 
-function updateDataProtection(dataProtection, userId, userSession){
-	return dbUser.updateDataProtection(dataProtection, userId, userSession);
+function updateDataProtection(dataProtection, userId, userSession) {
+    return dbUser.updateDataProtection(dataProtection, userId, userSession);
 }
 
-function updateUserWithMask(userId, userSession){
-	var mask = config.getDataProtectionMask();
-	
-	return dbUser.updateUserWithMask(mask, userId, userSession);
+function updateUserWithMask(userId, userSession) {
+    var mask = config.getDataProtectionMask();
+
+    return dbUser.updateUserWithMask(mask, userId, userSession);
 }
 
-function restoreUser(reqBody, userId){
-	if(!reqBody.USER_ID || !userId){
-		throw ErrorLib.getErrors().CustomError("",
-	            "userServices/handlePut/restoreUser", "The USER is not found");
-	}
-	
-	return dbUser.restoreUser(reqBody, userId);
+function restoreUser(reqBody, userId) {
+    if (!reqBody.USER_ID || !userId) {
+        throw ErrorLib.getErrors().CustomError("",
+            "userServices/handlePut/restoreUser", "The USER is not found");
+    }
+
+    return dbUser.restoreUser(reqBody, userId);
 }
 
 function deleteUser(data, deleteUser) {
-    if(!data.USER_IDS){
+    if (!data.USER_IDS) {
         data.USER_IDS = [data.USER_ID];
     }
 
     var users = data.USER_IDS.map(function (userId) {
-        return {'in_user_id' : userId}
+        return {'in_user_id': userId}
     });
 
     dbUser.deleteUser(users, deleteUser);
@@ -575,18 +773,18 @@ function validateUser(user) {
 }
 
 function notifyInsertByEmail(TO, username, password) {
-	var basicData = {};
+    var basicData = {};
     var reqBody = {};
-    
+
     basicData.ENVIRONMENT = config.getMailEnvironment();
     basicData.APP_URL = config.getLoginUrl();
     basicData.SITE_ADMIN_ACCOUNT = config.getSiteAdminAccount();
-    
+
     reqBody.USERNAME = username;
     reqBody.PASSWORD = password;
-    
+
     var userMailObj = userMail.parseNotifyCreateUser(reqBody, basicData, "Colleague");
-    
+
     var mailObject = mail.getJson([{
         "address": TO
     }], userMailObj.subject, userMailObj.body);
@@ -611,30 +809,30 @@ function getPermissionForLevelByUser(level, levelId, userId) {
 }
 
 //Verify if the user is in the HL2 Budget Approver list
-function validateHL2BudgetApproverByUserId(HL2Id, userId){
-	if(!HL2Id){
-		throw ErrorLib.getErrors().BadRequest("The Parameter HL2Id is not found",
-	            "/validateHL2BudgetApprover", HL2Id);
-	}
-	
-	if(!userId){
-		throw ErrorLib.getErrors().BadRequest("The Parameter userId is not found",
-	            "/validateHL2BudgetApprover", userId);
-	}
-	
-	var userList = getUserByHl2Id(HL2Id);
-	var approversList = userList.users_in;
-	var listLengh = approversList.length;
-	
-	//Check if the HL2 has any approver
-	if(listLengh > 0){
-		//Search the user ID in the list of Approvers
-		for(var i = 0; i < listLengh; i++) {
-			if (Number(approversList[i]["USER_ID"]) === Number(userId)) return true;
-		}
-	}
-		
-	return false;
+function validateHL2BudgetApproverByUserId(HL2Id, userId) {
+    if (!HL2Id) {
+        throw ErrorLib.getErrors().BadRequest("The Parameter HL2Id is not found",
+            "/validateHL2BudgetApprover", HL2Id);
+    }
+
+    if (!userId) {
+        throw ErrorLib.getErrors().BadRequest("The Parameter userId is not found",
+            "/validateHL2BudgetApprover", userId);
+    }
+
+    var userList = getUserByHl2Id(HL2Id);
+    var approversList = userList.users_in;
+    var listLengh = approversList.length;
+
+    //Check if the HL2 has any approver
+    if (listLengh > 0) {
+        //Search the user ID in the list of Approvers
+        for (var i = 0; i < listLengh; i++) {
+            if (Number(approversList[i]["USER_ID"]) === Number(userId)) return true;
+        }
+    }
+
+    return false;
 }
 
 /**
@@ -642,7 +840,7 @@ function validateHL2BudgetApproverByUserId(HL2Id, userId){
  * @param {string} user_name
  * @returns {user}
  */
-function getByName(user_name){
+function getByName(user_name) {
     return this.getUserByUserName(user_name);
 }
 
@@ -651,7 +849,7 @@ function getByName(user_name){
  * @param entity
  * @param userId
  */
-function insertEntity(entity, userId){
+function insertEntity(entity, userId) {
 
     var user = {};
     user.USER_NAME = entity.IN_NAME;
@@ -660,7 +858,7 @@ function insertEntity(entity, userId){
     user.EMAIL = entity.IN_EMAIL;
     user.PHONE = entity.IN_PHONE;
     user.USE_DEFAULT_PASSWORD = 1;
-    user.ROLE_ID =  RoleLib.getRoleByName(entity.IN_ROLE_NAME).ROLE_ID || "";
+    user.ROLE_ID = RoleLib.getRoleByName(entity.IN_ROLE_NAME).ROLE_ID || "";
     return insertUser(user, userId);
 }
 
@@ -669,7 +867,7 @@ function insertEntity(entity, userId){
  * @param entity
  * @param userId
  */
-function updateEntity(entity, userId){
+function updateEntity(entity, userId) {
     var user = {};
     user.USER_ID = getUserByUserName(entity.IN_NAME.trim()).USER_ID;
     user.USER_NAME = entity.IN_NAME;
@@ -678,6 +876,6 @@ function updateEntity(entity, userId){
     user.EMAIL = entity.IN_EMAIL;
     user.PHONE = entity.IN_PHONE;
     user.USE_DEFAULT_PASSWORD = 1;
-    user.ROLE_ID =  RoleLib.getRoleByName(entity.IN_ROLE_NAME).ROLE_ID || "";
+    user.ROLE_ID = RoleLib.getRoleByName(entity.IN_ROLE_NAME).ROLE_ID || "";
     return updateUser(user, userId);
 }

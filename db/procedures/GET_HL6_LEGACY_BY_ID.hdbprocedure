@@ -1,0 +1,75 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL6_LEGACY_BY_ID" ( 
+		IN in_hl6_legacy_id BIGINT, 
+		OUT out_result TABLE (
+			hl6_id INTEGER,
+			hl6_legacy_id INTEGER,
+			hl6_crm_description NVARCHAR(100),
+			acronym NVARCHAR(25),
+			budget DECIMAL(19, 6),
+			hl5_id INTEGER,
+			hl4_id INTEGER,
+			in_budget TINYINT,
+			euro_conversion_id INTEGER,
+			hl6_status_detail_id INTEGER,
+			sales_organization_id INTEGER,
+			created_date_tz TIMESTAMP,
+			modified_date_tz TIMESTAMP,
+			created_user_id INTEGER,
+			modified_user_id INTEGER,
+			enabled TINYINT,
+			deleted TINYINT,
+            ALLOW_BUDGET_ZERO TINYINT,
+            CURRENCY_VALUE DECIMAL(19,6),
+            CURRENCY_ABBREVIATION NVARCHAR(7),
+            STATUS NVARCHAR(25),
+            PARENT_PATH NVARCHAR(255),
+            HL5_LEGACY_ID BIGINT,
+            COMMENTS NVARCHAR(3000)
+		)
+	)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	READS SQL DATA
+AS
+BEGIN
+
+	out_result = SELECT
+                HL6.HL6_ID
+                , HL6_LEGACY.HL6_LEGACY_ID
+				, HL6.HL6_CRM_DESCRIPTION
+				, HL6.ACRONYM
+				, HL6.BUDGET
+				, HL6.HL5_ID
+				, HL5_LEGACY.HL4_ID
+				, HL6.IN_BUDGET
+				, HL6.EURO_CONVERSION_ID
+				, HL6.HL6_STATUS_DETAIL_ID
+				, HL6.SALES_ORGANIZATION_ID
+				, HL6.CREATED_DATE_TZ
+				, HL6.MODIFIED_DATE_TZ
+				, HL6.CREATED_USER_ID
+				, HL6.MODIFIED_USER_ID
+				, HL6.ENABLED
+				, HL6.DELETED
+                , HL6.ALLOW_BUDGET_ZERO
+                , CURRENCY.CURRENCY_VALUE
+                , CURRENCY.CURRENCY_ABBREVIATION
+                , STATUS.DETAIL AS STATUS
+                , HL5_LEGACY.PATH AS PARENT_PATH
+                , HL6_LEGACY.HL5_LEGACY_ID
+                , legacy_kpi.COMMENTS
+			FROM HL6
+                INNER JOIN HL6_LEGACY ON HL6_LEGACY.HL6_ID = HL6.HL6_ID
+                INNER JOIN HL5_LEGACY ON HL6_LEGACY.HL5_LEGACY_ID = HL5_LEGACY.HL5_LEGACY_ID
+                    AND HL6_LEGACY.ENABLED = 1
+                    AND HL6_LEGACY.DELETED = 0
+                LEFT JOIN CURRENCY ON HL6.EURO_CONVERSION_ID = CURRENCY.EURO_CONVERSION_ID
+                LEFT JOIN HL6_STATUS_DETAIL STATUS ON HL6.HL6_STATUS_DETAIL_ID = STATUS.HL6_STATUS_DETAIL_ID
+                LEFT JOIN HL6_EXPECTED_OUTCOMES legacy_kpi ON legacy_kpi.HL6_ID = HL6_LEGACY.HL6_ID
+                                    AND legacy_kpi.ENABLED = 1
+                                    AND legacy_kpi.DELETED = 0
+			WHERE HL6_LEGACY.HL6_LEGACY_ID = in_hl6_legacy_id
+				AND HL6.ENABLED = 1
+				AND HL6.DELETED = 0;
+END;
