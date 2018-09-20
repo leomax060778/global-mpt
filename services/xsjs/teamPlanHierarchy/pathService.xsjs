@@ -19,6 +19,10 @@ function handleGet(parameters, userSessionID){
     if(parameters[0].name === LEVEL && parameters[1].name === HL_ID){
         var isLegacy = httpUtil.getUrlParameters().get("IS_LEGACY");
 
+        if(typeof isLegacy === 'string'){
+        	isLegacy = isLegacy !== "false";
+        }
+
         var rdo = blPath.getPathByLevelParent(parameters[0].value, parameters[1].value, isLegacy);
         httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
     }
