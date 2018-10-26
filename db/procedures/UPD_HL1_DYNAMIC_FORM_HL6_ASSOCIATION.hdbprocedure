@@ -1,0 +1,21 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::UPD_HL1_DYNAMIC_FORM_HL6_ASSOCIATION" (
+    IN myTable TABLE(
+    	    hl1Id bigint,
+    	    dynamicFormUId nvarchar(255),
+    	    userId bigint
+    		),
+    	OUT out_result int
+    )
+    	LANGUAGE SQLSCRIPT
+    	SQL SECURITY INVOKER
+    	DEFAULT SCHEMA "MKTG_PLANNING_TOOL" AS
+    BEGIN
+    		UPDATE HL1 SET
+    		dynamic_form_l6_uid = T.DYNAMICFORMUID,
+    		modified_user_id = T.USERID,
+    		modified_date_tz = CURRENT_TIMESTAMP
+    		from HL1, (select DYNAMICFORMUID, USERID, HL1ID from :myTable) T
+    		where HL1.HL1_ID = T.HL1ID;
+
+            SELECT ::ROWCOUNT INTO out_result FROM DUMMY;
+END;

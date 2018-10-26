@@ -171,8 +171,14 @@ function updateCategoryOptionLevel(data, userId) {
     return (data.IN_LEVEL.length * data.IN_OPTION_LIST.length);
 }
 
-function getHlCategoryOptionByLevelHlId(level, hlId, hl2Id) {
-    var categoryOptionList = dataCategoryOptionLevel.getHlCategoryOptionByLevelHlId(level, hlId, hl2Id);
+
+function getHlCategoryOptionByLevelHlId(level, hlId, fromCloneMethod) {
+    var categoryOptionList = [];
+    if (fromCloneMethod) {
+        categoryOptionList = dataCategoryOptionLevel.getHlAllCategoryOptionByLevelHlId(level, hlId);
+    } else {
+        categoryOptionList = dataCategoryOptionLevel.getHlCategoryOptionByLevelHlId(level, hlId);
+    }
     var result = {};
     categoryOptionList.forEach(function (categoryOption) {
         if (!result[categoryOption.CATEGORY_NAME]) {
@@ -186,16 +192,20 @@ function getHlCategoryOptionByLevelHlId(level, hlId, hl2Id) {
                 OPTIONS: []
             }
         }
+        //TODO REPLACE AMOUNT_VALUE WITH CORRECT categoryOption.AMOUNT_VALUE
+        //categoryOption.AMOUNT_VALUE = 0;
         result[categoryOption.CATEGORY_NAME].OPTIONS.push({
             OPTION_ID: categoryOption.OPTION_ID,
             OPTION_NAME: categoryOption.OPTION_NAME,
-            CATEGORY_ID: level == 'HL5' || level == 'HL6' ? categoryOption.CATEGORY_ID : undefined,
+            CATEGORY_ID: level === 'HL5' || level === 'HL6' ? categoryOption.CATEGORY_ID : undefined,
             SINGLE_OPTION_ONLY: categoryOption.SINGLE_OPTION_ONLY || 0,
             CATEGORY_OPTION_LEVEL_ID: categoryOption.CATEGORY_OPTION_LEVEL_ID,
             AMOUNT: categoryOption.AMOUNT,
             AMOUNT_KPI: categoryOption.AMOUNT_KPI,
             CATEGORY_OPTION_ID: categoryOption.CATEGORY_OPTION_ID,
-            UPDATED: categoryOption.UPDATED
+            UPDATED: categoryOption.UPDATED,
+            AMOUNT_VALUE :  Number(categoryOption.AMOUNT_VALUE),
+            SELECTED : !!Number(categoryOption.AMOUNT_VALUE)
         });
     });
     return util.objectToArray(result);

@@ -16,18 +16,20 @@ function processRequest(){
 //Implementation of GET call -- GET HL1
 function handleGet(){
     var method = httpUtil.getUrlParameters().get("method").toUpperCase();
-    var HL_ID = httpUtil.getUrlParameterByName("HL_ID").toUpperCase();
-    var LEVEL = httpUtil.getUrlParameterByName("LEVEL").toUpperCase();
+    var res = {};
     switch (method){
         case MIN_MAX_DATE:
-            var rdo = validationLib.getMinMaxDateByIdAndLevel(HL_ID, LEVEL);
-            httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
+            var HL_ID = httpUtil.getUrlParameterByName("HL_ID").toUpperCase();
+            var LEVEL = httpUtil.getUrlParameterByName("LEVEL").toUpperCase();
+            res = validationLib.getMinMaxDateByIdAndLevel(HL_ID, LEVEL);
+            break;
+        case 'GET_QUARTER_DATES':
+            res = validationLib.getQuarterDates();
             break;
         default:
-            throw ErrorLib.getErrors().BadRequest("","validationServices/handleGet","Invalid parameter name");
+            throw ErrorLib.getErrors().BadRequest("","","Invalid parameter name");
     }
-
-
+    return httpUtil.handleResponse(res, httpUtil.OK, httpUtil.AppJson);
 }
 
 function handlePost(reqBody) {
@@ -40,7 +42,7 @@ function handlePost(reqBody) {
             httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
             break;
         default:
-            throw ErrorLib.getErrors().BadRequest("","validationServices/handlePost","Invalid parameter name");
+            throw ErrorLib.getErrors().BadRequest("","","Invalid parameter name");
     }
 }
 

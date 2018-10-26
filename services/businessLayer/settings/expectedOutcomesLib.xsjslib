@@ -350,10 +350,8 @@ function addTotalAvailable(detail, totalAvailable, fromGrid) {
             if (totalAvailable[elem.OUTCOMES_TYPE_ID] && totalAvailable[elem.OUTCOMES_TYPE_ID][elem.OUTCOMES_ID]) {
                 elem.PARENT_TOTAL_VALUE = totalAvailable[elem.OUTCOMES_TYPE_ID][elem.OUTCOMES_ID].PARENT_TOTAL_VALUE || null;
                 elem.PARENT_TOTAL_VOLUME = totalAvailable[elem.OUTCOMES_TYPE_ID][elem.OUTCOMES_ID].PARENT_TOTAL_VOLUME || null;
-                elem.VALUE_AVAILABLE_TO_ALLOCATE = totalAvailable[elem.OUTCOMES_TYPE_ID][elem.OUTCOMES_ID].VALUE_AVAILABLE_TO_ALLOCATE > 0
-                    ? totalAvailable[elem.OUTCOMES_TYPE_ID][elem.OUTCOMES_ID].VALUE_AVAILABLE_TO_ALLOCATE : 0;
-                elem.VOLUME_AVAILABLE_TO_ALLOCATE = totalAvailable[elem.OUTCOMES_TYPE_ID][elem.OUTCOMES_ID].VOLUME_AVAILABLE_TO_ALLOCATE > 0
-                    ? totalAvailable[elem.OUTCOMES_TYPE_ID][elem.OUTCOMES_ID].VOLUME_AVAILABLE_TO_ALLOCATE : 0;
+                elem.VALUE_AVAILABLE_TO_ALLOCATE =  totalAvailable[elem.OUTCOMES_TYPE_ID][elem.OUTCOMES_ID].VALUE_AVAILABLE_TO_ALLOCATE;
+                elem.VOLUME_AVAILABLE_TO_ALLOCATE = totalAvailable[elem.OUTCOMES_TYPE_ID][elem.OUTCOMES_ID].VOLUME_AVAILABLE_TO_ALLOCATE;
 
                 if (fromGrid) {
                     elem.ALLOCATED_VALUE = totalAvailable[elem.OUTCOMES_TYPE_ID][elem.OUTCOMES_ID].ALLOCATED_VALUE || null;

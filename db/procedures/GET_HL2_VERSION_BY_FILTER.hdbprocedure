@@ -17,6 +17,8 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL2_VERSION_
 		, organization_name nvarchar(255)
 		, region_name nvarchar(255)
         , subregion_name nvarchar(255)
+        , planning_purpose_option_id bigint
+        , planning_purpose_option_name nvarchar(255)
 		)
 )
 	LANGUAGE SQLSCRIPT
@@ -39,6 +41,7 @@ coalesce(hl2_version.hl2_id,hl2.hl2_id) as hl2_id
 , coalesce(hl2_version.hl1_id,hl2.hl1_id) as hl1_id
 , coalesce(hl2_version.organization_acronym, hl2.organization_acronym)  as organization_acronym
 , coalesce(hl2_version.organization_name, hl2.organization_name)  as organization_name
+, coalesce(hl2_version.planning_purpose_option_id, hl2.planning_purpose_option_id)  as planning_purpose_option_id
 from hl2
 left join hl2_version on hl2.hl2_id = hl2_version.hl2_id and hl2.deleted = 0 and hl2.enabled = 1
 where (hl2.version = 1 or hl2_version.version = 1) and hl2.hl1_id = in_hl1_id and hl2.deleted = 0 and hl2.enabled = 1;
@@ -60,9 +63,12 @@ where (hl2.version = 1 or hl2_version.version = 1) and hl2.hl1_id = in_hl1_id an
         , hl2.organization_name  as organization_name
         , r.region_name
         , sr.subregion_name
+        , hl2.planning_purpose_option_id
+        , PLO.name as planning_purpose_option_name
         from :aux_hl2 hl2
         left join region r on r.region_id = hl2.region_id
         left join subregion sr on sr.subregion_id = hl2.subregion_id
+        LEFT JOIN planning_purpose_option PLO ON PLO.planning_purpose_option_id = HL2.planning_purpose_option_id
         order by hl2.acronym, hl2.organization_acronym;
 
     else
@@ -82,10 +88,13 @@ where (hl2.version = 1 or hl2_version.version = 1) and hl2.hl1_id = in_hl1_id an
         , hl2.organization_name  as organization_name
         , r.region_name
         , sr.subregion_name
+        , hl2.planning_purpose_option_id
+        , PLO.name as planning_purpose_option_name
         from :aux_hl2 hl2
     	inner join hl2_user on hl2.hl2_id = hl2_user.hl2_id
     	left join region r on r.region_id = hl2.region_id
         left join subregion sr on sr.subregion_id = hl2.subregion_id
+        LEFT JOIN planning_purpose_option PLO ON PLO.planning_purpose_option_id = HL2.planning_purpose_option_id
     	where hl2_user.user_id = in_user_id
     	order by hl2.acronym, hl2.organization_acronym;
     end if;

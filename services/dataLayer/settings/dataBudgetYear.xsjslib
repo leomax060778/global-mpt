@@ -5,10 +5,12 @@ var db = mapper.getdbHelper();
 var ErrorLib = mapper.getErrors();
 /*************************************************/
 var spGetAllBudgetYear = "GET_ALL_BUDGET_YEAR";
+var spGetAllByRequireDynamicForm = "GET_BUDGET_YEAR_BY_REQUIRE_DYNAMIC_FORM";
 var spUdpBudgetYear = "UPD_BUDGET_YEAR";
 var GET_BUDGET_YEAR = "GET_BUDGET_YEAR";
 var GET_BUDGET_YEAR_ID = "GET_BUDGET_YEAR_ID";
 var spGET_BUDGET_YEAR_BY_HL4_ID = "GET_BUDGET_YEAR_BY_HL4_ID";
+var spGetRequireDynamicFormByBudgetYearId = "GET_REQUIRE_DYNAMIC_FORM_BY_BUDGET_YEAR_ID";
 var DEL_BUDGET_YEAR = "DEL_BUDGET_YEAR";
 
 var spGET_HL1_QUANTITY_BY_BUDGET_YEAR_ID = "GET_HL1_QUANTITY_BY_BUDGET_YEAR_ID";
@@ -29,11 +31,25 @@ function getAllBudgetYear() {
     return db.extractArray(result['out_result']);
 }
 
+function getAllByRequireDynamicForm(){
+    var result = db.executeProcedure(spGetAllByRequireDynamicForm, {});
+    return db.extractArray(result['out_result']);
+}
+
+function getRequireDynamicFormByBudgetYearId(budgetYearId){
+    var params = {};
+    params.in_budget_year_id = budgetYearId;
+
+    var result = db.executeProcedure(spGetRequireDynamicFormByBudgetYearId, params).out_result;
+
+    return db.extractArray(result)[0] || null;
+}
+
 function getLockFlagByHlIdLevel(hlId, level) {
     return db.executeScalarManual(GET_LOCK_FLAG_BY_HL_ID_LEVEL, {'in_hl_id': hlId, 'in_level': level}, 'out_result');
 }
 
-function insertBudgetYear(budgetYear, startDate, endDate, defaultYear, description, versionedStartDate, versionedEndDate, userId, autoCommit) {
+function insertBudgetYear(budgetYear, startDate, endDate, defaultYear, description, versionedStartDate, versionedEndDate, requireDynamicForm, userId, autoCommit) {
     var params = {
         'in_budget_year': budgetYear,
         'in_start_date': startDate,
@@ -42,6 +58,7 @@ function insertBudgetYear(budgetYear, startDate, endDate, defaultYear, descripti
         'in_versioned_end_date': versionedEndDate,
         'in_default_year': defaultYear,
         'in_description': description,
+        'in_require_dynamic_form': requireDynamicForm,
         'in_created_user_id': userId
     };
     var rdo;
@@ -53,7 +70,7 @@ function insertBudgetYear(budgetYear, startDate, endDate, defaultYear, descripti
     return rdo;
 }
 
-function updateBudgetYear(budgetYearId, budgetYear, startDate, endDate, defaultYear, description, enableCrmCreation, versionedStartDate, versionedEndDate, userId) {
+function updateBudgetYear(budgetYearId, budgetYear, startDate, endDate, defaultYear, description, enableCrmCreation, versionedStartDate, versionedEndDate, requireDynamicForm, userId) {
 
     var params = {
         "in_budget_year_id": budgetYearId,
@@ -65,7 +82,8 @@ function updateBudgetYear(budgetYearId, budgetYear, startDate, endDate, defaultY
         "in_description": description,
         "in_enable_crm_creation": enableCrmCreation,
         "in_modified_user_id": userId,
-        "in_budget_year": budgetYear
+        "in_budget_year": budgetYear,
+        'in_require_dynamic_form': requireDynamicForm
     };
 
     return db.executeScalarManual(spUdpBudgetYear, params, 'out_result');

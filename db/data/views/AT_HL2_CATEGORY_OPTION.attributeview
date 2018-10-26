@@ -31,6 +31,10 @@
       <descriptions defaultDescription="DELETED"/>
       <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL2_CATEGORY_OPTION" columnName="DELETED"/>
     </attribute>
+    <attribute id="AMOUNT_VALUE" order="8" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="AMOUNT_VALUE"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL2_CATEGORY_OPTION" columnName="AMOUNT_VALUE"/>
+    </attribute>
   </attributes>
   <calculatedAttributes/>
   <privateDataFoundation>
@@ -43,7 +47,7 @@
     <layout>
       <shapes>
         <shape modelObjectName="HL2_CATEGORY_OPTION" modelObjectNameSpace="MKTG_PLANNING_TOOL" modelObjectType="catalog">
-          <upperLeftCorner x="456" y="30"/>
+          <upperLeftCorner x="15" y="19"/>
         </shape>
         <shape modelObjectName="DataFoundation" modelObjectNameSpace="DataFoundation" modelObjectType="repository">
           <upperLeftCorner x="40" y="85"/>

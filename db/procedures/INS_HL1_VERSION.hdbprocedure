@@ -8,6 +8,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_HL1_VERSION"
     in in_region_id bigint,
     in in_crt_related tinyint,
     in in_implement_execution_level tinyint,
+    in in_planning_purpose_id bigint,
     in in_team_type_id bigint,
     in in_created_user_id bigint,
 	out out_result bigint
@@ -26,6 +27,7 @@ BEGIN
      region_id,
      crt_related,
      implement_execution_level,
+     planning_purpose_id,
      team_type_id,
      created_user_id
 	)
@@ -39,6 +41,7 @@ BEGIN
     in_region_id,
     in_crt_related,
     in_implement_execution_level,
+    in_planning_purpose_id,
     in_team_type_id,
     in_created_user_id
 	);

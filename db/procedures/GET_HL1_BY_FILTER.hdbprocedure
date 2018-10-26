@@ -5,25 +5,63 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL1_BY_FILTE
 	,IN in_user_id BIGINT
 	,IN in_is_super_Admin tinyint
 	,OUT out_result TABLE (
-        HL1_ID BIGINT
+        L1_ID BIGINT
         , L1_BUDGET DECIMAL(19, 2)
         , L1_BUDGET_PERCENTAGE DECIMAL(19, 2)
         , L1_BUDGET_REMAINING DECIMAL(19, 2)
+        , L2_TOTAL_COUNT INTEGER
+        , L1_ACRONYM NVARCHAR(255)
+        , L1_CRM_ID NVARCHAR(25)
+        , L1_IS_LOCKED TINYINT
         , L1_BUDGET_ALLOCATED DECIMAL(19, 2)
-        , HL2_TOTAL_COUNT INTEGER
-        , ACRONYM NVARCHAR(25)
-        , CRM_ID NVARCHAR(25)
+        , L1_DESCRIPTION NVARCHAR(255)
+        , L1_VERSION INTEGER
+        , L1_LEVEL NVARCHAR(3)
         , BUDGET_YEAR NVARCHAR(255)
-        , REGION_NAME NVARCHAR(255)
-        , IS_LOCKED TINYINT
-        , CATEGORY_NAME NVARCHAR(255)
-        , OPTION_NAME NVARCHAR(255)
-        , BUDGET_DISTRIBUTION_PERCENTAGE DECIMAL(19, 2)
-        , BUDGET_DISTRIBUTION_AMOUNT DECIMAL(19, 2)
-        , HL1_DESCRIPTION NVARCHAR(255)
         , TOTAL_L1_BUDGET DECIMAL(19, 2)
-        , VERSION INTEGER
-        , SUB_AMOUNT DECIMAL(19,2)
+
+        , L2_ID BIGINT
+        , L2_BUDGET DECIMAL(19, 2)
+        , L2_BUDGET_PERCENTAGE DECIMAL(19, 2)
+        , L2_BUDGET_REMAINING DECIMAL(19, 2)
+        , L3_TOTAL_COUNT INTEGER
+        , L2_ACRONYM NVARCHAR(255)
+        , L2_CRM_ID NVARCHAR(25)
+        , L2_IS_LOCKED TINYINT
+        , L2_BUDGET_ALLOCATED DECIMAL(19, 2)
+        , L2_DESCRIPTION NVARCHAR(255)
+        , L2_VERSION INTEGER
+        , L2_LEVEL NVARCHAR(3)
+
+        , L3_ID BIGINT
+        , L3_BUDGET DECIMAL(19, 2)
+        , L3_BUDGET_PERCENTAGE DECIMAL(19, 2)
+        , L3_BUDGET_REMAINING DECIMAL(19, 2)
+        , L4_TOTAL_COUNT INTEGER
+        , L3_ACRONYM NVARCHAR(255)
+        , L3_CRM_ID NVARCHAR(25)
+        , L3_IS_LOCKED TINYINT
+        , L3_BUDGET_ALLOCATED DECIMAL(19, 2)
+        , L3_DESCRIPTION NVARCHAR(255)
+        , L3_VERSION INTEGER
+        , L3_LEVEL NVARCHAR(3)
+
+        , L4_ID BIGINT
+        , L4_BUDGET DECIMAL(19, 2)
+        , L4_BUDGET_PERCENTAGE DECIMAL(19, 2)
+        , L4_BUDGET_REMAINING DECIMAL(19, 2)
+        , L5_TOTAL_COUNT INTEGER
+        , L4_ACRONYM NVARCHAR(255)
+        , L4_CRM_ID NVARCHAR(25)
+        , L4_BUDGET_ALLOCATED DECIMAL(19, 2)
+        , L4_DESCRIPTION NVARCHAR(255)
+        , L4_STATUS_DETAIL NVARCHAR(255)
+        , L4_STATUS_ID BIGINT
+        , L4_IMPLEMENT_EXECUTION_LEVEL TINYINT
+        , L4_IN_CRM_CHILD_HL5 INTEGER
+        , L4_IN_CRM_CHILD_HL6 INTEGER
+        , L4_ENABLE_CRM_CREATION TINYINT
+        , L4_LEVEL NVARCHAR(3)
 		)
 	, OUT out_total_budget DECIMAL(19, 2)
 )
@@ -39,81 +77,184 @@ BEGIN
             END;
 	va_total_budget := 0;
 
-	va_subresult =
-	SELECT
-		SUMMARY.HL1_ID
-		, SUMMARY.L1_BUDGET
-		, "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(SUMMARY.BUDGET_YEAR, SUMMARY.L1_ACRONYM, '', '', '', '', '') AS CRM_ID
-		, SUMMARY.L1_BUDGET_PERCENTAGE
-		, SUMMARY.L1_BUDGET_REMAINING
-		, SUMMARY.L1_BUDGET_ALLOCATED
-		, SUMMARY.TOTAL_OF_PRIORITIES AS hl2_total_count
-		, UPPER(SUMMARY.L1_ACRONYM) as acronym
-		, SUMMARY.BUDGET_YEAR
-		, SUMMARY.REGION_NAME
-		, SUMMARY.IS_LOCKED
-        , SUMMARY.CATEGORY_NAME
-        , SUMMARY.OPTION_NAME
-        , SUMMARY.BUDGET_DISTRIBUTION_PERCENTAGE
-        , SUMMARY.BUDGET_DISTRIBUTION_AMOUNT
-		, SUMMARY.REGION_ID
-		, SUMMARY.HL1_DESCRIPTION
-		, SUMMARY.TOTAL_L1_BUDGET
-		, SUMMARY.VERSION
-		, SUMMARY.SUB_AMOUNT
-
-	FROM  "_SYS_BIC"."mktgplanningtool.db.data.views/CV_HL1_BUDGET_DISTRIBUTION_SUMMARY" SUMMARY
-	WHERE (SUMMARY.BUDGET_YEAR_ID = in_budget_year_id)
-	    AND (in_is_super_Admin = 1 OR SUMMARY.HL1_ID IN (SELECT HL1_ID FROM HL1_USER WHERE USER_ID = in_user_id));
+	va_hl1 = SELECT
+                    SUMMARY.HL1_ID AS L1_ID,
+                    SUMMARY.L1_BUDGET,
+                    SUMMARY.L1_BUDGET_PERCENTAGE,
+                    SUMMARY.L1_BUDGET_REMAINING,
+                    SUMMARY.TOTAL_OF_PRIORITIES AS l2_total_count,
+                    UPPER(SUMMARY.L1_ACRONYM) as L1_ACRONYM,
+                    "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(SUMMARY.BUDGET_YEAR, SUMMARY.L1_ACRONYM, '', '', '', '', '') AS L1_CRM_ID,
+                    SUMMARY.IS_LOCKED AS L1_IS_LOCKED,
+                    SUMMARY.L1_BUDGET_ALLOCATED,
+                    SUMMARY.HL1_DESCRIPTION AS L1_DESCRIPTION,
+                    SUMMARY.VERSION AS L1_VERSION,
+                    SUMMARY.LEVEL AS L1_LEVEL,
+                    SUMMARY.BUDGET_YEAR,
+                    SUMMARY.TOTAL_L1_BUDGET,
+                    SUMMARY.REGION_ID,
+                    SUMMARY.BUDGET_YEAR_ID
+                    FROM  "_SYS_BIC"."mktgplanningtool.db.data.views/CV_HL1_BUDGET_DISTRIBUTION_SUMMARY" SUMMARY
+                    WHERE (SUMMARY.BUDGET_YEAR_ID = in_budget_year_id)
+	                    AND (in_is_super_Admin = 1 OR SUMMARY.HL1_ID IN (SELECT HL1_ID FROM HL1_USER WHERE USER_ID = in_user_id));
 
     -- this filter is necesary to filter GLOBALS, where region_id = 0
     if in_region_id = -1 then
-        out_result = select T.HL1_ID
-                            		, T.L1_BUDGET
-                            		, T.L1_BUDGET_PERCENTAGE
-                            		, T.L1_BUDGET_REMAINING
-                            		, T.L1_BUDGET_ALLOCATED
-                            		, T.HL2_TOTAL_COUNT
-                            		, T.ACRONYM
-                            		, T.CRM_ID
-                            		, T.BUDGET_YEAR
-                            		, T.REGION_NAME
-                            		, T.IS_LOCKED
-                                    , T.CATEGORY_NAME
-                                    , T.OPTION_NAME
-                                    , T.BUDGET_DISTRIBUTION_PERCENTAGE
-                                    , T.BUDGET_DISTRIBUTION_AMOUNT
-                                    , T.HL1_DESCRIPTION
-                                    , T.TOTAL_L1_BUDGET
-                                    , T.VERSION
-                                    , T.SUB_AMOUNT
-                              from :va_subresult T
-                    where T.REGION_ID = 0
-                    ORDER BY T.ACRONYM;
+        va_hl1 = select T.L1_ID
+                            ,T.L1_BUDGET
+                            ,T.L1_BUDGET_PERCENTAGE
+                            ,T.L1_BUDGET_REMAINING
+                            ,T.L2_TOTAL_COUNT
+                            ,T.L1_ACRONYM
+                            ,T.L1_CRM_ID
+                            ,T.L1_IS_LOCKED
+                            ,T.L1_BUDGET_ALLOCATED
+                            ,T.L1_DESCRIPTION
+                            ,T.L1_VERSION
+                            ,T.L1_LEVEL
+                            ,T.BUDGET_YEAR
+                            ,TOTAL_L1_BUDGET
+                            ,T.REGION_ID
+                            ,T.BUDGET_YEAR_ID
+                              from :va_hl1 T
+                    where T.REGION_ID = 0;
     else
-        out_result = select T.HL1_ID
-                            , T.L1_BUDGET
-                            , T.L1_BUDGET_PERCENTAGE
-                            , T.L1_BUDGET_REMAINING
-                            , T.L1_BUDGET_ALLOCATED
-                            , T.HL2_TOTAL_COUNT
-                            , T.ACRONYM
-                            , T.CRM_ID
-                            , T.BUDGET_YEAR
-                            , T.REGION_NAME
-                            , T.IS_LOCKED
-                            , T.CATEGORY_NAME
-                            , T.OPTION_NAME
-                            , T.BUDGET_DISTRIBUTION_PERCENTAGE
-                            , T.BUDGET_DISTRIBUTION_AMOUNT
-                            , T.HL1_DESCRIPTION
-                            , T.TOTAL_L1_BUDGET
-                            , T.VERSION
-                            , T.SUB_AMOUNT
-                            from :va_subresult T
-                    where (T.REGION_ID = in_region_id OR in_region_id = 0)
-                    ORDER BY T.ACRONYM;
+        va_hl1 = select T.L1_ID
+                            ,T.L1_BUDGET
+                            ,T.L1_BUDGET_PERCENTAGE
+                            ,T.L1_BUDGET_REMAINING
+                            ,T.L2_TOTAL_COUNT
+                            ,T.L1_ACRONYM
+                            ,T.L1_CRM_ID
+                            ,T.L1_IS_LOCKED
+                            ,T.L1_BUDGET_ALLOCATED
+                            ,T.L1_DESCRIPTION
+                            ,T.L1_VERSION
+                            ,T.L1_LEVEL
+                            ,T.BUDGET_YEAR
+                            ,TOTAL_L1_BUDGET
+                            ,T.REGION_ID
+                            ,T.BUDGET_YEAR_ID
+                            from :va_hl1 T
+                    where (T.REGION_ID = in_region_id OR in_region_id = 0);
      end if;
+
+     va_hl2 = SELECT L2_SUMMARY.HL2_ID AS L2_ID,
+                    L2_SUMMARY.HL1_ID AS L1_ID,
+                    L2_SUMMARY.L2_BUDGET,
+                    L2_SUMMARY.L2_BUDGET_PERCENTAGE,
+                    L2_SUMMARY.L2_BUDGET_REMAINING,
+                    L2_SUMMARY.TOTAL_OF_PRIORITIES AS l3_total_count,
+                    L2_SUMMARY.L2_ACRONYM,
+                    L2_SUMMARY.IS_LOCKED AS L2_IS_LOCKED,
+                    L2_SUMMARY.HL2_BUDGET_ALLOCATED AS l2_budget_allocated,
+                    L2_SUMMARY.L2_ORGANIZATION_NAME AS L2_DESCRIPTION,
+                    L2_SUMMARY.VERSION AS L2_VERSION,
+                    L2_SUMMARY.LEVEL AS L2_LEVEL,
+                    L2_SUMMARY.IMPLEMENT_EXECUTION_LEVEL
+                FROM "_SYS_BIC"."mktgplanningtool.db.data.views/CV_HL2_BUDGET_DISTRIBUTION_SUMMARY" L2_SUMMARY
+                WHERE (in_is_super_Admin = 1 OR L2_SUMMARY.HL2_ID IN (SELECT HL2_ID FROM HL2_USER WHERE USER_ID = in_user_id));
+
+    va_hl3 = SELECT L3_SUMMARY.HL3_ID AS L3_ID,
+                    L3_SUMMARY.HL2_ID AS L2_ID,
+                    L3_SUMMARY.L3_BUDGET,
+                    L3_SUMMARY.L3_BUDGET_PERCENTAGE,
+                    L3_SUMMARY.L3_BUDGET_REMAINING,
+                    L3_SUMMARY.TOTAL_OF_PRIORITIES AS l4_total_count,
+                    L3_SUMMARY.L3_ACRONYM,
+                    L3_SUMMARY.IS_LOCKED AS L3_IS_LOCKED,
+                    L3_SUMMARY.HL3_BUDGET_ALLOCATED AS l3_budget_allocated,
+                    L3_SUMMARY.HL3_DESCRIPTION AS L3_DESCRIPTION,
+                    L3_SUMMARY.VERSION AS L3_VERSION,
+                    L3_SUMMARY.LEVEL AS L3_LEVEL
+                FROM "_SYS_BIC"."mktgplanningtool.db.data.views/CV_HL3_BUDGET_DISTRIBUTION_SUMMARY" L3_SUMMARY
+                WHERE (in_is_super_Admin = 1 OR L3_SUMMARY.HL3_ID IN (SELECT HL3_ID FROM HL3_USER WHERE USER_ID = in_user_id));
+
+    va_hl4 = SELECT L4_SUMMARY.HL4_ID AS L4_ID,
+                    L4_SUMMARY.HL3_ID AS L3_ID,
+                    L4_SUMMARY.L4_BUDGET,
+                    L4_SUMMARY.L4_BUDGET_PERCENTAGE,
+                    L4_SUMMARY.L4_BUDGET_REMAINING,
+                    L4_SUMMARY.TOTAL_OF_PRIORITIES AS L5_TOTAL_COUNT,
+                    L4_SUMMARY.L4_ACRONYM,
+                    L4_SUMMARY.HL4_BUDGET_ALLOCATED AS l4_budget_allocated,
+                    L4_SUMMARY.HL4_CRM_DESCRIPTION AS L4_DESCRIPTION,
+                    L4_SUMMARY.STATUS_DETAIL AS L4_STATUS_DETAIL,
+                    L4_SUMMARY.STATUS_ID AS L4_STATUS_ID,
+                    L4_SUMMARY.IN_CRM_CHILD_HL5 AS L4_IN_CRM_CHILD_HL5,
+                    L4_SUMMARY.IN_CRM_CHILD_HL6 AS L4_IN_CRM_CHILD_HL6,
+                    L4_SUMMARY.ENABLE_CRM_CREATION AS L4_ENABLE_CRM_CREATION,
+                    L4_SUMMARY.LEVEL AS L4_LEVEL
+                FROM "_SYS_BIC"."mktgplanningtool.db.data.views/CV_HL4_BUDGET_DISTRIBUTION_SUMMARY" L4_SUMMARY;
+
+	out_result =
+	SELECT
+		L1_SUMMARY.L1_ID,
+		L1_SUMMARY.L1_BUDGET,
+		L1_SUMMARY.L1_BUDGET_PERCENTAGE,
+		L1_SUMMARY.L1_BUDGET_REMAINING,
+		L1_SUMMARY.l2_total_count,
+		L1_SUMMARY.L1_ACRONYM,
+		L1_SUMMARY.L1_CRM_ID,
+		L1_SUMMARY.L1_IS_LOCKED,
+		L1_SUMMARY.L1_BUDGET_ALLOCATED,
+		L1_SUMMARY.L1_DESCRIPTION,
+		L1_SUMMARY.L1_VERSION,
+		L1_SUMMARY.L1_LEVEL,
+		L1_SUMMARY.BUDGET_YEAR,
+		L1_SUMMARY.TOTAL_L1_BUDGET,
+
+		L2_SUMMARY.L2_ID,
+        L2_SUMMARY.L2_BUDGET,
+        L2_SUMMARY.L2_BUDGET_PERCENTAGE,
+        L2_SUMMARY.L2_BUDGET_REMAINING,
+        L2_SUMMARY.l3_total_count,
+        L2_SUMMARY.L2_ACRONYM,
+        "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(L1_SUMMARY.BUDGET_YEAR, L1_SUMMARY.L1_ACRONYM, L2_SUMMARY.L2_ACRONYM, '', '', '', '') AS L2_CRM_ID,
+        L2_SUMMARY.L2_IS_LOCKED,
+        L2_SUMMARY.l2_budget_allocated,
+        L2_SUMMARY.L2_DESCRIPTION,
+        L2_SUMMARY.L2_VERSION,
+        L2_SUMMARY.L2_LEVEL,
+
+        L3_SUMMARY.L3_ID,
+        L3_SUMMARY.L3_BUDGET,
+        L3_SUMMARY.L3_BUDGET_PERCENTAGE,
+        L3_SUMMARY.L3_BUDGET_REMAINING,
+        L3_SUMMARY.l4_total_count,
+        L3_SUMMARY.L3_ACRONYM,
+        "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(L1_SUMMARY.BUDGET_YEAR, L1_SUMMARY.L1_ACRONYM, L2_SUMMARY.L2_ACRONYM, L3_SUMMARY.L3_ACRONYM, '', '', '') AS L3_CRM_ID,
+        L3_SUMMARY.L3_IS_LOCKED,
+        L3_SUMMARY.l3_budget_allocated,
+        L3_SUMMARY.L3_DESCRIPTION,
+        L3_SUMMARY.L3_VERSION,
+        L3_SUMMARY.L3_LEVEL,
+
+        L4_SUMMARY.L4_ID,
+        L4_SUMMARY.L4_BUDGET,
+        L4_SUMMARY.L4_BUDGET_PERCENTAGE,
+        L4_SUMMARY.L4_BUDGET_REMAINING,
+        L4_SUMMARY.L5_TOTAL_COUNT,
+        L4_SUMMARY.L4_ACRONYM,
+        "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(L1_SUMMARY.BUDGET_YEAR, L1_SUMMARY.L1_ACRONYM, L2_SUMMARY.L2_ACRONYM, L3_SUMMARY.L3_ACRONYM, L4_SUMMARY.L4_ACRONYM, '', '') AS L4_CRM_ID,
+        L4_SUMMARY.l4_budget_allocated,
+        L4_SUMMARY.L4_DESCRIPTION,
+        L4_SUMMARY.L4_STATUS_DETAIL,
+        L4_SUMMARY.L4_STATUS_ID,
+        L2_SUMMARY.IMPLEMENT_EXECUTION_LEVEL AS L4_IMPLEMENT_EXECUTION_LEVEL,
+        L4_SUMMARY.L4_IN_CRM_CHILD_HL5,
+        L4_SUMMARY.L4_IN_CRM_CHILD_HL6,
+        L4_SUMMARY.L4_ENABLE_CRM_CREATION,
+        L4_SUMMARY.L4_LEVEL
+
+	FROM :va_hl1 L1_SUMMARY
+	LEFT JOIN :va_hl2 L2_SUMMARY
+	    ON L1_SUMMARY.L1_ID = L2_SUMMARY.L1_ID
+	LEFT JOIN :va_hl3 L3_SUMMARY
+	    ON L2_SUMMARY.L2_ID = L3_SUMMARY.L2_ID
+    LEFT JOIN :va_hl4 L4_SUMMARY
+	    ON L3_SUMMARY.L3_ID = L4_SUMMARY.L3_ID
+    ORDER BY L1_SUMMARY.L1_ACRONYM,L2_SUMMARY.L2_ACRONYM,L3_SUMMARY.L3_ACRONYM,L4_SUMMARY.L4_ACRONYM;
 
 	-- Calculate the total budget
 	-- This might throw an error that will be caught by the error handler declared on top of the sp

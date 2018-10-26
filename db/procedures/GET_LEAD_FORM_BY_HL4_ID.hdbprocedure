@@ -1,0 +1,70 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_LEAD_FORM_BY_HL4_ID" (
+    IN in_hl4_id BIGINT,
+    OUT out_result TABLE(
+        LEAD_FORM_ID  BIGINT,
+        HL5_ID  BIGINT,
+        HL4_ID BIGINT,
+        SERVICE_REQUEST_CATEGORY_OPTION_LEVEL_ID BIGINT,
+        FORM_STATUS_DETAIL_ID BIGINT,
+        SUMMARY NVARCHAR(255),
+        REGION_ID BIGINT,
+        SUBREGION_ID BIGINT, -- Market Unit
+        COUNTRY_ID BIGINT,
+        SPECIAL_ROUTING TINYINT,
+        TARGET_SELECT_CRITERIA_ID BIGINT, -- Related with: Does your file include CRM ID?
+        SPECIAL_NOTES NVARCHAR(3000),
+        UPLOAD_LEAD TINYINT,
+        UPLOAD_DATA_SOURCE NVARCHAR(255), -- Depends on UPLOAD_LEAD = 1
+        UPLOAD_DATA_PURPOSE NVARCHAR(255), -- Depends on UPLOAD_LEAD = 1
+        UPLOAD_DATA_LEASED TINYINT, -- Depends on UPLOAD_LEAD = 1
+        UPLOAD_DUMMY_SIC_CODE_APPROVAL TINYINT, -- Depends on UPLOAD_LEAD = 1
+        UPLOAD_DUMMY_DUNS_APPROVAL TINYINT, -- Depends on UPLOAD_LEAD = 1
+        ATTACHMENT_ID BIGINT,
+        NUMBER_OF_RECORDS INTEGER,
+        COMPLEXITY TINYINT,
+        CSD_SELF NVARCHAR(255), -- NULL because we can save as draft.
+        CSD_ID BIGINT, -- NULL because we can save as draft.
+        CSD_KEY NVARCHAR(255), -- NULL because we can save as draft.
+        CREATED_USER_ID BIGINT,
+        REQUESTOR_NAME NVARCHAR(255)
+    )
+)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	READS SQL DATA AS
+BEGIN
+
+ out_result = SELECT
+                LEAD.lead_form_id,
+ 	            LEAD.hl5_id,
+ 	            LEAD.hl4_id,
+ 	            LEAD.service_request_category_option_level_id,
+                LEAD.form_status_detail_id,
+                LEAD.summary,
+                LEAD.region_id,
+                LEAD.subregion_id,
+                LEAD.country_id,
+                LEAD.special_routing,
+                LEAD.target_select_criteria_id,
+                LEAD.special_notes,
+                LEAD.upload_lead,
+                LEAD.upload_data_source,
+                LEAD.upload_data_purpose,
+                LEAD.upload_data_leased,
+                LEAD.upload_dummy_sic_code_approval,
+                LEAD.upload_dummy_duns_approval,
+                LEAD.attachment_id,
+                LEAD.number_of_records,
+                LEAD.complexity,
+                LEAD.csd_self,
+                LEAD.csd_id,
+                LEAD.csd_key,
+                LEAD.created_user_id,
+                US.user_name AS requestor_name
+	FROM "LEAD_FORM" LEAD
+	INNER JOIN "USER" US ON US.USER_ID = LEAD.CREATED_USER_ID
+	WHERE LEAD.HL4_ID = in_hl4_id
+		AND LEAD.ENABLED = 1
+		AND LEAD.DELETED = 0;
+END;

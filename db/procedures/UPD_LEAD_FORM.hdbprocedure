@@ -1,0 +1,55 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::UPD_LEAD_FORM" (
+    IN in_lead_form_id BIGINT,
+    IN in_form_status_detail_id BIGINT,
+    IN in_summary NVARCHAR(255),
+    IN in_region_id BIGINT,
+    IN in_subregion_id BIGINT,
+    IN in_country_id BIGINT,
+    IN in_hl4_id BIGINT,
+    IN in_special_routing TINYINT,
+    IN in_target_select_criteria_id BIGINT,
+    IN in_special_notes NVARCHAR(3000),
+    IN in_upload_lead TINYINT,
+    IN in_upload_data_source NVARCHAR(255),
+    IN in_upload_data_purpose NVARCHAR(255),
+    IN in_upload_data_leased TINYINT,
+    IN in_upload_dummy_sic_code_approval TINYINT,
+    IN in_upload_dummy_duns_approval TINYINT,
+    IN in_attachment_id BIGINT,
+    IN in_number_of_records INTEGER,
+    IN in_complexity TINYINT,
+    IN in_modified_user_id BIGINT,
+    OUT out_result BIGINT
+)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	AS
+BEGIN
+    UPDATE "MKTG_PLANNING_TOOL"."LEAD_FORM"
+    SET
+            form_status_detail_id = in_form_status_detail_id,
+            summary = in_summary,
+            region_id = in_region_id,
+            subregion_id = in_subregion_id,
+            country_id = in_country_id,
+            hl4_id = in_hl4_id,
+            special_routing = in_special_routing,
+            target_select_criteria_id = in_target_select_criteria_id,
+            special_notes = in_special_notes,
+            upload_lead = in_upload_lead,
+            upload_data_source = in_upload_data_source,
+            upload_data_purpose = in_upload_data_purpose,
+            upload_data_leased = in_upload_data_leased,
+            upload_dummy_sic_code_approval = in_upload_dummy_sic_code_approval,
+            upload_dummy_duns_approval = in_upload_dummy_duns_approval,
+            attachment_id = in_attachment_id,
+            number_of_records = in_number_of_records,
+            complexity = in_complexity,
+            modified_user_id = in_modified_user_id
+    WHERE lead_form_id = in_lead_form_id
+        AND enabled = 1
+        AND deleted = 0;
+
+    SELECT ::ROWCOUNT into out_result FROM DUMMY;
+END;

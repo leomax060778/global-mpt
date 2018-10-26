@@ -1,0 +1,19 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::UPD_HL1_BUDGET" (
+	IN in_hl1_id bigint,
+	IN in_user_id bigint,
+	IN in_updated_budget DECIMAL(19, 2),
+	OUT out_result bigint
+	)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL" AS
+BEGIN
+	UPDATE HL1 SET
+	HL1.modified_date_tz = CURRENT_TIMESTAMP
+    ,HL1.modified_user_id = in_user_id
+    ,HL1.budget = in_updated_budget
+	WHERE HL1.hl1_id = in_hl1_id;
+
+	SELECT ::ROWCOUNT INTO out_result FROM DUMMY;
+
+END;

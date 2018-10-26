@@ -18,13 +18,42 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_CATEGORY_OPT
         , CATEGORY_TYPE_ID integer
         , AVAILABLE_IN_EVENT_REQUEST TINYINT
         , OPTIONS_LIMIT integer
+        , HIDDEN TINYINT
         )
-	) 
+	)
 	LANGUAGE SQLSCRIPT
-	SQL SECURITY INVOKER 
+	SQL SECURITY INVOKER
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
 	READS SQL DATA AS
 BEGIN
+
+    va_hl1_form_uid = SELECT HL1_ID,
+                        (CASE WHEN in_hierarchy_level_id = 2 THEN HL1.DYNAMIC_FORM_L5_UID
+                        ELSE (CASE WHEN in_hierarchy_level_id = 3 THEN HL1.DYNAMIC_FORM_L6_UID END) END) AS DYNAMIC_FORM_UID
+                      FROM HL1;
+
+	va_hidden_categories = SELECT AC.ALLOCATION_CATEGORY_ID AS CATEGORY_ID
+    ,AO.ALLOCATION_OPTION_ID AS OPTION_ID
+
+    from allocation_category_option_level acol
+    inner join allocation_category ac on acol.allocation_category_id = ac.allocation_category_id
+    left join allocation_option ao on acol.allocation_option_id = ao.allocation_option_id
+    left join DYNAMIC_FORM_ALLOCATION ON
+		acol.allocation_category_id = DYNAMIC_FORM_ALLOCATION.allocation_category_id
+		AND acol.hierarchy_level_id = in_hierarchy_level_id
+		and DYNAMIC_FORM_ALLOCATION.enabled = 1 and DYNAMIC_FORM_ALLOCATION.deleted = 0
+    left join DYNAMIC_FORM ON DYNAMIC_FORM.DYNAMIC_FORM_ID = DYNAMIC_FORM_ALLOCATION.DYNAMIC_FORM_ID
+	and DYNAMIC_FORM.enabled = 1 and DYNAMIC_FORM.deleted = 0
+    inner JOIN HL2 ON hl2.hl2_id = in_hl2_id
+    inner JOIN :va_hl1_form_uid HL1 ON HL1.DYNAMIC_FORM_UID = DYNAMIC_FORM.DYNAMIC_FORM_UID AND HL2.HL1_ID = HL1.HL1_ID
+    where acol.hierarchy_level_id = in_hierarchy_level_id
+    and ac.enabled = 1
+    and ac.deleted = 0
+    and ao.enabled = 1
+    and ao.deleted = 0
+    and acol.enabled = 1
+    and acol.deleted = 0;
+
 	va_allocation_category_option =
     (SELECT AC.ALLOCATION_CATEGORY_ID AS CATEGORY_ID
     ,acol.ALLOCATION_CATEGORY_OPTION_LEVEL_ID
@@ -41,9 +70,11 @@ BEGIN
     ,AC.CATEGORY_TYPE_ID
     ,ACOL.AVAILABLE_IN_EVENT_REQUEST
     ,ACOL.OPTIONS_LIMIT
+    ,(CASE WHEN HC.CATEGORY_ID IS NULL THEN 0 ELSE 1 END) AS HIDDEN
     from allocation_category_option_level acol
     inner join allocation_category ac on acol.allocation_category_id = ac.allocation_category_id
     inner join allocation_option ao on acol.allocation_option_id = ao.allocation_option_id
+    LEFT JOIN :va_hidden_categories HC ON HC.CATEGORY_ID = ACOL.ALLOCATION_CATEGORY_ID
     where acol.hierarchy_level_id = in_hierarchy_level_id
     and ac.enabled = 1
     and ac.deleted = 0
@@ -70,6 +101,7 @@ BEGIN
             ,AC.CATEGORY_TYPE_ID
             ,0 AS AVAILABLE_IN_EVENT_REQUEST
             ,ACOL.OPTIONS_LIMIT
+            , 0 AS HIDDEN
             from ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL acol
             inner join allocation_category ac on acol.allocation_category_id = ac.allocation_category_id
             inner join ALLOCATION_COUNTRY_CATEGORY_OPTION ao on acol.ALLOCATION_COUNTRY_CATEGORY_OPTION_ID = ao.ALLOCATION_COUNTRY_CATEGORY_OPTION_ID
@@ -104,6 +136,7 @@ BEGIN
                         , CATEGORY_TYPE_ID
                         , AVAILABLE_IN_EVENT_REQUEST
                         , OPTIONS_LIMIT
+                        , HIDDEN
                         FROM :va_allocation_category_option
                          ORDER BY CATEGORY_NAME, OPTION_NAME;
 
@@ -123,6 +156,7 @@ BEGIN
                             , CATEGORY_TYPE_ID
                             , AVAILABLE_IN_EVENT_REQUEST
                             , OPTIONS_LIMIT
+                            , 0 AS HIDDEN
                             FROM :out_result
                             WHERE AVAILABLE_IN_EVENT_REQUEST = 1;
     END IF;

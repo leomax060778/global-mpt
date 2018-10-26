@@ -29,18 +29,20 @@ function getServiceRequestOptions(){
 
 function insertServiceRequestOption(reqBody, userId) {
 	var objOption = dbOption.getServiceRequestOptionByName(reqBody.NAME);
-	if(objOption && objOption.length)
-		throw ErrorLib.getErrors().CustomError("","AllocationOptionService", "Cannot create the option beacause exists another with same name.");
+	if(objOption && objOption.length) {
+        throw ErrorLib.getErrors().CustomError("", "AllocationOptionService", "Cannot create the option beacause exists another with same name.");
+    }
 
-	return dbOption.insertServiceRequestOption(reqBody.NAME, userId);
+	return dbOption.insertServiceRequestOption(reqBody.NAME, userId, reqBody.SERVICE_REQUEST_FORM_TYPE_ID || null);
 }
 
 function updateServiceRequestOption(reqbody, userId) {
     var objOption = dbOption.getServiceRequestOptionByName(reqbody.NAME);
-    if(objOption && objOption.length && objOption[0].SERVICE_REQUEST_OPTION_ID != reqbody.SERVICE_REQUEST_OPTION_ID)
-        throw ErrorLib.getErrors().CustomError("","AllocationOptionService", "Already exists another Option with same name.");
+    if(objOption && objOption.length && objOption[0].SERVICE_REQUEST_OPTION_ID != reqbody.SERVICE_REQUEST_OPTION_ID) {
+        throw ErrorLib.getErrors().CustomError("", "AllocationOptionService", "Already exists another Option with same name.");
+    }
 
-	return dbOption.updateServiceRequestOption(reqbody.SERVICE_REQUEST_OPTION_ID,reqbody.NAME, userId);
+	return dbOption.updateServiceRequestOption(reqbody.SERVICE_REQUEST_OPTION_ID,reqbody.NAME, userId, reqbody.SERVICE_REQUEST_FORM_TYPE_ID || null);
 }
 
 function deleteServiceRequestOption(optionId, userId){

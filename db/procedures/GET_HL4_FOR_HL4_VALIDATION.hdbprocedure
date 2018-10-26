@@ -68,7 +68,7 @@ BEGIN
 					 FROM HL4 hl4
 					 	LEFT JOIN HL4_STATUS_HISTORY hl4_status ON hl4.HL4_ID = hl4_status.HL4_ID
 					 		AND hl4_status.HL4_STATUS_DETAIL_ID = 3
-					 	INNER JOIN CRM_PARENT_PATH crm_ppath ON LEVEL_ID = in_hl4_id
+					 	LEFT JOIN CRM_PARENT_PATH crm_ppath ON LEVEL_ID = in_hl4_id
 					 	    AND HIERARCHY_LEVEL_ID = 1 --HL4
 					 WHERE hl4.HL4_ID = in_hl4_id
 					 	AND hl4.ENABLED = 1

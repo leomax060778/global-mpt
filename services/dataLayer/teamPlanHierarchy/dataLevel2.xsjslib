@@ -9,11 +9,13 @@ var GET_ALL_HL2 = "GET_ALL_HL2";
 var GET_HL2_KPI_SUMMARY = "GET_HL2_KPI_SUMMARY";
 var GET_HL2_BY_ID = "GET_HL2_BY_ID";
 var GET_HL2_BY_HL1_ID = "GET_HL2_BY_HL1_ID";
+var GET_HL2_ALLOCATION_SUMMARY = "GET_HL2_ALLOCATION_SUMMARY";
 var spGetHl2ForSerach = "GET_HL2_FOR_SEARCH";
 var GET_HL2_ALLOW_AUTOMATIC_BUDGET_APPROVAL_BY_HL4_ID = "GET_HL2_ALLOW_AUTOMATIC_BUDGET_APPROVAL_BY_HL4_ID";
 var GET_HL2_ALLOW_AUTOMATIC_BUDGET_APPROVAL_BY_HL5_ID = "GET_HL2_ALLOW_AUTOMATIC_BUDGET_APPROVAL_BY_HL5_ID";
 var INS_HL2 = "INS_HL2";
 var UPD_HL2 = "UPD_HL2";
+var UPD_HL2_BUDGET = "UPD_HL2_BUDGET";
 var COUNT_HL3_BY_HL2_ID = "COUNT_HL3_BY_HL2_ID";
 var DEL_HL2 = "DEL_HL2";
 var GET_HL2_BY_ACRONYM_AND_ORGANIZATION_ACRONYM = "GET_HL2_BY_ACRONYM_AND_ORGANIZATION_ACRONYM";
@@ -135,7 +137,7 @@ function getHl2ByHl4Id(hl4Id){
     return db.extractArray(result.out_result)[0];
 }
 
-function insertLevel2(budget, acronym, organizationName, implementExecutionLevel, crtRelated, hl1Id, inBudget, allowAutomaticBudgetApproval, userId, subregionId, importId, imported){
+function insertLevel2(budget, acronym, organizationName, implementExecutionLevel, crtRelated, hl1Id, inBudget, allowAutomaticBudgetApproval, userId, subregionId, planningPurposeOptionId, importId, imported){
 	var parameters = {};
     parameters.in_user_id = userId;
     parameters.in_hl2_budget_total = budget;
@@ -149,11 +151,12 @@ function insertLevel2(budget, acronym, organizationName, implementExecutionLevel
     parameters.in_import_id = importId || null;
     parameters.in_imported = imported || 0;
     parameters.in_subRegion_id = subregionId;
+    parameters.in_planning_purpose_option_id = planningPurposeOptionId;
 
 	return db.executeScalarManual(INS_HL2,parameters,"out_hl2_id");
 }
 
-function updateLevel2(hl2Id, hl2BudgetTotal, organizationAcronym, organizationName, implementExecutionLevel, crtRelated, inBudget, allowAutomaticBudgetApproval, version, subregionId, userId){
+function updateLevel2(hl2Id, hl2BudgetTotal, organizationAcronym, organizationName, implementExecutionLevel, crtRelated, inBudget, allowAutomaticBudgetApproval, version, subregionId, planningPurposeOptionId, userId){
 	var parameters = {};
 	parameters.in_hl2_id = hl2Id;
 	parameters.in_modified_user_id = userId;
@@ -166,7 +169,17 @@ function updateLevel2(hl2Id, hl2BudgetTotal, organizationAcronym, organizationNa
 	parameters.in_allow_automatic_budget_approval = allowAutomaticBudgetApproval || 0;
 	parameters.in_version = version;
     parameters.in_subRegion_id = subregionId;
+    parameters.in_planning_purpose_option_id = planningPurposeOptionId;
 	return db.executeScalarManual(UPD_HL2,parameters,"out_result");
+}
+
+function updateBudget(hl2Id,budget,userId) {
+    var parameters = {
+        in_hl2_id: hl2Id,
+        in_updated_budget: budget,
+        in_user_id: userId
+    };
+    return db.executeScalarManual(UPD_HL2_BUDGET, parameters, "out_result");
 }
 
 function deleteHl2(hl2Id,modUser){
@@ -197,6 +210,16 @@ function getHl2ByHl1Id(hl1Id, userId, isSuperAdmin) {
 	return result;
 }
 
+function getLobAllocationSummary(hl1Id, userId, isSuperAdmin) {
+	var parameters = {};
+	var result = {};
+	parameters.in_hl1_id = hl1Id;
+	parameters.in_user_id = userId;
+	parameters.in_is_super_Admin = isSuperAdmin ? 1 : 0;
+	var list = db.executeProcedureManual(GET_HL2_ALLOCATION_SUMMARY, parameters);
+	return db.extractArray(list.out_result);
+}
+
 function updateHl2BudgetStatus(hl2_id, userId, nextStatus){
 	var parameters = {"in_hl2_id": hl2_id, "in_status_budget": nextStatus, "in_user_id": userId};
 	var rdo = db.executeScalarManual(spUpdateHl2BudgetStatus, parameters, 'out_result');
@@ -209,7 +232,7 @@ function getAllHl2VersionByHl2Id(hl2_id){
 	return db.extractArray(result.out_result);
 }
 
-function insertLevel2Version(hl2Id, version, acronym, description, budget, budgetYearId, crt_related, implement_execution_level, team_type_id, regionId, subregionId ,userId, organization_acronym, organization_name, in_budget,allow_automatic_budget_approval, hl1_id){
+function insertLevel2Version(hl2Id, version, acronym, description, budget, budgetYearId, crt_related, implement_execution_level, team_type_id, regionId, subregionId ,userId, organization_acronym, organization_name, in_budget,allow_automatic_budget_approval, inPlanningPurposeOptionId, hl1_id){
 	var parameters = {};
 	parameters.in_hl2_id = hl2Id;
 	parameters.in_version = version;
@@ -227,6 +250,7 @@ function insertLevel2Version(hl2Id, version, acronym, description, budget, budge
 	parameters.in_organization_name = organization_name;
 	parameters.in_in_budget = in_budget;
 	parameters.in_allow_automatic_budget_approval = allow_automatic_budget_approval;
+    parameters.in_planning_purpose_option_id = inPlanningPurposeOptionId;
 	parameters.in_hl1_id = hl1_id;
 	return db.executeScalarManual(INS_HL2_VERSION,parameters,"out_result");
 }

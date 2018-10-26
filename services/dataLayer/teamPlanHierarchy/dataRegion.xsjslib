@@ -13,6 +13,8 @@ var UPD_REGION_GLOBAL_FLAG = "UPD_REGION_GLOBAL_FLAG";
 var REGION_CAN_DELETE = "REGION_CAN_DELETE";
 var DEL_REGION = "DEL_REGION";
 var GET_VALIDATE_REGION_AND_MARKET_UNIT = "GET_VALIDATE_REGION_AND_MARKET_UNIT";
+var GET_REGION_SUBREGION = "GET_REGION_SUBREGION";
+
 function getAllRegions(){
 	var parameters = {};	
 	var result = db.executeProcedureManual(GET_ALL_REGION, {});	
@@ -33,6 +35,11 @@ function getRegionById(regionId){
 		spResult.push(list[key]);
 	});
 	return spResult;	
+}
+
+function getOnlyRegionSubregion() {
+
+	return db.executeProcedureManual(GET_REGION_SUBREGION, {});
 }
 
 /*EXECUTE QUERY TO INSERT NEW REGION*/

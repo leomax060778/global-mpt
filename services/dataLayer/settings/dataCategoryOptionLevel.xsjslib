@@ -199,6 +199,15 @@ function getHlCategoryOptionByLevelHlId(level, hlId){
     return null;
 }
 
+function getHlAllCategoryOptionByLevelHlId(level, hlId){
+    if(hlId && level){
+        var storedProcedure = "GET_"+ level.toUpperCase() +"_ALL_CATEGORY_OPTION";
+        var rdo = db.executeProcedureManual(storedProcedure,{'in_hl_id': hlId});
+        return db.extractArray(rdo.out_result_aux2);
+    }
+    return null;
+}
+
 /**
  * Get the last version of Category was IN_CRM
  * @param level

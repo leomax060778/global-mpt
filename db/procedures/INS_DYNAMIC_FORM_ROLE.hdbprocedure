@@ -1,0 +1,29 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_DYNAMIC_FORM_ROLE"
+(
+	 IN in_dynamic_form_hl_id bigint,
+	 IN in_role_id bigint,
+	 IN in_budget_year_id bigint,
+	 IN in_created_user_id bigint
+	,out out_result bigint
+)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL" AS
+BEGIN
+
+	INSERT INTO DYNAMIC_FORM_ROLE
+	(
+    dynamic_form_id,
+    role_id,
+    budget_year_id,
+    created_user_id
+	) VALUES
+	(
+    in_dynamic_form_hl_id,
+    in_role_id,
+    in_budget_year_id,
+    in_created_user_id
+    	);
+
+	SELECT TOP 1 CURRENT_IDENTITY_VALUE() INTO out_result FROM "MKTG_PLANNING_TOOL"."DYNAMIC_FORM_ROLE";
+END;

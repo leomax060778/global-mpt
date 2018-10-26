@@ -1,5 +1,7 @@
 PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::DEL_SEGMENTATION_FORM_DEPARTMENT_BY_SEGMENTATION_FORM_ID" (
-	IN in_segmentation_form_id BIGINT,
+	IN in_segmentation_form_ids TABLE(
+        SEGMENTATION_FORM_ID BIGINT
+    ),
 	IN in_user_id BIGINT,
 	OUT out_result INTEGER) 
 	LANGUAGE SQLSCRIPT
@@ -13,7 +15,7 @@ BEGIN
 			enabled = 0,
 			modified_user_id = in_user_id,
 			modified_date_tz = CURRENT_TIMESTAMP
-		WHERE segmentation_form_id = in_segmentation_form_id;
+		WHERE segmentation_form_id IN (SELECT SEGMENTATION_FORM_ID FROM :in_segmentation_form_ids);
 		
 		SELECT ::ROWCOUNT INTO out_result FROM DUMMY;
 

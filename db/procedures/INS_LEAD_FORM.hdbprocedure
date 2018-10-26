@@ -1,0 +1,86 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_LEAD_FORM" (
+    IN in_hl5_id BIGINT,
+    IN in_form_status_detail_id BIGINT,
+    IN in_service_request_category_option_level_id BIGINT,
+    IN in_summary NVARCHAR(255),
+    IN in_region_id BIGINT,
+    IN in_subregion_id BIGINT,
+    IN in_country_id BIGINT,
+    IN in_hl4_id BIGINT,
+    IN in_special_routing TINYINT,
+    IN in_target_select_criteria_id BIGINT,
+    IN in_special_notes NVARCHAR(3000),
+    IN in_upload_lead TINYINT,
+    IN in_upload_data_source NVARCHAR(255),
+    IN in_upload_data_purpose NVARCHAR(255),
+    IN in_upload_data_leased TINYINT,
+    IN in_upload_dummy_sic_code_approval TINYINT,
+    IN in_upload_dummy_duns_approval TINYINT,
+    IN in_attachment_id BIGINT,
+    IN in_number_of_records INTEGER,
+    IN in_complexity TINYINT,
+    IN in_created_user_id BIGINT,
+    IN in_csd_self NVARCHAR(255),
+    IN in_csd_id BIGINT,
+    IN in_csd_key NVARCHAR(255),
+    OUT out_result BIGINT
+)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	AS
+BEGIN
+    INSERT INTO "MKTG_PLANNING_TOOL"."LEAD_FORM"(
+            hl5_id,
+            form_status_detail_id,
+            service_request_category_option_level_id,
+            summary,
+            region_id,
+            subregion_id,
+            country_id,
+            hl4_id,
+            special_routing,
+            target_select_criteria_id,
+            special_notes,
+            upload_lead,
+            upload_data_source,
+            upload_data_purpose,
+            upload_data_leased,
+            upload_dummy_sic_code_approval,
+            upload_dummy_duns_approval,
+            attachment_id,
+            number_of_records,
+            complexity,
+            created_user_id,
+            csd_self,
+            csd_id,
+            csd_key
+
+        ) VALUES(
+              in_hl5_id,
+              in_form_status_detail_id,
+              in_service_request_category_option_level_id,
+              in_summary,
+              in_region_id,
+              in_subregion_id,
+              in_country_id,
+              in_hl4_id,
+              in_special_routing,
+              in_target_select_criteria_id,
+              in_special_notes,
+              in_upload_lead,
+              in_upload_data_source,
+              in_upload_data_purpose,
+              in_upload_data_leased,
+              in_upload_dummy_sic_code_approval,
+              in_upload_dummy_duns_approval,
+              in_attachment_id,
+              in_number_of_records,
+              in_complexity,
+              in_created_user_id,
+              in_csd_self,
+              in_csd_id,
+              in_csd_key
+          );
+        SELECT TOP 1 CURRENT_IDENTITY_VALUE() INTO out_result FROM "MKTG_PLANNING_TOOL"."LEAD_FORM";
+END;

@@ -3,6 +3,7 @@ $.import("mktgplanningtool.services.commonLib", "mapper");
 var mapper = $.mktgplanningtool.services.commonLib.mapper;
 var ErrorLib = mapper.getErrors();
 var dbBudget = mapper.getDataBudgetYear();
+var dynamicFormLib = mapper.getDynamicFormLib();
 var util = mapper.getUtil();
 /*************************************************/
 var BUDGET_YEAR_NOT_FOUND = "The Budget Year can not be found.";
@@ -38,6 +39,10 @@ function getAllBudgetYear() {
     return dbBudget.getAllBudgetYear();
 }
 
+function getAllByRequireDynamicForm(){
+    return dbBudget.getAllByRequireDynamicForm();
+}
+
 function getDefaultBudgetYear() {
     var arrBy = getAllBudgetYear();
 
@@ -68,14 +73,42 @@ function insertBudgetYear(budgetYear, userId) {
     if (Number(budgetYear.DEFAULT_YEAR))
         dbBudget.resetAllBudgetYearDefaultYear(0, userId);
 
-    return dbBudget.insertBudgetYear(budgetYear.BUDGET_YEAR, budgetYear.START_DATE, budgetYear.END_DATE, Number(budgetYear.DEFAULT_YEAR), budgetYear.DESCRIPTION, budgetYear.VERSIONED_START_DATE, budgetYear.VERSIONED_END_DATE, userId);
+    var budgetYearId = dbBudget.insertBudgetYear(budgetYear.BUDGET_YEAR,
+                                     budgetYear.START_DATE,
+                                     budgetYear.END_DATE,
+                                     Number(budgetYear.DEFAULT_YEAR),
+                                     budgetYear.DESCRIPTION,
+                                     budgetYear.VERSIONED_START_DATE,
+                                     budgetYear.VERSIONED_END_DATE,
+                                     budgetYear.REQUIRE_DYNAMIC_FORM,
+                                     userId);
+
+    // If it is checked -> Insert default forms in all Roles.
+    if(Number(budgetYear.REQUIRE_DYNAMIC_FORM) === 1){
+        dynamicFormLib.setDefaultDynamicFormByBudgetYearId(budgetYearId, userId);
+    }
+    return budgetYearId;
+}
+
+function getRequireDynamicFormByBudgetYearId(budgetYearId){
+    return dbBudget.getRequireDynamicFormByBudgetYearId(budgetYearId);
 }
 
 function updateBudgetYear(budgetYear, userId) {
     budgetYear = uiToServerParser(budgetYear);
 
-    //if (!budgetYear.BUDGET_YEAR_ID)
-    //	throw ErrorLib.getErrors().CustomError("", "budgetYearServices/handlePut/updateBudgetYear", BUDGET_YEAR_NOT_FOUND);
+    var currentRequireDynamicForm = getRequireDynamicFormByBudgetYearId(budgetYear.BUDGET_YEAR_ID);
+
+    //If the "Require Dynamic Form" checkbox have changed, then:
+    // If it is checked -> Insert default forms in all Roles.
+    // If it is not checked -> proceed to delete all the relations with that budget year.
+    if(Number(currentRequireDynamicForm.REQUIRE_DYNAMIC_FORM) !== Number(budgetYear.REQUIRE_DYNAMIC_FORM)){
+        if(Number(budgetYear.REQUIRE_DYNAMIC_FORM) === 1){
+            dynamicFormLib.setDefaultDynamicFormByBudgetYearId(budgetYear.BUDGET_YEAR_ID, userId);
+        }else{
+            dynamicFormLib.deleteDynamicFormRoleByBudgetYearId(budgetYear.BUDGET_YEAR_ID, userId);
+        }
+    }
 
     validate(budgetYear);
 
@@ -84,7 +117,17 @@ function updateBudgetYear(budgetYear, userId) {
 
     var ENABLE_CRM_CREATION = budgetYear.ENABLE_CRM_CREATION ? 1 : 0;
 
-    return dbBudget.updateBudgetYear(budgetYear.BUDGET_YEAR_ID, budgetYear.BUDGET_YEAR, budgetYear.START_DATE, budgetYear.END_DATE, Number(budgetYear.DEFAULT_YEAR), budgetYear.DESCRIPTION, ENABLE_CRM_CREATION, budgetYear.VERSIONED_START_DATE, budgetYear.VERSIONED_END_DATE, userId);
+    return dbBudget.updateBudgetYear(budgetYear.BUDGET_YEAR_ID,
+                                     budgetYear.BUDGET_YEAR,
+                                     budgetYear.START_DATE,
+                                     budgetYear.END_DATE,
+                                     Number(budgetYear.DEFAULT_YEAR),
+                                     budgetYear.DESCRIPTION,
+                                     ENABLE_CRM_CREATION,
+                                     budgetYear.VERSIONED_START_DATE,
+                                     budgetYear.VERSIONED_END_DATE,
+                                     budgetYear.REQUIRE_DYNAMIC_FORM,
+                                     userId);
 }
 
 function deleteBudgetYear(budgetYear, userId) {

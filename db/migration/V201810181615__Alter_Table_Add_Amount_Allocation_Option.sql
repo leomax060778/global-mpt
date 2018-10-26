@@ -1,0 +1,10 @@
+ALTER TABLE HL1_CATEGORY_OPTION ADD (AMOUNT_VALUE DECIMAL(19,6) NOT NULL DEFAULT 0);
+ALTER TABLE HL2_CATEGORY_OPTION ADD (AMOUNT_VALUE DECIMAL(19,6) NOT NULL DEFAULT 0);
+ALTER TABLE HL3_CATEGORY_OPTION ADD (AMOUNT_VALUE DECIMAL(19,6) NOT NULL DEFAULT 0);
+
+-- *************************************************************************************
+-- Update schema version
+INSERT INTO SCHEMA_VERSION(VERSION, DESCRIPTION, SCRIPT)
+VALUES('V5.0.0-169', 'New column AMOUNT_VALUE to persist the amount distribution', 'V201810181615__Alter_Table_Add_Amount_Allocation_Option.sql');
+
+COMMIT;

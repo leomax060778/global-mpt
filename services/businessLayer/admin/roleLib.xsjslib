@@ -6,6 +6,7 @@ var ErrorLib = mapper.getErrors();
 var util = mapper.getUtil();
 /** ********************************************** */
 
+/** GET **/
 function getAllRole() {
 	return data.getAllRole();
 }
@@ -13,7 +14,7 @@ function getAllRole() {
 function getRoleById(id) {
 	if (!id)
 		throw ErrorLib.getErrors().BadRequest("The parameter ID is not found",
-				"roleServices/handleGet/getRoleById", id);
+			"roleServices/handleGet/getRoleById", id);
 	return data.getRoleById(id);
 
 }
@@ -22,58 +23,73 @@ function getRoleByName(roleName){
 	var roles = getAllRole();
 	return roles.find(function(role){
 		if(role.NAME.toUpperCase() === roleName.trim().toUpperCase()) {
-		    return role
+			return role
 		};
 	});
 }
 
+function getDynamicFormAssociatedByRoleId(levelString, userRole){
+	return data.getDynamicFormAssociatedByRoleId(levelString, userRole);
+}
+
+function getDynamicFormAssociatedByRoleIdBudgetYearId(levelString, userRole, budgetYearId){
+	return data.getDynamicFormAssociatedByRoleIdBudgetYearId(levelString, userRole, budgetYearId);
+}
+
+/** INSERT **/
 function insertRole(role, createRole) {
 	if (validateRole(role)) {
 		return data.insertRole(role, createRole);
 	}
 }
 
+/** UPDATE **/
+
 function updateRole(role, updateRole) {
 	if (!role.ROLE_ID)
 		throw ErrorLib.getErrors().CustomError("",
-				"roleServices/handlePost/insertRole",
-				"The ROLE_ID is not found");
+			"roleServices/handlePost/insertRole",
+			"The ROLE_ID is not found");
 
 	if (!util.validateIsNumber(role.ROLE_ID))
 		throw ErrorLib.getErrors().CustomError("",
-				"roleServices/handlePost/insertRole", "The ROLE_ID is invalid");
+			"roleServices/handlePost/insertRole", "The ROLE_ID is invalid");
 
 	if (validateRole(role)) {
 		return data.updateRole(role, updateRole);
 	}
 }
 
+/** DELETE **/
+
 function deleteRole(role, deleteRole) {
 	if (!role.ROLE_ID)
 		throw ErrorLib.getErrors().CustomError("",
-				"roleServices/handlePost/insertRole",
-				"The ROLE_ID is not found");
+			"roleServices/handlePost/insertRole",
+			"The ROLE_ID is not found");
 
 	if (!util.validateIsNumber(role.ROLE_ID))
 		throw ErrorLib.getErrors().CustomError("",
-				"roleServices/handlePost/insertRole", "The ROLE_ID is invalid");
+			"roleServices/handlePost/insertRole", "The ROLE_ID is invalid");
 
 	return data.deleteRole(role, deleteRole);
 }
 
+/** VALIDATE **/
+
 function validateRole(role) {
 	if (!role)
 		throw ErrorLib.getErrors().CustomError("",
-				"roleServices/handlePost/insertRole", "Role is not found");
+			"roleServices/handlePost/insertRole", "Role is not found");
 
 	if (!role.NAME)
 		throw ErrorLib.getErrors().CustomError("",
-				"roleServices/handlePost/insertRole", "The NAME is not found");
+			"roleServices/handlePost/insertRole", "The NAME is not found");
 
 	if (!util.validateLength(role.NAME, 255, 1)
-			|| !util.validateIsString(role.NAME))
+		|| !util.validateIsString(role.NAME))
 		throw ErrorLib.getErrors().CustomError("",
-				"roleServices/handlePost/insertRole", "The NAME is invalid");
+			"roleServices/handlePost/insertRole", "The NAME is invalid");
 
 	return true;
 }

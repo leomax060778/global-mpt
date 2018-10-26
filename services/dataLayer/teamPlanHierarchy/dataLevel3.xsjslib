@@ -8,11 +8,14 @@ var ErrorLib = mapper.getErrors();
 var INS_HL3 = "INS_HL3";
 // var GET_HL3_BY_USER = "GET_HL3_BY_USER";
 var GET_HL3_BY_HL2_ID = "GET_HL3_BY_HL2_ID";
+var GET_HL3_ALLOCATION_SUMMARY = "GET_HL3_ALLOCATION_SUMMARY";
 var GET_HL3_PATH_BY_USER_ID = "GET_HL3_PATH_BY_USER_ID";
+var GET_HL3_PATH_BY_USER_ID_GLOBAL_REGION = "GET_HL3_PATH_BY_USER_ID_GLOBAL_REGION";
 var GET_HL3_KPI_SUMMARY = "GET_HL3_KPI_SUMMARY";
 var spGetHl3AllocatedBudget = "GET_HL3_ALLOCATED_BUDGET";
 var spGetHl3ForSerach = "GET_HL3_FOR_SEARCH";
 var UPD_HL3 = "UPD_HL3";
+var UPD_HL3_BUDGET = "UPD_HL3_BUDGET";
 var GET_HL3 = "GET_HL3";
 var GET_HL3_CARRY_OVER_BY_ID = "GET_HL3_CARRY_OVER_BY_ID";
 var GET_GLOBAL_TEAM = "GET_GLOBAL_TEAM";
@@ -81,6 +84,15 @@ function updateLevel3(hl3_id, acronym, description, business_owner_id, budget, i
 	return result;
 }
 
+function updateBudget(hl3Id,budget,userId) {
+    var parameters = {
+        in_hl3_id: hl3Id,
+        in_updated_budget: budget,
+        in_user_id: userId
+    };
+    return db.executeScalarManual(UPD_HL3_BUDGET, parameters, "out_result");
+}
+
 //Execute an Sp to retrieve HL3 data from HL2
 function getAllLevel3(objHl2, userId, isSA) {
 	var parameters = {};
@@ -95,6 +107,16 @@ function getAllLevel3(objHl2, userId, isSA) {
 	result.out_total_allocated = list.out_total_allocated;
 	result.out_remaining_budget = list.out_remaining_budget;
 	return result;
+}
+
+function getLobAllocationSummary(objHl2, userId, isSA) {
+	var parameters = {};
+	parameters.in_hl2_id = Number(objHl2) || objHl2.IN_HL2_ID;
+	parameters.in_user_id = userId;
+	parameters.in_is_super_Admin = isSA ? 1 : 0;
+
+	var list = db.executeProcedure(GET_HL3_ALLOCATION_SUMMARY, parameters);
+	return db.extractArray(list.out_result);
 }
 
 function getHl3KpiSummary(hl2Id, userId, isSA){
@@ -122,6 +144,17 @@ function getHl3PathByUserId(userId, isSA, budgetYearId, regionId, subRegionId) {
     };
 
     var list = db.executeProcedureManual(GET_HL3_PATH_BY_USER_ID, parameters);
+    return db.extractArray(list.out_result);
+}
+
+function getHl3ByPlanningPurpose(userId, isSA, budgetYearId) {
+    var parameters = {
+        in_user_id: userId,
+        in_is_super_Admin: isSA ? 1 : 0,
+        in_budget_year_id:  budgetYearId
+    };
+
+    var list = db.executeProcedureManual(GET_HL3_PATH_BY_USER_ID_GLOBAL_REGION, parameters);
     return db.extractArray(list.out_result);
 }
 
@@ -156,11 +189,11 @@ function getLevel3ByAcronym(acronym, hl2Id, userId) {
 	parameters.in_hl2_id = hl2Id;
 	var result = db.executeProcedureManual(GET_HL3_BY_ACRONYM, parameters);
 	var list = db.extractArray(result.out_result);
-	if(list.length)
+	if(list.length){
 		return list[0];
-	
-	else
+	}else{
 		return {};
+	}
 }
 
 function getGlobalTeams(userId) {

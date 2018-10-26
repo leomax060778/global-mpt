@@ -1,0 +1,208 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL5_ALL_CATEGORY_OPTION" (
+	IN in_hl_id BIGINT,
+	OUT out_result_aux2 TABLE (
+         category_id integer
+        , hl5_id integer
+        , category_name nvarchar(60)
+        , option_id integer
+        , option_name nvarchar(60)
+        , category_option_id integer
+        , category_option_level_id integer
+        , amount decimal(19,2)
+        , SINGLE_OPTION_ONLY TINYINT
+        , MAKE_CATEGORY_MANDATORY TINYINT
+        , UPDATED TINYINT
+        , CATEGORY_TYPE_ID integer
+        , OPTIONS_LIMIT integer
+        , amount_kpi decimal(19,2)
+        )
+)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	READS SQL DATA AS
+BEGIN
+---
+--- va_hl5_category_option: is the set of categories / options that were completed and saved by the user, including those configured in dynamic form
+---
+	va_hl5_category_option =
+	(SELECT
+	 ac.allocation_category_id as category_id
+	, hl5CO.hl5_id
+	, ac.name as category_name
+	, ao.allocation_option_id as option_id
+    , ao.name as option_name
+    , hl5CO.hl5_category_option_id as category_option_id
+	, hl5CO.allocation_category_option_level_id as category_option_level_id
+	, hl5CO.amount
+	, ac.SINGLE_OPTION_ONLY
+	, ACOL.MAKE_CATEGORY_MANDATORY
+	, hl5CO.UPDATED
+	, AC.CATEGORY_TYPE_ID
+	, ACOL.OPTIONS_LIMIT
+	, hl5CO.amount_kpi
+	FROM hl5_category_option hl5CO
+	inner join allocation_category_option_level ACOL on hl5CO.allocation_category_option_level_id = ACOL.allocation_category_option_level_id
+	AND ACOL.enabled = 1 AND ACOL.deleted = 0
+	inner join allocation_option ao on acol.allocation_option_id = ao.allocation_option_id
+	inner join allocation_category ac on ACOL.allocation_category_id = ac.allocation_category_id
+	WHERE hl5_id = in_hl_id
+	  AND hl5CO.enabled = 1
+	  AND hl5CO.deleted = 0)
+        UNION ALL
+	  (SELECT
+      	 ac.allocation_category_id as category_id
+      	, hl5CO.hl5_id
+      	, ac.name as category_name
+      	,ao.ALLOCATION_COUNTRY_CATEGORY_OPTION_ID as option_id
+          	, ao.name as option_name
+          	,hl5CO.HL5_COUNTRY_CATEGORY_OPTION_id as category_option_id
+      	, hl5CO.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_id as category_option_level_id
+      	, hl5CO.amount
+      	, ac.SINGLE_OPTION_ONLY
+      	, ACOL.MAKE_CATEGORY_MANDATORY
+      	, hl5CO.UPDATED
+      	, AC.CATEGORY_TYPE_ID
+      	, ACOL.OPTIONS_LIMIT
+      	, hl5CO.amount_kpi
+      	FROM HL5_COUNTRY_CATEGORY_OPTION hl5CO
+      	inner join ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL ACOL on hl5CO.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_id = ACOL.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_id
+      	AND ACOL.enabled = 1 AND ACOL.deleted = 0
+      	inner join ALLOCATION_COUNTRY_CATEGORY_OPTION ao on acol.ALLOCATION_COUNTRY_CATEGORY_OPTION_ID = ao.ALLOCATION_COUNTRY_CATEGORY_OPTION_ID
+      	inner join allocation_category ac on ACOL.allocation_category_id = ac.allocation_category_id
+      	WHERE hl5_id = in_hl_id
+      	  AND hl5CO.enabled = 1
+      	  AND hl5CO.deleted = 0);
+
+---
+--- va_allocation_category_option: is a auxiliar set that contains the configuration of all categories / options for level 5 without taking into account those configured in dynamicForm
+---
+	va_allocation_category_option =
+    (SELECT AC.ALLOCATION_CATEGORY_ID AS CATEGORY_ID
+    ,acol.ALLOCATION_CATEGORY_OPTION_LEVEL_ID
+    ,null as ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID
+    ,ACOL.HIERARCHY_LEVEL_ID
+    ,AC.MEASURE_ID
+    ,AC.NAME AS CATEGORY_NAME
+    ,AC.DESCRIPTION
+    ,ACOL.IN_PROCESSING_REPORT
+    ,AO.ALLOCATION_OPTION_ID AS OPTION_ID
+    ,AO.NAME AS OPTION_NAME
+    ,ACOL.make_category_mandatory
+    ,AC.SINGLE_OPTION_ONLY
+    ,AC.CATEGORY_TYPE_ID
+    ,ACOL.AVAILABLE_IN_EVENT_REQUEST
+    ,ACOL.OPTIONS_LIMIT
+    from allocation_category_option_level acol
+    inner join allocation_category ac on acol.allocation_category_id = ac.allocation_category_id
+    inner join allocation_option ao on acol.allocation_option_id = ao.allocation_option_id
+    where acol.hierarchy_level_id = 2
+    and ac.enabled = 1
+    and ac.deleted = 0
+    and ao.enabled = 1
+    and ao.deleted = 0
+    and acol.enabled = 1
+    and acol.deleted = 0
+    order by upper(ac.name), upper(ao.name))
+    UNION ALL
+    (
+        SELECT AC.ALLOCATION_CATEGORY_ID AS CATEGORY_ID
+            ,null as ALLOCATION_CATEGORY_OPTION_LEVEL_ID
+            ,acol.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID
+            ,ACOL.HIERARCHY_LEVEL_ID
+            ,AC.MEASURE_ID
+            ,AC.NAME AS CATEGORY_NAME
+            ,AC.DESCRIPTION
+            ,ACOL.IN_PROCESSING_REPORT
+            ,AO.ALLOCATION_COUNTRY_CATEGORY_OPTION_ID AS OPTION_ID
+            ,AO.NAME AS OPTION_NAME
+            ,ACOL.make_category_mandatory
+            ,AC.SINGLE_OPTION_ONLY
+            ,AC.CATEGORY_TYPE_ID
+            ,0 AS AVAILABLE_IN_EVENT_REQUEST
+            ,ACOL.OPTIONS_LIMIT
+            from ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL acol
+            inner join allocation_category ac on acol.allocation_category_id = ac.allocation_category_id
+            inner join ALLOCATION_COUNTRY_CATEGORY_OPTION ao on acol.ALLOCATION_COUNTRY_CATEGORY_OPTION_ID = ao.ALLOCATION_COUNTRY_CATEGORY_OPTION_ID
+            INNER JOIN ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_HL2 hl2_acol
+                on hl2_acol.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID = acol.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID
+                and hl2_acol.HL2_ID = (select hl3.hl2_id from "MKTG_PLANNING_TOOL"."HL5" hl5
+                                                       inner join "MKTG_PLANNING_TOOL"."HL4" hl4 on hl4.hl4_id = hl5.hl4_id
+                                                       inner join "MKTG_PLANNING_TOOL"."HL3" hl3 on hl3.hl3_id = hl4.hl3_id
+                                                       where hl5.hl5_id = in_hl_id)
+            where acol.hierarchy_level_id = 2
+            and ac.enabled = 1
+            and ac.deleted = 0
+            and ao.enabled = 1
+            and ao.deleted = 0
+            and acol.enabled = 1
+            and acol.deleted = 0
+            and hl2_acol.enabled = 1
+            and hl2_acol.deleted = 0
+            order by upper(ac.name), upper(ao.name)
+    );
+
+
+    out_result_aux = SELECT CATEGORY_ID
+    					, ALLOCATION_CATEGORY_OPTION_LEVEL_ID
+    					, ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID
+                        , HIERARCHY_LEVEL_ID
+                        , MEASURE_ID
+                        , CATEGORY_NAME
+                        , DESCRIPTION
+                        , IN_PROCESSING_REPORT
+                        , OPTION_ID
+                        , OPTION_NAME
+                        , make_category_mandatory
+                        , SINGLE_OPTION_ONLY
+                        , CATEGORY_TYPE_ID
+                        , AVAILABLE_IN_EVENT_REQUEST
+                        , OPTIONS_LIMIT
+                        FROM :va_allocation_category_option
+                         ORDER BY CATEGORY_NAME, OPTION_NAME;
+
+
+	 out_result =
+	        SELECT CATEGORY_ID
+                   , HL5_ID
+                   , CATEGORY_NAME
+                   , OPTION_ID
+                   , OPTION_NAME
+                   , CATEGORY_OPTION_ID
+                   , CATEGORY_OPTION_LEVEL_ID
+                   , AMOUNT
+                   , SINGLE_OPTION_ONLY
+                   , MAKE_CATEGORY_MANDATORY
+                   , UPDATED
+                   , CATEGORY_TYPE_ID
+                   , OPTIONS_LIMIT
+                   , amount_kpi
+            FROM :va_hl5_category_option
+             ORDER BY CATEGORY_NAME, OPTION_NAME;
+
+---
+--- out_result_aux2, is the final result: contains the union of the categories / options stored for an L5 and those that were not saved but that are part of the corresponding ones for the L5 level
+---
+    out_result_aux2 =
+    SELECT T2.CATEGORY_ID AS CATEGORY_ID
+    , T1.HL5_ID AS HL5_ID
+    , T2.CATEGORY_NAME
+    , CASE WHEN T1.OPTION_ID = T2.OPTION_ID THEN T1.OPTION_ID ELSE T2.OPTION_ID END AS OPTION_ID
+    , T2.OPTION_NAME AS OPTION_NAME
+    , CASE WHEN T1.OPTION_ID = T2.OPTION_ID THEN T1.CATEGORY_OPTION_ID ELSE NULL END AS CATEGORY_OPTION_ID
+    , CASE WHEN T1.OPTION_ID = T2.OPTION_ID THEN T1.CATEGORY_OPTION_LEVEL_ID ELSE T2.ALLOCATION_CATEGORY_OPTION_LEVEL_ID END AS CATEGORY_OPTION_LEVEL_ID
+    , CASE WHEN T1.OPTION_ID = T2.OPTION_ID THEN T1.AMOUNT ELSE (CASE WHEN T3.OPTION_ID = T2.OPTION_ID THEN T3.AMOUNT ELSE 0 END) END AS AMOUNT
+    , CASE WHEN T1.OPTION_ID = T2.OPTION_ID THEN T1.SINGLE_OPTION_ONLY ELSE T2.SINGLE_OPTION_ONLY END AS SINGLE_OPTION_ONLY
+    , CASE WHEN T1.OPTION_ID = T2.OPTION_ID THEN T1.MAKE_CATEGORY_MANDATORY ELSE T2.MAKE_CATEGORY_MANDATORY END AS MAKE_CATEGORY_MANDATORY
+    , CASE WHEN T1.OPTION_ID = T2.OPTION_ID THEN T1.UPDATED ELSE 0 END AS UPDATED
+    , CASE WHEN T1.OPTION_ID = T2.OPTION_ID THEN T1.CATEGORY_TYPE_ID ELSE T2.CATEGORY_TYPE_ID END AS CATEGORY_TYPE_ID
+    , CASE WHEN T1.OPTION_ID = T2.OPTION_ID THEN T1.OPTIONS_LIMIT ELSE T2.OPTIONS_LIMIT END AS OPTIONS_LIMIT
+    , CASE WHEN T1.OPTION_ID = T2.OPTION_ID THEN T1.AMOUNT_KPI ELSE (CASE WHEN T3.OPTION_ID = T2.OPTION_ID THEN T3.AMOUNT_KPI ELSE 0 END) END AS AMOUNT_KPI
+
+    FROM :out_result_aux T2
+    LEFT JOIN :out_result T1
+        on T1.CATEGORY_ID = T2.CATEGORY_ID and T2.ALLOCATION_CATEGORY_OPTION_LEVEL_ID = T1.CATEGORY_OPTION_LEVEL_ID
+   LEFT JOIN :out_result T3
+           on T3.CATEGORY_ID = T2.CATEGORY_ID and T2.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID = T3.CATEGORY_OPTION_LEVEL_ID;
+
+END;

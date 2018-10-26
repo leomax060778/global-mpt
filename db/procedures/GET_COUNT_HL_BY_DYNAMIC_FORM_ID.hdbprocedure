@@ -1,0 +1,31 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_COUNT_HL_BY_DYNAMIC_FORM_ID" (
+	IN in_dynamic_form_uid nvarchar(255),
+	IN in_hierarchy_level_id BIGINT,
+	OUT out_result BIGINT
+)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	READS SQL DATA AS
+BEGIN
+
+    IF in_hierarchy_level_id = 2 THEN
+        select count(HL5_ID) INTO out_result
+        from HL5
+        where hl5.DYNAMIC_FORM_ID in (select DYNAMIC_FORM_ID from DYNAMIC_FORM WHERE dynamic_form_uid = in_dynamic_form_uid);
+
+    ELSEIF in_hierarchy_level_id = 3 then
+        select count(HL6_ID) INTO out_result
+        from HL6
+        where hl6.DYNAMIC_FORM_ID in (select DYNAMIC_FORM_ID from DYNAMIC_FORM WHERE dynamic_form_uid = in_dynamic_form_uid);
+
+    ELSEIF in_hierarchy_level_id = 6 then
+        select count(HL1_ID) INTO out_result
+        from HL1
+
+        where (hl1.DYNAMIC_FORM_L5_UID = in_dynamic_form_uid
+            OR hl1.DYNAMIC_FORM_L6_UID = in_dynamic_form_uid);
+    ELSE
+    	select 0 INTO out_result from dummy;
+    END IF;
+END;

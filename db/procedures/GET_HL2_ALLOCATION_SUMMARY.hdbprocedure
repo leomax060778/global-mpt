@@ -1,0 +1,44 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL2_ALLOCATION_SUMMARY" (
+    IN in_hl1_id BIGINT
+    ,IN in_user_id BIGINT
+    ,IN in_is_super_Admin Tinyint
+    ,OUT out_result TABLE (
+							HL2_ID BIGINT
+                            , HL1_ID BIGINT
+                            , ORGANIZATION_ACRONYM NVARCHAR(25)
+                            , CRM_ID NVARCHAR(25)
+                            , ORGANIZATION_NAME NVARCHAR(255)
+                            , HL3_TOTAL_COUNT INTEGER
+                            , IS_LOCKED Tinyint
+                            , CATEGORY_NAME NVARCHAR(255)
+                            , OPTION_NAME NVARCHAR(255)
+                            , BUDGET_DISTRIBUTION_PERCENTAGE DECIMAL(19, 2)
+                            , BUDGET_DISTRIBUTION_AMOUNT DECIMAL(19, 2)
+                            , SUB_AMOUNT DECIMAL(19, 2)
+							 )
+)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	READS SQL DATA AS
+BEGIN
+
+	out_result = SELECT SUMMARY.HL2_ID AS hl2_id,
+                        SUMMARY.HL1_ID AS hl1_id,
+                        SUMMARY.L2_ACRONYM AS organization_acronym,
+                        "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BGY.BUDGET_YEAR, L1.ACRONYM, SUMMARY.L2_ACRONYM, '', '', '', '') AS CRM_ID,
+                        SUMMARY.L2_ORGANIZATION_NAME AS organization_name,
+                        SUMMARY.TOTAL_OF_PRIORITIES AS hl3_total_count,
+                        SUMMARY.IS_LOCKED,
+                        SUMMARY.CATEGORY_NAME,
+                        SUMMARY.OPTION_NAME,
+                        SUMMARY.BUDGET_DISTRIBUTION_PERCENTAGE,
+                        SUMMARY.BUDGET_DISTRIBUTION_AMOUNT,
+                        SUMMARY.SUB_AMOUNT
+                        FROM  "_SYS_BIC"."mktgplanningtool.db.data.views/CV_HL2_LOB_ALLOCATION_SUMMARY" SUMMARY
+                        INNER JOIN HL1 L1 on L1.hl1_id = in_hl1_id
+                        INNER JOIN BUDGET_YEAR BGY ON BGY.budget_year_id = L1.budget_year_id
+	WHERE SUMMARY.HL1_ID = in_hl1_id
+	  AND (in_is_super_Admin = 1 OR SUMMARY.HL2_ID IN (SELECT HL2_ID FROM HL2_USER WHERE USER_ID = in_user_id))
+    ORDER BY SUMMARY.L2_ACRONYM;
+END;

@@ -1,0 +1,31 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_DYNAMIC_FORM"
+(
+	 IN in_default_form tinyint,
+	 IN in_description nvarchar(255),
+	 IN in_hierarchy_level_id bigint,
+	 IN in_created_user_id bigint
+	,out out_result bigint
+)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL" AS
+BEGIN
+
+	INSERT INTO DYNAMIC_FORM
+	(
+    default_form,
+    description,
+    hierarchy_level_id,
+    dynamic_form_uid,
+    created_user_id
+	) VALUES
+	(
+    in_default_form,
+    in_description,
+    in_hierarchy_level_id,
+    (SELECT CAST(SYSUUID AS VARCHAR) AS "SYS_UNIQUE_NUMBER" FROM DUMMY),
+    in_created_user_id
+	);
+
+	SELECT TOP 1 CURRENT_IDENTITY_VALUE() INTO out_result FROM "MKTG_PLANNING_TOOL"."DYNAMIC_FORM";
+END;

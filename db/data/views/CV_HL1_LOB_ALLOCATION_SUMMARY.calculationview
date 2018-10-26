@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Calculation:scenario xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:Calculation="http://www.sap.com/ndb/BiModelCalculation.ecore" schemaVersion="2.3" id="CV_HL1_LOB_ALLOCATION_SUMMARY" applyPrivilegeType="ANALYTIC_PRIVILEGE" checkAnalyticPrivileges="true" defaultClient="$$client$$" defaultLanguage="$$language$$" hierarchiesSQLEnabled="false" translationRelevant="true" visibility="reportingEnabled" calculationScenarioType="SCRIPT_BASED" dataCategory="CUBE" enforceSqlExecution="false" executionSemantic="UNDEFINED" scriptParametersCaseSensitive="true">
+  <descriptions defaultDescription="CV_HL1_KPI_DATA"/>
+  <localVariables/>
+  <variableMappings/>
+  <informationModelLayout relativeWidthScenario="27"/>
+  <dataSources/>
+  <calculationViews>
+    <calculationView xsi:type="Calculation:SqlScriptView" id="Script_View">
+      <descriptions/>
+      <viewAttributes>
+        <viewAttribute datatype="BIGINT" id="HL1_ID"/>
+        <viewAttribute datatype="INTEGER" id="TOTAL_OF_PRIORITIES"/>
+        <viewAttribute datatype="NVARCHAR" id="L1_ACRONYM" length="255"/>
+        <viewAttribute datatype="NVARCHAR" id="BUDGET_YEAR" length="255"/>
+        <viewAttribute datatype="NVARCHAR" id="REGION_NAME" length="255"/>
+        <viewAttribute datatype="BIGINT" id="BUDGET_YEAR_ID"/>
+        <viewAttribute datatype="BIGINT" id="REGION_ID"/>
+        <viewAttribute datatype="TINYINT" id="IS_LOCKED"/>
+        <viewAttribute datatype="NVARCHAR" id="CATEGORY_NAME" length="255"/>
+        <viewAttribute datatype="NVARCHAR" id="OPTION_NAME" length="255"/>
+        <viewAttribute datatype="DECIMAL" id="BUDGET_DISTRIBUTION_PERCENTAGE" length="19" scale="2"/>
+        <viewAttribute datatype="DECIMAL" id="BUDGET_DISTRIBUTION_AMOUNT" length="19" scale="2"/>
+        <viewAttribute datatype="NVARCHAR" id="HL1_DESCRIPTION" length="255"/>
+        <viewAttribute datatype="DECIMAL" id="SUB_AMOUNT" length="19" scale="2"/>
+        <viewAttribute datatype="BIGINT" id="ALLOCATION_OPTION_ID"/>
+      </viewAttributes>
+      <calculatedViewAttributes/>
+      <definition>/********* Begin Procedure Script ************/
+BEGIN
+va_l2 = SELECT HL2.HL1_ID
+	, COUNT(HL2.HL2_ID) AS HL1_TOTAL_PRIORITIES
+	FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL2&quot; HL2
+	WHERE HL2.ENABLED = 1
+	AND HL2.DELETED = 0
+	GROUP BY HL2.HL1_ID;
+	
+va_l3 = SELECT HL2.HL1_ID, SUM(HL2_CO.AMOUNT_VALUE) AS SUB_AMOUNT, ACOL.ALLOCATION_OPTION_ID, AO.NAME
+ FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL2_CATEGORY_OPTION&quot; HL2_CO    	
+    LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_ALLOCATION_CATEGORY_OPTION_LEVEL&quot; ACOL
+    	ON HL2_CO.ALLOCATION_CATEGORY_OPTION_LEVEL_ID = ACOL.ALLOCATION_CATEGORY_OPTION_LEVEL_ID
+    LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_ALLOCATION_CATEGORY&quot; AC
+    	ON AC.ALLOCATION_CATEGORY_ID = ACOL.ALLOCATION_CATEGORY_ID
+    LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_ALLOCATION_OPTION&quot; AO
+    	ON AO.ALLOCATION_OPTION_ID = ACOL.ALLOCATION_OPTION_ID
+    LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL2&quot; HL2 ON HL2.HL2_ID = HL2_CO.HL2_ID
+    GROUP BY HL2.HL1_ID,ACOL.ALLOCATION_OPTION_ID,AO.NAME;
+
+var_out = select hl1.HL1_ID
+    , COALESCE(K.HL1_TOTAL_PRIORITIES,0) AS TOTAL_OF_PRIORITIES
+     , hl1.ACRONYM AS L1_ACRONYM
+     , budgetYear.BUDGET_YEAR
+     , IFNULL(region.REGION_NAME,'') AS REGION_NAME
+     , hl1.BUDGET_YEAR_ID
+     , hl1.REGION_ID
+     , (CASE WHEN budgetYear.VERSIONED_END_DATE >= CURRENT_TIMESTAMP THEN 0 ELSE 1 END) AS IS_LOCKED
+     , AC.NAME AS CATEGORY_NAME
+     , AO.NAME AS OPTION_NAME
+     , HL1_CO.AMOUNT AS BUDGET_DISTRIBUTION_PERCENTAGE
+     , HL1_CO.AMOUNT_VALUE AS BUDGET_DISTRIBUTION_AMOUNT
+     , hl1.DESCRIPTION AS hl1_description
+     , G.SUB_AMOUNT AS SUB_AMOUNT
+     , G.ALLOCATION_OPTION_ID
+    FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL1&quot; hl1
+    LEFT JOIN :va_l2 K ON K.HL1_ID = hl1.HL1_ID
+    LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL1_CATEGORY_OPTION&quot; HL1_CO
+    	ON HL1_CO.HL1_ID = hl1.HL1_ID and HL1_CO.AMOUNT > 0 AND HL1_CO.AMOUNT IS NOT NULL
+    LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_ALLOCATION_CATEGORY_OPTION_LEVEL&quot; ACOL
+    	ON HL1_CO.ALLOCATION_CATEGORY_OPTION_LEVEL_ID = ACOL.ALLOCATION_CATEGORY_OPTION_LEVEL_ID
+    LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_ALLOCATION_CATEGORY&quot; AC
+    	ON AC.ALLOCATION_CATEGORY_ID = ACOL.ALLOCATION_CATEGORY_ID
+    LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_ALLOCATION_OPTION&quot; AO
+    	ON AO.ALLOCATION_OPTION_ID = ACOL.ALLOCATION_OPTION_ID
+    LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_BUDGET_YEAR&quot; budgetYear
+        ON budgetYear.BUDGET_YEAR_ID = hl1.BUDGET_YEAR_ID
+    LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_REGION&quot; region
+        ON region.REGION_ID = hl1.REGION_ID
+    LEFT JOIN :va_l3 G ON (G.HL1_ID = hl1.HL1_ID  AND G.ALLOCATION_OPTION_ID = AO.ALLOCATION_OPTION_ID)
+    where hl1.DELETED = 0 AND hl1.ENABLED = 1
+    ORDER BY budgetYear.BUDGET_YEAR
+    , hl1.ACRONYM;
+END /********* End Procedure Script ************/</definition>
+    </calculationView>
+  </calculationViews>
+  <logicalModel id="Script_View">
+    <descriptions/>
+    <attributes>
+      <attribute id="HL1_ID" order="1">
+        <descriptions defaultDescription="HL1_ID"/>
+        <keyMapping columnObjectName="Script_View" columnName="HL1_ID"/>
+      </attribute>
+      <attribute id="L1_ACRONYM" order="3">
+        <descriptions defaultDescription="L1_ACRONYM"/>
+        <keyMapping columnObjectName="Script_View" columnName="L1_ACRONYM"/>
+      </attribute>
+      <attribute id="BUDGET_YEAR" order="4">
+        <descriptions defaultDescription="BUDGET_YEAR"/>
+        <keyMapping columnObjectName="Script_View" columnName="BUDGET_YEAR"/>
+      </attribute>
+      <attribute id="REGION_NAME" order="5">
+        <descriptions defaultDescription="REGION_NAME"/>
+        <keyMapping columnObjectName="Script_View" columnName="REGION_NAME"/>
+      </attribute>
+      <attribute id="CATEGORY_NAME" order="9">
+        <descriptions defaultDescription="CATEGORY_NAME"/>
+        <keyMapping columnObjectName="Script_View" columnName="CATEGORY_NAME"/>
+      </attribute>
+      <attribute id="OPTION_NAME" order="10">
+        <descriptions defaultDescription="OPTION_NAME"/>
+        <keyMapping columnObjectName="Script_View" columnName="OPTION_NAME"/>
+      </attribute>
+      <attribute id="HL1_DESCRIPTION" order="13">
+        <descriptions defaultDescription="HL1_DESCRIPTION"/>
+        <keyMapping columnObjectName="Script_View" columnName="HL1_DESCRIPTION"/>
+      </attribute>
+    </attributes>
+    <calculatedAttributes/>
+    <privateDataFoundation>
+      <tableProxies/>
+      <joins/>
+      <layout>
+        <shapes/>
+      </layout>
+    </privateDataFoundation>
+    <baseMeasures>
+      <measure id="TOTAL_OF_PRIORITIES" order="2" aggregationType="sum" measureType="simple">
+        <descriptions defaultDescription="TOTAL_OF_PRIORITIES"/>
+        <measureMapping columnObjectName="Script_View" columnName="TOTAL_OF_PRIORITIES"/>
+      </measure>
+      <measure id="BUDGET_YEAR_ID" order="6" aggregationType="sum" measureType="simple">
+        <descriptions defaultDescription="BUDGET_YEAR_ID"/>
+        <measureMapping columnObjectName="Script_View" columnName="BUDGET_YEAR_ID"/>
+      </measure>
+      <measure id="REGION_ID" order="7" aggregationType="sum" measureType="simple">
+        <descriptions defaultDescription="REGION_ID"/>
+        <measureMapping columnObjectName="Script_View" columnName="REGION_ID"/>
+      </measure>
+      <measure id="IS_LOCKED" order="8" aggregationType="sum" measureType="simple">
+        <descriptions defaultDescription="IS_LOCKED"/>
+        <measureMapping columnObjectName="Script_View" columnName="IS_LOCKED"/>
+      </measure>
+      <measure id="BUDGET_DISTRIBUTION_PERCENTAGE" order="11" aggregationType="sum" measureType="simple">
+        <descriptions defaultDescription="BUDGET_DISTRIBUTION_PERCENTAGE"/>
+        <measureMapping columnObjectName="Script_View" columnName="BUDGET_DISTRIBUTION_PERCENTAGE"/>
+      </measure>
+      <measure id="BUDGET_DISTRIBUTION_AMOUNT" order="12" aggregationType="sum" measureType="simple">
+        <descriptions defaultDescription="BUDGET_DISTRIBUTION_AMOUNT"/>
+        <measureMapping columnObjectName="Script_View" columnName="BUDGET_DISTRIBUTION_AMOUNT"/>
+      </measure>
+      <measure id="SUB_AMOUNT" order="14" aggregationType="sum" measureType="simple">
+        <descriptions defaultDescription="SUB_AMOUNT"/>
+        <measureMapping columnObjectName="Script_View" columnName="SUB_AMOUNT"/>
+      </measure>
+      <measure id="ALLOCATION_OPTION_ID" order="15" aggregationType="sum" measureType="simple">
+        <descriptions defaultDescription="ALLOCATION_OPTION_ID"/>
+        <measureMapping columnObjectName="Script_View" columnName="ALLOCATION_OPTION_ID"/>
+      </measure>
+    </baseMeasures>
+    <calculatedMeasures/>
+    <restrictedMeasures/>
+    <localDimensions/>
+  </logicalModel>
+  <layout>
+    <shapes>
+      <shape modelObjectName="Output" modelObjectNameSpace="MeasureGroup">
+        <upperLeftCorner x="40" y="85"/>
+      </shape>
+    </shapes>
+  </layout>
+</Calculation:scenario>

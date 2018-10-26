@@ -4,6 +4,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_ROLE_PERMISS
 	IN in_permission_id bigint,
 	IN in_enabled tinyint,
 	IN in_created_user_id bigint,
+	IN in_enable_create tinyint,
 	OUT out_role_permission_id bigint
 ) 
 	LANGUAGE SQLSCRIPT
@@ -14,8 +15,8 @@ BEGIN
 	Write your procedure logic 
  *****************************/
  
- 	INSERT INTO "MKTG_PLANNING_TOOL"."ROLE_PERMISSION"(role_id, resource_id, permission_id, enabled, created_user_id) 
- 	VALUES(in_role_id, in_resource_id, in_permission_id, in_enabled, in_created_user_id);
+ 	INSERT INTO "MKTG_PLANNING_TOOL"."ROLE_PERMISSION"(role_id, resource_id, permission_id, enabled, created_user_id, enable_create)
+ 	VALUES(in_role_id, in_resource_id, in_permission_id, in_enabled, in_created_user_id, in_enable_create);
 
 	SELECT TOP 1 CURRENT_IDENTITY_VALUE() INTO out_role_permission_id FROM "MKTG_PLANNING_TOOL"."ROLE_PERMISSION";
 

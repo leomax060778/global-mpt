@@ -209,6 +209,32 @@ function getErrors(){
             e.code+" -stack:"+e.stack+" -details:"+e.details};
         return e;
     };
+
+    Errors.DynamicFormError  = function(message,stack, details){
+        var errorList = "";
+        if(details && details.length){
+            details.forEach(function(item){
+                errorList = errorList + "<p>- "+item+"</p>";
+            });
+
+        }
+
+        var header = "<p>The following required fields cannot be found:</p>";
+        var footer = "<p>This is caused by an error in the form configuration.</p><p>Please contact the Administrator.</p>";
+
+        // var errorList = message;
+
+        var e={};
+        e.name = "Form Configuration Error";
+        e.message = message || "Form Configuration error.";
+        e.code = 460;
+        e.stack = stack || commonStack;
+        e.details = header+errorList+footer;
+        e.row = {};
+        e.toString = function (){return "name:"+e.name+" -message:"+e.message+" -code:"+
+            e.code+" -stack:"+e.stack+" -details:"+e.details};
+        return e;
+    };
     /******************* 500 **********************************************/
     Errors.InternalServerError  = function(message,stack, details){
     	var e={};
@@ -292,6 +318,7 @@ function getErrors(){
         '457':  Errors.ConfirmDelete(),
         '458':  Errors.CRMConstraintError(),
         '459':  Errors.ConstraintError(),
+        '460':  Errors.DynamicFormError(),
         '500':  Errors.InternalServerError(),
         '501':  Errors.NotImplemented(),
         '503':  Errors.ServiceUnavailable(),

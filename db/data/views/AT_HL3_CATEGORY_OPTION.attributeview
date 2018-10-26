@@ -31,6 +31,10 @@
       <descriptions defaultDescription="UPDATED"/>
       <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL3_CATEGORY_OPTION" columnName="UPDATED"/>
     </attribute>
+    <attribute id="AMOUNT_VALUE" order="8" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="AMOUNT_VALUE"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL3_CATEGORY_OPTION" columnName="AMOUNT_VALUE"/>
+    </attribute>
   </attributes>
   <calculatedAttributes/>
   <privateDataFoundation>

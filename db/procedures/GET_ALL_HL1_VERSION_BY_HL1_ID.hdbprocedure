@@ -10,8 +10,10 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_ALL_HL1_VERS
     ,region_id bigint
     ,crt_related tinyint
     ,implement_execution_level tinyint
+    ,planning_purpose_id bigint
+    ,planning_purpose_name nvarchar(255)
     ,team_type_id bigint
-    ,created_date_tz timestamp 
+    ,created_date_tz timestamp
     ,region_name nvarchar(255)
     ,budget_year integer
     ,path nvarchar(255)
@@ -34,6 +36,7 @@ hl1.hl1_id
 ,hl1.region_id
 ,hl1.crt_related
 ,hl1.implement_execution_level
+,hl1.planning_purpose_id
 ,hl1.team_type_id
 ,hl1.modified_date_tz as created_date_tz
 from hl1
@@ -51,6 +54,7 @@ hl1_version.hl1_id
 ,hl1_version.region_id
 ,hl1_version.crt_related
 ,hl1_version.implement_execution_level
+,hl1_version.planning_purpose_id
 ,hl1_version.team_type_id
 ,hl1_version.created_date_tz
 from hl1_version
@@ -66,6 +70,8 @@ out_result = select
     ,T.region_id
     ,T.crt_related
     ,T.implement_execution_level
+    ,T.planning_purpose_id
+    , PL.NAME AS planning_purpose_name
     ,T.team_type_id
     ,T.created_date_tz
     ,region.region_name
@@ -74,6 +80,7 @@ out_result = select
     from :AUX AS T
     LEFT JOIN REGION ON T.REGION_ID = REGION.REGION_ID
     LEFT JOIN BUDGET_YEAR ON BUDGET_YEAR.BUDGET_YEAR_ID = T.BUDGET_YEAR_ID
+    LEFT JOIN PLANNING_PURPOSE PL ON T.PLANNING_PURPOSE_ID = PL.PLANNING_PURPOSE_ID
     ORDER BY T.VERSION ASC;
 
 END;

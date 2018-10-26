@@ -79,7 +79,7 @@ function insertHl6(hl6CrmDescription,hl6Acronym,budget,hl5Id, routeToMarket
     , event_owner
     , number_of_participants
     , priority_id,co_funded,allow_budget_zero, is_power_user, employeeResponsible, personResponsible, is_complete
-    , autoCommit, imported,import_id, inherited_creation, parent_path, enable_crm_creation){
+    , autoCommit, imported,import_id, inherited_creation, parent_path, enable_crm_creation, dynamicFormId){
     var params = {
         'in_hl6_crm_description' : hl6CrmDescription,
         'in_acronym': hl6Acronym,
@@ -138,6 +138,7 @@ function insertHl6(hl6CrmDescription,hl6Acronym,budget,hl5Id, routeToMarket
         , 'in_inherited_creation' : inherited_creation ? 1 : 0
         ,  'in_parent_path' : parent_path || null
         , 'in_enable_crm_creation': enable_crm_creation
+        , 'in_dynamic_form_id': dynamicFormId || null
     };
 
     var rdo;

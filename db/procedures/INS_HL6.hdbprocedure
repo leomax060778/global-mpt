@@ -54,6 +54,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_HL6"
     , IN in_inherited_creation tinyint
     , IN in_parent_path nvarchar(255)
     , IN in_enable_crm_creation tinyint
+    , IN in_dynamic_form_id bigint
 	,OUT out_hl6_id bigint
 	) 
 	LANGUAGE SQLSCRIPT
@@ -116,6 +117,7 @@ BEGIN
 , inherited_creation
 , parent_path
 , enable_crm_creation
+, dynamic_form_id
 	)
 	VALUES (
  in_hl6_crm_description
@@ -172,6 +174,7 @@ BEGIN
 , in_inherited_creation
 , in_parent_path
 , in_enable_crm_creation
+, in_dynamic_form_id
 );
 	
 	SELECT TOP 1 CURRENT_IDENTITY_VALUE() INTO out_hl6_id FROM "MKTG_PLANNING_TOOL"."HL6";

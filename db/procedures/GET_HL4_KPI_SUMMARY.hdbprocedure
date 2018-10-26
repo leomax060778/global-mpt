@@ -1,0 +1,51 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL4_KPI_SUMMARY" (
+	 IN in_hl3_id BIGINT
+	,OUT out_result TABLE (
+		KPI_TYPE_NAME NVARCHAR(255)
+        , KPI_OPTION_NAME NVARCHAR(255)
+        , TOTAL_VALUE DECIMAL(19,2)
+        , TOTAL_VOLUME DECIMAL(19,2)
+        , TOTAL_VALUE_ALLOCATED DECIMAL(19,2)
+        , TOTAL_VOLUME_ALLOCATED DECIMAL(19,2)
+        , L4_ACRONYM NVARCHAR(255)
+        , CRM_ID NVARCHAR(25)
+        , HL4_DESCRIPTION NVARCHAR(255)
+        , HL4_ID BIGINT
+        , HL3_ID BIGINT
+        , IN_CRM_CHILD_HL5 INTEGER
+        , IN_CRM_CHILD_HL6 INTEGER
+        , STATUS_ID BIGINT
+        , CHILDREN_TOTAL_COUNT INTEGER
+        , STATUS_DETAIL NVARCHAR(255)
+		)
+) 
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER 
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	READS SQL DATA AS
+BEGIN
+	out_result = SELECT SUMMARY_VIEW.KPI_TYPE_NAME
+                         , SUMMARY_VIEW.KPI_OPTION_NAME
+                         , coalesce(SUMMARY_VIEW.TOTAL_VALUE,0) as TOTAL_VALUE
+                         , coalesce(SUMMARY_VIEW.TOTAL_VOLUME,0) as TOTAL_VOLUME
+                         , coalesce(SUMMARY_VIEW.TOTAL_VALUE_ALLOCATED,0) as TOTAL_VALUE_ALLOCATED
+                         , coalesce(SUMMARY_VIEW.TOTAL_VOLUME_ALLOCATED,0) as TOTAL_VOLUME_ALLOCATED
+                         , UPPER(SUMMARY_VIEW.L4_ACRONYM) as L4_ACRONYM
+                         , "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BGY.BUDGET_YEAR, HL1.ACRONYM, UPPER(HL2.ORGANIZATION_ACRONYM), HL3.ACRONYM, SUMMARY_VIEW.L4_ACRONYM, '', '') AS CRM_ID
+                         , SUMMARY_VIEW.HL4_DESCRIPTION
+                         , SUMMARY_VIEW.HL4_ID
+                         , SUMMARY_VIEW.HL3_ID
+                         , SUMMARY_VIEW.IN_CRM_CHILD_HL5
+                         , SUMMARY_VIEW.IN_CRM_CHILD_HL6
+                         , SUMMARY_VIEW.STATUS_ID
+                         , SUMMARY_VIEW.CHILDREN_TOTAL_COUNT
+                         , SUMMARY_VIEW.STATUS_DETAIL
+                         FROM "_SYS_BIC"."mktgplanningtool.db.data.views/CV_HL4_KPI_SUMMARY" SUMMARY_VIEW
+                         inner JOIN HL3 ON HL3.hl3_id = SUMMARY_VIEW.HL3_ID AND HL3.hl3_id = in_hl3_id
+                         inner JOIN HL2 ON HL2.hl2_id = hl3.hl2_id
+                         inner JOIN HL1 ON HL1.hl1_id = hl2.hl1_id
+                         inner JOIN BUDGET_YEAR BGY ON BGY.BUDGET_YEAR_ID = HL1.BUDGET_YEAR_ID
+	order by UPPER(SUMMARY_VIEW.L4_ACRONYM);
+
+END;
+

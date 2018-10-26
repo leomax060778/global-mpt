@@ -9,7 +9,7 @@ var InterlockLib = mapper.getInterlock();
 /** ***********END INCLUDE LIBRARIES*************** */
 
 function getAllRegions(fromExecutionLevel, partial) {
-	
+
 	var regionlist = dataRegion.getAllRegions();
     if(regionlist){
     	regionlist = JSON.parse(JSON.stringify(regionlist));
@@ -36,6 +36,51 @@ function getRegionSubregion(){
 	});
 
     return regions;
+}
+
+
+function getOnlyRegionSubregion() {
+
+    var toIterate = dataRegion.getOnlyRegionSubregion().OUT_RESULT;
+    var spResult = [];
+    Object.keys(toIterate).forEach(function(key) {
+        spResult.push(toIterate[key]);
+    });
+
+    var usedIds = [];
+
+    return spResult.reduce(function (result, currentValue, index, array) {
+        if (usedIds.find(function(value) {return currentValue.REGION_ID === value}))
+        {
+            return result;
+        }
+        var newValue = {
+            "REGION_ID": currentValue.REGION_ID,
+            "REGION_NAME": currentValue.REGION_NAME,
+            "REGION_ISO": currentValue.REGION_ISO,
+            "REGION_TIME_ZONE_OFFSET": currentValue.REGION_TIME_ZONE_OFFSET,
+            "REGION_START_TIME": currentValue.REGION_START_TIME,
+            "REGION_END_TIME": currentValue.REGION_END_TIME,
+            "IS_GLOBAL_REGION": currentValue.IS_GLOBAL_REGION,
+            "MARKET_UNIT" : []
+        };
+        usedIds.push(currentValue.REGION_ID);
+        result.push(
+            array.reduce(function(newValue, currentVal, indice, array){
+                if(newValue.REGION_ID === currentVal.REGION_ID){
+                    newValue.MARKET_UNIT.push({
+                        "SUBREGION_ID": currentVal.SUBREGION_ID,
+                        "SUBREGION_NAME": currentVal.SUBREGION_NAME,
+                        "SUBREGION_ISO": currentVal.SUBREGION_ISO
+                    })
+                }
+                return newValue;
+            }, newValue)
+        );
+
+        return result;
+
+    }, []);
 }
 
 function getRegionById(regionId) {

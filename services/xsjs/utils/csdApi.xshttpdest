@@ -1,0 +1,11 @@
+description = "CSD API XS HTTP Destination file";
+host = "csd-demo.sap-srs.projects.epam.com";
+port = 443;
+pathPrefix = "/rest/custom/1.0";
+proxyType = http;
+proxyHost = "proxy-trial";
+proxyPort = 8080;
+authType = none;
+useSSL = true;
+timeout = 0;
+sslAuth = client;

@@ -71,6 +71,10 @@
       <descriptions defaultDescription="BUDGET"/>
       <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL4" columnName="BUDGET"/>
     </attribute>
+    <attribute id="ENABLE_CRM_CREATION" order="18" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="ENABLE_CRM_CREATION"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL4" columnName="ENABLE_CRM_CREATION"/>
+    </attribute>
   </attributes>
   <calculatedAttributes/>
   <privateDataFoundation>

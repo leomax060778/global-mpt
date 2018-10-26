@@ -5,6 +5,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_REQUEST_CATE
 	    CATEGORY_NAME NVARCHAR(255)
 	    , SERVICE_REQUEST_CATEGORY_ID BIGINT
 	    , OPTION_NAME NVARCHAR(255)
+	    , SERVICE_REQUEST_FORM_TYPE_ID INTEGER
 	    , SERVICE_REQUEST_CATEGORY_OPTION_LEVEL_ID BIGINT
 	    , IS_CHECKED TINYINT
         )
@@ -38,6 +39,7 @@ BEGIN
     out_result = SELECT SRC.NAME AS CATEGORY_NAME
                          , SRCOL.SERVICE_REQUEST_CATEGORY_ID
                          , SRO.NAME AS OPTION_NAME
+                         , SRO.SERVICE_REQUEST_FORM_TYPE_ID
                          , HL5_CO.SERVICE_REQUEST_CATEGORY_OPTION_LEVEL_ID
                          , HL5_CO.IS_CHECKED
                 FROM :va_hl5_category_option HL5_CO

@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Calculation:scenario xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:Calculation="http://www.sap.com/ndb/BiModelCalculation.ecore" schemaVersion="2.3" id="CV_HL4_KPI_SUMMARY" applyPrivilegeType="ANALYTIC_PRIVILEGE" checkAnalyticPrivileges="true" defaultClient="$$client$$" defaultLanguage="$$language$$" hierarchiesSQLEnabled="false" translationRelevant="true" visibility="reportingEnabled" calculationScenarioType="SCRIPT_BASED" dataCategory="CUBE" enforceSqlExecution="false" executionSemantic="UNDEFINED" scriptParametersCaseSensitive="true">
+  <descriptions defaultDescription="CV_HL1_KPI_DATA"/>
+  <localVariables/>
+  <variableMappings/>
+  <informationModelLayout relativeWidthScenario="27"/>
+  <dataSources/>
+  <calculationViews>
+    <calculationView xsi:type="Calculation:SqlScriptView" id="Script_View">
+      <descriptions/>
+      <viewAttributes>
+        <viewAttribute datatype="NVARCHAR" id="KPI_TYPE_NAME" length="255"/>
+        <viewAttribute datatype="NVARCHAR" id="KPI_OPTION_NAME" length="255"/>
+        <viewAttribute datatype="DECIMAL" id="TOTAL_VALUE" length="19" scale="2"/>
+        <viewAttribute datatype="DECIMAL" id="TOTAL_VOLUME" length="10" scale="2"/>
+        <viewAttribute datatype="DECIMAL" id="TOTAL_VALUE_ALLOCATED" length="19" scale="2"/>
+        <viewAttribute datatype="DECIMAL" id="TOTAL_VOLUME_ALLOCATED" length="10" scale="2"/>
+        <viewAttribute datatype="NVARCHAR" id="L4_ACRONYM" length="255"/>
+        <viewAttribute datatype="NVARCHAR" id="HL4_DESCRIPTION" length="255"/>
+        <viewAttribute datatype="BIGINT" id="HL4_ID"/>
+        <viewAttribute datatype="BIGINT" id="HL3_ID"/>
+        <viewAttribute datatype="INTEGER" id="IN_CRM_CHILD_HL5"/>
+        <viewAttribute datatype="INTEGER" id="IN_CRM_CHILD_HL6"/>
+        <viewAttribute datatype="INTEGER" id="CHILDREN_TOTAL_COUNT"/>
+        <viewAttribute datatype="BIGINT" id="STATUS_ID"/>
+        <viewAttribute datatype="NVARCHAR" id="STATUS_DETAIL" length="255"/>
+      </viewAttributes>
+      <calculatedViewAttributes/>
+      <definition>/********* Begin Procedure Script ************/ 
+BEGIN 
+    va_hl4 = SELECT eol.EXPECTED_OUTCOME_ID
+                    , eoT.NAME AS KPI_TYPE_NAME
+                 , eol.EXPECTED_OUTCOME_OPTION_ID
+                 , eoo.NAME AS KPI_OPTION_NAME
+                 , hl4_eod.EURO_VALUE AS TOTAL_VALUE
+                 , hl4_eod.AMOUNT_VALUE AS TOTAL_VOLUME
+                 , hl4.HL3_ID
+                 , hl4.HL4_ID
+                 , hl4.ACRONYM AS L4_ACRONYM
+                 , hl4.HL4_CRM_DESCRIPTION as HL4_DESCRIPTION
+                 , hl4.HL4_STATUS_DETAIL_ID
+                 FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL4&quot; hl4
+                 LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL4_EXPECTED_OUTCOMES&quot; hl4_eo
+                    ON hl4_eo.hl4_id = hl4.hl4_id AND hl4_eo.DELETED = 0 AND hl4_eo.ENABLED = 1
+                 LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL4_EXPECTED_OUTCOMES_DETAIL&quot; hl4_eod
+                    ON hl4_eo.HL4_EXPECTED_OUTCOMES_ID = hl4_eod.HL4_EXPECTED_OUTCOMES_ID
+                    AND hl4_eod.DELETED = 0 AND hl4_eod.ENABLED = 1
+                 LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_LEVEL&quot; eol
+                    ON hl4_eod.OUTCOMES_ID = eol.EXPECTED_OUTCOME_LEVEL_ID
+                    AND eol.HIERARCHY_LEVEL_ID = 1
+                 LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOMES&quot; eot
+                    ON eot.EXPECTED_OUTCOME_ID = eol.EXPECTED_OUTCOME_ID
+                 LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_OPTION&quot; eoo
+                    ON eoo.EXPECTED_OUTCOME_OPTION_ID = eol.EXPECTED_OUTCOME_OPTION_ID
+                 WHERE hl4.DELETED = 0 AND hl4.ENABLED = 1;
+    
+    va_hl5 = SELECT eol.EXPECTED_OUTCOME_ID
+                   , eol.EXPECTED_OUTCOME_OPTION_ID
+                   , SUM(COALESCE(hl5_eod.EURO_VALUE,0)) AS TOTAL_VALUE_ALLOCATED
+                   , SUM(COALESCE(hl5_eod.VOLUME_VALUE,0)) AS TOTAL_VOLUME_ALLOCATED
+                   , hl5.HL4_ID
+                   FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL5_EXPECTED_OUTCOMES&quot; hl5_eo
+                   INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL5&quot; hl5
+                   ON hl5_eo.hl5_id = hl5.hl5_id AND HL5.DELETED = 0 AND HL5.ENABLED = 1
+                   INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL5_EXPECTED_OUTCOMES_DETAIL&quot; hl5_eod
+                   ON hl5_eo.HL5_EXPECTED_OUTCOMES_ID = hl5_eod.HL5_EXPECTED_OUTCOMES_ID
+                   INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_LEVEL&quot; eol
+                   ON hl5_eod.OUTCOMES_ID = eol.EXPECTED_OUTCOME_LEVEL_ID
+                   and  eol.HIERARCHY_LEVEL_ID = 2
+                   WHERE hl5_eod.DELETED = 0 AND hl5_eod.ENABLED = 1
+                   --- This means that will be included those records that aren´t in Deleted In CRM ---
+					  AND HL5.HL5_STATUS_DETAIL_ID != 10
+                   GROUP BY eol.EXPECTED_OUTCOME_ID, eol.EXPECTED_OUTCOME_OPTION_ID, hl5.HL4_ID;
+                   
+va_count_hl5 = SELECT HL5.HL4_ID
+	, COUNT(HL5.HL5_ID) AS HL5_TOTAL_PRIORITIES
+	FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL5&quot; HL5
+	WHERE HL5.ENABLED = 1
+	AND HL5.DELETED = 0
+	--- This means that will be included those records that aren´t in Deleted In CRM ---
+	  AND HL5.HL5_STATUS_DETAIL_ID != 10
+	GROUP BY HL5.HL4_ID;
+	
+va_count_hl5_legacy = SELECT HL5.HL4_ID
+	, COUNT(HL5.HL5_LEGACY_ID) AS HL5_LEGACY_TOTAL_PRIORITIES
+	FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL5_LEGACY&quot; HL5
+	WHERE HL5.ENABLED = 1
+	AND HL5.DELETED = 0
+	--- This means that will be included those records that aren´t in Deleted In CRM ---
+	  AND HL5.HL5_STATUS_DETAIL_ID != 10
+	GROUP BY HL5.HL4_ID;
+	
+va_in_crm_chil_hl5 = SELECT count(HL5.HL5_ID) AS L5_IN_CRM, HL5.HL4_ID
+			            FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL5&quot; hl5
+			            WHERE HL5.HL5_STATUS_DETAIL_ID = 2
+			                OR HL5.HL5_STATUS_DETAIL_ID = 3
+			                OR HL5.HL5_STATUS_DETAIL_ID = 4
+			            GROUP BY HL5.HL4_ID;
+va_in_crm_chil_hl6 = SELECT count(HL6.HL6_ID) AS L6_IN_CRM, HL5.HL4_ID
+			            FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL6&quot; hl6
+			            INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL5&quot; hl5
+			                ON HL6.HL5_ID = HL5.HL5_ID
+			            WHERE HL6.HL6_STATUS_DETAIL_ID = 2
+			                OR HL6.HL6_STATUS_DETAIL_ID = 3
+			                OR HL6.HL6_STATUS_DETAIL_ID = 4
+			            GROUP BY HL5.HL4_ID;
+
+
+   var_out = SELECT hl4.KPI_TYPE_NAME
+                 , hl4.KPI_OPTION_NAME
+                 , hl4.TOTAL_VALUE AS TOTAL_VALUE
+                 , hl4.TOTAL_VOLUME AS TOTAL_VOLUME
+                 , hl5_eo.TOTAL_VALUE_ALLOCATED AS TOTAL_VALUE_ALLOCATED
+                 , hl5_eo.TOTAL_VOLUME_ALLOCATED AS TOTAL_VOLUME_ALLOCATED
+                 , hl4.L4_ACRONYM
+                 , hl4.HL4_DESCRIPTION
+                 , hl4.HL4_ID 
+                 , hl4.HL3_ID 
+                 , O.L5_IN_CRM AS IN_CRM_CHILD_HL5
+			     , Q.L6_IN_CRM AS IN_CRM_CHILD_HL6
+                 , COALESCE(K.HL5_TOTAL_PRIORITIES,0) + COALESCE(P.HL5_LEGACY_TOTAL_PRIORITIES,0) AS CHILDREN_TOTAL_COUNT
+                 , hl4.hl4_status_detail_id AS STATUS_ID
+			     , sd.detail  AS STATUS_DETAIL
+                 FROM :va_hl4 hl4
+				 INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL4_STATUS_DETAIL&quot; sd
+				 	ON sd.HL4_STATUS_DETAIL_ID = HL4.HL4_STATUS_DETAIL_ID
+                 LEFT JOIN :va_hl5 hl5_eo
+                 ON hl4.EXPECTED_OUTCOME_ID = hl5_eo.EXPECTED_OUTCOME_ID
+                 AND hl4.EXPECTED_OUTCOME_OPTION_ID = hl5_eo.EXPECTED_OUTCOME_OPTION_ID
+                 AND hl4.HL4_ID = hl5_eo.HL4_ID
+                 
+                 
+                 LEFT JOIN :va_count_hl5 K ON K.HL4_ID = hl4.HL4_ID
+				LEFT JOIN :va_count_hl5_legacy P ON P.HL4_ID = hl4.HL4_ID
+				LEFT JOIN :va_in_crm_chil_hl5 O ON O.HL4_ID = hl4.HL4_ID
+				LEFT JOIN :va_in_crm_chil_hl6 Q ON Q.HL4_ID = hl4.HL4_ID
+				
+				
+                 ORDER BY hl4.L4_ACRONYM, hl4.KPI_TYPE_NAME, hl4.KPI_OPTION_NAME;
+
+END /********* End Procedure Script ************/</definition>
+    </calculationView>
+  </calculationViews>
+  <logicalModel id="Script_View">
+    <descriptions/>
+    <attributes>
+      <attribute id="KPI_TYPE_NAME" order="1">
+        <descriptions defaultDescription="COL"/>
+        <keyMapping columnObjectName="Script_View" columnName="KPI_TYPE_NAME"/>
+      </attribute>
+      <attribute id="KPI_OPTION_NAME" order="2">
+        <descriptions/>
+        <keyMapping columnObjectName="Script_View" columnName="KPI_OPTION_NAME"/>
+      </attribute>
+      <attribute id="TOTAL_VALUE" order="3">
+        <descriptions/>
+        <keyMapping columnObjectName="Script_View" columnName="TOTAL_VALUE"/>
+      </attribute>
+      <attribute id="TOTAL_VOLUME" order="4">
+        <descriptions/>
+        <keyMapping columnObjectName="Script_View" columnName="TOTAL_VOLUME"/>
+      </attribute>
+      <attribute id="L4_ACRONYM" order="7">
+        <descriptions/>
+        <keyMapping columnObjectName="Script_View" columnName="L4_ACRONYM"/>
+      </attribute>
+      <attribute id="HL4_DESCRIPTION" order="8">
+        <descriptions defaultDescription="HL3_DESCRIPTION"/>
+        <keyMapping columnObjectName="Script_View" columnName="HL4_DESCRIPTION"/>
+      </attribute>
+      <attribute id="HL4_ID" order="9">
+        <descriptions/>
+        <keyMapping columnObjectName="Script_View" columnName="HL4_ID"/>
+      </attribute>
+      <attribute id="STATUS_DETAIL" order="15">
+        <descriptions defaultDescription="STATUS_DETAIL"/>
+        <keyMapping columnObjectName="Script_View" columnName="STATUS_DETAIL"/>
+      </attribute>
+    </attributes>
+    <calculatedAttributes/>
+    <privateDataFoundation>
+      <tableProxies/>
+      <joins/>
+      <layout>
+        <shapes/>
+      </layout>
+    </privateDataFoundation>
+    <baseMeasures>
+      <measure id="TOTAL_VALUE_ALLOCATED" order="5" aggregationType="sum" measureType="simple">
+        <descriptions/>
+        <measureMapping columnObjectName="Script_View" columnName="TOTAL_VALUE_ALLOCATED"/>
+      </measure>
+      <measure id="TOTAL_VOLUME_ALLOCATED" order="6" aggregationType="sum" measureType="simple">
+        <descriptions/>
+        <measureMapping columnObjectName="Script_View" columnName="TOTAL_VOLUME_ALLOCATED"/>
+      </measure>
+      <measure id="HL3_ID" order="10" aggregationType="sum" measureType="simple">
+        <descriptions/>
+        <measureMapping columnObjectName="Script_View" columnName="HL3_ID"/>
+      </measure>
+      <measure id="IN_CRM_CHILD_HL5" order="11" aggregationType="sum" measureType="simple">
+        <descriptions defaultDescription="IN_CRM_CHILD_HL5"/>
+        <measureMapping columnObjectName="Script_View" columnName="IN_CRM_CHILD_HL5"/>
+      </measure>
+      <measure id="IN_CRM_CHILD_HL6" order="12" aggregationType="sum" measureType="simple">
+        <descriptions defaultDescription="IN_CRM_CHILD_HL6"/>
+        <measureMapping columnObjectName="Script_View" columnName="IN_CRM_CHILD_HL6"/>
+      </measure>
+      <measure id="CHILDREN_TOTAL_COUNT" order="13" aggregationType="sum" measureType="simple">
+        <descriptions defaultDescription="CHILDREN_TOTAL_COUNT"/>
+        <measureMapping columnObjectName="Script_View" columnName="CHILDREN_TOTAL_COUNT"/>
+      </measure>
+      <measure id="STATUS_ID" order="14" aggregationType="sum" measureType="simple">
+        <descriptions defaultDescription="STATUS_ID"/>
+        <measureMapping columnObjectName="Script_View" columnName="STATUS_ID"/>
+      </measure>
+    </baseMeasures>
+    <calculatedMeasures/>
+    <restrictedMeasures/>
+    <localDimensions/>
+  </logicalModel>
+  <layout>
+    <shapes>
+      <shape modelObjectName="Output" modelObjectNameSpace="MeasureGroup">
+        <upperLeftCorner x="40" y="85"/>
+      </shape>
+    </shapes>
+  </layout>
+</Calculation:scenario>

@@ -1,0 +1,22 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::UPD_PLANNING_PURPOSE" (
+    IN in_planning_purpose_id BIGINT,
+    IN in_name NVARCHAR(255),
+    IN in_team_type_id BIGINT,
+    IN in_modified_user_id BIGINT,
+    OUT out_result BIGINT
+)
+LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	AS
+BEGIN
+    UPDATE "MKTG_PLANNING_TOOL"."PLANNING_PURPOSE"
+    SET
+        name =  in_name,
+        team_type_id = in_team_type_id,
+        modified_user_id = in_modified_user_id,
+        modified_date_tz = CURRENT_TIMESTAMP
+    WHERE planning_purpose_id = in_planning_purpose_id;
+
+    SELECT ::ROWCOUNT INTO out_result FROM DUMMY;
+END;

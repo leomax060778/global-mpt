@@ -73,39 +73,42 @@ function getCategoryInUseByCategoryId(categoryId){
 
 }
 
-function getCategoryOptionByHierarchyLevelId(hierarchy_level_id, hl4Id, fromEventRequest){
+function getCategoryOptionByHierarchyLevelId(hierarchy_level_id, hl4Id, fromEventRequest, fromDynamicForm){
     var hl2 = hl4Id ? dataHl2.getHl2ByHl4Id(hl4Id) : {};
+
 	var spResult = dbCategory.getCategoryOptionByHierarchyLevelId(hierarchy_level_id, hl2.HL2_ID || 0, fromEventRequest || 0);
 	
 	var result = {};
     spResult.forEach(function(categoryOption){
-        if(!result[categoryOption.CATEGORY_NAME]){
-            result[categoryOption.CATEGORY_NAME] = {
-                CATEGORY_NAME: categoryOption.CATEGORY_NAME,
-                CATEGORY_ID: categoryOption.CATEGORY_ID
-                , MAKE_CATEGORY_MANDATORY: categoryOption.MAKE_CATEGORY_MANDATORY
-				, SINGLE_OPTION_ONLY: categoryOption.SINGLE_OPTION_ONLY
-                , CATEGORY_TYPE_ID: categoryOption.CATEGORY_TYPE_ID
-                , OPTIONS_LIMIT: categoryOption.OPTIONS_LIMIT || OPTIONS_LIMIT_DEFAULT
-                , OPTIONS: [{
+        if(fromDynamicForm || !Number(categoryOption.HIDDEN)) {
+            if (!result[categoryOption.CATEGORY_NAME]) {
+                result[categoryOption.CATEGORY_NAME] = {
+                    CATEGORY_NAME: categoryOption.CATEGORY_NAME,
+                    CATEGORY_ID: categoryOption.CATEGORY_ID
+                    , MAKE_CATEGORY_MANDATORY: categoryOption.MAKE_CATEGORY_MANDATORY
+                    , SINGLE_OPTION_ONLY: categoryOption.SINGLE_OPTION_ONLY
+                    , CATEGORY_TYPE_ID: categoryOption.CATEGORY_TYPE_ID
+                    , OPTIONS_LIMIT: categoryOption.OPTIONS_LIMIT || OPTIONS_LIMIT_DEFAULT
+                    , OPTIONS: [{
+                        OPTION_ID: categoryOption.OPTION_ID
+                        , OPTION_NAME: categoryOption.OPTION_NAME
+                        , CATEGORY_ID: categoryOption.CATEGORY_ID
+                        , CATEGORY_OPTION_LEVEL_ID: categoryOption.ALLOCATION_CATEGORY_OPTION_LEVEL_ID || null
+                        , MAKE_CATEGORY_MANDATORY: categoryOption.MAKE_CATEGORY_MANDATORY
+                        , SINGLE_OPTION_ONLY: categoryOption.SINGLE_OPTION_ONLY
+                    }]
+                };
+            } else {
+                result[categoryOption.CATEGORY_NAME].OPTIONS.push({
                     OPTION_ID: categoryOption.OPTION_ID
                     , OPTION_NAME: categoryOption.OPTION_NAME
                     , CATEGORY_ID: categoryOption.CATEGORY_ID
                     , CATEGORY_OPTION_LEVEL_ID: categoryOption.ALLOCATION_CATEGORY_OPTION_LEVEL_ID || null
                     , MAKE_CATEGORY_MANDATORY: categoryOption.MAKE_CATEGORY_MANDATORY
                     , SINGLE_OPTION_ONLY: categoryOption.SINGLE_OPTION_ONLY
-                }]
-            };
-		} else {
-            result[categoryOption.CATEGORY_NAME].OPTIONS.push({
-                OPTION_ID: categoryOption.OPTION_ID
-                , OPTION_NAME: categoryOption.OPTION_NAME
-                , CATEGORY_ID: categoryOption.CATEGORY_ID
-                , CATEGORY_OPTION_LEVEL_ID: categoryOption.ALLOCATION_CATEGORY_OPTION_LEVEL_ID || null
-                , MAKE_CATEGORY_MANDATORY: categoryOption.MAKE_CATEGORY_MANDATORY
-                , SINGLE_OPTION_ONLY: categoryOption.SINGLE_OPTION_ONLY
-            });
-		}
+                });
+            }
+        }
 	});
     return util.objectToArray(result);
 }

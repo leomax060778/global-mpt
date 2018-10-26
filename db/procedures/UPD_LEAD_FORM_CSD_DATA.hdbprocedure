@@ -1,0 +1,25 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::UPD_LEAD_FORM_CSD_DATA" (
+    IN in_lead_form_id BIGINT,
+    IN in_csd_self NVARCHAR(255),
+    IN in_csd_id BIGINT,
+    IN in_csd_key NVARCHAR(255),
+    IN in_modified_user_id BIGINT,
+    OUT out_result BIGINT
+)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	AS
+BEGIN
+    UPDATE "MKTG_PLANNING_TOOL"."LEAD_FORM"
+    SET
+            csd_self = in_csd_self,
+            csd_id = in_csd_id,
+            csd_key = in_csd_key,
+            modified_user_id = in_modified_user_id
+    WHERE lead_form_id = in_lead_form_id
+        AND enabled = 1
+        AND deleted = 0;
+
+    SELECT ::ROWCOUNT into out_result FROM DUMMY;
+END;
