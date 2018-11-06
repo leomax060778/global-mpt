@@ -1350,7 +1350,7 @@ function getCarryOverHl2CategoryOption(hl2_id) {
             category.OPTIONS.map(function (option) {
                 var hl2option = extractElementByList(hl2Cat.OPTIONS, "OPTION_ID", option.OPTION_ID);
                 option.AMOUNT = hl2option ? hl2option.AMOUNT : 0;
-                option.AMOUNT_VALUE = hl2option ? hl2option.AMOUNT_VALUE : 0;
+                option.AMOUNT_VALUE = 0;
                 return option;
             });
         }

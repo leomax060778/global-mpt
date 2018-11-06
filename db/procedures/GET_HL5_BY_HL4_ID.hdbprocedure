@@ -212,11 +212,11 @@ aux_out_result = SELECT
                                     HL5_STATUS_DETAIL_ID,
                                     CREATED_BY,
                                     HL5_BUDGET,
-                                    SUM(TOTAL_HL6) AS TOTAL_HL6,
-                                    SUM(QUANTITY_HL6_OUT_BUDGET) AS QUANTITY_HL6_OUT_BUDGET,
-                                    SUM(ALLOCATED) AS ALLOCATED,
-                                    SUM(REMAINING) AS REMAINING,
-                                    SUM(IN_CRM_CHILD) AS IN_CRM_CHILD,
+                                    TOTAL_HL6,
+                                    QUANTITY_HL6_OUT_BUDGET,
+                                    ALLOCATED,
+                                    REMAINING,
+                                    IN_CRM_CHILD,
                                     IMPORTED,
                                     ACRONYM,
                                     HL5_CRM_DESCRIPTION,
@@ -225,21 +225,7 @@ aux_out_result = SELECT
                                     ENABLE_CRM_CREATION,
                                     ALLOW_BUDGET_ZERO
                             FROM :va_legacy_with_children
-                            GROUP BY HL5_ID,
-                                    HL5_LEGACY_ID,
-                                    CRM_ID,
-                                    STATUS_DETAIL,
-                                    HL5_STATUS_DETAIL_ID,
-                                    CREATED_BY,
-                                    HL5_BUDGET,
-                                    IMPORTED,
-                                    ACRONYM,
-                                    HL5_CRM_DESCRIPTION,
-                                    PARENT_STATUS_ID,
-                                    IS_LEGACY,
-                                    ENABLE_CRM_CREATION,
-                                    ALLOW_BUDGET_ZERO
-                            )
+                           )
                            
                            UNION ALL
                            

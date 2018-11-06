@@ -1297,7 +1297,7 @@ function getCarryOverHl1CategoryOption(hl1_id) {
             category.OPTIONS.map(function (option) {
                 var hl1option = extractElementByList(hl1Cat.OPTIONS, "OPTION_ID", option.OPTION_ID);
                 option.AMOUNT = hl1option ? hl1option.AMOUNT : 0;
-                option.AMOUNT_VALUE = hl1option ? hl1option.AMOUNT_VALUE : 0;
+                option.AMOUNT_VALUE = 0;
                 return option;
             });
         }
