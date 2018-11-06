@@ -236,7 +236,9 @@ aux_out_result = SELECT
                                     ACRONYM,
                                     HL5_CRM_DESCRIPTION,
                                     PARENT_STATUS_ID,
-                                    IS_LEGACY
+                                    IS_LEGACY,
+                                    ENABLE_CRM_CREATION,
+                                    ALLOW_BUDGET_ZERO
                             )
                            
                            UNION ALL
