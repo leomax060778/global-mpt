@@ -24,6 +24,7 @@ var ERROR_CHANGE_DEFAULT_DYNAMIC_FORM = "Default form attribute must be always t
 var PARENT_IS_MISSING = "Parent was not found.";
 var WRONG_LEVEL = "Level not found.";
 var ERRROR_NO_ASSOCIATED_DYNAMIC_FORM = "There is no dynamic form associated with the user role.";
+var ERROR_BUDGET_DISTRIBUTION = "The My Budget distribution percentage should be equal to 100%.";
 
 var HIERARCHY_LEVEL = util.getHierarchyLevelEnum();
 
@@ -57,12 +58,22 @@ function getDynamicFormFieldsById(levelId, formUid, formId, isNewRecord, fromDyn
         // If the request was made from a new registry in Team Plan Hierarchy or it was made from an edition in Settings, then the formUid will exist and will be different from '0'
         if (formUid && formUid !== '0') {
             parsedResult = JSON.parse(JSON.stringify(dataDynamicForm.getDynamicFormDetailedByUid(formUid, levelId)));
+            if(parsedResult.DYNAMIC_FORM_MY_BUDGET.length){
+                for (var i = 0; i < parsedResult.DYNAMIC_FORMS_FIELDS_DETAIL.length; i++) {
+                    var formIdElement = parsedResult.DYNAMIC_FORMS_FIELDS_DETAIL[i].FIELD_NAME;
+                    if(formIdElement === 'MY_BUDGET'){
+                        parsedResult.DYNAMIC_FORMS_FIELDS_DETAIL[i].BUDGET_DISTRIBUTION = parsedResult.DYNAMIC_FORM_MY_BUDGET;
+                        break;
+                    }
+                }
+            }
         } else {
             // If formId does not exist and formUid is '0', then it means that tha request was made from Settings and was a New Dynamic Form
             var result = JSON.parse(JSON.stringify(dataDynamicForm.getAllDynamicFormFieldsByLevel(levelId)));
             parsedResult.DYNAMIC_FORMS_FIELDS_DETAIL = result.DYNAMIC_FIELDS;
             parsedResult.TAB_NAME = result.TAB_NAME;
             parsedResult.DYNAMIC_FORMS_ALLOCATION_DETAIL = [];
+            parsedResult.DYNAMIC_FORM_MY_BUDGET = [];
         }
     }
 
@@ -84,6 +95,15 @@ function getDynamicFormFieldsById(levelId, formUid, formId, isNewRecord, fromDyn
         // Creates an object with all the tabs names.
         form.TAB_NAME = tabDisplay;
 
+        if(parsedResult.DYNAMIC_FORM_MY_BUDGET.length){
+            for (var i = 0; i < parsedResult.DYNAMIC_FORMS_FIELDS_DETAIL.length; i++) {
+                var formIdElement = parsedResult.DYNAMIC_FORMS_FIELDS_DETAIL[i].FIELD_NAME;
+                if(formIdElement === 'MY_BUDGET'){
+                    parsedResult.DYNAMIC_FORMS_FIELDS_DETAIL[i].BUDGET_DISTRIBUTION = parsedResult.DYNAMIC_FORM_MY_BUDGET;
+                    break;
+                }
+            }
+        }
         // Creates the dynamic form field map
         form.DYNAMIC_FIELDS = dynamicFormMapCreator(
             parsedResult.DYNAMIC_FORMS_FIELDS_DETAIL,
@@ -270,6 +290,21 @@ function getFormByParentId(parentId, level, formId, isNewRecord, isLegacyParent)
         };
     }
 
+}
+
+//determines whether the dynamic form has hidden budget income
+function hiddenBudget(data) {
+    var result = false;
+    var objFieldList = data.DYNAMIC_FIELDS['BUDGET_SPEND_REQUEST'];
+
+    for (var i = 0; i < objFieldList.length; i++) {
+        var objField = objFieldList[i];
+        if(objField.FIELD_NAME === 'BUDGET'){
+            result = !!objField.HIDDEN;
+            break;
+        }
+    }
+    return result;
 }
 
 function getNewDynamicFormDefaultValue(data, dynamicFormId) {
@@ -470,6 +505,11 @@ function insertDynamicForm(data, userId) {
     if (data.HIERARCHY_LEVEL_ID == HIERARCHY_LEVEL.HL4 || data.HIERARCHY_LEVEL_ID == HIERARCHY_LEVEL.HL5 || data.HIERARCHY_LEVEL_ID == HIERARCHY_LEVEL.HL6) {
         // Allocation Category
         CreateDynamicFormAllocations(data, dynamicFormId, userId);
+
+        if(data.HIERARCHY_LEVEL_ID !== HIERARCHY_LEVEL.HL4){
+            CreateDynamicFormMyBudget(data, dynamicFormId, userId);
+        }
+
     }
 
     return dynamicFormId;
@@ -520,7 +560,6 @@ function CreateDynamicFormFieldsValues(data, dynamicFormId, userId) {
     var arrDynamicFormDefaultValue = [];
 
     arrDynamicFormDefaultValue = getNewDynamicFormDefaultValue(data, dynamicFormId);
-    //throw JSON.stringify(arrDynamicFormDefaultValue);
     if (arrDynamicFormDefaultValue.length)
         dataDynamicForm.insertDynamicFormDefaultValue(arrDynamicFormDefaultValue, userId);
 
@@ -554,6 +593,39 @@ function CreateDynamicFormAllocations(data, dynamicFormId, userId) {
 
         if (arrAllocation.length)
             dataDynamicForm.insertDynamicFormAllocation(arrAllocation, userId);
+    }
+    return 1;
+}
+
+function CreateDynamicFormMyBudget(data, dynamicFormId, userId) {
+    if(!hiddenBudget(data)){
+        if (data.DYNAMIC_FIELDS.BUDGET_DISTRIBUTION.length) {
+            var arrRegion = [];
+
+            var arrRegions = Object.keys(data.DYNAMIC_FIELDS.BUDGET_DISTRIBUTION).map(function (key) {
+                return data.DYNAMIC_FIELDS.BUDGET_DISTRIBUTION[key]
+            });
+
+            var distributionPercentage = 0;
+            if (arrRegions && arrRegions.length) {
+                for (var i = 0; i < arrRegions.length; i++) {
+                    var objDynamicFormMyBudget = {};
+                    var region = arrRegions[i];
+
+                    objDynamicFormMyBudget.DYNAMIC_FORM_ID = dynamicFormId;
+                    objDynamicFormMyBudget.REGION_ID = region.REGION_ID;
+                    objDynamicFormMyBudget.PERCENTAGE = Number(region.PERCENTAGE) || 0;
+                    distributionPercentage = distributionPercentage + objDynamicFormMyBudget.PERCENTAGE;
+                    arrRegion.push(objDynamicFormMyBudget);
+                }
+            }
+            if(distributionPercentage!==100) {
+                throw ErrorLib.getErrors().CustomError("", "", ERROR_BUDGET_DISTRIBUTION);
+            }
+
+            if (arrRegion.length)
+                dataDynamicForm.insertDynamicFormMyBudget(arrRegion, userId);
+        }
     }
     return 1;
 }
@@ -669,7 +741,7 @@ function performDelete(dynamicFormUIdToDelete, dynamicForm, userId) {
     var result;
     var count = 0;
 
-    if (dynamicFormUIdToDelete.HIERARCHY_LEVEL_ID == HIERARCHY_LEVEL.HL5 || dynamicFormUIdToDelete.HIERARCHY_LEVEL_ID == HIERARCHY_LEVEL.HL6) {
+    if (dynamicForm.HIERARCHY_LEVEL_ID == HIERARCHY_LEVEL.HL5 || dynamicForm.HIERARCHY_LEVEL_ID == HIERARCHY_LEVEL.HL6) {
         count = dataDynamicForm.countDynamicFormRelatedLevel(dynamicFormUIdToDelete, dynamicForm.HIERARCHY_LEVEL_ID);
     } else {
         count = dataDynamicForm.countDynamicFormRelatedRole(dynamicFormUIdToDelete);
@@ -822,6 +894,9 @@ function dynamicFormMapCreator(fieldList, selectedAllocationList, allocationList
                 break;
             case "PLANNING_PURPOSE_ID":
                 currentField.DISABLED_BY_PARENT = disableByParent;
+                break;
+            case "MY_BUDGET":
+                dynamicFormFieldsMap[formUid].BUDGET_DISTRIBUTION = field.BUDGET_DISTRIBUTION;
                 break;
         }
 

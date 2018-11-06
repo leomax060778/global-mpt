@@ -56,6 +56,17 @@ function getAllHL6ChangedFields(userId) {
     return utilReportLib.parseChangedFields("HL6", "HL6_ID", data.out_hl6_changed_fields, data.out_hl6_category_options, data.out_hl6, data.out_hl6_extra_fields);
 }
 
+function getL6CrmBindingFieldsByHl6Id(hl6Id) {
+    var sp_result = dataL6DER.getL6ChangedFieldsByHl6Id(hl6Id);
+    var mapL6CrmBindignFields = {};
+    for (var i = 0; i < sp_result.length; i++) {
+        var obj = sp_result[i];
+        mapL6CrmBindignFields[obj.COLUMN_NAME] = {};
+        mapL6CrmBindignFields[obj.COLUMN_NAME].HL6_CRM_BINDING_ID = obj.ID
+    }
+    return mapL6CrmBindignFields;
+}
+
 function getL6ChangedFieldsByHl6Id(hl6Id, userId) {
     var data = {
         "hl6": []

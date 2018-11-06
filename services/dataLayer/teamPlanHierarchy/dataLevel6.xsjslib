@@ -52,6 +52,7 @@ var spUpdateHl6CRMBinding = "UPD_HL6_CHANGED_FIELDS";
 var spGetHl6MyBudgetByHl6Id = "GET_HL6_BUDGET_BY_HL6_ID";
 var spGetHl6SalesByHl6Id = "GET_HL6_SALES_BY_ID";
 var spUpdateHl6Sale = "UPD_HL6_SALES";
+var UPD_HL6_BUDGET = "UPD_HL6_BUDGET";
 
 var spInsHl6Category = "INS_HL6_CATEGORY";
 var spInsHl6CategoryOption = "INS_HL6_CATEGORY_OPTION";
@@ -321,6 +322,16 @@ function updHl6ChangedFields(hl6IdCrmBinding,budgetStatus,columnName, changed,us
         rdo = db.executeScalarManual(spUpdateHl6CRMBinding,params,'out_result');
     }
     return db.extractArray(rdo);
+}
+
+function updateBudget(hl6Id,budget,allowBudgetZero,userId) {
+    var parameters = {
+        in_hl6_id: hl6Id,
+        in_updated_budget: budget,
+        in_allow_budget_zero: allowBudgetZero,
+        in_user_id: userId
+    };
+    return db.executeScalarManual(UPD_HL6_BUDGET, parameters, "out_result");
 }
 
 function delHl6Budget(hl6Id,modifiedUserId, autoCommit) {

@@ -22,6 +22,7 @@ var INS_DYNAMIC_FORM_TAB = "INS_DYNAMIC_FORM_TAB";
 var INS_DYNAMIC_FORM = "INS_DYNAMIC_FORM";
 var INS_DYNAMIC_FORM_ROLE = "INS_DYNAMIC_FORM_ROLE";
 var INS_DYNAMIC_FORM_ALLOCATIONS = "INS_DYNAMIC_FORM_ALLOCATIONS";
+var INS_DYNAMIC_FORM_MY_BUDGET_REGION = "INS_DYNAMIC_FORM_MY_BUDGET_REGION";
 var INS_DYNAMIC_FORM_UID = "INS_DYNAMIC_FORM_UID";
 
 var UPD_DEFAULT_DYNAMIC_FORM = "UPD_DEFAULT_DYNAMIC_FORM";
@@ -89,6 +90,7 @@ function getDynamicFormDetailedById(formId, levelId) {
     parsedResult.DYNAMIC_FORMS_FIELDS_DETAIL = db.extractArray(result.dynamic_forms_fields_detail);
     parsedResult.DYNAMIC_FORMS_ALLOCATION_DETAIL = db.extractArray(result.dynamic_forms_allocation_detail);
     parsedResult.TAB_NAME = db.extractArray(result.tab_name);
+    parsedResult.DYNAMIC_FORM_MY_BUDGET = db.extractArray(result.my_budget_distribution);
     return parsedResult;
 }
 
@@ -102,6 +104,7 @@ function getDynamicFormDetailedByUid(formUid, levelId) {
     parsedResult.DYNAMIC_FORMS_FIELDS_DETAIL = db.extractArray(result.dynamic_forms_fields_detail);
     parsedResult.DYNAMIC_FORMS_ALLOCATION_DETAIL = db.extractArray(result.dynamic_forms_allocation_detail);
     parsedResult.TAB_NAME = db.extractArray(result.tab_name);
+    parsedResult.DYNAMIC_FORM_MY_BUDGET = db.extractArray(result.my_budget_distribution);
     return parsedResult;
 }
 
@@ -182,6 +185,15 @@ function insertDynamicFormAllocation(dynamicFormAllocations, userId) {
     var rdo;
     rdo = db.executeScalarManual(INS_DYNAMIC_FORM_ALLOCATIONS, {
         dynamic_form_allocations_table: dynamicFormAllocations,
+        in_user_id: userId
+    }, 'out_result');
+    return rdo;
+}
+
+function insertDynamicFormMyBudget(dynamicFormMyBudget, userId) {
+    var rdo;
+    rdo = db.executeScalarManual(INS_DYNAMIC_FORM_MY_BUDGET_REGION, {
+        dynamic_form_my_budget_table: dynamicFormMyBudget,
         in_user_id: userId
     }, 'out_result');
     return rdo;

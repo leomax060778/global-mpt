@@ -278,9 +278,13 @@ function getHl3ByPlanningPurpose(userId, isSA, budgetYearId, generalFilter) {
                         CHILDREN: {}
                     }
                 }
-
+                /*
+                * The following commented code was committed because of Functional Teams - Remove extra field for L2.
+                * The idea is to preserve the logic but not apply it. This affects Product Marketing, Functional Teams,
+                * Communications and Business Services, Strategy and Culture tiles
+                * */
                 //Choose between L1 and Planning Purpose option
-                if (item.PLANNING_PURPOSE_OPTION_ID) {
+                /*if (item.PLANNING_PURPOSE_OPTION_ID) {
                     if (!collection[item.PLANNING_PURPOSE_ID].CHILDREN[item.PLANNING_PURPOSE_OPTION_ID]) {
                         collection[item.PLANNING_PURPOSE_ID].CHILDREN[item.PLANNING_PURPOSE_OPTION_ID] = {
                             PLANNING_PURPOSE_OPTION_ID: item.PLANNING_PURPOSE_OPTION_ID
@@ -303,7 +307,7 @@ function getHl3ByPlanningPurpose(userId, isSA, budgetYearId, generalFilter) {
                         PATH: item.HL3_PATH,
                         HL3_DESCRIPTION: item.HL3_DESCRIPTION
                     });
-                } else {
+                } else {*/
                     if (!collection[item.PLANNING_PURPOSE_ID].CHILDREN[item.HL1_ID]) {
                         collection[item.PLANNING_PURPOSE_ID].CHILDREN[item.HL1_ID] = {
                             HL1_ID: item.HL1_ID
@@ -327,7 +331,7 @@ function getHl3ByPlanningPurpose(userId, isSA, budgetYearId, generalFilter) {
                         PATH: item.HL3_PATH,
                         HL3_DESCRIPTION: item.HL3_DESCRIPTION
                     });
-                }
+                // }
             }
         });
     }

@@ -5,8 +5,6 @@ var dataHl2 = mapper.getDataLevel2();
 var dataHl1User = mapper.getDataLevel1User();
 var ErrorLib = mapper.getErrors();
 var util = mapper.getUtil();
-// var db = mapper.getdbHelper();
-// var blPath = mapper.getPath();
 var userbl = mapper.getUser();
 var userRoleLib = mapper.getUserRole();
 var config = mapper.getDataConfig();
@@ -44,7 +42,6 @@ var NO_L1_EXIST_IN_SELECTED_PLANNING_PURPOSE = "No Team exist under the selected
 var L1_CATEGORY_NOT_EMPTY = "Category cannot be empty.";
 var L1_CATEGORY_INCORRECT_NUMBER = "Incorrect number of categories.";
 var L1_CATEGORY_NOT_VALID = "Category is not valid.";
-// var L1_CATEGORY_OPTIONS_INCORRECT_NUMBER = "Incorrect number of options.";
 var L1_CATEGORY_OPTION_NOT_VALID = "Option is not valid.";
 var L1_CATEGORY_TOTAL_PERCENTAGE = "Budget Distribution should be equal to 100%.";
 var L1_BUDGET_ZERO_CATEGORY_TOTAL_PERCENTAGE_ZERO = "When Plan budget is zero then Category total percentage should be equal to 0%.";
@@ -109,21 +106,21 @@ function getLevel1ByFilters(budgetYearId, regionId, subRegionId, userId) {
     var rdo = {};
     list.forEach(function (item) {
         rdo[item.L1_LEVEL + item.L1_ACRONYM] = rdo[item.L1_LEVEL + item.L1_ACRONYM] || {
-            HL_ID: item.L1_ID,
-            BUDGET: item.L1_BUDGET,
-            BUDGET_PERCENTAGE: item.L1_BUDGET_PERCENTAGE,
-            BUDGET_REMAINING: item.L1_BUDGET_REMAINING,
-            CHILDREN_TOTAL_COUNT: item.L2_TOTAL_COUNT,
-            ACRONYM: item.L1_ACRONYM,
-            BUDGET_YEAR: item.BUDGET_YEAR,
-            CRM_ID: item.L1_CRM_ID,
-            IS_LOCKED: item.L1_IS_LOCKED,
-            BUDGET_ALLOCATED: item.L1_BUDGET_ALLOCATED,
-            DESCRIPTION: item.L1_DESCRIPTION,
-            VERSION: item.L1_VERSION,
-            HIERARCHY_LEVEL_ID: HIERARCHY_LEVEL[item.L1_LEVEL],
-            CHILDREN: {}
-        };
+                HL_ID: item.L1_ID,
+                BUDGET: item.L1_BUDGET,
+                BUDGET_PERCENTAGE: item.L1_BUDGET_PERCENTAGE,
+                BUDGET_REMAINING: item.L1_BUDGET_REMAINING,
+                CHILDREN_TOTAL_COUNT: item.L2_TOTAL_COUNT,
+                ACRONYM: item.L1_ACRONYM,
+                BUDGET_YEAR: item.BUDGET_YEAR,
+                CRM_ID: item.L1_CRM_ID,
+                IS_LOCKED: item.L1_IS_LOCKED,
+                BUDGET_ALLOCATED: item.L1_BUDGET_ALLOCATED,
+                DESCRIPTION: item.L1_DESCRIPTION,
+                VERSION: item.L1_VERSION,
+                HIERARCHY_LEVEL_ID: HIERARCHY_LEVEL[item.L1_LEVEL],
+                CHILDREN: {}
+            };
         if(item.L2_ACRONYM) {
             if (!rdo[item.L1_LEVEL + item.L1_ACRONYM].CHILDREN[item.L2_LEVEL + item.L2_ACRONYM]) {
                 rdo[item.L1_LEVEL + item.L1_ACRONYM].CHILDREN[item.L2_LEVEL + item.L2_ACRONYM] = {
@@ -200,26 +197,26 @@ function getLobAllocationSummary(budgetYearId, regionId, subRegionId, userId, is
     var result = {out_result: {}};
 
 
-        /*var isSA = false;
-        var result = {};
-        if (config.getApplySuperAdminToAllInitiatives()) {
-            isSA = userbl.isSuperAdmin(userId);
-        }*/
+    /*var isSA = false;
+     var result = {};
+     if (config.getApplySuperAdminToAllInitiatives()) {
+     isSA = userbl.isSuperAdmin(userId);
+     }*/
 
     var list = JSON.parse(JSON.stringify(dataHl1.getLevel1LobAllocationSummary(budgetYearId, regionId, subRegionId, userId, isSA)));
-        // result.out_result = {};
+    // result.out_result = {};
     list.forEach(function (row) {
         result.out_result[row.ACRONYM] = result.out_result[row.ACRONYM] || {
-            ACRONYM: row.ACRONYM,
-            BUDGET_YEAR: row.BUDGET_YEAR,
-            CRM_ID: row.CRM_ID,
-            HL1_DESCRIPTION: row.HL1_DESCRIPTION,
-            HL1_ID: row.HL1_ID,
-            HL2_TOTAL_COUNT: row.HL2_TOTAL_COUNT,
-            IS_LOCKED: row.IS_LOCKED,
-            HIERARCHY_LEVEL_ID: HIERARCHY_LEVEL.HL1,
-            CHILDREN: []
-        };
+                ACRONYM: row.ACRONYM,
+                BUDGET_YEAR: row.BUDGET_YEAR,
+                CRM_ID: row.CRM_ID,
+                HL1_DESCRIPTION: row.HL1_DESCRIPTION,
+                HL1_ID: row.HL1_ID,
+                HL2_TOTAL_COUNT: row.HL2_TOTAL_COUNT,
+                IS_LOCKED: row.IS_LOCKED,
+                HIERARCHY_LEVEL_ID: HIERARCHY_LEVEL.HL1,
+                CHILDREN: []
+            };
         if (row.BUDGET_DISTRIBUTION_AMOUNT) {
             result.out_result[row.ACRONYM].CHILDREN.push({
                 CATEGORY_NAME: row.CATEGORY_NAME,
@@ -251,15 +248,15 @@ function getLevel1Kpi(budgetYearId, regionId, userId) {
 
     listFromData.forEach(function (hl) {
         mapKpi[hl.L1_ACRONYM] = mapKpi[hl.L1_ACRONYM] || {
-            HL1_ID: hl.HL1_ID,
-            CRM_ID: hl.CRM_ID,
-            HL1_DESCRIPTION: hl.HL1_DESCRIPTION,
-            ACRONYM: hl.L1_ACRONYM,
-            BUDGET_YEAR: hl.BUDGET_YEAR,
-            REGION_NAME: hl.REGION_NAME,
-            IS_LOCKED: hl.IS_LOCKED,
-            HIERARCHY_LEVEL_ID: HIERARCHY_LEVEL.HL1
-        };
+                HL1_ID: hl.HL1_ID,
+                CRM_ID: hl.CRM_ID,
+                HL1_DESCRIPTION: hl.HL1_DESCRIPTION,
+                ACRONYM: hl.L1_ACRONYM,
+                BUDGET_YEAR: hl.BUDGET_YEAR,
+                REGION_NAME: hl.REGION_NAME,
+                IS_LOCKED: hl.IS_LOCKED,
+                HIERARCHY_LEVEL_ID: HIERARCHY_LEVEL.HL1
+            };
         var auxKpi = mapKpi[hl.L1_ACRONYM].kpi || [];
         if (hl.KPI_TYPE_NAME) {
             auxKpi.push({
@@ -444,7 +441,6 @@ function insertHl1FromUpload(data, userId) {
     return hl1_id;
 }
 
-//Insert new HL1 version based on the current HL1.
 function insertLevel1Version(currentHL1, userId) {
     //Insert the new version
     return dataHl1.insertLevel1Version(
@@ -486,8 +482,6 @@ function updateHl1(data, userId) {
 
 
     var hl1Id = data.HL1_ID;
-    var currentHL1 = dataHl1.getLevel1ById(data.HL1_ID);
-    currentHL1 = JSON.parse(JSON.stringify(currentHL1));
 
     var budgetChanged = Number(currentHL1.BUDGET) != Number(data.BUDGET);
 
@@ -731,9 +725,9 @@ function deleteHl1(hl1Id, userId) {
 function completeUsers(assignedUsers) {
     var id = config.getRoleEnum().SuperAdmin;
     /*var listUsers = [];
-    for (var j = 0; j < users.length; j++) {
-        listUsers.push(users[j].USER_ID);
-    }*/
+     for (var j = 0; j < users.length; j++) {
+     listUsers.push(users[j].USER_ID);
+     }*/
     var saUsers = userbl.getUserByRoleId(id);
 
     for (var i = 0; i < saUsers.length; i++) {
@@ -765,101 +759,12 @@ function notExistHl1UserInList(baseUsersIdsList, assignedUserId) {
         }
     }
     /*baseUsersIdsList.forEach(function (hl2User) {
-        if (hl2User.USER_ID == hl2UserId) {
-            ++notExist;
-        }
-    });*/
+     if (hl2User.USER_ID == hl2UserId) {
+     ++notExist;
+     }
+     });*/
 
     return notExist;
-}
-
-function getLevel1ByUser(userId) {
-    if (!userId)
-        throw ErrorLib.getErrors().BadRequest("The Parameter userId is not found", "level1Services/handleGet/getLevel1ByUser", L1_MSG_USER_NOT_FOUND);
-
-    var isSA = util.isSuperAdmin(userId);
-    return dataHl1.getLevel1ByUser(isSA, userId);
-}
-
-function getLevel1ByFilters(budgetYearId, regionId, subRegionId, userId) {
-    var isSA = false;
-    var result = {};
-    if (config.getApplySuperAdminToAllInitiatives()) {
-        isSA = userbl.isSuperAdmin(userId);
-    }
-
-    var list = JSON.parse(JSON.stringify(dataHl1.getLevel1ByFilters(budgetYearId, regionId, subRegionId, userId, isSA)));
-    result.out_result = {};
-    list.out_result.forEach(function (row) {
-        result.out_result[row.ACRONYM] = result.out_result[row.ACRONYM] || row;
-        result.out_result[row.ACRONYM].BUDGET = row.L1_BUDGET;
-        result.out_result[row.ACRONYM].L1_BUDGET_PERCENTAGE = row.L1_BUDGET_PERCENTAGE;
-        result.out_result[row.ACRONYM].L1_BUDGET_REMAINING = row.L1_BUDGET_REMAINING;
-        result.out_result[row.ACRONYM].L1_BUDGET_ALLOCATED = row.L1_BUDGET_ALLOCATED;
-        result.out_result[row.ACRONYM].CHILDREN = result.out_result[row.ACRONYM].CHILDREN || [];
-        if (row.BUDGET_DISTRIBUTION_AMOUNT) {
-            result.out_result[row.ACRONYM].CHILDREN.push({
-                CATEGORY_NAME: row.CATEGORY_NAME,
-                OPTION_NAME: row.OPTION_NAME,
-                BUDGET_DISTRIBUTION_PERCENTAGE: row.BUDGET_DISTRIBUTION_PERCENTAGE,
-                BUDGET_DISTRIBUTION_AMOUNT: row.BUDGET_DISTRIBUTION_AMOUNT,
-                SUB_AMOUNT: row.SUB_AMOUNT
-            });
-        }
-    });
-    // v Object.values(result.out_result) v //
-    result.out_result = Object.keys(result.out_result).map(function (k) {
-        return result.out_result[k];
-    });
-
-    result.out_total_budget = list.out_total_budget;
-    return result;
-}
-
-function getLevel1Kpi(budgetYearId, regionId, userId) {
-    var isSA = false;
-    var result = {};
-    if (config.getApplySuperAdminToAllInitiatives()) {
-        isSA = userbl.isSuperAdmin(userId);
-    }
-
-    var listFromData = dataHl1.getHl1KpiSummary(budgetYearId, regionId, userId, isSA);
-
-    var mapKpi = {};
-
-    listFromData.forEach(function (hl) {
-        mapKpi[hl.L1_ACRONYM] = mapKpi[hl.L1_ACRONYM] || {
-            HL1_ID: hl.HL1_ID,
-            CRM_ID: hl.CRM_ID,
-            HL1_DESCRIPTION: hl.HL1_DESCRIPTION,
-            ACRONYM: hl.L1_ACRONYM,
-            BUDGET_YEAR: hl.BUDGET_YEAR,
-            REGION_NAME: hl.REGION_NAME
-        };
-        var auxKpi = mapKpi[hl.L1_ACRONYM].kpi || [];
-        if (hl.KPI_TYPE_NAME) {
-            auxKpi.push({
-                ALLOCATED_VALUE: hl.TOTAL_VALUE_ALLOCATED
-                , ALLOCATED_VOLUME: hl.TOTAL_VOLUME_ALLOCATED
-                , OUTCOMES_NAME: hl.KPI_TYPE_NAME
-                , OUTCOMES_TYPE_NAME: hl.KPI_OPTION_NAME
-                , TOTAL_VALUE: hl.TOTAL_VALUE
-                , TOTAL_VOLUME: hl.TOTAL_VOLUME
-            });
-        }
-        mapKpi[hl.L1_ACRONYM].kpi = auxKpi;
-    });
-
-    var result = {};
-    result.out_result = Object.keys(mapKpi).map(function (e) {
-        return mapKpi[e]
-    });
-    return result;
-}
-
-function getLevel1ForSearch(budgetYearId, regionId, limit, offset, userSessionID) {
-    var result = dataHl1.getLevel1ForSearch(budgetYearId || 1, regionId || 0, limit, offset || 0, userSessionID, util.isSuperAdmin(userSessionID) ? 1 : 0);
-    return result;
 }
 
 function validateHl1(data) {
@@ -1038,7 +943,6 @@ function valuesToArray(obj) {
     });
 }
 
-//Check data types
 function validateType(key, value) {
     var valid = true;
     switch (key) {
@@ -1137,47 +1041,6 @@ function validateChanges(originalHL1, newHL1) {
     return validation;
 }
 
-function getHistory(HL1_ID) {
-    return dataHl1.getAllHl1VersionByHl1Id(HL1_ID);
-}
-
-function getHistoryDetail(HL_ID, VERSION) {
-    return dataHl1.getLevel1VersionById(HL_ID, VERSION);
-}
-
-function getHistoryAllFirstVersion(budgetYearId, userSessionID) {
-    return dataHl1.getLevel1VersionForFilter(budgetYearId, userSessionID, userbl.isSuperAdmin(userSessionID));
-}
-
-function insertExpectedOutcomes(data, userId) {
-    var hl1ExpectedOutcomesId = dataExOut.insertHL1ExpectedOutcomes(data.HL1_ID, data.TARGET_KPIS.COMMENTS || '', userId);
-    var mapEOL = expectedOutcomesLevelLib.getKpiTypeOptionMapByHlId(HIERARCHY_LEVEL.HL1);
-    if (data.TARGET_KPIS.KPIS.length) {
-        var hl1ExpectedOutcomesDetail = [];
-        data.TARGET_KPIS.KPIS.forEach(function (expectedOutcomeDetail) {
-            var expectedOutcomeLevelId = mapEOL[expectedOutcomeDetail.OUTCOMES_TYPE_ID]
-            && mapEOL[expectedOutcomeDetail.OUTCOMES_TYPE_ID][expectedOutcomeDetail.OUTCOMES_ID]
-                ? mapEOL[expectedOutcomeDetail.OUTCOMES_TYPE_ID][expectedOutcomeDetail.OUTCOMES_ID]
-                : expectedOutcomeDetail.EXPECTED_OUTCOME_LEVEL_ID;
-            hl1ExpectedOutcomesDetail.push({
-                in_hl1_expected_outcomes_id: hl1ExpectedOutcomesId,
-                in_expected_outcome_level_id: expectedOutcomeLevelId,
-                in_euro_value: expectedOutcomeDetail.EURO_VALUE,
-                in_volume_value: Number(expectedOutcomeDetail.VOLUME_VALUE),
-                in_created_user_id: userId
-            });
-        });
-
-        dataExOut.insertHL1ExpectedOutcomesDetail(hl1ExpectedOutcomesDetail);
-    }
-}
-
-function updateExpectedOutcomes(data, userId) {
-    dataExOut.deleteHl1ExpectedOutcomesDetail(data.HL1_ID, userId);
-    dataExOut.deleteHl1ExpectedOutcomes(data.HL1_ID, userId);
-    insertExpectedOutcomes(data, userId);
-}
-
 function validateKpi(data) {
     if (data.TARGET_KPIS) {
         if ((!data.TARGET_KPIS.KPIS || !data.TARGET_KPIS.KPIS.length)
@@ -1234,18 +1097,6 @@ function validateCategoryOption(data) {
         if ((Number(data.BUDGET) == 0) && percentagePerOption != 0) {
             throw ErrorLib.getErrors().CustomError("", "", L1_BUDGET_ZERO_CATEGORY_TOTAL_PERCENTAGE_ZERO);
         }
-
-        if ((Number(data.BUDGET) > 0) && percentagePerOption != 100) {
-            throw ErrorLib.getErrors().CustomError("", "hl1Services/handlePost/validateCategoryOption", L1_CATEGORY_TOTAL_PERCENTAGE);
-        }
-    }
-
-    return true;
-}
-
-function getCategoryOption(hl1_id) {
-    return allocationCategoryOptionLevelLib.getHlCategoryOptionByLevelHlId('HL1', hl1_id);
-}
 
         if ((Number(data.BUDGET) > 0) && percentagePerOption != Number(data.BUDGET)) {
             throw ErrorLib.getErrors().CustomError("", "", L1_CATEGORY_TOTAL_PERCENTAGE);

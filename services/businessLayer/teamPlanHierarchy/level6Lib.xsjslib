@@ -871,6 +871,23 @@ function updateHl6(data, userId, isLegacy) {
     }
 }
 
+function updateBudget(hl6Id, budget, allowBudgetZero, userId) {
+    var changedFields = level6DER.getL6CrmBindingFieldsByHl6Id(hl6Id);
+    var budgetField = changedFields.BUDGET || null;
+
+    if (!budgetField) {
+        var parameters = [{
+            "in_hl6_id": hl6Id,
+            "in_column_name": 'BUDGET',
+            "in_changed": 1,
+            "in_user_id": userId,
+            "in_display_name": 'Budget'
+        }];
+        insertInCrmBinding(parameters, []);
+    }
+    return dataHl6.updateBudget(hl6Id, budget, allowBudgetZero, userId);
+}
+
 function validateChangedKPIs(hl6Object, oldKPIs, oldForecastAtL5) {
 	var changed = false;
 	var currentOldKPI;
@@ -2780,8 +2797,7 @@ function uiToServerParser(object, isClone) {
 
 	data = JSON.parse(data);
 
-	data.BUDGET_DISTRIBUTION = data.BUDGET_DISTRIBUTION.REGIONS
-			.concat(data.BUDGET_DISTRIBUTION.CENTRAL_TEAMS);
+	data.BUDGET_DISTRIBUTION = data.BUDGET_DISTRIBUTION.REGIONS;
 	data.SALES = data.SALES.REGIONS.concat(data.SALES.CENTRAL_TEAMS
 			.concat(data.SALES.OTHERS));
 

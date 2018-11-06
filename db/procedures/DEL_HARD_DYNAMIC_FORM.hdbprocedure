@@ -9,6 +9,9 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::DEL_HARD_DYNAMIC
 	AS
 BEGIN
 
+    DELETE FROM DYNAMIC_FORM_MY_BUDGET
+    where dynamic_form_id in (select dynamic_form_id from DYNAMIC_FORM where dynamic_form_uid = in_dynamic_form_uid);
+
     DELETE FROM DYNAMIC_FORM_ALLOCATION
     where dynamic_form_id in (select dynamic_form_id from DYNAMIC_FORM where dynamic_form_uid = in_dynamic_form_uid);
 

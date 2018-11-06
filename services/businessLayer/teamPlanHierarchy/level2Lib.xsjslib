@@ -36,19 +36,6 @@ var budgetSpendRequestLib = mapper.getBudgetSpendRequest();
 var level4 = mapper.getLevel4();
 /** ***********END INCLUDE LIBRARIES*************** */
 
-
-var LEVEL3 = 3;
-var TEAM_TYPE_CENTRAL = "2";
-
-var HIERARCHY_LEVEL = {
-    HL1: 6,
-    HL2: 5,
-    HL3: 4,
-    HL4: 1,
-    HL5: 2,
-    HL6: 3
-};
-
 // var L1_MSG_CENTRAL_TEAM_EXISTS = "Another Central Team with the same acronym already exists.";
 var L1_MSG_PLAN_EXISTS = "Another Plan with the same acronym already exists";
 var L1_MSG_LEVEL_1_EXISTS = "Another Team with the same organization acronym already exists";
@@ -78,6 +65,19 @@ var L1_CATEGORY_TOTAL_PERCENTAGE = "Budget Distribution should be equal to 100%.
 var L1_BUDGET_ZERO_CATEGORY_TOTAL_PERCENTAGE_ZERO = "When Team budget is zero then Category total percentage should be equal to 0%.";
 var L1_CATEGORY_OPTIONS_NOT_EMPTY = "Option percentage should be less than or equal to 100%.";
 var L1_APPROVERS_NOT_FOUND = "Approvers data was not found.";
+
+var LEVEL3 = 3;
+
+var TEAM_TYPE = util.getTeamTypeEnum();
+
+var HIERARCHY_LEVEL = {
+    HL1: 6,
+    HL2: 5,
+    HL3: 4,
+    HL4: 1,
+    HL5: 2,
+    HL6: 3
+};
 
 function getHl2ByHl1Id(hl1Id, userId, fromCheckBudgetStatus) {
     var isSA = false;
@@ -250,7 +250,7 @@ function insertHl2(objLevel2, userId) {
     );
 
     if (hl2Id) {
-        if (hl1.TEAM_TYPE_ID == TEAM_TYPE_CENTRAL && objLevel2.CONTACT_DATA && objLevel2.CONTACT_DATA.length) {
+        if (hl1.TEAM_TYPE_ID == TEAM_TYPE.GLOBAL && objLevel2.CONTACT_DATA && objLevel2.CONTACT_DATA.length) {
             var contactData = objLevel2.CONTACT_DATA.map(function (contact) {
                 contact.CONTACTTYPE = 'CENTRAL';
                 return contact;
@@ -455,7 +455,7 @@ function updateHl2(objLevel2, userId) {
     );
 
     contactDataLib.deleteContactDataByContactTypeId("hard", "CENTRAL", objLevel2.HL2_ID);
-    if (objLevel2.TEAM_TYPE_ID == TEAM_TYPE_CENTRAL && objLevel2.CONTACT_DATA && objLevel2.CONTACT_DATA.length) {
+    if (objLevel2.TEAM_TYPE_ID == TEAM_TYPE.GLOBAL && objLevel2.CONTACT_DATA && objLevel2.CONTACT_DATA.length) {
         var contactData = objLevel2.CONTACT_DATA.map(function (contact) {
             contact.CONTACTTYPE = 'CENTRAL';
             return contact;
@@ -605,7 +605,7 @@ function getLevel2ById(hl2Id, carryOver) {
         hl2Result.HL2_BUDGET_REMAINING = Number(hl2Result.HL2_BUDGET_TOTAL) - Number(hl2BudgetAllocated || 0);
         hl2Result.TARGET_KPIS = carryOver ? expectedOutcomesLib.filterKpiByLevel(hl2TargetKpi, 'HL3') : hl2TargetKpi;
         hl2Result.CATEGORIES = carryOver ? hl3.getCarryOverHl2CategoryOption(hl2Id) : getCategoryOption(hl2Id);
-        hl2Result.SUBREGION = !carryOver ? dataSubRegion.getSubRegionsByRegionId(hl2Result.REGION_ID) : undefined;
+        hl2Result.SUBREGION = !carryOver && hl2Result.TEAM_TYPE_ID == TEAM_TYPE.REGIONAL ? dataSubRegion.getSubRegionsByRegionId(hl2Result.REGION_ID) : undefined;
 
         if(!carryOver && hl2Result.PLANNING_PURPOSE_ID) {
             var planningPurpose = planningPurposeOptionLib.getPlanningPurposeRelationship(hl2Result.PLANNING_PURPOSE_ID);
@@ -1080,7 +1080,7 @@ function insertHl2FromUpload(hl2, userId) {
 
     if (objhl2) {
         if (objhl2 > 0) {
-            //if (hl1.TEAM_TYPE_ID == TEAM_TYPE_CENTRAL && objLevel2.contactData && objLevel2.contactData.length)
+            //if (hl1.TEAM_TYPE_ID == TEAM_TYPE.GLOBAL && objLevel2.contactData && objLevel2.contactData.length)
             //    contactDataLib.insertContactData(objLevel2.contactData, userId, objhl2);
 
             //INSERT USERS RELATED TO HL2

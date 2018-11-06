@@ -56,6 +56,7 @@ var dataUtil = mapper.getDataUtil();
 var dataHierarchyCategoryCountry = mapper.getDataHierarchyCategoryCountry();
 var dataValidation = mapper.getDataValidation();
 var blDynamicForm = mapper.getDynamicFormLib();
+var dataL5Legacy = mapper.getDataLevel5Legacy();
 /*************************************************/
 
 var levelCampaign = "Marketing Tactic ";
@@ -971,6 +972,35 @@ function updateHl5(data, userId) {
             return {SUCCESS_MESSAGE: MSG_ENABLE_CRM_CREATION, EXECUTE_CANCEL_CONFIRMATION: 1, HL5_ID: data.HL5_ID};
         }
     }
+}
+
+function updateBudget(hl5Id, budget, allowBudgetZero, isLegacy, userId) {
+    var response = null;
+    var reqBody = {
+        HL5_ID: hl5Id,
+        BUDGET: budget,
+        ALLOW_BUDGET_ZERO: allowBudgetZero
+    };
+    if(!Number(isLegacy)){
+        var changedFields = level5DER.getL5CrmBindingFieldsByHl5Id(hl5Id);
+        var budgetField = changedFields.BUDGET || null;
+
+        if (!budgetField) {
+            var parameters = [{
+                "in_hl5_id": hl5Id,
+                "in_column_name": 'BUDGET',
+                "in_changed": 1,
+                "in_user_id": userId,
+                "in_display_name": 'Budget'
+            }];
+            insertInCrmBinding(parameters, []);
+        }
+        response = updateHl5Budget(reqBody, userId);
+    } else {
+        response = dataL5Legacy.updateHl5LegacyBudget(reqBody,userId);
+    }
+
+    return response;
 }
 
 function validateChangedKPIs(hl5Object, oldKPIs, oldForecastAtL5) {
@@ -2699,7 +2729,7 @@ function uiToServerParser(object, isClone) {
 
     data = JSON.parse(data);
 
-    data.BUDGET_DISTRIBUTION = data.BUDGET_DISTRIBUTION.REGIONS.concat(data.BUDGET_DISTRIBUTION.CENTRAL_TEAMS);
+    data.BUDGET_DISTRIBUTION = data.BUDGET_DISTRIBUTION.REGIONS;
     data.SALES = data.SALES.REGIONS.concat(data.SALES.CENTRAL_TEAMS.concat(data.SALES.OTHERS));
 
     if (!isClone) {

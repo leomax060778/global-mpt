@@ -495,9 +495,10 @@ function completeFromDynamicForm(parentId, level, dataLevelBody, fromInsertMetho
     tabKeys.forEach(function (tabName) {
         var i;
         // Equivalent to Object.values() method because the method is not supported on the current JS version
+        if(tabName !== 'BUDGET_DISTRIBUTION'){
         var arrDataTab = Object.keys(dynamicFormConfiguration.DYNAMIC_FORM_CONFIG_DATA.DYNAMIC_FIELDS[tabName]).map(function (key) {
             return dynamicFormConfiguration.DYNAMIC_FORM_CONFIG_DATA.DYNAMIC_FIELDS[tabName][key];
-        });
+        });}
 
         // Replace the data values with the default values
         switch (tabName) {
@@ -505,7 +506,24 @@ function completeFromDynamicForm(parentId, level, dataLevelBody, fromInsertMetho
                 for (i = 0; i < arrDataTab.length; i++) {
                     var objBudget = arrDataTab[i];
                     if (objBudget.HIDDEN) {
-                        dataLevelBody.ALLOW_BUDGET_ZERO = objBudget.HIDDEN;
+                        if (objectData.FIELD_NAME === "BUDGET"){
+                            dataLevelBody.ALLOW_BUDGET_ZERO = objBudget.HIDDEN;
+                        }
+                        else {
+                            var auxRegion = [];
+                            if (dynamicFormConfiguration.DYNAMIC_FORM_CONFIG_DATA.DYNAMIC_FIELDS.BUDGET_DISTRIBUTION) {
+                                var regions = dynamicFormConfiguration.DYNAMIC_FORM_CONFIG_DATA.DYNAMIC_FIELDS.BUDGET_DISTRIBUTION;
+
+                                for (var j = 0; j < regions.length; j++) {
+                                    var objRegion = regions[j];
+                                    objRegion.ORGANIZATION_ID = objRegion.REGION_ID;
+                                    objRegion.ORGANIZATION_TYPE = "REGIONAL";
+                                    auxRegion.push(objRegion);
+                                }
+                            }
+
+                            dataLevelBody.BUDGET_DISTRIBUTION = auxRegion;
+                        }
                     }
                 }
                 break;

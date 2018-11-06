@@ -36,7 +36,12 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_DYNAMIC_FORM
 	    TAB_NAME NVARCHAR(255),
 	    TAB_DISPLAY_NAME NVARCHAR(255),
         HIDDEN TINYINT
-	)
+	),
+	OUT my_budget_distribution TABLE(
+                                    	    REGION_ID BIGINT,
+                                    	    PERCENTAGE DECIMAL(19,2),
+                                    	    REGION_NAME NVARCHAR(255)
+                                    	)
 )
 	LANGUAGE SQLSCRIPT
 	SQL SECURITY INVOKER
@@ -100,5 +105,15 @@ tab_name = SELECT TAB.TAB_NAME,
             LEFT JOIN DYNAMIC_FORM_HIDDEN_TAB DFHT ON DFHT.DYNAMIC_FORM_TAB_ID = TAB.DYNAMIC_FORM_TAB_ID
            where TAB.HIERARCHY_LEVEL_ID = in_hierarchy_level_id
             AND TAB.ENABLED = 1 AND TAB.DELETED = 0;
+
+my_budget_distribution =
+    select
+    dfb.REGION_ID
+    , dfb.PERCENTAGE
+    , r.REGION_NAME
+    from DYNAMIC_FORM_MY_BUDGET dfb
+    inner join DYNAMIC_FORM df on df.DYNAMIC_FORM_ID = dfb.DYNAMIC_FORM_ID
+    inner join REGION r on r.region_id = dfb.region_id
+    where df.DYNAMIC_FORM_ID = in_dynamic_form_id;
 
 END;

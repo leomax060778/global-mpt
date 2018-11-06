@@ -116,6 +116,10 @@ function handlePut(reqBody, userId){
                 rdo = hl5.updateHl5Budget(reqBody, userId);
                 return	httpUtil.handleResponse(rdo,httpUtil.OK,httpUtil.AppJson);
                 break;
+            case 'UPDATE_BUDGET':
+                rdo =  hl5.updateBudget(reqBody.ID,reqBody.BUDGET,reqBody.ALLOW_BUDGET_ZERO,reqBody.IS_LEGACY,userId);
+                return	httpUtil.handleResponse(rdo,httpUtil.OK,httpUtil.AppJson);
+                break;
             default:
                 throw ErrorLib.getErrors().BadRequest("","level5Services/handlePut","insufficient parameters");
         }

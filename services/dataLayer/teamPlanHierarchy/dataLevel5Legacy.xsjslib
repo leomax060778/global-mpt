@@ -7,6 +7,7 @@ var db = mapper.getdbHelper();
 var spGetById = "GET_HL5_LEGACY_BY_ID";
 
 var spUpdateHl5Legacy = "UPD_HL5_LEGACY";
+var spUpdateHl5LegacyBudget = "UPD_HL5_LEGACY_BUDGET";
 var spInsertExpectedOutcomes = "INS_HL5_LEGACY_EXPECTED_OUTCOMES";
 var spDeleteExpectedOutcomes = "DEL_HL5_LEGACY_EXPECTED_OUTCOMES";
 
@@ -32,6 +33,16 @@ function updateHl5Legacy(reqBody, userId){
 	params.in_modified_user_id = userId;
 
     return db.executeScalarManual(spUpdateHl5Legacy, params, 'out_result');
+}
+
+function updateHl5LegacyBudget(reqBody,userId) {
+    var parameters = {
+        in_hl5_id: reqBody.HL5_ID,
+        in_updated_budget: reqBody.BUDGET,
+        in_allow_budget_zero: reqBody.ALLOW_BUDGET_ZERO,
+        in_user_id: userId
+    };
+    return db.executeScalarManual(spUpdateHl5LegacyBudget, parameters, "out_result");
 }
 
 function insertKPIComments(reqBody, userId){
