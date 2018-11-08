@@ -315,11 +315,12 @@ function getLevel4Kpi(hl3Id, userId) {
 
 /** INSERT **/
 function insertHl4(data, userId) {
+    var budgetYearId = budgetYear.getBudgetYearByLevelParent(4, data.HL3_ID);
 
-    var requiredDFObject = JSON.parse(JSON.stringify(budgetYear.getRequireDynamicFormByBudgetYearId(budgetYear.getBudgetYearByLevelParent(4, data.HL3_ID))));
+    var requiredDFObject = JSON.parse(JSON.stringify(budgetYear.getRequireDynamicFormByBudgetYearId(budgetYearId)));
 
     //Complete data with dynamic form (if the Budget Year requires it).
-    data = (Number(requiredDFObject.REQUIRE_DYNAMIC_FORM) === 1) ? util.completeFromDynamicFormByRole(userId, HIERARCHY_LEVEL["HL4"], data) : data;
+    data = (Number(requiredDFObject.REQUIRE_DYNAMIC_FORM) === 1) ? util.completeFromDynamicFormByRole(userId, HIERARCHY_LEVEL["HL4"], data, budgetYearId) : data;
 
     data.HL3_INFORMATION = getHl3ForHl4Validation(data.HL3_ID, 0);
     data.HL4_INFORMATION = data.HL4_ID ? getHl4ForHl4Validation(0) : {};
@@ -556,11 +557,12 @@ function parseVersionedCategories(categoryOptionList) {
 function updateHl4(data, userId) {
 
     var currentHL4 = getHl4ById(data.HL4_ID);
+    var budgetYearId = budgetYear.getBudgetYearByLevelParent(4, data.HL3_ID);
 
-    var requiredDFObject = JSON.parse(JSON.stringify(budgetYear.getRequireDynamicFormByBudgetYearId(budgetYear.getBudgetYearByLevelParent(4, data.HL3_ID))));
+    var requiredDFObject = JSON.parse(JSON.stringify(budgetYear.getRequireDynamicFormByBudgetYearId(budgetYearId)));
 
     if (Number(requiredDFObject.REQUIRE_DYNAMIC_FORM) === 1) {
-        data = util.completeDynamicFormEdition(userId, HIERARCHY_LEVEL["HL4"], data, currentHL4);
+        data = util.completeDynamicFormEdition(userId, HIERARCHY_LEVEL["HL4"], data, currentHL4, budgetYearId);
     }
 
     data.HL3_INFORMATION = getHl3ForHl4Validation(data.HL3_ID, data.HL4_ID);

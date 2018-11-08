@@ -449,10 +449,11 @@ function deleteHl3(objHl3, userId) {
 
 // Create a new object of HL3
 function insertHl3(objHl3, userId) {
-    var requiredDFObject = JSON.parse(JSON.stringify(budgetYear.getRequireDynamicFormByBudgetYearId(budgetYear.getBudgetYearByLevelParent(3, objHl3.HL2_ID))));
+    var budgetYearId = budgetYear.getBudgetYearByLevelParent(3, objHl3.HL2_ID);
+    var requiredDFObject = JSON.parse(JSON.stringify(budgetYear.getRequireDynamicFormByBudgetYearId(budgetYearId)));
 
     //Complete data with dynamic form (if the Budget Year requires it).
-    objHl3 = (Number(requiredDFObject.REQUIRE_DYNAMIC_FORM) === 1)? util.completeFromDynamicFormByRole(userId, HIERARCHY_LEVEL["HL3"], objHl3, true): objHl3;
+    objHl3 = (Number(requiredDFObject.REQUIRE_DYNAMIC_FORM) === 1)? util.completeFromDynamicFormByRole(userId, HIERARCHY_LEVEL["HL3"], objHl3, budgetYearId): objHl3;
 
     validateFormHl3(objHl3);
     validateKpi(objHl3);
@@ -531,8 +532,9 @@ function updateHl3(objHl3, userId) {
     currentHL3 = JSON.parse(JSON.stringify(currentHL3));
     var hl3Users = userbl.getUserByHl3Id(objHl3.HL3_ID, objHl3.HL2_ID);
     var eventApprover = eventManagementLib.getEventApproverByHlId('HL3', objHl3.HL3_ID, objHl3.HL2_ID);
+    var budgetYearId = budgetYear.getBudgetYearByLevelParent(3, objHl3.HL2_ID);
 
-    var requiredDFObject = JSON.parse(JSON.stringify(budgetYear.getRequireDynamicFormByBudgetYearId(budgetYear.getBudgetYearByLevelParent(3, objHl3.HL2_ID))));
+    var requiredDFObject = JSON.parse(JSON.stringify(budgetYear.getRequireDynamicFormByBudgetYearId(budgetYearId)));
 
     if(Number(requiredDFObject.REQUIRE_DYNAMIC_FORM) === 1){
         //Complete with necessary information to validate with dynamic form
@@ -540,9 +542,9 @@ function updateHl3(objHl3, userId) {
         currentHL3.ASSIGNED_USERS = hl3Users.users_in;
         currentHL3.BUDGET_APPROVERS = budgetSpendRequestLib.getL3BudgetApproverByL3Id(objHl3.HL3_ID).assigned;
         currentHL3.EVENT_APPROVERS = eventApprover.assigned;
-
+        currentHL3.CATEGORIES = getCategoryOption(data.HL3_ID);
         //Complete data with current HL1 using the dynamic form "hidden" as reference to update
-        objHl3 = util.completeDynamicFormEdition(userId, HIERARCHY_LEVEL["HL3"], objHl3, currentHL3);
+        objHl3 = util.completeDynamicFormEdition(userId, HIERARCHY_LEVEL["HL3"], objHl3, currentHL3, budgetYearId);
     }
 
     objHl3.VERSION = currentHL3.VERSION;

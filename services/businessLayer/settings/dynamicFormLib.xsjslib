@@ -506,7 +506,7 @@ function insertDynamicForm(data, userId) {
         // Allocation Category
         CreateDynamicFormAllocations(data, dynamicFormId, userId);
 
-        if(data.HIERARCHY_LEVEL_ID !== HIERARCHY_LEVEL.HL4){
+        if(Number(data.HIERARCHY_LEVEL_ID) !== HIERARCHY_LEVEL.HL4){
             CreateDynamicFormMyBudget(data, dynamicFormId, userId);
         }
 

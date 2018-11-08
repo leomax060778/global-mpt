@@ -320,7 +320,7 @@ function insertHl1(data, userId) {
     var requiredDFObject = JSON.parse(JSON.stringify(businessBudget.getRequireDynamicFormByBudgetYearId(data.BUDGET_YEAR_ID)));
 
     //Complete data with dynamic form (if the Budget Year requires it).
-    data = (Number(requiredDFObject.REQUIRE_DYNAMIC_FORM) === 1)? util.completeFromDynamicFormByRole(userId, HIERARCHY_LEVEL["HL1"], data, true): data;
+    data = (Number(requiredDFObject.REQUIRE_DYNAMIC_FORM) === 1)? util.completeFromDynamicFormByRole(userId, HIERARCHY_LEVEL["HL1"], data, data.BUDGET_YEAR_ID): data;
 
     validateHl1(data);
     validateHl1User(data.ASSIGNED_USERS);
@@ -472,9 +472,9 @@ function updateHl1(data, userId) {
     if(Number(requiredDFObject.REQUIRE_DYNAMIC_FORM) === 1){
         currentHL1.TARGET_KPIS = JSON.parse(JSON.stringify(expectedOutcomesLib.getExpectedOutcomesByHL1Id(data.HL1_ID)));
         currentHL1.ASSIGNED_USERS = util.parseAssignedUsers(JSON.parse(JSON.stringify(userbl.getUserByHl1Id(data.HL1_ID))).users_in);
-
+        currentHL1.CATEGORIES = getCategoryOption(data.HL1_ID);
         //Complete data with current HL1 using the dynamic form "hidden" as reference to update
-        data = util.completeDynamicFormEdition(userId, HIERARCHY_LEVEL["HL1"], data, currentHL1);
+        data = util.completeDynamicFormEdition(userId, HIERARCHY_LEVEL["HL1"], data, currentHL1, data.BUDGET_YEAR_ID);
     }
 
     validateHl1(data);

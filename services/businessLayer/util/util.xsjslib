@@ -643,14 +643,14 @@ function completeFromDynamicForm(parentId, level, dataLevelBody, fromInsertMetho
     return dataLevelBody;
 }
 
-function completeFromDynamicFormByRole(userId, hierarchyLevelId, payload) {
+function completeFromDynamicFormByRole(userId, hierarchyLevelId, payload, budgetYearId) {
     var objectData = {};
     //List of required fields that are hidden and does not have default value.
     var requiredFieldError = [];
 
     payload = JSON.parse(JSON.stringify(payload));
 
-    var dynamicFormConfiguration = blDynamicForm.getFormByRole(null, false, userId, hierarchyLevelId, true);
+    var dynamicFormConfiguration = blDynamicForm.getFormByRoleAndBudgetYear(budgetYearId, null, false, userId, hierarchyLevelId, true);
 
     var tabKeys = Object.keys(dynamicFormConfiguration.DYNAMIC_FORM_CONFIG_DATA.DYNAMIC_FIELDS);
 
@@ -781,8 +781,8 @@ function isSpecialCase(fieldData) {
  the current data with the received in the payload.
  This logic has the gold to edit only the fields visible for the user and avoid everything else.
  **/
-function completeDynamicFormEdition(userId, hierarchyLevelId, payload, currentData) {
-    var dynamicForm = JSON.parse(JSON.stringify(blDynamicForm.getFormByRole(null, true, userId, hierarchyLevelId)));
+function completeDynamicFormEdition(userId, hierarchyLevelId, payload, currentData, budgetYearId) {
+    var dynamicForm = JSON.parse(JSON.stringify(blDynamicForm.getFormByRoleAndBudgetYear(budgetYearId, null, true, userId, hierarchyLevelId)));
 
     //Step on each Tab
     Object.keys(dynamicForm.DYNAMIC_FIELDS).forEach(function (tab) {

@@ -215,7 +215,7 @@ function insertHl2(objLevel2, userId) {
     var requiredDFObject = JSON.parse(JSON.stringify(budgetYear.getRequireDynamicFormByBudgetYearId(hl1.BUDGET_YEAR_ID)));
 
     //Complete data with dynamic form (if the Budget Year requires it).
-    objLevel2 = (Number(requiredDFObject.REQUIRE_DYNAMIC_FORM) === 1)? util.completeFromDynamicFormByRole(userId, HIERARCHY_LEVEL["HL2"], objLevel2, true) : objLevel2;
+    objLevel2 = (Number(requiredDFObject.REQUIRE_DYNAMIC_FORM) === 1)? util.completeFromDynamicFormByRole(userId, HIERARCHY_LEVEL["HL2"], objLevel2, hl1.BUDGET_YEAR_ID) : objLevel2;
 
     validateInsertHl2(objLevel2);
     validateKpi(objLevel2);
@@ -411,7 +411,7 @@ function updateHl2(objLevel2, userId) {
 
     if(Number(requiredDFObject.REQUIRE_DYNAMIC_FORM) === 1){
         //Complete data with current HL2 using the dynamic form "hidden" as reference to update
-        objLevel2 = util.completeDynamicFormEdition(userId, HIERARCHY_LEVEL["HL2"], objLevel2, currentHL2);
+        objLevel2 = util.completeDynamicFormEdition(userId, HIERARCHY_LEVEL["HL2"], objLevel2, currentHL2, hl1.BUDGET_YEAR_ID);
     }
 
     validateUpdateHl2(objLevel2);
