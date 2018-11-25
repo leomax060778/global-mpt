@@ -10,6 +10,7 @@ var GET_HL2_KPI_SUMMARY = "GET_HL2_KPI_SUMMARY";
 var GET_HL2_BY_ID = "GET_HL2_BY_ID";
 var GET_HL2_BY_HL1_ID = "GET_HL2_BY_HL1_ID";
 var GET_HL2_ALLOCATION_SUMMARY = "GET_HL2_ALLOCATION_SUMMARY";
+var GET_HL2_BY_BUDGET_YEAR_ID = "GET_HL2_BY_BUDGET_YEAR_ID";
 var spGetHl2ForSerach = "GET_HL2_FOR_SEARCH";
 var GET_HL2_ALLOW_AUTOMATIC_BUDGET_APPROVAL_BY_HL4_ID = "GET_HL2_ALLOW_AUTOMATIC_BUDGET_APPROVAL_BY_HL4_ID";
 var GET_HL2_ALLOW_AUTOMATIC_BUDGET_APPROVAL_BY_HL5_ID = "GET_HL2_ALLOW_AUTOMATIC_BUDGET_APPROVAL_BY_HL5_ID";
@@ -27,6 +28,9 @@ var INS_HL2_VERSION = "INS_HL2_VERSION";
 var GET_HL2_VERSION_BY_FILTER = "GET_HL2_VERSION_BY_FILTER";
 var GET_HL2_VERSION_BY_ID = "GET_HL2_VERSION_BY_ID";
 var GET_HL2_BY_HL4_ID = "GET_HL2_BY_HL4_ID";
+var GET_HL2_ASSOCIATED_FORM_BY_LEVEL_HL_ID = "GET_HL2_ASSOCIATED_FORM_BY_LEVEL_HL_ID";
+var GET_HL2_BY_BUDGET_YEAR_REGION = "GET_HL2_BY_BUDGET_YEAR_REGION";
+var GET_HL2_BY_BUDGET_YEAR_PLANNING_PURPOSE = "GET_HL2_BY_BUDGET_YEAR_PLANNING_PURPOSE";
 
 function getLevel2ByUser(userId){
 	
@@ -135,6 +139,25 @@ function getHl2AllowAutomaticBudgetApprovalByHl5Id(l5Id){
 function getHl2ByHl4Id(hl4Id){
     var result = db.executeProcedureManual(GET_HL2_BY_HL4_ID, {'in_hl4_id': hl4Id});
     return db.extractArray(result.out_result)[0];
+}
+
+function getHl2ByBudgetYear(budgetYearId){
+	var params = {};
+	params.in_budget_year_id = budgetYearId;
+
+    var list = db.executeProcedureManual(GET_HL2_BY_BUDGET_YEAR_ID, params);
+    return db.extractArray(list.out_result);
+}
+
+function getHl2FormAssociatedByLevelHlId(level, parentId,isLegacyParent){
+    var parameters = {
+        in_level: level,
+        in_parent_id: parentId,
+        in_is_legacy_parent: isLegacyParent
+    };
+
+    var list = db.executeProcedureManual(GET_HL2_ASSOCIATED_FORM_BY_LEVEL_HL_ID, parameters, isLegacyParent);
+    return db.extractArray(list.out_result)[0];
 }
 
 function insertLevel2(budget, acronym, organizationName, implementExecutionLevel, crtRelated, hl1Id, inBudget, allowAutomaticBudgetApproval, userId, subregionId, planningPurposeOptionId, importId, imported){
@@ -280,4 +303,19 @@ function getLevel2VersionById(hl2Id, version){
 			return {};
 	}
 	return {};
+}
+
+function updateDynamicFormAssociation(data, level) {
+    var sp = 'UPD_HL2_DYNAMIC_FORM_' + level.toUpperCase() + '_ASSOCIATION';
+    return db.executeScalarManual(sp, data, "out_result");
+}
+
+function getHl2ByBudgetYearRegion(data){
+    var result = db.executeProcedureManual(GET_HL2_BY_BUDGET_YEAR_REGION, data);
+    return  db.extractArray(result.out_result);
+}
+
+function getHl1ByBudgetYearPlanningPurpose(data){
+    var result = db.executeProcedureManual(GET_HL2_BY_BUDGET_YEAR_PLANNING_PURPOSE, data);
+    return  db.extractArray(result.out_result);
 }

@@ -37,8 +37,6 @@ var L1_CAMPAIGN_FORECASTING_KPIS_NOT_VALID = "Campaign Forecasting / KPIS is not
 var BUDGET_YEAR_NOT_FOUND = "The Budget Year can not be found.";
 var REGION_NOT_FOUND = "The Region can not be found.";
 var USER_NOT_FOUND = "The User can not be found.";
-var NO_L1_EXIST_IN_SELECTED_REGION = "No Team exist under the selected region.";
-var NO_L1_EXIST_IN_SELECTED_PLANNING_PURPOSE = "No Team exist under the selected planning purpose.";
 var L1_CATEGORY_NOT_EMPTY = "Category cannot be empty.";
 var L1_CATEGORY_INCORRECT_NUMBER = "Incorrect number of categories.";
 var L1_CATEGORY_NOT_VALID = "Category is not valid.";
@@ -603,99 +601,6 @@ function updateCategoryoption(data, userId) {
         dataCategoryOptionLevel.insertCategoryOption(insertBulk, 'hl1');
 
     return true;
-}
-
-function updateDynamicFormAssociation(data, userId) {
-    var dynamicForm = {
-        L2: [],
-        L3: [],
-        L4: [],
-        L5: [],
-        L6: []
-    };
-
-    Object.keys(data).forEach(function (level) {
-        var levelString = 'H' + level;
-        switch (level) {
-            case "L2":
-            case "L3":
-            case "L4":
-            case "L5":
-            case "L6":
-                if (data[level] && (data[level].USE_DEFAULT || (data[level].DYNAMIC_FORM_UID && data[level].DYNAMIC_FORM_UID.trim()))) {
-                    var dynamicFormUId = data[level].USE_DEFAULT ? null : data[level].DYNAMIC_FORM_UID.trim();
-                    if (data.HL1_IDS.constructor === Array) {
-                        dynamicForm[level] = data.HL1_IDS.map(function (value) {
-                            return {
-                                hl1Id: value,
-                                dynamicFormUId: dynamicFormUId,
-                                userId: userId
-                            }
-                        });
-                    } else {
-                        dynamicForm[level].push({
-                            hl1Id: data.HL1_IDS,
-                            dynamicFormUId: dynamicFormUId,
-                            userId: userId
-                        })
-                    }
-                }
-
-                if (dynamicForm[level].length) {
-                    dataHl1.updateDynamicFormAssociation(dynamicForm[level], levelString);
-                }
-                break;
-        }
-    });
-
-    return true;
-}
-
-function massUpdateDynamicFormAssociation(data, hl1List, userId, errorMessage) {
-    if (!hl1List.length) {
-        throw ErrorLib.getErrors().CustomError("", "", errorMessage);
-    }
-
-    var updateObject = {
-        L2: data.L2,
-        L3: data.L3,
-        L4: data.L4,
-        L5: data.L5,
-        L6: data.L6,
-        HL1_IDS: []
-    };
-
-    updateObject.HL1_IDS = hl1List.map(function (hl1) {
-        return hl1.HL1_ID;
-    });
-
-    return updateDynamicFormAssociation(updateObject, userId);
-}
-
-function updateDynamicFormAssociationByRegion(data, userId) {
-    var regionData = data.REGION_IDS.map(function (regionId) {
-        return {
-            in_region_id: regionId,
-            in_budget_year_id: data.BUDGET_YEAR_ID
-        }
-    });
-
-    var hl1List = dataHl1.getHl1ByBudgetYearRegion(regionData);
-
-    return massUpdateDynamicFormAssociation(data, hl1List, userId, NO_L1_EXIST_IN_SELECTED_REGION);
-}
-
-function updateDynamicFormAssociationByPlanningPurpose(data, userId) {
-    var planningPurposeData = data.PLANNING_PURPOSE_IDS.map(function (planningPurposeId) {
-        return {
-            in_planning_purpose_id: planningPurposeId,
-            in_budget_year_id: data.BUDGET_YEAR_ID
-        }
-    });
-
-    var hl1List = dataHl1.getHl1ByBudgetYearPlanningPurpose(planningPurposeData);
-
-    return massUpdateDynamicFormAssociation(data, hl1List, userId, NO_L1_EXIST_IN_SELECTED_PLANNING_PURPOSE);
 }
 
 function deleteHl1(hl1Id, userId) {

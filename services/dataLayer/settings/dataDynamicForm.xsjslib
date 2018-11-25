@@ -26,7 +26,7 @@ var INS_DYNAMIC_FORM_MY_BUDGET_REGION = "INS_DYNAMIC_FORM_MY_BUDGET_REGION";
 var INS_DYNAMIC_FORM_UID = "INS_DYNAMIC_FORM_UID";
 
 var UPD_DEFAULT_DYNAMIC_FORM = "UPD_DEFAULT_DYNAMIC_FORM";
-var UPD_DYNAMIC_FORM_ASSOCIATION_HL1 = "UPD_DYNAMIC_FORM_ASSOCIATION_HL1";
+var UPD_DYNAMIC_FORM_ASSOCIATION_HL2 = "UPD_DYNAMIC_FORM_ASSOCIATION_HL1";
 var UPD_DYNAMIC_FORM = "UPD_DYNAMIC_FORM";
 var UPD_DYNAMIC_FORM_BY_ROLE = "UPD_DYNAMIC_FORM_BY_ROLE";
 
@@ -248,7 +248,7 @@ function asociateDefaultFormToHL1(old_dynamic_form_uid, new_dynamic_form_uid, hi
     parameters.in_new_dynamic_form_uid = new_dynamic_form_uid;
     parameters.in_hierarchy_level_id = hierarchy_level_id;
     parameters.in_modified_user_id = userId;
-    return db.executeScalarManual(UPD_DYNAMIC_FORM_ASSOCIATION_HL1, parameters, "out_result");
+    return db.executeScalarManual(UPD_DYNAMIC_FORM_ASSOCIATION_HL2, parameters, "out_result");
 }
 
 /*************** DELETE ***************/

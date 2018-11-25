@@ -254,7 +254,7 @@ function getHl3ByUserGroupByHl1(userId, budgetYearId, regionId, subRegionId, gen
         if (!Number(currentRegion)) {
             var globalCollection = getHl3ByPlanningPurpose(userId || 0, isSA, budgetYearId || 0, generalFilter);
             if (globalCollection && Object.keys(globalCollection).length) {
-                var global = {PATH: "Global Regions", CHILDREN: parser(globalCollection)};
+                var global = {PATH: "Hierarchy", CHILDREN: parser(globalCollection)};
                 superRegion.push(global);
             }
 

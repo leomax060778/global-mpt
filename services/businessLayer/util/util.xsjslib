@@ -393,6 +393,132 @@ function getAcronymForHl5Legacy(pathHl5Legacy) {
     }
 }
 
+function parseLevel2TreeByRegion(arrayData, level){
+    var superRegion = [
+        {
+            "PATH": "Regional",
+            "TEAM_TYPE_ID": 1,
+            "CHILDREN": []
+        },
+        {
+            "PATH": "Global",
+            "TEAM_TYPE_ID": 2,
+            "CHILDREN": []
+        }
+    ];
+
+    var regionCollection = {};
+    var globalCollection = {};
+
+    var parser = function (object) {
+        var data2 = JSON.stringify(object, function (key, value) {
+            if (value) {
+                Object.keys(value).forEach(function (k) {
+                    if (k === "CHILDREN") {
+                        value[k] = objectToArray(value[k]);
+                    }
+                });
+            }
+            return value;
+        });
+
+        data2 = JSON.parse(data2);
+
+        return objectToArray(data2);
+    };
+
+
+
+    arrayData.forEach(function (item) {
+        if(Number(item.HL1_TEAM_TYPE_ID) === 1){
+            if (Number(item.HL1_REGION_ID) !== 0) { //The 'zero' part is only for broken records in Dev/Testing
+                if (!regionCollection[item.HL1_REGION_ID]) {
+                    regionCollection[item.HL1_REGION_ID] = {
+                        PATH: item.HL1_REGION_NAME,
+                        REGION_ID: item.HL1_REGION_ID,
+                        CHILDREN: {}
+                    }
+                }
+
+                if (!regionCollection[item.HL1_REGION_ID].CHILDREN[item.HL1_ID]) {
+                    regionCollection[item.HL1_REGION_ID].CHILDREN[item.HL1_ID] = {
+                        HL1_ID: item.HL1_ID
+                        , PATH: item.HL1_PATH
+                        , HL1_DESCRIPTION: item.HL1_DESCRIPTION
+                        , CHILDREN: {}
+                    };
+                }
+
+                if (!regionCollection[item.HL1_REGION_ID].CHILDREN[item.HL1_ID].CHILDREN[item.HL2_ID]) {
+                    regionCollection[item.HL1_REGION_ID].CHILDREN[item.HL1_ID].CHILDREN[item.HL2_ID] = {
+                        HL2_ID: item.HL2_ID,
+                        PATH: item.HL2_PATH,
+                        HL2_DESCRIPTION: item.HL2_DESCRIPTION,
+                        L5: {
+                            USE_DEFAULT: !item.DYNAMIC_FORM_L5_UID,
+                            DYNAMIC_FORM_UID: item.DYNAMIC_FORM_L5_UID
+                        },
+                        L6: {
+                            USE_DEFAULT: !item.DYNAMIC_FORM_L6_UID,
+                            DYNAMIC_FORM_UID: item.DYNAMIC_FORM_L6_UID
+                        }
+                    };
+                }
+            }
+        }else if(!!item.HL1_PLANNING_PURPOSE_ID){
+
+            if (!globalCollection[item.HL1_PLANNING_PURPOSE_ID]) {
+                globalCollection[item.HL1_PLANNING_PURPOSE_ID] = {
+                    PATH: item.HL1_PLANNING_PURPOSE_NAME,
+                    PLANNING_PURPOSE_ID: item.HL1_PLANNING_PURPOSE_ID,
+                    CHILDREN: {}
+                }
+            }
+
+            if (!globalCollection[item.HL1_PLANNING_PURPOSE_ID].CHILDREN[item.HL1_ID]) {
+                globalCollection[item.HL1_PLANNING_PURPOSE_ID].CHILDREN[item.HL1_ID] = {
+                    HL1_ID: item.HL1_ID
+                    , PATH: item.HL1_PATH
+                    , HL1_DESCRIPTION: item.HL1_DESCRIPTION
+                    , CHILDREN: {}
+                };
+            }
+
+            if (!globalCollection[item.HL1_PLANNING_PURPOSE_ID].CHILDREN[item.HL1_ID]) {
+                globalCollection[item.HL1_PLANNING_PURPOSE_ID].CHILDREN[item.HL1_ID] = {
+                    HL1_ID: item.HL1_ID
+                    , PATH: item.HL1_PATH
+                    , HL1_DESCRIPTION: item.HL1_DESCRIPTION
+                    , CHILDREN: {}
+                };
+            }
+
+            if (!globalCollection[item.HL1_PLANNING_PURPOSE_ID].CHILDREN[item.HL1_ID].CHILDREN[item.HL2_ID]) {
+                globalCollection[item.HL1_PLANNING_PURPOSE_ID].CHILDREN[item.HL1_ID].CHILDREN[item.HL2_ID] = {
+                    HL2_ID: item.HL2_ID,
+                    PATH: item.HL2_PATH,
+                    HL2_DESCRIPTION: item.HL2_DESCRIPTION,
+                    L5: {
+                        USE_DEFAULT: !item.DYNAMIC_FORM_L5_UID,
+                        DYNAMIC_FORM_UID: item.DYNAMIC_FORM_L5_UID
+                    },
+                    L6: {
+                        USE_DEFAULT: !item.DYNAMIC_FORM_L6_UID,
+                        DYNAMIC_FORM_UID: item.DYNAMIC_FORM_L6_UID
+                    }
+                };
+            }
+
+        }
+    });
+
+    superRegion[0].CHILDREN = parser(regionCollection);
+    superRegion[1].CHILDREN = parser(globalCollection);
+
+
+    return superRegion;
+}
+
 function parseLevelTreeByRegion(data, level) {
     var result = {};
     var TEAM_TYPE = getTeamTypeEnum();

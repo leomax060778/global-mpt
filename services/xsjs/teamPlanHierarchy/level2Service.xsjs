@@ -61,6 +61,12 @@ function handleGet(parameters, userSessionID){
 
 			httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
 		}
+		else if(parameters[0].name == methodName && httpUtil.getUrlParameters().get(methodName) == "GET_HL2_GROUP_BY_REGION"){
+            var budgetYearId = httpUtil.getUrlParameters().get("BUDGET_YEAR_ID") || null;
+            var rdo = blLevel2.getHl2GroupByRegion(budgetYearId, userSessionID);
+
+            httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
+		}
 		else if (parameters[0].value == section){
 			var budget_year_id = httpUtil.getUrlParameters().get("BUDGET_YEAR_ID") || null;
 			var region_id = httpUtil.getUrlParameters().get("REGION_ID") || null;

@@ -19,12 +19,12 @@ BEGIN
         from HL6
         where hl6.DYNAMIC_FORM_ID in (select DYNAMIC_FORM_ID from DYNAMIC_FORM WHERE dynamic_form_uid = in_dynamic_form_uid);
 
-    ELSEIF in_hierarchy_level_id = 6 then
-        select count(HL1_ID) INTO out_result
-        from HL1
+    ELSEIF in_hierarchy_level_id = 5 then
+        select count(HL2_ID) INTO out_result
+        from HL2
 
-        where (hl1.DYNAMIC_FORM_L5_UID = in_dynamic_form_uid
-            OR hl1.DYNAMIC_FORM_L6_UID = in_dynamic_form_uid);
+        where (hl2.DYNAMIC_FORM_L5_UID = in_dynamic_form_uid
+            OR hl2.DYNAMIC_FORM_L6_UID = in_dynamic_form_uid);
     ELSE
     	select 0 INTO out_result from dummy;
     END IF;

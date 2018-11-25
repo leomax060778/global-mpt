@@ -2,10 +2,10 @@ $.import("mktgplanningtool.services.commonLib", "mapper");
 var mapper = $.mktgplanningtool.services.commonLib.mapper;
 var dataDynamicForm = mapper.getDataDynamicForm();
 var AllocationCategory = mapper.getAllocationCategoryLib();
-var levelLib = mapper.getLevel1();
+var levelLib = mapper.getLevel2();
 var util = mapper.getUtil();
 var ErrorLib = mapper.getErrors();
-var dataHl1 = mapper.getDataLevel1();
+var dataHl2 = mapper.getDataLevel2();
 var roleLib = mapper.getRole();
 var dataUserRole = mapper.getDataUserRole();
 var budgetYearLib = mapper.getBudgetYear();
@@ -270,12 +270,12 @@ function getFormByParentId(parentId, level, formId, isNewRecord, isLegacyParent)
     }
 
     if (!formId) {
-        var hl1 = dataHl1.getHl1FormAssociatedByLevelHlId(LEVEL_STRING, parentId, Number(isLegacyParent) || 0);
-        if (!hl1) {
+        var hl2 = dataHl2.getHl2FormAssociatedByLevelHlId(LEVEL_STRING, parentId, Number(isLegacyParent) || 0);
+        if (!hl2) {
             var defaultForms = getDefaultDynamicForm();
             formUid = defaultForms[HIERARCHY_LEVEL[LEVEL_STRING]].DYNAMIC_FORM_UID;
         } else {
-            formUid = hl1['DYNAMIC_FORM_' + level + '_UID'];
+            formUid = hl2['DYNAMIC_FORM_' + level + '_UID'];
         }
         objDynamicForm = dataDynamicForm.getDynamicFormByUId(formUid);
     }
@@ -724,12 +724,12 @@ function setDefaultDynamicFormByBudgetYearId(budgetYearId, userId){
     return true;
 }
 
-function asociateDefaultFormToHL1(oldDynamicFormUid, hierarchy_level_id, userId) {
+function asociateDefaultFormToHL2(oldDynamicFormUid, hierarchy_level_id, userId) {
     //find default dynamic form
     var defaultForm = getDefaultDynamicFormByLevel(hierarchy_level_id);
 
     //associate the HL1 to the default dynamic form
-    dataDynamicForm.asociateDefaultFormToHL1(oldDynamicFormUid, defaultForm.DYNAMIC_FORM_UID, hierarchy_level_id, userId);
+    dataDynamicForm.asociateDefaultFormToHL2(oldDynamicFormUid, defaultForm.DYNAMIC_FORM_UID, hierarchy_level_id, userId);
 
     return true;
 }
@@ -771,7 +771,7 @@ function deleteDynamicForm(dynamicForm, userId) {
 
         if (objDynamicFormToDelete.HIERARCHY_LEVEL_ID == HIERARCHY_LEVEL.HL5 || objDynamicFormToDelete.HIERARCHY_LEVEL_ID == HIERARCHY_LEVEL.HL6) {
             //associate the HL1 to the default dynamic form
-            asociateDefaultFormToHL1(dynamicFormUIdToDelete, objDynamicFormToDelete.HIERARCHY_LEVEL_ID, userId);
+            asociateDefaultFormToHL2(dynamicFormUIdToDelete, objDynamicFormToDelete.HIERARCHY_LEVEL_ID, userId);
         }
 
         return performDelete(dynamicFormUIdToDelete, objDynamicFormToDelete, userId);

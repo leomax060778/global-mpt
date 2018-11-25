@@ -1,0 +1,51 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL2_ASSOCIATED_FORM_BY_LEVEL_HL_ID" (
+	IN in_level NVARCHAR(5)
+	,IN in_parent_id BIGINT
+	,IN in_is_legacy_parent TINYINT
+	,OUT out_result TABLE (
+		hl2_id bigint
+		, DYNAMIC_FORM_L5_UID NVARCHAR(255)
+        , DYNAMIC_FORM_L6_UID NVARCHAR(255)
+		)
+)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	READS SQL DATA AS
+BEGIN
+    IF in_level = 'HL5' THEN
+    out_result =
+    	SELECT
+            hl2.hl2_id
+            , DYNAMIC_FORM_L5_UID
+            , DYNAMIC_FORM_L6_UID
+            FROM HL4
+            	INNER JOIN HL3 ON HL3.HL3_ID = HL4.HL3_ID
+                INNER JOIN HL2 ON HL3.HL2_ID = HL2.HL2_ID
+    	WHERE HL4.hl4_id = in_parent_id;
+    ELSEIF in_level = 'HL6' THEN
+        IF in_is_legacy_parent = 0 THEN
+        out_result =
+                    SELECT
+                        hl2.hl2_id
+                        , DYNAMIC_FORM_L5_UID
+                        , DYNAMIC_FORM_L6_UID
+                        FROM HL5
+                            INNER JOIN HL4 ON HL4.HL4_ID = HL5.HL4_ID
+                            INNER JOIN HL3 ON HL3.HL3_ID = HL4.HL3_ID
+                            INNER JOIN HL2 ON HL3.HL2_ID = HL2.HL2_ID
+                    WHERE HL5.hl5_id = in_parent_id;
+        ELSE
+            out_result =
+                            SELECT
+                                hl2.hl2_id
+                                , DYNAMIC_FORM_L5_UID
+                                , DYNAMIC_FORM_L6_UID
+                                FROM HL5_LEGACY HL5
+                                    INNER JOIN HL4 ON HL4.HL4_ID = HL5.HL4_ID
+                                    INNER JOIN HL3 ON HL3.HL3_ID = HL4.HL3_ID
+                                    INNER JOIN HL2 ON HL3.HL2_ID = HL2.HL2_ID
+                            WHERE HL5.HL5_LEGACY_id = in_parent_id;
+        END IF;
+    END IF;
+END;

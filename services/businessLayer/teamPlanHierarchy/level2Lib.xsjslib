@@ -66,6 +66,9 @@ var L1_BUDGET_ZERO_CATEGORY_TOTAL_PERCENTAGE_ZERO = "When Team budget is zero th
 var L1_CATEGORY_OPTIONS_NOT_EMPTY = "Option percentage should be less than or equal to 100%.";
 var L1_APPROVERS_NOT_FOUND = "Approvers data was not found.";
 
+var NO_L2_EXIST_IN_SELECTED_REGION = "No Team exist under the selected region.";
+var NO_L2_EXIST_IN_SELECTED_PLANNING_PURPOSE = "No Team exist under the selected planning purpose.";
+
 var LEVEL3 = 3;
 
 var TEAM_TYPE = util.getTeamTypeEnum();
@@ -206,6 +209,22 @@ function getHl2AllowAutomaticBudgetApprovalByHl4Id(l4Id) {
 
 function getHl2AllowAutomaticBudgetApprovalByHl5Id(l5Id) {
     return dataHl2.getHl2AllowAutomaticBudgetApprovalByHl5Id(l5Id);
+}
+
+function getHl2GroupByRegion(budgetYearId, userId){
+    if (!userId) {
+        throw ErrorLib.getErrors().CustomError("", "", L1_MSG_USER_NOT_FOUND);
+    }
+
+    var isSA = userId ? util.isSuperAdmin(userId) : 1;
+
+    if (!isSA) {
+        throw ErrorLib.getErrors().CustomError("", "", NOT_SUPERADMIN_USER);
+    }
+
+    var hl2List = dataHl2.getHl2ByBudgetYear(budgetYearId);
+    // return util.parseLevelTreeByRegion(hl2List, HIERARCHY_LEVEL.HL2);
+    return util.parseLevel2TreeByRegion(hl2List, HIERARCHY_LEVEL.HL2);
 }
 
 /*INSERT A NEW HL2 WITH CREO O MORE USERS ASICIATIONS*/
@@ -1316,4 +1335,88 @@ function extractElementByList(list, criterion, value) {
 function deleteLevel2User(arrDelHl2User) {
     eventManagementLib.deleteEventApproverByHlIdUserId('HL2',arrDelHl2User);
     return dataHl2User.deleteLevel2User(arrDelHl2User);
+}
+
+function updateDynamicFormAssociation(data, userId) {
+    var dynamicForm = {
+        L5: [],
+        L6: []
+    };
+
+    Object.keys(data).forEach(function (level) {
+        var levelString = 'H' + level;
+        switch (level) {
+            case "L5":
+            case "L6":
+                if (data[level] && (data[level].USE_DEFAULT || (data[level].DYNAMIC_FORM_UID && data[level].DYNAMIC_FORM_UID.trim()))) {
+                    var dynamicFormUId = data[level].USE_DEFAULT ? null : data[level].DYNAMIC_FORM_UID.trim();
+                    if (data.HL2_IDS.constructor === Array) {
+                        dynamicForm[level] = data.HL2_IDS.map(function (value) {
+                            return {
+                                hl2Id: value,
+                                dynamicFormUId: dynamicFormUId,
+                                userId: userId
+                            }
+                        });
+                    } else {
+                        dynamicForm[level].push({
+                            hl2Id: data.HL2_IDS,
+                            dynamicFormUId: dynamicFormUId,
+                            userId: userId
+                        })
+                    }
+                }
+
+                if (dynamicForm[level].length) {
+                    dataHl2.updateDynamicFormAssociation(dynamicForm[level], levelString);
+                }
+                break;
+        }
+    });
+
+    return true;
+}
+
+function massUpdateDynamicFormAssociation(data, hl2List, userId, errorMessage) {
+    if (!hl2List.length) {
+        throw ErrorLib.getErrors().CustomError("", "", errorMessage);
+    }
+
+    var updateObject = {
+        L5: data.L5,
+        L6: data.L6,
+        HL2_IDS: []
+    };
+
+    updateObject.HL2_IDS = hl2List.map(function (hl2) {
+        return hl2.HL2_ID;
+    });
+
+    return updateDynamicFormAssociation(updateObject, userId);
+}
+
+function updateDynamicFormAssociationByRegion(data, userId) {
+    var regionData = data.REGION_IDS.map(function (regionId) {
+        return {
+            in_region_id: regionId,
+            in_budget_year_id: data.BUDGET_YEAR_ID
+        }
+    });
+
+    var hl2List = dataHl2.getHl2ByBudgetYearRegion(regionData);
+
+    return massUpdateDynamicFormAssociation(data, hl2List, userId, NO_L2_EXIST_IN_SELECTED_REGION);
+}
+
+function updateDynamicFormAssociationByPlanningPurpose(data, userId) {
+    var planningPurposeData = data.PLANNING_PURPOSE_IDS.map(function (planningPurposeId) {
+        return {
+            in_planning_purpose_id: planningPurposeId,
+            in_budget_year_id: data.BUDGET_YEAR_ID
+        }
+    });
+
+    var hl2List = dataHl2.getHl2ByBudgetYearPlanningPurpose(planningPurposeData);
+
+    return massUpdateDynamicFormAssociation(data, hl2List, userId, NO_L2_EXIST_IN_SELECTED_PLANNING_PURPOSE);
 }

@@ -13,7 +13,6 @@ var GET_HL1_BY_ID = "GET_HL1_BY_ID";
 var GET_HL1_BY_USER_ID = "GET_HL1_BY_USER_ID";
 var GET_HL1_BY_BUDGET_YEAR_ID = "GET_HL1_BY_BUDGET_YEAR_ID";
 var GET_HL1_BY_BUDGET_YEAR_REGION = "GET_HL1_BY_BUDGET_YEAR_REGION";
-var GET_HL1_BY_BUDGET_YEAR_PLANNING_PURPOSE = "GET_HL1_BY_BUDGET_YEAR_PLANNING_PURPOSE";
 var GET_HL1_BY_ACRONYM = "GET_HL1_BY_ACRONYM";
 var GET_COUNT_HL2_BY_HL1_ID = "GET_COUNT_HL2_BY_HL1_ID";
 var GET_HL1_ALLOCATED_BUDGET = "GET_HL1_ALLOCATED_BUDGET";
@@ -27,7 +26,6 @@ var GET_ALL_HL1_VERSION_BY_HL1_ID = "GET_ALL_HL1_VERSION_BY_HL1_ID";
 var GET_HL1_VERSION_BY_FILTER = "GET_HL1_VERSION_BY_FILTER";
 var GET_HL1_VERSION_BY_ID = "GET_HL1_VERSION_BY_ID";
 var GET_HL1_BY_HL4_ID = "GET_HL1_BY_HL4_ID";
-var GET_HL1_ASSOCIATED_FORM_BY_LEVEL_HL_ID = "GET_HL1_ASSOCIATED_FORM_BY_LEVEL_HL_ID";
 
 function insertLevel1(acronym, description, budgetYearId, regionId, userId, budget, planningPurposeId, teamTypeId, implementExecutionLevel, crtRelated, import_id, imported) {
     var parameters = {};
@@ -101,11 +99,6 @@ function getLevel1ById(hl1Id) {
 
 function getHl1ByBudgetYearRegion(data){
 	var result = db.executeProcedureManual(GET_HL1_BY_BUDGET_YEAR_REGION, data);
-	return  db.extractArray(result.out_result);
-}
-
-function getHl1ByBudgetYearPlanningPurpose(data){
-	var result = db.executeProcedureManual(GET_HL1_BY_BUDGET_YEAR_PLANNING_PURPOSE, data);
 	return  db.extractArray(result.out_result);
 }
 
@@ -216,17 +209,6 @@ function getHl1KpiSummary(budgetYearId, regionId, userId, isSuperAdmin) {
     return db.extractArray(list.out_result);
 }
 
-function getHl1FormAssociatedByLevelHlId(level, parentId,isLegacyParent){
-    var parameters = {
-        in_level: level,
-        in_parent_id: parentId,
-        in_is_legacy_parent: isLegacyParent
-    };
-
-    var list = db.executeProcedureManual(GET_HL1_ASSOCIATED_FORM_BY_LEVEL_HL_ID, parameters, isLegacyParent);
-    return db.extractArray(list.out_result)[0];
-}
-
 function insertLevel1Version(hl1_id, version, acronym, description, budgetYearId, regionId, userId, budget, planningPurposeId, teamTypeId, implementExecutionLevel, crtRelated) {
     var parameters = {};
     var result = {};
@@ -280,9 +262,4 @@ function getLevel1VersionById(hl1Id, version) {
 function getHl1ByHl4Id(hl4Id) {
     var result = db.executeProcedureManual(GET_HL1_BY_HL4_ID, {'in_hl4_id': hl4Id});
     return db.extractArray(result.out_result)[0];
-}
-
-function updateDynamicFormAssociation(data, level) {
-    var sp = 'UPD_HL1_DYNAMIC_FORM_' + level.toUpperCase() + '_ASSOCIATION';
-    return db.executeScalarManual(sp, data, "out_result");
 }

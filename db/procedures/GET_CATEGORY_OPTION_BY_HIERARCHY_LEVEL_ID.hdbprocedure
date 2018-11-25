@@ -27,10 +27,10 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_CATEGORY_OPT
 	READS SQL DATA AS
 BEGIN
 
-    va_hl1_form_uid = SELECT HL1_ID,
-                        (CASE WHEN in_hierarchy_level_id = 2 THEN HL1.DYNAMIC_FORM_L5_UID
-                        ELSE (CASE WHEN in_hierarchy_level_id = 3 THEN HL1.DYNAMIC_FORM_L6_UID END) END) AS DYNAMIC_FORM_UID
-                      FROM HL1;
+    va_hl2_form_uid = SELECT HL2_ID,
+                        (CASE WHEN in_hierarchy_level_id = 2 THEN HL2.DYNAMIC_FORM_L5_UID
+                        ELSE (CASE WHEN in_hierarchy_level_id = 3 THEN HL2.DYNAMIC_FORM_L6_UID END) END) AS DYNAMIC_FORM_UID
+                      FROM HL2;
 
 	va_hidden_categories = SELECT AC.ALLOCATION_CATEGORY_ID AS CATEGORY_ID
     ,AO.ALLOCATION_OPTION_ID AS OPTION_ID
@@ -44,8 +44,7 @@ BEGIN
 		and DYNAMIC_FORM_ALLOCATION.enabled = 1 and DYNAMIC_FORM_ALLOCATION.deleted = 0
     left join DYNAMIC_FORM ON DYNAMIC_FORM.DYNAMIC_FORM_ID = DYNAMIC_FORM_ALLOCATION.DYNAMIC_FORM_ID
 	and DYNAMIC_FORM.enabled = 1 and DYNAMIC_FORM.deleted = 0
-    inner JOIN HL2 ON hl2.hl2_id = in_hl2_id
-    inner JOIN :va_hl1_form_uid HL1 ON HL1.DYNAMIC_FORM_UID = DYNAMIC_FORM.DYNAMIC_FORM_UID AND HL2.HL1_ID = HL1.HL1_ID
+    inner JOIN :va_hl2_form_uid HL2 ON HL2.DYNAMIC_FORM_UID = DYNAMIC_FORM.DYNAMIC_FORM_UID AND HL2.HL2_ID = in_hl2_id
     where acol.hierarchy_level_id = in_hierarchy_level_id
     and ac.enabled = 1
     and ac.deleted = 0

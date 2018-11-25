@@ -1,0 +1,25 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL2_BY_BUDGET_YEAR_REGION" (
+	IN parameter TABLE (
+	    in_budget_year_id BIGINT,
+	    in_region_id BIGINT
+	    ),
+	OUT out_result TABLE(
+		HL2_ID BIGINT,
+		DYNAMIC_FORM_L5_UID nvarchar(255),
+		DYNAMIC_FORM_L6_UID nvarchar(255)
+	)
+) 
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER 
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	READS SQL DATA AS
+BEGIN
+    out_result = SELECT HL2_ID,
+                        DYNAMIC_FORM_L5_UID,
+						DYNAMIC_FORM_L6_UID
+                 FROM HL2
+                 INNER JOIN HL1 ON HL1.HL1_ID = HL2.HL1_ID
+                 INNER JOIN :parameter P ON P.in_budget_year_id = HL1.BUDGET_YEAR_ID AND P.in_region_id = HL1.REGION_ID
+                 WHERE hl2.ENABLED = 1
+                    AND hl2.DELETED = 0;
+END;

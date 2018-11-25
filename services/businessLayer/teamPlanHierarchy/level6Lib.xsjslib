@@ -412,8 +412,7 @@ function insertHl6(data, userId, isLegacy) {
 		data.IN_BUDGET = 1;
 	} else {
 		data.BUDGET = Number(data.BUDGET) / conversionValue;
-		data.IN_BUDGET = checkBudgetStatus(hl5Id, hl6_id, data.BUDGET, hl5,
-				isLegacy);
+		data.IN_BUDGET = (!!data.AUTOMATIC_APPROVAL)? 1 : checkBudgetStatus(hl5Id, hl6_id, data.BUDGET, hl5, isLegacy); //TODO: use AUTOMATIC_APPROVAL till the new flag is setted
 	}
 
 	var validationResult = validateHl6(data, userId, hl5, isLegacy);
@@ -710,8 +709,7 @@ function updateHl6(data, userId, isLegacy) {
 		data.IN_BUDGET = 1;
 	} else {
 		data.BUDGET = Number(data.BUDGET) / conversionValue;
-		data.IN_BUDGET = checkBudgetStatus(hl5Id, data.HL6_ID, data.BUDGET,
-				hl5, isLegacy);
+		data.IN_BUDGET = (!!data.AUTOMATIC_APPROVAL)? 1 : checkBudgetStatus(hl5Id, data.HL6_ID, data.BUDGET, hl5, isLegacy); //TODO: use AUTOMATIC_APPROVAL till the new flag is setted
 	}
 
 	var ownMoneyBudgetSpendRequestStatus = budgetSpendRequest
@@ -1152,7 +1150,9 @@ function validateBudget(data, fromChangeStatusOnDemand) {
 	} else {
 		if (data.AUTOMATIC_APPROVAL) {
 			if (!!Number(data.BUDGET)) {
-				if (!!Number(data.IN_BUDGET) || fromChangeStatusOnDemand) {
+                //TODO: in later versions there is going to be another flag to allow the user to be over budget, for now we don't need the code.
+
+				/*if (!!Number(data.IN_BUDGET) || fromChangeStatusOnDemand) {
 					var budgetSpendRequestStatus = budgetSpendRequest
 							.getBudgetSpendRequestsStatus();
 					var ownMoneyBudgetSpendRequestStatus = budgetSpendRequest
@@ -1192,7 +1192,10 @@ function validateBudget(data, fromChangeStatusOnDemand) {
 						isComplete = hasBudgetRequestApproved
 								&& hasBudgetRequestPending;
 					}
-				}
+				}*/
+
+                //Workaround till the new flag is setted.
+                isComplete = true;
 			} else {
 				if (Number(data.CO_FUNDED)) {
 					isComplete = (data.SALE_REQUESTS && data.SALE_REQUESTS.length)
