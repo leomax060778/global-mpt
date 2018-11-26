@@ -68,6 +68,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL6_BY_ID"(
             , inherited_creation TINYINT
             , PARENT_PATH NVARCHAR(255)
             , HL5_LEGACY_ID BIGINT
+            , DYNAMIC_FORM_ID BIGINT
 		)
 	)
 	LANGUAGE SQLSCRIPT
@@ -154,6 +155,7 @@ va_own_money_budget_request = SELECT TOP 1 BSRS.budget_spend_request_status_id
                 , HL6.INHERITED_CREATION
                 , HL5_LEGACY.PATH AS PARENT_PATH
                 , HL6_LEGACY.HL5_LEGACY_ID
+                , HL6.DYNAMIC_FORM_ID
 			FROM HL6
 			LEFT JOIN HL5 ON HL5.HL5_ID = HL6.HL5_ID
 			LEFT JOIN HL6_LEGACY ON HL6_LEGACY.HL6_ID = HL6.HL6_ID

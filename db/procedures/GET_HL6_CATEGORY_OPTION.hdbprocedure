@@ -22,6 +22,20 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL6_CATEGORY
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
 	READS SQL DATA AS
 BEGIN
+    va_allocation_from_dynamic_form =
+    select distinct
+        dynamic_form_allocation.allocation_category_id
+        ,dynamic_form_allocation.allocation_option_id
+    from allocation_category_option_level acol
+    inner join allocation_category ac on acol.allocation_category_id = ac.allocation_category_id
+    inner join allocation_option ao on acol.allocation_option_id = ao.allocation_option_id
+    inner join dynamic_form_allocation on acol.allocation_category_id = dynamic_form_allocation.allocation_category_id
+        and acol.allocation_option_id = dynamic_form_allocation.allocation_option_id
+    inner join dynamic_form on dynamic_form.dynamic_form_id = dynamic_form_allocation.dynamic_form_id
+    inner join hl6 on hl6.dynamic_form_id = dynamic_form.dynamic_form_id
+    inner join hl6_category_option hl6co on hl6co.enabled = 1 and hl6co.deleted = 0 and hl6co.hl6_id = hl6.hl6_id
+    where hl6co.hl6_id = in_hl_id;
+
 	va_hl6_category_option =
 	(SELECT
 	 ac.allocation_category_id as category_id
@@ -43,9 +57,13 @@ BEGIN
 	AND ACOL.enabled = 1 AND ACOL.deleted = 0
 	inner join allocation_option ao on acol.allocation_option_id = ao.allocation_option_id
 	inner join allocation_category ac on ACOL.allocation_category_id = ac.allocation_category_id
+	LEFT JOIN :va_allocation_from_dynamic_form T2 ON ac.allocation_category_id = T2.allocation_category_id AND ao.allocation_option_id = T2.allocation_option_id
 	WHERE hl6_id = in_hl_id
-	  AND hl6CO.enabled = 1
-	  AND hl6CO.deleted = 0)
+        AND hl6CO.enabled = 1
+        AND hl6CO.deleted = 0
+        and ACOL.allocation_category_id not in (select allocation_category_id from :va_allocation_from_dynamic_form)
+        and ACOL.allocation_option_id not in (select allocation_option_id from :va_allocation_from_dynamic_form)
+	  )
 	  UNION ALL
       	  (SELECT
                       	 ac.allocation_category_id as category_id

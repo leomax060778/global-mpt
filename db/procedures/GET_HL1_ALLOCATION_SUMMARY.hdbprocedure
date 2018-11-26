@@ -1,0 +1,82 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL1_ALLOCATION_SUMMARY" (
+	 IN in_budget_year_id BIGINT
+	,IN in_region_id BIGINT
+	,IN in_subregion_id BIGINT
+	,IN in_user_id BIGINT
+	,IN in_is_super_Admin tinyint
+	,OUT out_result TABLE (
+        HL1_ID BIGINT
+        , HL2_TOTAL_COUNT INTEGER
+        , ACRONYM NVARCHAR(25)
+        , CRM_ID NVARCHAR(25)
+        , BUDGET_YEAR NVARCHAR(255)
+        , IS_LOCKED TINYINT
+        , CATEGORY_NAME NVARCHAR(255)
+        , OPTION_NAME NVARCHAR(255)
+        , BUDGET_DISTRIBUTION_PERCENTAGE DECIMAL(19, 2)
+        , BUDGET_DISTRIBUTION_AMOUNT DECIMAL(19, 2)
+        , HL1_DESCRIPTION NVARCHAR(255)
+        , SUB_AMOUNT DECIMAL(19, 2)
+		)
+)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	READS SQL DATA AS
+BEGIN
+	va_subresult =
+	SELECT
+		SUMMARY.HL1_ID
+		, "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(SUMMARY.BUDGET_YEAR, SUMMARY.L1_ACRONYM, '', '', '', '', '') AS CRM_ID
+		, SUMMARY.TOTAL_OF_PRIORITIES AS hl2_total_count
+		, UPPER(SUMMARY.L1_ACRONYM) as acronym
+		, SUMMARY.BUDGET_YEAR
+		, SUMMARY.IS_LOCKED
+        , SUMMARY.CATEGORY_NAME
+        , SUMMARY.OPTION_NAME
+        , SUMMARY.BUDGET_DISTRIBUTION_PERCENTAGE
+        , SUMMARY.BUDGET_DISTRIBUTION_AMOUNT
+		, SUMMARY.REGION_ID
+		, SUMMARY.HL1_DESCRIPTION
+		, SUMMARY.SUB_AMOUNT
+
+	FROM  "_SYS_BIC"."mktgplanningtool.db.data.views/CV_HL1_LOB_ALLOCATION_SUMMARY" SUMMARY
+	WHERE (SUMMARY.BUDGET_YEAR_ID = in_budget_year_id)
+	    AND (in_is_super_Admin = 1 OR SUMMARY.HL1_ID IN (SELECT HL1_ID FROM HL1_USER WHERE USER_ID = in_user_id));
+
+    -- this filter is necesary to filter GLOBALS, where region_id = 0
+    if in_region_id = -1 then
+        out_result = select T.HL1_ID
+                            		, T.HL2_TOTAL_COUNT
+                            		, T.ACRONYM
+                            		, T.CRM_ID
+                            		, T.BUDGET_YEAR
+                            		, T.IS_LOCKED
+                                    , T.CATEGORY_NAME
+                                    , T.OPTION_NAME
+                                    , T.BUDGET_DISTRIBUTION_PERCENTAGE
+                                    , T.BUDGET_DISTRIBUTION_AMOUNT
+                                    , T.HL1_DESCRIPTION
+                                    , T.SUB_AMOUNT
+                              from :va_subresult T
+                    where T.REGION_ID = 0
+                    ORDER BY T.ACRONYM;
+    else
+        out_result = select T.HL1_ID
+                            , T.HL2_TOTAL_COUNT
+                            , T.ACRONYM
+                            , T.CRM_ID
+                            , T.BUDGET_YEAR
+                            , T.IS_LOCKED
+                            , T.CATEGORY_NAME
+                            , T.OPTION_NAME
+                            , T.BUDGET_DISTRIBUTION_PERCENTAGE
+                            , T.BUDGET_DISTRIBUTION_AMOUNT
+                            , T.HL1_DESCRIPTION
+                            , T.SUB_AMOUNT
+                            from :va_subresult T
+                    where (T.REGION_ID = in_region_id OR in_region_id = 0)
+                    ORDER BY T.ACRONYM;
+     end if;
+END;
+

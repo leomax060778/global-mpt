@@ -16,9 +16,10 @@ var setStatusInCRM = "SETINCRM";
 var changeStatus = "CHANGESTATUS";
 var setStatusInCRMByUpload = "SET_IN_CRM_STATUS_BY_UPLOAD";
 // var sendInCrmNotificationMail = "SENDMAIL";
-
+var config = mapper.getDataConfig();
+var blRolePermission = mapper.getRolePermission();
+var blDynamicForm = mapper.getDynamicFormLib();
 /******************************************/
-
 function processRequest(){
     return httpUtil.processRequest(handleGet, handlePost, handlePut, handleDelete,false, "", true);
 }
@@ -39,8 +40,8 @@ function handleGet(params, userId) {
     if(parameters.METHOD){
         switch(parameters.METHOD){
             case "GET_HL4_BY_HL3_ID":
-
-                result = hl4.getHl4(parameters.HL3_ID, userId);
+            case "GET_HL4_FOR_BUSINESS_PLANNING":
+                result = hl4.getHl4(parameters.HL3_ID, userId, parameters.METHOD == 'GET_HL4_FOR_BUSINESS_PLANNING');
                 break;
             case "CARRY_OVER":
 
@@ -70,6 +71,16 @@ function handleGet(params, userId) {
                 var budgetYearObj = dataBudgetYear.getBudgetYearId(budgetYear[0].BUDGET_YEAR_ID);
 
                 result = {'ENABLE_CRM_CREATION' : budgetYearObj.ENABLE_CRM_CREATION === 1};
+                break;
+            case "GET_DYNAMIC_FORM":
+                result = blDynamicForm.getFormByRoleId("L4", null, true, userId);
+                break;
+            case "GET_DYNAMIC_FORM_BY_BUDGET_YEAR":
+                var budgetYearId = parameters.BUDGET_YEAR_ID;
+                result = blDynamicForm.getFormByRoleIdBudgetYearId("L4", budgetYearId, null, true, userId);
+                break;
+            case 'GET_DATA_KPI':
+                result = hl4.getLevel4Kpi(parameters.HL3_ID, userId);
                 break;
             default:
 
@@ -101,13 +112,14 @@ function handlePut(reqBody, userId){
                 rdo = hl4.setStatusInCRMByUpload(reqBody, userId);
                 break;
             case changeStatus:
-
                 rdo = hl4.changeHl4StatusOnDemand(hl4Id, userId);
                 break;
             case "UPD_ENABLED_CRM_CREATION":
                 var enable_crm_creation = parameters.get('ENABLE_CRM_CREATION');
-
                 rdo = hl4.updEnableCrmCreation(hl4Id, enable_crm_creation);
+                break;
+            case 'UPDATE_BUDGET':
+                rdo =  hl4.updateBudget(reqBody.ID,reqBody.BUDGET,userId);
                 break;
             default:
                 throw ErrorLib.getErrors().BadRequest("","","insufficient parameters");
@@ -128,6 +140,7 @@ function handleDelete(reqBody, userId){
 
 //Implementation of POST call -- Insert HL4
 function handlePost(reqBody, userId) {
+    blRolePermission.checkEspecialPermission(userId, "Create", config.level4());
     var result = hl4.insertHl4(reqBody, userId); //return new L4 Id
     return httpUtil.handleResponse(result,httpUtil.OK,httpUtil.AppJson);
 }

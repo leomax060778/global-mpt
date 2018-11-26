@@ -3,6 +3,8 @@ var mapper = $.mktgplanningtool.services.commonLib.mapper;
 var dataHl1 = mapper.getDataLevel1();
 var dataHl2 = mapper.getDataLevel2();
 var dataHl2User = mapper.getDataLevel2User();
+var dataUserRole = mapper.getDataUserRole();
+var dataRolePermission = mapper.getDataRolePermission();
 var hl3 = mapper.getLevel3();
 var dataHl3 = mapper.getDataLevel3();
 var ErrorLib = mapper.getErrors();
@@ -28,26 +30,17 @@ var blLevel1 = mapper.getLevel1();
 var dataSubRegion = mapper.getDataSubRegion();
 var hierarchyCategoryCountryLib = mapper.getHierarchyCategoryCountry();
 var eventManagementLib = mapper.getEventManagementLib();
+var planningPurposeOptionLib = mapper.getPlanningPurposeOptionLib();
+var rolePermissionLib = mapper.getRolePermission();
+var budgetSpendRequestLib = mapper.getBudgetSpendRequest();
+var level4 = mapper.getLevel4();
 /** ***********END INCLUDE LIBRARIES*************** */
-
-
-var LEVEL3 = 3;
-var TEAM_TYPE_CENTRAL = "2";
-
-var HIERARCHY_LEVEL = {
-    HL1: 6,
-    HL2: 5,
-    HL3: 4,
-    HL4: 1,
-    HL5: 2,
-    HL6: 3
-};
 
 // var L1_MSG_CENTRAL_TEAM_EXISTS = "Another Central Team with the same acronym already exists.";
 var L1_MSG_PLAN_EXISTS = "Another Plan with the same acronym already exists";
 var L1_MSG_LEVEL_1_EXISTS = "Another Team with the same organization acronym already exists";
 var L2_MSG_LEVEL_2_SUB_REGION = "The Market Unit is mandatory for this Plan.";
-var L2_BUDGET_EXCEEDED = "The maximum number for Budget was exceeded."
+var L2_BUDGET_EXCEEDED = "The maximum number for Budget was exceeded.";
 var L1_MSG_PLAN_NO_CREATED = "The Plan could not be created.";
 var L1_MSG_NO_PRIVILEGE = "Not enough privilege to do this action.";
 var L1_MSG_PLAN_NOT_FOUND = "The Plan can not be found.";
@@ -73,25 +66,120 @@ var L1_BUDGET_ZERO_CATEGORY_TOTAL_PERCENTAGE_ZERO = "When Team budget is zero th
 var L1_CATEGORY_OPTIONS_NOT_EMPTY = "Option percentage should be less than or equal to 100%.";
 var L1_APPROVERS_NOT_FOUND = "Approvers data was not found.";
 
-function getHl2ByHl1Id(hl1Id, userId) {
+var NO_L2_EXIST_IN_SELECTED_REGION = "No Team exist under the selected region.";
+var NO_L2_EXIST_IN_SELECTED_PLANNING_PURPOSE = "No Team exist under the selected planning purpose.";
+
+var LEVEL3 = 3;
+
+var TEAM_TYPE = util.getTeamTypeEnum();
+
+var HIERARCHY_LEVEL = {
+    HL1: 6,
+    HL2: 5,
+    HL3: 4,
+    HL4: 1,
+    HL5: 2,
+    HL6: 3
+};
+
+function getHl2ByHl1Id(hl1Id, userId, fromCheckBudgetStatus) {
     var isSA = false;
     if (config.getApplySuperAdminToAllInitiatives()) {
         isSA = userbl.isSuperAdmin(userId);
     }
-    var result = {};
-    result = dataHl2.getHl2ByHl1Id(hl1Id, userId, isSA);
+    var result = dataHl2.getHl2ByHl1Id(hl1Id, userId, isSA);
     result.budget_year = budgetYear.getBudgetYearByLevelParent(2, hl1Id, true);
 
     var list = JSON.parse(JSON.stringify(result.out_result));
-    result.out_result = {};
+
+    var rdo = {};
+    list.forEach(function (item) {
+        rdo[item.L2_LEVEL + item.L2_ACRONYM] = rdo[item.L2_LEVEL + item.L2_ACRONYM] || {
+            HL_ID: item.L2_ID,
+            PARENT_ID: hl1Id,
+            BUDGET: item.L2_BUDGET,
+            BUDGET_PERCENTAGE: item.L2_BUDGET_PERCENTAGE,
+            BUDGET_REMAINING: item.L2_BUDGET_REMAINING,
+            CHILDREN_TOTAL_COUNT: item.L3_TOTAL_COUNT,
+            ACRONYM: item.L2_ACRONYM,
+            CRM_ID: item.L2_CRM_ID,
+            IS_LOCKED: item.L2_IS_LOCKED,
+            BUDGET_ALLOCATED: item.L2_BUDGET_ALLOCATED,
+            DESCRIPTION: item.L2_DESCRIPTION,
+            VERSION: item.L2_VERSION,
+            HIERARCHY_LEVEL_ID: HIERARCHY_LEVEL[item.L2_LEVEL],
+            CHILDREN: {}
+        };
+        if(item.L3_ACRONYM) {
+            if (!rdo[item.L2_LEVEL + item.L2_ACRONYM].CHILDREN[item.L3_LEVEL + item.L3_ACRONYM]) {
+                rdo[item.L2_LEVEL + item.L2_ACRONYM].CHILDREN[item.L3_LEVEL + item.L3_ACRONYM] = {
+                    HL_ID: item.L3_ID,
+                    PARENT_ID: item.L2_ID,
+                    BUDGET: item.L3_BUDGET,
+                    BUDGET_PERCENTAGE: item.L3_BUDGET_PERCENTAGE,
+                    BUDGET_REMAINING: item.L3_BUDGET_REMAINING,
+                    CHILDREN_TOTAL_COUNT: item.L4_TOTAL_COUNT,
+                    ACRONYM: item.L3_ACRONYM,
+                    CRM_ID: item.L3_CRM_ID,
+                    IS_LOCKED: item.L3_IS_LOCKED,
+                    BUDGET_ALLOCATED: item.L3_BUDGET_ALLOCATED,
+                    DESCRIPTION: item.L3_DESCRIPTION,
+                    VERSION: item.L3_VERSION,
+                    HIERARCHY_LEVEL_ID: HIERARCHY_LEVEL[item.L3_LEVEL],
+                    CHILDREN: {}
+                };
+            }
+
+            if (item.L4_ACRONYM && !rdo[item.L2_LEVEL + item.L2_ACRONYM].CHILDREN[item.L3_LEVEL + item.L3_ACRONYM].CHILDREN[item.L4_ACRONYM]) {
+                var child = {
+                    HL_ID: item.L4_ID,
+                    PARENT_ID: item.L3_ID,
+                    BUDGET: item.L4_BUDGET,
+                    BUDGET_PERCENTAGE: item.L4_BUDGET_PERCENTAGE,
+                    BUDGET_REMAINING: item.L4_BUDGET_REMAINING,
+                    CHILDREN_TOTAL_COUNT: item.L5_TOTAL_COUNT,
+                    ACRONYM: item.L4_ACRONYM,
+                    CRM_ID: item.L4_CRM_ID,
+                    BUDGET_ALLOCATED: item.L4_BUDGET_ALLOCATED,
+                    DESCRIPTION: item.L4_DESCRIPTION,
+                    STATUS_DETAIL: item.L4_STATUS_DETAIL,
+                    STATUS_ID: item.L4_STATUS_ID,
+                    IMPLEMENT_EXECUTION_LEVEL: item.L4_IMPLEMENT_EXECUTION_LEVEL,
+                    IN_CRM_CHILD_HL5: item.L4_IN_CRM_CHILD_HL5,
+                    IN_CRM_CHILD_HL6: item.L4_IN_CRM_CHILD_HL6,
+                    ENABLE_CRM_CREATION: item.L4_ENABLE_CRM_CREATION,
+                    HIERARCHY_LEVEL_ID: HIERARCHY_LEVEL[item.L4_LEVEL]
+                };
+                var enableAction = level4.getEnableAction(child, userId, isSA);
+                child.ENABLE_DELETION = enableAction.ENABLE_DELETION;
+                child.ENABLE_CHANGE_STATUS = enableAction.ENABLE_CHANGE_STATUS;
+                child.ENABLE_EDIT = enableAction.ENABLE_EDIT;
+                rdo[item.L2_LEVEL + item.L2_ACRONYM].CHILDREN[item.L3_LEVEL + item.L3_ACRONYM].CHILDREN[item.L4_ACRONYM] = child;
+            }
+        }
+    });
+    result.out_result = util.planningLevelGridParser(rdo);
+    if(!fromCheckBudgetStatus){
+        result.out_lob_allocation_view = getLobAllocationSummary(hl1Id, userId, isSA);
+    }
+    return result;
+}
+
+function getLobAllocationSummary(hl1Id, userId, isSA) {
+    var list = JSON.parse(JSON.stringify(dataHl2.getLobAllocationSummary(hl1Id, userId, isSA)));
+    var result = {out_result: {}};
     list.forEach(function (row) {
-        result.out_result[row.ORGANIZATION_ACRONYM] = result.out_result[row.ORGANIZATION_ACRONYM] || row;
-        result.out_result[row.ORGANIZATION_ACRONYM].BUDGET = row.HL2_BUDGET_TOTAL;
-        result.out_result[row.ORGANIZATION_ACRONYM].SUBREGION_NAME = row.SUBREGION_NAME;
-        result.out_result[row.ORGANIZATION_ACRONYM].L2_BUDGET_PERCENTAGE = row.L2_BUDGET_PERCENTAGE;
-        result.out_result[row.ORGANIZATION_ACRONYM].HL2_BUDGET_REMAINING = row.HL2_BUDGET_REMAINING;
-        result.out_result[row.ORGANIZATION_ACRONYM].HL2_BUDGET_ALLOCATED = row.HL2_BUDGET_ALLOCATED;
-        result.out_result[row.ORGANIZATION_ACRONYM].CHILDREN = result.out_result[row.ORGANIZATION_ACRONYM].CHILDREN || [];
+        result.out_result[row.ORGANIZATION_ACRONYM] = result.out_result[row.ORGANIZATION_ACRONYM] || {
+            ORGANIZATION_ACRONYM: row.ORGANIZATION_ACRONYM,
+            ORGANIZATION_NAME: row.ORGANIZATION_NAME,
+            HL3_TOTAL_COUNT: row.HL3_TOTAL_COUNT,
+            PARENT_ID: row.HL1_ID,
+            HL2_ID: row.HL2_ID,
+            CRM_ID: row.CRM_ID,
+            IS_LOCKED: row.IS_LOCKED,
+            HIERARCHY_LEVEL_ID: HIERARCHY_LEVEL.HL2,
+            CHILDREN: []
+        };
         if (row.BUDGET_DISTRIBUTION_AMOUNT) {
             result.out_result[row.ORGANIZATION_ACRONYM].CHILDREN.push({
                 CATEGORY_NAME: row.CATEGORY_NAME,
@@ -103,14 +191,10 @@ function getHl2ByHl1Id(hl1Id, userId) {
         }
     });
     // v Object.values(result.out_result) v //
-    result.out_result = Object.keys(result.out_result).map(function (k) {
+    result = Object.keys(result.out_result).map(function (k) {
         return result.out_result[k];
     });
 
-    //MPT Global - add a new view to see the KPIs summary
-    /*for (var i = 0; i < result.out_result.length; i++) {
-        result.out_result[i].kpi = getExpectedOutcomeByL2Id(result.out_result[i].HL2_ID, hl1Id);
-    }*/
     return result;
 }
 
@@ -127,16 +211,37 @@ function getHl2AllowAutomaticBudgetApprovalByHl5Id(l5Id) {
     return dataHl2.getHl2AllowAutomaticBudgetApprovalByHl5Id(l5Id);
 }
 
+function getHl2GroupByRegion(budgetYearId, userId){
+    if (!userId) {
+        throw ErrorLib.getErrors().CustomError("", "", L1_MSG_USER_NOT_FOUND);
+    }
+
+    var isSA = userId ? util.isSuperAdmin(userId) : 1;
+
+    if (!isSA) {
+        throw ErrorLib.getErrors().CustomError("", "", NOT_SUPERADMIN_USER);
+    }
+
+    var hl2List = dataHl2.getHl2ByBudgetYear(budgetYearId);
+    // return util.parseLevelTreeByRegion(hl2List, HIERARCHY_LEVEL.HL2);
+    return util.parseLevel2TreeByRegion(hl2List, HIERARCHY_LEVEL.HL2);
+}
+
 /*INSERT A NEW HL2 WITH CREO O MORE USERS ASICIATIONS*/
 function insertHl2(objLevel2, userId) {
+    var hl1 = dataHl1.getLevel1ById(objLevel2.HL1_ID);
+
+    var requiredDFObject = JSON.parse(JSON.stringify(budgetYear.getRequireDynamicFormByBudgetYearId(hl1.BUDGET_YEAR_ID)));
+
+    //Complete data with dynamic form (if the Budget Year requires it).
+    objLevel2 = (Number(requiredDFObject.REQUIRE_DYNAMIC_FORM) === 1)? util.completeFromDynamicFormByRole(userId, HIERARCHY_LEVEL["HL2"], objLevel2, hl1.BUDGET_YEAR_ID) : objLevel2;
+
     validateInsertHl2(objLevel2);
     validateKpi(objLevel2);
     validateCategoryOption(objLevel2);
     validateHl2User(objLevel2.ASSIGNED_USERS);
     objLevel2.ASSIGNED_USERS = util.parseAssignedUsers(objLevel2.ASSIGNED_USERS);
     objLevel2.USER_ID = userId;
-
-    var hl1 = dataHl1.getLevel1ById(objLevel2.HL1_ID);
 
     if (dataHl2.getLevelByAcronymAndOrganizationAcronym(hl1.ACRONYM, hl1.BUDGET_YEAR_ID, objLevel2.ACRONYM)) {
         throw ErrorLib.getErrors().CustomError("", "hl2Services/handlePost/insertHl2", L1_MSG_LEVEL_1_EXISTS);
@@ -158,12 +263,13 @@ function insertHl2(objLevel2, userId) {
         , objLevel2.ALLOW_AUTOMATIC_BUDGET_APPROVAL
         , objLevel2.USER_ID
         , objLevel2.SUBREGION_ID || null
+        , objLevel2.PLANNING_PURPOSE_OPTION_ID || null
         , objLevel2.IMPORT_ID
         , objLevel2.IMPORTED
     );
 
     if (hl2Id) {
-        if (hl1.TEAM_TYPE_ID == TEAM_TYPE_CENTRAL && objLevel2.CONTACT_DATA && objLevel2.CONTACT_DATA.length) {
+        if (hl1.TEAM_TYPE_ID == TEAM_TYPE.GLOBAL && objLevel2.CONTACT_DATA && objLevel2.CONTACT_DATA.length) {
             var contactData = objLevel2.CONTACT_DATA.map(function (contact) {
                 contact.CONTACTTYPE = 'CENTRAL';
                 return contact;
@@ -224,11 +330,11 @@ function validateApprovers(listObjHl2User, listObjHl2Approvers) {
 
 function arrayContainsArray(superset, subset) {
     if (subset){
-    	subset.forEach(function (approver) {
-    		if (!existUser(superset, approver)) {
-    			return false;
-    		}
-    	});
+        subset.forEach(function (approver) {
+            if (!existUser(superset, approver)) {
+                return false;
+            }
+        });
     }
     return true;
 }
@@ -236,7 +342,7 @@ function arrayContainsArray(superset, subset) {
 function existUser(userArray, user) {
     userArray.forEach(function (u) {
         if (u == user.USER_ID){
-        	return true;
+            return true;
         }
     });
     return false;
@@ -310,6 +416,7 @@ function insertLevel2Version(currentHL2, userId) {
             currentHL2.ORGANIZATION_NAME,
             currentHL2.IN_BUDGET,
             currentHL2.ALLOW_AUTOMATIC_BUDGET_APPROVAL,
+            currentHL2.PLANNING_PURPOSE_OPTION_ID || null,
             currentHL2.HL1_ID
         );
     }
@@ -317,6 +424,15 @@ function insertLevel2Version(currentHL2, userId) {
 }
 
 function updateHl2(objLevel2, userId) {
+    var hl1 = dataHl1.getLevel1ById(objLevel2.HL1_ID);
+    var requiredDFObject = JSON.parse(JSON.stringify(budgetYear.getRequireDynamicFormByBudgetYearId(hl1.BUDGET_YEAR_ID)));
+    var currentHL2 = getLevel2ById(objLevel2.HL2_ID, false);
+
+    if(Number(requiredDFObject.REQUIRE_DYNAMIC_FORM) === 1){
+        //Complete data with current HL2 using the dynamic form "hidden" as reference to update
+        objLevel2 = util.completeDynamicFormEdition(userId, HIERARCHY_LEVEL["HL2"], objLevel2, currentHL2, hl1.BUDGET_YEAR_ID);
+    }
+
     validateUpdateHl2(objLevel2);
     validateKpi(objLevel2);
     validateCategoryOption(objLevel2);
@@ -330,8 +446,6 @@ function updateHl2(objLevel2, userId) {
     objLevel2.IN_BUDGET = 1;
 
     var updated = 0;
-
-    var currentHL2 = JSON.parse(JSON.stringify(dataHl2.getLevel2ById(objLevel2.HL2_ID)));
 
     //Insert new HL2 version, if the date is into the valid range
     if (budgetYear.getLockFlagByHlIdLevel(currentHL2.HL2_ID, 'HL2') && validateChanges(currentHL2, objLevel2)) {
@@ -355,11 +469,12 @@ function updateHl2(objLevel2, userId) {
         , objLevel2.ALLOW_AUTOMATIC_BUDGET_APPROVAL
         , currentHL2.VERSION
         , objLevel2.SUBREGION_ID || null
+        , objLevel2.PLANNING_PURPOSE_OPTION_ID || null
         , userId
     );
 
     contactDataLib.deleteContactDataByContactTypeId("hard", "CENTRAL", objLevel2.HL2_ID);
-    if (objLevel2.TEAM_TYPE_ID == TEAM_TYPE_CENTRAL && objLevel2.CONTACT_DATA && objLevel2.CONTACT_DATA.length) {
+    if (objLevel2.TEAM_TYPE_ID == TEAM_TYPE.GLOBAL && objLevel2.CONTACT_DATA && objLevel2.CONTACT_DATA.length) {
         var contactData = objLevel2.CONTACT_DATA.map(function (contact) {
             contact.CONTACTTYPE = 'CENTRAL';
             return contact;
@@ -408,7 +523,7 @@ function updateHl2(objLevel2, userId) {
             });
         }
     }
-   
+
     if (arrDelHl3User.length > 0) {
         hl3.deleteLevel3User(arrDelHl3User);
     }
@@ -420,7 +535,7 @@ function updateHl2(objLevel2, userId) {
     } else {
         throw ErrorLib.getErrors().CustomError("", "", "The Approvers do not match the Assigned Users.")
     }
-    
+
     if (!validateApprovers(objLevel2.ASSIGNED_USERS, objLevel2.EVENT_APPROVERS)) {
         throw ErrorLib.getErrors().CustomError("", "", "The Event Approvers do not match the Assigned Users.")
     }
@@ -431,6 +546,10 @@ function updateHl2(objLevel2, userId) {
     updateCategoryoption(objLevel2, userId);
 
     return updated;
+}
+
+function updateBudget(hl2Id,budget,userId) {
+    return dataHl2.updateBudget(hl2Id,budget,userId);
 }
 
 function notExistHl2UserInList(baseUsersIdsList, assignedUserId) {
@@ -505,7 +624,12 @@ function getLevel2ById(hl2Id, carryOver) {
         hl2Result.HL2_BUDGET_REMAINING = Number(hl2Result.HL2_BUDGET_TOTAL) - Number(hl2BudgetAllocated || 0);
         hl2Result.TARGET_KPIS = carryOver ? expectedOutcomesLib.filterKpiByLevel(hl2TargetKpi, 'HL3') : hl2TargetKpi;
         hl2Result.CATEGORIES = carryOver ? hl3.getCarryOverHl2CategoryOption(hl2Id) : getCategoryOption(hl2Id);
-        hl2Result.SUBREGION = !carryOver ? dataSubRegion.getSubRegionsByRegionId(hl2Result.REGION_ID) : undefined;
+        hl2Result.SUBREGION = !carryOver && hl2Result.TEAM_TYPE_ID == TEAM_TYPE.REGIONAL ? dataSubRegion.getSubRegionsByRegionId(hl2Result.REGION_ID) : undefined;
+
+        if(!carryOver && hl2Result.PLANNING_PURPOSE_ID) {
+            var planningPurpose = planningPurposeOptionLib.getPlanningPurposeRelationship(hl2Result.PLANNING_PURPOSE_ID);
+            hl2Result.PLANNING_PURPOSE_OPTIONS = planningPurpose.ASSIGNED_PLANNING_PURPOSE_OPTIONS;
+        }
     }
 
     return hl2Result;
@@ -530,16 +654,16 @@ function existHl2(objLevel2) {
 function getAllCentralTeam(centralTeamId, hlid, level, isLegacy) {
     var budgetYearId;
     var legacy = isLegacy? 1: 0;
-    
+
     if (hlid && level){
-    	if(!isLegacy){
-    		budgetYearId = budgetYear.getBudgetYearByLevelParent(level, hlid, false);
-		}else{
-			var fullBudget = JSON.parse(JSON.stringify(budgetYear.getBudgetYearByLevelParent(level, hlid, true, legacy)));
-			budgetYearId = fullBudget.BUDGET_YEAR_ID;
-		}
+        if(!isLegacy){
+            budgetYearId = budgetYear.getBudgetYearByLevelParent(level, hlid, false);
+        }else{
+            var fullBudget = JSON.parse(JSON.stringify(budgetYear.getBudgetYearByLevelParent(level, hlid, true, legacy)));
+            budgetYearId = fullBudget.BUDGET_YEAR_ID;
+        }
     }
-        
+
     return dataHl2.getAllCentralTeam(centralTeamId, budgetYearId);
 }
 
@@ -694,7 +818,7 @@ function validateKpi(data) {
 
         if ((!data.TARGET_KPIS.KPIS || !data.TARGET_KPIS.KPIS.length)
             && !data.TARGET_KPIS.COMMENTS)
-            throw ErrorLib.getErrors().CustomError("", "hl2Services/handlePost/insertHl2", L1_CAMPAIGN_FORECASTING_KPIS_COMMENT);
+            throw ErrorLib.getErrors().CustomError("", "", L1_CAMPAIGN_FORECASTING_KPIS_COMMENT);
 
         data.TARGET_KPIS.KPIS.forEach(function (kpiDetail) {
             if (!kpiDetail.OUTCOMES_ID || !Number(kpiDetail.OUTCOMES_ID))
@@ -706,14 +830,6 @@ function validateKpi(data) {
                 throw ErrorLib.getErrors().CustomError("", "hl3Services/handlePost/insertHl3", L1_CAMPAIGN_FORECASTING_KPIS_DETAILS);
             if (!kpiDetail.EURO_VALUE || !Number(kpiDetail.EURO_VALUE))
                 throw ErrorLib.getErrors().CustomError("", "hl3Services/handlePost/insertHl3", L1_CAMPAIGN_FORECASTING_KPIS_DETAILS_EURO);
-
-            if (totalAvailable && totalAvailable[kpiDetail.OUTCOMES_TYPE_ID] && totalAvailable[kpiDetail.OUTCOMES_TYPE_ID][kpiDetail.OUTCOMES_ID]) {
-                if (Number(kpiDetail.VOLUME_VALUE) > totalAvailable[kpiDetail.OUTCOMES_TYPE_ID][kpiDetail.OUTCOMES_ID].VOLUME_AVAILABLE_TO_ALLOCATE)
-                    throw ErrorLib.getErrors().CustomError("", "hl2Services/handlePost/insertHl2", L1_CAMPAIGN_FORECASTING_KPIS_VOLUME);
-
-                if (Number(kpiDetail.EURO_VALUE) > totalAvailable[kpiDetail.OUTCOMES_TYPE_ID][kpiDetail.OUTCOMES_ID].VALUE_AVAILABLE_TO_ALLOCATE)
-                    throw ErrorLib.getErrors().CustomError("", "hl2Services/handlePost/insertHl2", L1_CAMPAIGN_FORECASTING_KPIS_VALUE);
-            }
         });
     }
     return true;
@@ -772,16 +888,16 @@ function checkBudgetStatus(hl1Id, userId, hl2Id, newHl2Budget) {
         var hl1AllocatedBudget = dataHl1.getHl1AllocatedBudget(hl1Id, hl2Id);
         return (Number(hl1.BUDGET) - Number(hl1AllocatedBudget) - Number(newHl2Budget)) >= 0 ? 1 : 0;
     } else {
-        var resultHl2 = getHl2ByHl1Id(hl1Id, userId);
+        var resultHl2 = getHl2ByHl1Id(hl1Id, userId, true);
         if (resultHl2.out_result.length) {
             var hl1 = dataHl1.getLevel1ById(hl1Id);
             var hl1Budget = Number(hl1.BUDGET);
             var total = 0;
             for (var i = 0; i < resultHl2.out_result.length; i++) {
                 if (hl1Budget < total + parseFloat(resultHl2.out_result[i].BUDGET)) {
-                    dataHl2.updateHl2BudgetStatus(resultHl2.out_result[i].HL2_ID, userId, 0);
+                    dataHl2.updateHl2BudgetStatus(resultHl2.out_result[i].HL_ID, userId, 0);
                 } else {
-                    dataHl2.updateHl2BudgetStatus(resultHl2.out_result[i].HL2_ID, userId, 1);
+                    dataHl2.updateHl2BudgetStatus(resultHl2.out_result[i].HL_ID, userId, 1);
                     total = total + parseFloat(resultHl2.out_result[i].BUDGET);
                 }
             }
@@ -797,7 +913,7 @@ function checkPermission(userSessionID, method, hl2Id) {
             return user.USER_ID == userSessionID
         });
         if (!users) {
-            throw ErrorLib.getErrors().CustomError("", "level2/handlePermission", "User hasn´t permission for this resource.");
+            throw ErrorLib.getErrors().CustomError("", "", "User hasn´t permission for this resource.");
         }
     }
 }
@@ -983,7 +1099,7 @@ function insertHl2FromUpload(hl2, userId) {
 
     if (objhl2) {
         if (objhl2 > 0) {
-            //if (hl1.TEAM_TYPE_ID == TEAM_TYPE_CENTRAL && objLevel2.contactData && objLevel2.contactData.length)
+            //if (hl1.TEAM_TYPE_ID == TEAM_TYPE.GLOBAL && objLevel2.contactData && objLevel2.contactData.length)
             //    contactDataLib.insertContactData(objLevel2.contactData, userId, objhl2);
 
             //INSERT USERS RELATED TO HL2
@@ -1054,7 +1170,8 @@ function getLevel2Kpi(hl1Id, userId) {
             HL1_ID: hl.HL1_ID,
             ACRONYM: hl.L2_ACRONYM,
             ORGANIZATION_NAME: hl.ORGANIZATION_NAME,
-            IS_LOCKED: hl.IS_LOCKED
+            IS_LOCKED: hl.IS_LOCKED,
+            HIERARCHY_LEVEL_ID: HIERARCHY_LEVEL.HL2
         };
         var auxKpi = mapKpi[hl.L2_ACRONYM].kpi || [];
         if (hl.KPI_TYPE_NAME) {
@@ -1078,10 +1195,10 @@ function getLevel2Kpi(hl1Id, userId) {
 
 function validateCategoryOption(data) {
     if (!data.CATEGORIES || !data.CATEGORIES.length)
-        throw ErrorLib.getErrors().CustomError("", "hl2Services/handlePost/validateCategoryOption", L1_CATEGORY_NOT_EMPTY);
+        throw ErrorLib.getErrors().CustomError("", "", L1_CATEGORY_NOT_EMPTY);
 
     if (!data.HL2_ID && data.CATEGORIES.length !== dataCategory.getAllocationCategoryCountByHlId("hl2"))
-        throw ErrorLib.getErrors().CustomError("", "hl2Services/handlePost/validateCategoryOption", L1_CATEGORY_INCORRECT_NUMBER);
+        throw ErrorLib.getErrors().CustomError("", "", L1_CATEGORY_INCORRECT_NUMBER);
     var percentagePerOption = 0;
     var thereIsMandatoryCategory = false;
     for (var i = 0; i < data.CATEGORIES.length; i++) {
@@ -1089,32 +1206,34 @@ function validateCategoryOption(data) {
         var hl2Category = data.CATEGORIES[i];
         thereIsMandatoryCategory = thereIsMandatoryCategory || !!hl2Category.MAKE_CATEGORY_MANDATORY;
         if (!hl2Category.CATEGORY_ID || !Number(hl2Category.CATEGORY_ID))
-            throw ErrorLib.getErrors().CustomError("", "hl2Services/handlePost/validateCategoryOption", L1_CATEGORY_NOT_VALID);
+            throw ErrorLib.getErrors().CustomError("", "", L1_CATEGORY_NOT_VALID);
 
         if (!hl2Category.OPTIONS || !hl2Category.OPTIONS.length)
-            throw ErrorLib.getErrors().CustomError("", "hl2Services/handlePost/validateCategoryOption", L1_CATEGORY_OPTIONS_NOT_EMPTY);
+            throw ErrorLib.getErrors().CustomError("", "", L1_CATEGORY_OPTIONS_NOT_EMPTY);
 
         hl2Category.OPTIONS.forEach(function (option) {
             if (!option.OPTION_ID || !Number(option.OPTION_ID))
-                throw ErrorLib.getErrors().CustomError("", "hl2Services/handlePost/validateCategoryOption", L1_CATEGORY_OPTION_NOT_VALID);
-            if ((parseFloat(option.AMOUNT) && !Number(option.AMOUNT)) || Number(option.AMOUNT) > 100 || Number(option.AMOUNT) < 0)
-                throw ErrorLib.getErrors().CustomError("", "hl2Services/handlePost/validateCategoryOption", "Option value is not valid (actual value " + option.AMOUNT + ")");
+                throw ErrorLib.getErrors().CustomError("", "", L1_CATEGORY_OPTION_NOT_VALID);
+            if ((parseFloat(option.AMOUNT_VALUE) && !Number(option.AMOUNT_VALUE))
+                || Number(option.AMOUNT_VALUE) > Number(data.BUDGET)
+                || Number(option.AMOUNT_VALUE) < 0)
+                throw ErrorLib.getErrors().CustomError("", "", "Option value is not valid (actual value " + option.AMOUNT_VALUE + ")");
 
-            percentagePerOption = percentagePerOption + Number(option.AMOUNT || 0);
-            percentagePerCategory += Number(option.AMOUNT || 0);
+            percentagePerOption = percentagePerOption + Number(option.AMOUNT_VALUE || 0);
+            percentagePerCategory += Number(option.AMOUNT_VALUE || 0);
         });
 
         if((Number(data.BUDGET) > 0) && hl2Category.MAKE_CATEGORY_MANDATORY && percentagePerCategory <= 0){
-            throw ErrorLib.getErrors().CustomError("", "hl2Services/handlePost/validateCategoryOption", L1_BUDGET_ZERO_CATEGORY_TOTAL_PERCENTAGE_ZERO);
+            throw ErrorLib.getErrors().CustomError("", "", L1_BUDGET_ZERO_CATEGORY_TOTAL_PERCENTAGE_ZERO);
         }
     }
     if(thereIsMandatoryCategory) {
         if ((Number(data.BUDGET) == 0) && percentagePerOption != 0) {
-            throw ErrorLib.getErrors().CustomError("", "hl2Services/handlePost/validateCategoryOption", L1_BUDGET_ZERO_CATEGORY_TOTAL_PERCENTAGE_ZERO);
+            throw ErrorLib.getErrors().CustomError("", "", L1_BUDGET_ZERO_CATEGORY_TOTAL_PERCENTAGE_ZERO);
         }
 
-        if ((Number(data.BUDGET) > 0) && percentagePerOption != 100) {
-            throw ErrorLib.getErrors().CustomError("", "hl2Services/handlePost/validateCategoryOption", L1_CATEGORY_TOTAL_PERCENTAGE);
+        if ((Number(data.BUDGET) > 0) && percentagePerOption != Number(data.BUDGET)) {
+            throw ErrorLib.getErrors().CustomError("", "", L1_CATEGORY_TOTAL_PERCENTAGE);
         }
     }
 
@@ -1135,6 +1254,7 @@ function insertCategoryOption(data, userId) {
                 in_hl2_id: data.HL2_ID
                 , in_category_option_level_id: mapCOL[hl1Category.CATEGORY_ID][hl1CategoryOption.OPTION_ID]
                 , in_amount: hl1CategoryOption.AMOUNT || 0
+                , in_amount_value: hl1CategoryOption.AMOUNT_VALUE || 0
                 , in_user_id: userId
                 , in_updated: 0
             });
@@ -1154,6 +1274,7 @@ function updateCategoryoption(data, userId) {
             var categoryOption = {
                 in_category_option_level_id: mapCOL[hl2Category.CATEGORY_ID][option.OPTION_ID]
                 , in_amount: option.AMOUNT || 0
+                , in_amount_value: option.AMOUNT_VALUE || 0
                 , in_user_id: userId
                 , in_updated: 0
                 , in_hl2_id: data.HL2_ID
@@ -1195,6 +1316,7 @@ function getCarryOverHl1CategoryOption(hl1_id) {
             category.OPTIONS.map(function (option) {
                 var hl1option = extractElementByList(hl1Cat.OPTIONS, "OPTION_ID", option.OPTION_ID);
                 option.AMOUNT = hl1option ? hl1option.AMOUNT : 0;
+                option.AMOUNT_VALUE = 0;
                 return option;
             });
         }
@@ -1213,4 +1335,88 @@ function extractElementByList(list, criterion, value) {
 function deleteLevel2User(arrDelHl2User) {
     eventManagementLib.deleteEventApproverByHlIdUserId('HL2',arrDelHl2User);
     return dataHl2User.deleteLevel2User(arrDelHl2User);
+}
+
+function updateDynamicFormAssociation(data, userId) {
+    var dynamicForm = {
+        L5: [],
+        L6: []
+    };
+
+    Object.keys(data).forEach(function (level) {
+        var levelString = 'H' + level;
+        switch (level) {
+            case "L5":
+            case "L6":
+                if (data[level] && (data[level].USE_DEFAULT || (data[level].DYNAMIC_FORM_UID && data[level].DYNAMIC_FORM_UID.trim()))) {
+                    var dynamicFormUId = data[level].USE_DEFAULT ? null : data[level].DYNAMIC_FORM_UID.trim();
+                    if (data.HL2_IDS.constructor === Array) {
+                        dynamicForm[level] = data.HL2_IDS.map(function (value) {
+                            return {
+                                hl2Id: value,
+                                dynamicFormUId: dynamicFormUId,
+                                userId: userId
+                            }
+                        });
+                    } else {
+                        dynamicForm[level].push({
+                            hl2Id: data.HL2_IDS,
+                            dynamicFormUId: dynamicFormUId,
+                            userId: userId
+                        })
+                    }
+                }
+
+                if (dynamicForm[level].length) {
+                    dataHl2.updateDynamicFormAssociation(dynamicForm[level], levelString);
+                }
+                break;
+        }
+    });
+
+    return true;
+}
+
+function massUpdateDynamicFormAssociation(data, hl2List, userId, errorMessage) {
+    if (!hl2List.length) {
+        throw ErrorLib.getErrors().CustomError("", "", errorMessage);
+    }
+
+    var updateObject = {
+        L5: data.L5,
+        L6: data.L6,
+        HL2_IDS: []
+    };
+
+    updateObject.HL2_IDS = hl2List.map(function (hl2) {
+        return hl2.HL2_ID;
+    });
+
+    return updateDynamicFormAssociation(updateObject, userId);
+}
+
+function updateDynamicFormAssociationByRegion(data, userId) {
+    var regionData = data.REGION_IDS.map(function (regionId) {
+        return {
+            in_region_id: regionId,
+            in_budget_year_id: data.BUDGET_YEAR_ID
+        }
+    });
+
+    var hl2List = dataHl2.getHl2ByBudgetYearRegion(regionData);
+
+    return massUpdateDynamicFormAssociation(data, hl2List, userId, NO_L2_EXIST_IN_SELECTED_REGION);
+}
+
+function updateDynamicFormAssociationByPlanningPurpose(data, userId) {
+    var planningPurposeData = data.PLANNING_PURPOSE_IDS.map(function (planningPurposeId) {
+        return {
+            in_planning_purpose_id: planningPurposeId,
+            in_budget_year_id: data.BUDGET_YEAR_ID
+        }
+    });
+
+    var hl2List = dataHl2.getHl2ByBudgetYearPlanningPurpose(planningPurposeData);
+
+    return massUpdateDynamicFormAssociation(data, hl2List, userId, NO_L2_EXIST_IN_SELECTED_PLANNING_PURPOSE);
 }

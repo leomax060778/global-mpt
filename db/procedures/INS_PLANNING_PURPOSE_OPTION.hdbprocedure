@@ -1,0 +1,19 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_PLANNING_PURPOSE_OPTION" (
+    IN in_name NVARCHAR(255),
+    IN in_created_user_id BIGINT,
+    OUT out_result BIGINT
+)
+LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	AS
+BEGIN
+    INSERT INTO "MKTG_PLANNING_TOOL"."PLANNING_PURPOSE_OPTION"(
+            name,
+            created_user_id
+    ) VALUES(
+          in_name,
+          in_created_user_id
+      );
+    SELECT TOP 1 CURRENT_IDENTITY_VALUE() INTO out_result FROM "MKTG_PLANNING_TOOL"."PLANNING_PURPOSE_OPTION";
+END;

@@ -7,7 +7,10 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL1_BY_ID" (
 		, budget_year_id bigint
 		, region_id integer
 		, budget decimal(19, 6)
+        , planning_purpose_id bigint
+        , planning_purpose_name NVARCHAR(255)
         , team_type_id bigint
+        , team_type_name nvarchar(255)
         , implement_execution_level tinyint
         , crt_related tinyint
         , is_locked tinyint
@@ -28,13 +31,18 @@ BEGIN
 		, hl1.budget_year_id
 		, hl1.region_id
 		, hl1.budget
+        , hl1.planning_purpose_id
+        , PL.NAME AS planning_purpose_name
         , hl1.team_type_id
+        , TEAM.NAME as TEAM_TYPE_NAME
         , hl1.implement_execution_level
         , hl1.crt_related
         , (CASE WHEN BUY.VERSIONED_END_DATE >= CURRENT_TIMESTAMP THEN 0 ELSE 1 END) AS IS_LOCKED
         , hl1.version
 	FROM HL1
 	INNER JOIN BUDGET_YEAR BUY ON BUY.BUDGET_YEAR_ID = HL1.BUDGET_YEAR_ID
+	LEFT JOIN PLANNING_PURPOSE PL ON HL1.PLANNING_PURPOSE_ID = PL.PLANNING_PURPOSE_ID
+	LEFT JOIN TEAM_TYPE TEAM ON TEAM.TEAM_TYPE_ID = HL1.TEAM_TYPE_ID
 	WHERE
 		HL1.hl1_id = in_hl1_id
 		AND HL1.deleted = 0

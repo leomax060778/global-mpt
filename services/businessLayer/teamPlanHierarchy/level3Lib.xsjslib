@@ -63,8 +63,16 @@ var HIERARCHY_LEVEL = {
     HL6: 3
 };
 
+var GENERAL_FILTER_MAP = {
+    REGIONAL_MARKETING: 1,
+    PRODUCT_MARKETING: 2,
+    FUNCTIONAL_TEAMS: 3,
+    COMMUNICATIONS: 4,
+    BUSINESS_STRATEGY_CULTURE: 5
+};
+
 // Get all Level 3 data by level 2 id
-function getAllLevel3(hl2Id, userId) {
+function getAllLevel3(hl2Id, userId, fromCheckBudgetStatus) {
     var objHl2 = {};
     objHl2.IN_HL2_ID = hl2Id;
 
@@ -72,19 +80,79 @@ function getAllLevel3(hl2Id, userId) {
     if (config.getApplySuperAdminToAllInitiatives()) {
         isSA = userbl.isSuperAdmin(userId);
     }
-    var result = {};
-    result = data.getAllLevel3(objHl2, userId, isSA);
+
+    var result = data.getAllLevel3(objHl2, userId, isSA);
     result.budget_year = budgetYear.getBudgetYearByLevelParent(3, hl2Id, true);
 
     var list = JSON.parse(JSON.stringify(result.out_result));
-    result.out_result = {};
+    var rdo = {};
+    list.forEach(function (item) {
+        rdo[item.L3_ACRONYM] = rdo[item.L3_ACRONYM] || {
+            HL_ID: item.L3_ID,
+            PARENT_ID: hl2Id,
+            BUDGET: item.L3_BUDGET,
+            BUDGET_PERCENTAGE: item.L3_BUDGET_PERCENTAGE,
+            BUDGET_REMAINING: item.L3_BUDGET_REMAINING,
+            CHILDREN_TOTAL_COUNT: item.L4_TOTAL_COUNT,
+            ACRONYM: item.L3_ACRONYM,
+            CRM_ID: item.L3_CRM_ID,
+            IS_LOCKED: item.L3_IS_LOCKED,
+            BUDGET_ALLOCATED: item.L3_BUDGET_ALLOCATED,
+            DESCRIPTION: item.L3_DESCRIPTION,
+            VERSION: item.L3_VERSION,
+            HIERARCHY_LEVEL_ID: HIERARCHY_LEVEL[item.L3_LEVEL],
+            CHILDREN: {}
+        };
+
+        if (item.L4_ACRONYM && !rdo[item.L3_ACRONYM].CHILDREN[item.L4_ACRONYM]) {
+            var child = {
+                HL_ID: item.L4_ID,
+                PARENT_ID: item.L3_ID,
+                BUDGET: item.L4_BUDGET,
+                BUDGET_PERCENTAGE: item.L4_BUDGET_PERCENTAGE,
+                BUDGET_REMAINING: item.L4_BUDGET_REMAINING,
+                CHILDREN_TOTAL_COUNT: item.L5_TOTAL_COUNT,
+                ACRONYM: item.L4_ACRONYM,
+                CRM_ID: item.L4_CRM_ID,
+                BUDGET_ALLOCATED: item.L4_BUDGET_ALLOCATED,
+                DESCRIPTION: item.L4_DESCRIPTION,
+                STATUS_DETAIL: item.L4_STATUS_DETAIL,
+                STATUS_ID: item.L4_STATUS_ID,
+                IMPLEMENT_EXECUTION_LEVEL: item.L4_IMPLEMENT_EXECUTION_LEVEL,
+                IN_CRM_CHILD_HL5: item.L4_IN_CRM_CHILD_HL5,
+                IN_CRM_CHILD_HL6: item.L4_IN_CRM_CHILD_HL6,
+                ENABLE_CRM_CREATION: item.L4_ENABLE_CRM_CREATION,
+                HIERARCHY_LEVEL_ID: HIERARCHY_LEVEL[item.L4_LEVEL]
+            };
+            var enableAction = hl4.getEnableAction(child, userId, isSA);
+            child.ENABLE_DELETION = enableAction.ENABLE_DELETION;
+            child.ENABLE_CHANGE_STATUS = enableAction.ENABLE_CHANGE_STATUS;
+            child.ENABLE_EDIT = enableAction.ENABLE_EDIT;
+            rdo[item.L3_ACRONYM].CHILDREN[item.L4_ACRONYM] = child;
+        }
+    });
+    result.out_result = util.planningLevelGridParser(rdo);
+    if(!fromCheckBudgetStatus){
+        result.out_lob_allocation_view = getLobAllocationSummary(objHl2, userId, isSA);
+    }
+    return result;
+}
+
+function getLobAllocationSummary(objHl2, userId, isSA) {
+    var list = JSON.parse(JSON.stringify(data.getLobAllocationSummary(objHl2, userId, isSA)));
+    var result = {out_result: {}};
     list.forEach(function (row) {
-        result.out_result[row.ACRONYM] = result.out_result[row.ACRONYM] || row;
-        result.out_result[row.ACRONYM].BUDGET = row.HL3_BUDGET_TOTAL;
-        result.out_result[row.ACRONYM].L3_BUDGET_PERCENTAGE = row.L3_BUDGET_PERCENTAGE;
-        result.out_result[row.ACRONYM].HL3_BUDGET_REMAINING = row.HL3_BUDGET_REMAINING;
-        result.out_result[row.ACRONYM].HL3_BUDGET_ALLOCATED = row.HL3_BUDGET_ALLOCATED;
-        result.out_result[row.ACRONYM].CHILDREN = result.out_result[row.ACRONYM].CHILDREN || [];
+        result.out_result[row.ACRONYM] = result.out_result[row.ACRONYM] || {
+            HL3_ID: row.HL3_ID,
+            PARENT_ID: row.HL2_ID,
+            ACRONYM: row.ACRONYM,
+            CRM_ID: row.CRM_ID,
+            HL3_DESCRIPTION: row.HL3_DESCRIPTION,
+            HL4_TOTAL_COUNT: row.HL4_TOTAL_COUNT,
+            IS_LOCKED: row.IS_LOCKED,
+            HIERARCHY_LEVEL_ID: HIERARCHY_LEVEL.HL3,
+            CHILDREN: []
+        };
         if (row.BUDGET_DISTRIBUTION_AMOUNT) {
             result.out_result[row.ACRONYM].CHILDREN.push({
                 CATEGORY_NAME: row.CATEGORY_NAME,
@@ -95,60 +163,179 @@ function getAllLevel3(hl2Id, userId) {
         }
     });
     // v Object.values(result.out_result) v //
-    result.out_result = Object.keys(result.out_result).map(function (k) {
+    result = Object.keys(result.out_result).map(function (k) {
         return result.out_result[k];
     });
-
-    //MPT Global - add a new view to see the KPIs summary
-    /*for (var i = 0; i < result.out_result.length; i++) {
-        result.out_result[i].kpi = getExpectedOutcomeByL3Id(result.out_result[i].HL3_ID, hl2Id);
-    }*/
 
     return result;
 }
 
 /*function getExpectedOutcomeByL3Id(hl3Id, hl2Id) {
-    var listEO = expectedOutcomesLib.getExpectedOutcomesByHl3Id(hl3Id, hl2Id, true);
-    var result = {};
-    result.out_result = listEO.detail;
-    return result;
-}*/
+ var listEO = expectedOutcomesLib.getExpectedOutcomesByHl3Id(hl3Id, hl2Id, true);
+ var result = {};
+ result.out_result = listEO.detail;
+ return result;
+ }*/
 
-function getAllHl3GroupByHl1(budgetYearId, regionId, subRegionId){
-    return getHl3ByUserGroupByHl1(null, budgetYearId, regionId, subRegionId);
+function getAllHl3GroupByHl1(budgetYearId, regionId, subRegionId, generalFilter) {
+    return getHl3ByUserGroupByHl1(null, budgetYearId, regionId, subRegionId, generalFilter);
 }
 
-function getHl3ByUserGroupByHl1(userId, budgetYearId, regionId, subRegionId) {
+function getHl3ByUserGroupByHl1(userId, budgetYearId, regionId, subRegionId, generalFilter) {
+    var currentRegion = regionId ? regionId : 0;
+    var superRegion = [];
     var isSA = userId ? util.isSuperAdmin(userId) : 1;
     var hl3 = data.getHl3PathByUserId(userId || 0, isSA, budgetYearId || 0, regionId || 0, subRegionId || 0);
     var collection = {};
-    hl3.forEach(function (item) {
-        if (!collection[item.HL1_ID]) {
-            collection[item.HL1_ID] = {
-                HL1_ID: item.HL1_ID
-                , PATH: item.HL1_PATH
-                , HL1_DESCRIPTION: item.HL1_DESCRIPTION
-                , CHILDREN: {}
-            };
-        }
-    });
-    hl3.forEach(function (item) {
-        if (!collection[item.HL1_ID].CHILDREN[item.HL2_ID]) {
-            collection[item.HL1_ID].CHILDREN[item.HL2_ID] = {
-                HL2_ID: item.HL2_ID
-                , PATH: item.HL2_PATH
-                , HL2_DESCRIPTION: item.HL2_DESCRIPTION
-                , CHILDREN: []
-            };
-        }
-    });
-    hl3.forEach(function (item) {
-        collection[item.HL1_ID].CHILDREN[item.HL2_ID].CHILDREN.push({
-            HL3_ID: item.HL3_ID,
-            PATH: item.HL3_PATH,
-            HL3_DESCRIPTION: item.HL3_DESCRIPTION
+    
+    var parser = function (object) {
+        var data2 = JSON.stringify(object, function (key, value) {
+            if (value) {
+                Object.keys(value).forEach(function (k) {
+                    if (k === "CHILDREN") {
+                        value[k] = util.objectToArray(value[k]);
+                    }
+                });
+            }
+            return value;
         });
-    });
+
+        data2 = JSON.parse(data2);
+
+        return util.objectToArray(data2);
+    };
+    
+    if (!generalFilter || generalFilter === "REGIONAL_MARKETING") {
+
+        hl3.forEach(function (item) {
+            if (Number(item.HL1_REGION_ID) !== 0) { //The 'zero' part is only for broken records in Dev/Testing
+                if (!collection[item.HL1_REGION_ID]) {
+                    collection[item.HL1_REGION_ID] = {
+                        PATH: item.HL1_REGION_NAME,
+                        REGION_ID: item.HL1_REGION_ID,
+                        CHILDREN: {}
+                    }
+                }
+
+                if (!collection[item.HL1_REGION_ID].CHILDREN[item.HL1_ID]) {
+                    collection[item.HL1_REGION_ID].CHILDREN[item.HL1_ID] = {
+                        HL1_ID: item.HL1_ID
+                        , PATH: item.HL1_PATH
+                        , HL1_DESCRIPTION: item.HL1_DESCRIPTION
+                        , CHILDREN: {}
+                    };
+                }
+
+                if (!collection[item.HL1_REGION_ID].CHILDREN[item.HL1_ID].CHILDREN[item.HL2_ID]) {
+                    collection[item.HL1_REGION_ID].CHILDREN[item.HL1_ID].CHILDREN[item.HL2_ID] = {
+                        HL2_ID: item.HL2_ID
+                        , PATH: item.HL2_PATH
+                        , HL2_DESCRIPTION: item.HL2_DESCRIPTION
+                        , CHILDREN: []
+                    };
+                }
+
+                collection[item.HL1_REGION_ID].CHILDREN[item.HL1_ID].CHILDREN[item.HL2_ID].CHILDREN.push({
+                    HL3_ID: item.HL3_ID,
+                    PATH: item.HL3_PATH,
+                    HL3_DESCRIPTION: item.HL3_DESCRIPTION
+                });
+
+            }
+        });
+
+        var regions = {PATH: "Regions", CHILDREN: parser(collection)};
+        superRegion.push(regions);
+
+    } 
+    
+    if (!generalFilter || generalFilter !== "REGIONAL_MARKETING") {
+
+        if (!Number(currentRegion)) {
+            var globalCollection = getHl3ByPlanningPurpose(userId || 0, isSA, budgetYearId || 0, generalFilter);
+            if (globalCollection && Object.keys(globalCollection).length) {
+                var global = {PATH: "Hierarchy", CHILDREN: parser(globalCollection)};
+                superRegion.push(global);
+            }
+
+        }
+    }
+
+    return superRegion;
+}
+
+function getHl3ByPlanningPurpose(userId, isSA, budgetYearId, generalFilter) {
+    var hl3 = data.getHl3ByPlanningPurpose(userId, isSA, budgetYearId);
+    var collection = {};
+
+    if (hl3 && hl3.length) {
+        hl3.forEach(function (item) {
+            if(!generalFilter || GENERAL_FILTER_MAP[generalFilter] === Number(item.PLANNING_PURPOSE_ID)){
+                if (!collection[item.PLANNING_PURPOSE_ID]) {
+                    collection[item.PLANNING_PURPOSE_ID] = {
+                        PATH: item.PLANNING_PURPOSE_NAME,
+                        PLANNING_PURPOSE_ID: item.PLANNING_PURPOSE_ID,
+                        CHILDREN: {}
+                    }
+                }
+                /*
+                * The following commented code was committed because of Functional Teams - Remove extra field for L2.
+                * The idea is to preserve the logic but not apply it. This affects Product Marketing, Functional Teams,
+                * Communications and Business Services, Strategy and Culture tiles
+                * */
+                //Choose between L1 and Planning Purpose option
+                /*if (item.PLANNING_PURPOSE_OPTION_ID) {
+                    if (!collection[item.PLANNING_PURPOSE_ID].CHILDREN[item.PLANNING_PURPOSE_OPTION_ID]) {
+                        collection[item.PLANNING_PURPOSE_ID].CHILDREN[item.PLANNING_PURPOSE_OPTION_ID] = {
+                            PLANNING_PURPOSE_OPTION_ID: item.PLANNING_PURPOSE_OPTION_ID
+                            , PATH: item.PLANNING_PURPOSE_OPTION_NAME
+                            , CHILDREN: {}
+                        };
+                    }
+
+                    if (!collection[item.PLANNING_PURPOSE_ID].CHILDREN[item.PLANNING_PURPOSE_OPTION_ID].CHILDREN[item.HL2_ID]) {
+                        collection[item.PLANNING_PURPOSE_ID].CHILDREN[item.PLANNING_PURPOSE_OPTION_ID].CHILDREN[item.HL2_ID] = {
+                            HL2_ID: item.HL2_ID
+                            , PATH: item.HL2_PATH
+                            , HL2_DESCRIPTION: item.HL2_DESCRIPTION
+                            , CHILDREN: []
+                        };
+                    }
+
+                    collection[item.PLANNING_PURPOSE_ID].CHILDREN[item.PLANNING_PURPOSE_OPTION_ID].CHILDREN[item.HL2_ID].CHILDREN.push({
+                        HL3_ID: item.HL3_ID,
+                        PATH: item.HL3_PATH,
+                        HL3_DESCRIPTION: item.HL3_DESCRIPTION
+                    });
+                } else {*/
+                    if (!collection[item.PLANNING_PURPOSE_ID].CHILDREN[item.HL1_ID]) {
+                        collection[item.PLANNING_PURPOSE_ID].CHILDREN[item.HL1_ID] = {
+                            HL1_ID: item.HL1_ID
+                            , PATH: item.HL1_PATH
+                            , HL1_DESCRIPTION: item.HL1_DESCRIPTION
+                            , CHILDREN: {}
+                        };
+                    }
+
+                    if (!collection[item.PLANNING_PURPOSE_ID].CHILDREN[item.HL1_ID].CHILDREN[item.HL2_ID]) {
+                        collection[item.PLANNING_PURPOSE_ID].CHILDREN[item.HL1_ID].CHILDREN[item.HL2_ID] = {
+                            HL2_ID: item.HL2_ID
+                            , PATH: item.HL2_PATH
+                            , HL2_DESCRIPTION: item.HL2_DESCRIPTION
+                            , CHILDREN: []
+                        };
+                    }
+
+                    collection[item.PLANNING_PURPOSE_ID].CHILDREN[item.HL1_ID].CHILDREN[item.HL2_ID].CHILDREN.push({
+                        HL3_ID: item.HL3_ID,
+                        PATH: item.HL3_PATH,
+                        HL3_DESCRIPTION: item.HL3_DESCRIPTION
+                    });
+                // }
+            }
+        });
+    }
+
     return collection;
 }
 
@@ -164,7 +351,7 @@ function getLevel3ById(hl3Id, userId) {
     var hl3 = JSON.parse(JSON.stringify(data.getLevel3ById(hl3Id, userId)));
     var hl3Users = userbl.getUserByHl3Id(hl3Id, hl3.HL2_ID);
     var hl2BudgetAllocated = dataHl2.getHl2AllocatedBudget(hl3.HL2_ID, 0);
-    var eventApprover = eventManagementLib.getEventApproverByHlId('HL3',hl3Id, hl3.HL2_ID);
+    var eventApprover = eventManagementLib.getEventApproverByHlId('HL3', hl3Id, hl3.HL2_ID);
     hl3.TARGET_KPIS = expectedOutcomesLib.getExpectedOutcomesByHl3Id(hl3Id, hl3.HL2_ID);
     hl3.CATEGORIES = getCategoryOption(hl3Id);
     hl3.BUDGET = hl3.HL3_FNC_BUDGET_TOTAL;
@@ -262,6 +449,12 @@ function deleteHl3(objHl3, userId) {
 
 // Create a new object of HL3
 function insertHl3(objHl3, userId) {
+    var budgetYearId = budgetYear.getBudgetYearByLevelParent(3, objHl3.HL2_ID);
+    var requiredDFObject = JSON.parse(JSON.stringify(budgetYear.getRequireDynamicFormByBudgetYearId(budgetYearId)));
+
+    //Complete data with dynamic form (if the Budget Year requires it).
+    objHl3 = (Number(requiredDFObject.REQUIRE_DYNAMIC_FORM) === 1)? util.completeFromDynamicFormByRole(userId, HIERARCHY_LEVEL["HL3"], objHl3, budgetYearId): objHl3;
+
     validateFormHl3(objHl3);
     validateKpi(objHl3);
     validateCategoryOption(objHl3);
@@ -334,6 +527,28 @@ function insertLevel3Version(currentHL3, userId) {
 //"out_crm_id": "0". More than zero if some acronym or description or business owner changed
 //"out_budget_flag": 0. More than zero if budget change
 function updateHl3(objHl3, userId) {
+    //Obtain current HL3
+    var currentHL3 = data.getLevel3ById(objHl3.HL3_ID, userId);
+    currentHL3 = JSON.parse(JSON.stringify(currentHL3));
+    var hl3Users = userbl.getUserByHl3Id(objHl3.HL3_ID, objHl3.HL2_ID);
+    var eventApprover = eventManagementLib.getEventApproverByHlId('HL3', objHl3.HL3_ID, objHl3.HL2_ID);
+    var budgetYearId = budgetYear.getBudgetYearByLevelParent(3, objHl3.HL2_ID);
+
+    var requiredDFObject = JSON.parse(JSON.stringify(budgetYear.getRequireDynamicFormByBudgetYearId(budgetYearId)));
+
+    if(Number(requiredDFObject.REQUIRE_DYNAMIC_FORM) === 1){
+        //Complete with necessary information to validate with dynamic form
+        currentHL3.TARGET_KPIS = expectedOutcomesLib.getExpectedOutcomesByHl3Id(objHl3.HL3_ID, objHl3.HL2_ID);
+        currentHL3.ASSIGNED_USERS = hl3Users.users_in;
+        currentHL3.BUDGET_APPROVERS = budgetSpendRequestLib.getL3BudgetApproverByL3Id(objHl3.HL3_ID).assigned;
+        currentHL3.EVENT_APPROVERS = eventApprover.assigned;
+        currentHL3.CATEGORIES = getCategoryOption(data.HL3_ID);
+        //Complete data with current HL1 using the dynamic form "hidden" as reference to update
+        objHl3 = util.completeDynamicFormEdition(userId, HIERARCHY_LEVEL["HL3"], objHl3, currentHL3, budgetYearId);
+    }
+
+    objHl3.VERSION = currentHL3.VERSION;
+    
     validateUpdateHl3(objHl3);
     validateKpi(objHl3);
     validateCategoryOption(objHl3);
@@ -345,10 +560,6 @@ function updateHl3(objHl3, userId) {
             L2_MSG_TEAM_EXISTS);
 
     var hl2 = dataHl2.getLevel2ById(objHl3.HL2_ID);
-    //Obtain current HL3
-    var currentHL3 = data.getLevel3ById(objHl3.HL3_ID, userId);
-    currentHL3 = JSON.parse(JSON.stringify(currentHL3));
-    objHl3.VERSION = currentHL3.VERSION;
 
     //Insert new HL3 version, if the date is into the valid range
     if (budgetYear.getLockFlagByHlIdLevel(currentHL3.HL3_ID, 'HL3') && validateChanges(currentHL3, objHl3)) {
@@ -363,11 +574,11 @@ function updateHl3(objHl3, userId) {
     objHl3.IN_BUDGET = 1;
 
     if (Number(objHl3.BUDGET) !== Number(currentHL3.HL3_FNC_BUDGET_TOTAL)) {
-    	var hl4Obj = {
-    			HL3_INFORMATION: {
-    				HL3: objHl3
-    			}
-    	};
+        var hl4Obj = {
+            HL3_INFORMATION: {
+                HL3: objHl3
+            }
+        };
         hl4.checkBudgetStatus(hl4Obj);
     }
 
@@ -393,7 +604,11 @@ function updateHl3(objHl3, userId) {
     return result;
 }
 
-function setBudgetApproversHl3(objHl3, listObjHl3User, userId){
+function updateBudget(hl3Id,budget,userId) {
+    return data.updateBudget(hl3Id,budget,userId);
+}
+
+function setBudgetApproversHl3(objHl3, listObjHl3User, userId) {
     if (validateApprovers(listObjHl3User, objHl3.BUDGET_APPROVERS)) {
         budgetSpendRequestLib.deleteL3BudgetApprover(objHl3.HL3_ID, objHl3.BUDGET_APPROVERS);
         budgetSpendRequestLib.insertL3BudgetApprover(objHl3.HL3_ID, objHl3.BUDGET_APPROVERS, userId)
@@ -403,22 +618,22 @@ function setBudgetApproversHl3(objHl3, listObjHl3User, userId){
 
 }
 
-function setEventApproversHl3(objHl3, listObjHl3User, userId, isNew){
+function setEventApproversHl3(objHl3, listObjHl3User, userId, isNew) {
     if (!validateApprovers(listObjHl3User, objHl3.EVENT_APPROVERS)) {
         throw ErrorLib.getErrors().CustomError("", "", "The Event Approvers do not match the Assigned Users.")
     }
 
-    if(isNew) {
+    if (isNew) {
         eventManagementLib.insertEventApprover('HL3', objHl3.HL3_ID, objHl3.EVENT_APPROVERS, userId);
     } else {
-        eventManagementLib.updateEventApprover('HL3',objHl3.HL3_ID, objHl3.EVENT_APPROVERS, userId);
+        eventManagementLib.updateEventApprover('HL3', objHl3.HL3_ID, objHl3.EVENT_APPROVERS, userId);
     }
 
     return true;
 }
 
 function validateApprovers(listObjHl3User, listObjHl3Approvers) {
-    if(!listObjHl3Approvers || !listObjHl3Approvers.length){
+    if (!listObjHl3Approvers || !listObjHl3Approvers.length) {
         throw ErrorLib.getErrors().CustomError("", "", L3_APPROVERS_NOT_FOUND);
     }
     return arrayContainsArray(listObjHl3User, listObjHl3Approvers);
@@ -484,8 +699,7 @@ function validateFormHl3(objHl3) {
         throw ErrorLib.getErrors().CustomError("Cost Center approver is invalid", "", "");
     }
 
-    try {
-        keys.forEach(function (key) {
+    keys.forEach(function (key) {
             if (objHl3[key] === null || objHl3[key] === undefined) {
                 errors[key] = null;
                 throw BreakException;
@@ -497,20 +711,14 @@ function validateFormHl3(objHl3) {
                     throw BreakException;
                 }
             }
-        });
-        isValid = true;
+    });
+    isValid = true;
 
-        if (existsHl3(objHl3))
-            throw ErrorLib.getErrors().CustomError("",
-                "",
-                L2_MSG_TEAM_EXISTS);
-    } catch (e) {
-        if (e !== BreakException)
-            throw e;
-        else
-            throw ErrorLib.getErrors().CustomError("",
-                "", JSON.stringify(errors));
-    }
+    if (existsHl3(objHl3))
+        throw ErrorLib.getErrors().CustomError("",
+            "",
+            L2_MSG_TEAM_EXISTS);
+
     return isValid;
 }
 
@@ -585,8 +793,8 @@ function validateType(key, value) {
 
 /*VALIDATE IF EXITS DE PAIR HL3_USER IN DATABASE*/
 /*function validateHl3UserPair(objHl3User, objLevel3) {
-    return dataHl3User.existsHl3UserPair(objHl3User, objLevel3);
-}*/
+ return dataHl3User.existsHl3UserPair(objHl3User, objLevel3);
+ }*/
 
 /*VALIDATE TYPES VALUES OF RELATED OBJECT TO HL3_USER*/
 function validateHl3User(listObjHl3User) {
@@ -620,7 +828,6 @@ function validateHl3User(listObjHl3User) {
         }
         isValid = true;
     } catch (e) {
-        throw JSON.stringify(listObjHl3User);
         if (e !== BreakException)
             throw ErrorLib.getErrors().CustomError("", "hl3Services/handlePost/validateHl3User", e.toString());
         else
@@ -650,16 +857,16 @@ function checkBudgetStatus(hl2Id, userId, hl3Id, newHl3Budget) {
         var hl2AllocatedBudget = dataHl2.getHl2AllocatedBudget(hl2Id, hl3Id);
         return (Number(hl2.HL2_BUDGET_TOTAL) - Number(hl2AllocatedBudget) - Number(newHl3Budget)) >= 0 ? 1 : 0;
     } else {
-        var resultHl3 = getAllLevel3(hl2Id, userId);
+        var resultHl3 = getAllLevel3(hl2Id, userId, true);
         if (resultHl3.out_result.length) {
             var hl2 = dataHl2.getLevel2ById(hl2Id);
             var hl2Budget = Number(hl2.HL2_BUDGET_TOTAL);
             var total = 0;
             for (var i = 0; i < resultHl3.out_result.length; i++) {
                 if (hl2Budget < total + parseFloat(resultHl3.out_result[i].BUDGET)) {
-                    data.updateHl3BudgetStatus(resultHl3.out_result[i].HL3_ID, userId, 0);
+                    data.updateHl3BudgetStatus(resultHl3.out_result[i].HL_ID, userId, 0);
                 } else {
-                    data.updateHl3BudgetStatus(resultHl3.out_result[i].HL3_ID, userId, 1);
+                    data.updateHl3BudgetStatus(resultHl3.out_result[i].HL_ID, userId, 1);
                     total = total + parseFloat(resultHl3.out_result[i].BUDGET);
                 }
             }
@@ -671,7 +878,7 @@ function checkBudgetStatus(hl2Id, userId, hl3Id, newHl3Budget) {
 function checkPermission(userSessionID, method, hl3Id) {
     if (((method && method == "GET_BY_HL3_ID")) && !util.isSuperAdmin(userSessionID)) {
         var l3 = data.getLevel3ById(hl3Id, userSessionID);
-        if(!l3)
+        if (!l3)
             throw ErrorLib.getErrors().CustomError("", "level3/getLevel3ById", "HL3 does not existn.");
 
         var usersL3 = userbl.getUserByHl3Id(hl3Id, l3.HL2_ID).users_in;
@@ -680,6 +887,31 @@ function checkPermission(userSessionID, method, hl3Id) {
         });
         if (!users) {
             throw ErrorLib.getErrors().CustomError("", "level3/handlePermission", "User hasn´t permission for this resource.");
+        }
+    }
+}
+
+function checkEspecialPermission(userSessionID, action) {
+    if(!util.isSuperAdmin(userSessionID)) {
+        var userRole = dataUserRole.getUserRoleByUserId(userSessionID);
+        /** Get the ResourceId by Name**/
+        var resourceId = config.getResourceIdByName("level3");
+        var permission;
+
+        switch (action) {
+            case "Create":
+                /** Get the PermissionId by Name**/
+                var permissionId = config.getPermissionIdByName(config.CreatePermission());
+                /** Get the Permission**/
+                permission = dataRolePermission.getPermissionByRoleAndResourceAndPermission(userRole[0].ROLE_ID, resourceId, permissionId );
+
+                if (!permission[0].ENABLE_CREATE) {
+                    throw ErrorLib.getErrors().CustomError("", "level2/handlePermission", "User hasn´t permission for this action.");
+                }
+                break;
+            case "Edit":
+            case "Delete":
+            case "View":
         }
     }
 }
@@ -711,10 +943,10 @@ function validateVersionType(key, value) {
             valid = !isNaN(value) && (value === 0 || value === 1);
             break;
         /*case 'ORIGIN_PLAN_ID':
-        case 'CRM_ID':
-        case 'HL3_HIERARCHY_ID':
-            valid = !value || (!isNaN(value) && value > 0);
-            break;*/
+         case 'CRM_ID':
+         case 'HL3_HIERARCHY_ID':
+         valid = !value || (!isNaN(value) && value > 0);
+         break;*/
         case 'HL3_FNC_BUDGET_TOTAL':
             valid = valid = Number(value) >= 0;//!value || !isNaN(value);
             break;
@@ -739,11 +971,11 @@ function validateLevel3Version(data) {
     ];
 
     /*var optionalKeys = [
-        'ORIGIN_PLAN_ID',
-        'CRM_ID',
-        'HL3_HIERARCHY_ID',
-        'HL3_FNC_BUDGET_TOTAL'
-    ];*/
+     'ORIGIN_PLAN_ID',
+     'CRM_ID',
+     'HL3_HIERARCHY_ID',
+     'HL3_FNC_BUDGET_TOTAL'
+     ];*/
 
     try {
 
@@ -762,14 +994,14 @@ function validateLevel3Version(data) {
         });
 
         /*optionalKeys.forEach(function (key) {
-            // validate attribute type
-            isValid = validateVersionType(key, data[key]);
-            if (!isValid) {
-                errors[key] = data[key];
-                throw BreakException;
-            }
+         // validate attribute type
+         isValid = validateVersionType(key, data[key]);
+         if (!isValid) {
+         errors[key] = data[key];
+         throw BreakException;
+         }
 
-        });*/
+         });*/
 
         isValid = true;
 
@@ -840,7 +1072,7 @@ function insertExpectedOutcomes(data, userId) {
         var hl3ExpectedOutcomesDetail = [];
         data.TARGET_KPIS.KPIS.forEach(function (expectedOutcomeDetail) {
             var expectedOutcomeLevelId = mapEOL[expectedOutcomeDetail.OUTCOMES_TYPE_ID]
-                && mapEOL[expectedOutcomeDetail.OUTCOMES_TYPE_ID][expectedOutcomeDetail.OUTCOMES_ID]
+            && mapEOL[expectedOutcomeDetail.OUTCOMES_TYPE_ID][expectedOutcomeDetail.OUTCOMES_ID]
                 ? mapEOL[expectedOutcomeDetail.OUTCOMES_TYPE_ID][expectedOutcomeDetail.OUTCOMES_ID]
                 : expectedOutcomeDetail.EXPECTED_OUTCOME_LEVEL_ID;
             hl3ExpectedOutcomesDetail.push({
@@ -870,7 +1102,7 @@ function insertHl3FromUpload(objHl3, userId) {
     if (!hl2_ID)
         throw ErrorLib.getErrors().ImportError("", "", L2_MSG_PLAN_NOT_FOUND);
 
-    if(!util.validateMaximValue(objHl3.HL3_FNC_BUDGET_TOTAL)){
+    if (!util.validateMaximValue(objHl3.HL3_FNC_BUDGET_TOTAL)) {
         throw ErrorLib.getErrors().ImportError("", "", L3_BUDGET_EXCEEDED);
     }
 
@@ -897,8 +1129,8 @@ function insertHl3FromUpload(objHl3, userId) {
 }
 
 /*function getExpectedOutcomesByHl3Id(hl3Id, hl2Id) {
-    return expectedOutcomesLib.getExpectedOutcomesByHl3Id(hl3Id, hl2Id);
-}*/
+ return expectedOutcomesLib.getExpectedOutcomesByHl3Id(hl3Id, hl2Id);
+ }*/
 
 function validateKpi(data) {
     if (data.TARGET_KPIS) {
@@ -917,14 +1149,6 @@ function validateKpi(data) {
                 throw ErrorLib.getErrors().CustomError("", "hl3Services/handlePost/insertHl3", L2_CAMPAIGN_FORECASTING_KPIS_DETAILS);
             if (!kpiDetail.EURO_VALUE || !Number(kpiDetail.EURO_VALUE))
                 throw ErrorLib.getErrors().CustomError("", "hl3Services/handlePost/insertHl3", L2_CAMPAIGN_FORECASTING_KPIS_DETAILS_EURO);
-
-            if (totalAvailable && totalAvailable[kpiDetail.OUTCOMES_TYPE_ID] && totalAvailable[kpiDetail.OUTCOMES_TYPE_ID][kpiDetail.OUTCOMES_ID]) {
-                if (Number(kpiDetail.VOLUME_VALUE) > totalAvailable[kpiDetail.OUTCOMES_TYPE_ID][kpiDetail.OUTCOMES_ID].VOLUME_AVAILABLE_TO_ALLOCATE)
-                    throw ErrorLib.getErrors().CustomError("", "hl3Services/handlePost/insertHl3", L2_CAMPAIGN_FORECASTING_KPIS_VOLUME);
-
-                if (Number(kpiDetail.EURO_VALUE) > totalAvailable[kpiDetail.OUTCOMES_TYPE_ID][kpiDetail.OUTCOMES_ID].VALUE_AVAILABLE_TO_ALLOCATE)
-                    throw ErrorLib.getErrors().CustomError("", "hl3Services/handlePost/insertHl3", L2_CAMPAIGN_FORECASTING_KPIS_VALUE);
-            }
         });
     } else {
         throw ErrorLib.getErrors().CustomError("", "hl3Services/handlePost/insertHl3", L2_CAMPAIGN_FORECASTING_KPIS_COMMENT);
@@ -946,13 +1170,14 @@ function getLevel3Kpi(hl2Id, userId) {
 
     listFromData.forEach(function (hl) {
         mapKpi[hl.L3_ACRONYM] = mapKpi[hl.L3_ACRONYM] || {
-            HL2_ID: hl.HL2_ID,
-            CRM_ID: hl.CRM_ID,
-            HL3_ID: hl.HL3_ID,
-            ACRONYM: hl.L3_ACRONYM,
-            IS_LOCKED: hl.IS_LOCKED,
-            HL3_DESCRIPTION: hl.HL3_DESCRIPTION
-        };
+                HL2_ID: hl.HL2_ID,
+                CRM_ID: hl.CRM_ID,
+                HL3_ID: hl.HL3_ID,
+                ACRONYM: hl.L3_ACRONYM,
+                IS_LOCKED: hl.IS_LOCKED,
+                HIERARCHY_LEVEL_ID: HIERARCHY_LEVEL.HL3,
+                HL3_DESCRIPTION: hl.HL3_DESCRIPTION
+            };
         var auxKpi = mapKpi[hl.L3_ACRONYM].kpi || [];
         if (hl.KPI_TYPE_NAME) {
             auxKpi.push({
@@ -995,6 +1220,7 @@ function insertCategoryOption(data, userId) {
                 in_hl3_id: data.HL3_ID
                 , in_category_option_level_id: mapCOL[hl3Category.CATEGORY_ID][hl3CategoryOption.OPTION_ID]
                 , in_amount: hl3CategoryOption.AMOUNT || 0
+                , in_amount_value: hl3CategoryOption.AMOUNT_VALUE || 0
                 , in_user_id: userId
                 , in_updated: 0
             });
@@ -1007,10 +1233,10 @@ function insertCategoryOption(data, userId) {
 
 function validateCategoryOption(data) {
     if (!data.CATEGORIES || !data.CATEGORIES.length)
-        throw ErrorLib.getErrors().CustomError("", "hl3Services/handlePost/validateCategoryOption", L3_CATEGORY_NOT_EMPTY);
+        throw ErrorLib.getErrors().CustomError("", "", L3_CATEGORY_NOT_EMPTY);
 
     if (!data.HL3_ID && data.CATEGORIES.length !== dataCategory.getAllocationCategoryCountByHlId("hl3"))
-        throw ErrorLib.getErrors().CustomError("", "hl3Services/handlePost/validateCategoryOption", L3_CATEGORY_INCORRECT_NUMBER);
+        throw ErrorLib.getErrors().CustomError("", "", L3_CATEGORY_INCORRECT_NUMBER);
     var percentagePerOption = 0;
     var thereIsMandatoryCategory = false;
     for (var i = 0; i < data.CATEGORIES.length; i++) {
@@ -1018,31 +1244,33 @@ function validateCategoryOption(data) {
         var hl2Category = data.CATEGORIES[i];
         thereIsMandatoryCategory = thereIsMandatoryCategory || !!hl2Category.MAKE_CATEGORY_MANDATORY;
         if (!hl2Category.CATEGORY_ID || !Number(hl2Category.CATEGORY_ID))
-            throw ErrorLib.getErrors().CustomError("", "hl3Services/handlePost/validateCategoryOption", L3_CATEGORY_NOT_VALID);
+            throw ErrorLib.getErrors().CustomError("", "", L3_CATEGORY_NOT_VALID);
 
         if (!hl2Category.OPTIONS || !hl2Category.OPTIONS.length)
-            throw ErrorLib.getErrors().CustomError("", "hl3Services/handlePost/validateCategoryOption", L3_CATEGORY_OPTIONS_NOT_EMPTY);
+            throw ErrorLib.getErrors().CustomError("", "", L3_CATEGORY_OPTIONS_NOT_EMPTY);
 
         hl2Category.OPTIONS.forEach(function (option) {
             if (!option.OPTION_ID || !Number(option.OPTION_ID))
-                throw ErrorLib.getErrors().CustomError("", "hl3Services/handlePost/validateCategoryOption", L3_CATEGORY_OPTION_NOT_VALID);
-            if ((parseFloat(option.AMOUNT) && !Number(option.AMOUNT)) || Number(option.AMOUNT) > 100 || Number(option.AMOUNT) < 0)
-                throw ErrorLib.getErrors().CustomError("", "hl3Services/handlePost/validateCategoryOption", "Option value is not valid (actual value " + option.AMOUNT + ")");
+                throw ErrorLib.getErrors().CustomError("", "", L3_CATEGORY_OPTION_NOT_VALID);
+            if ((parseFloat(option.AMOUNT_VALUE) && !Number(option.AMOUNT_VALUE))
+                || Number(option.AMOUNT_VALUE) > Number(data.BUDGET)
+                || Number(option.AMOUNT_VALUE) < 0)
+                throw ErrorLib.getErrors().CustomError("", "", "Option value is not valid (actual value " + option.AMOUNT_VALUE + ")");
 
-            percentagePerOption = percentagePerOption + Number(option.AMOUNT || 0);
-            percentagePerCategory += Number(option.AMOUNT || 0);
+            percentagePerOption = percentagePerOption + Number(option.AMOUNT_VALUE || 0);
+            percentagePerCategory += Number(option.AMOUNT_VALUE || 0);
         });
-        if((Number(data.BUDGET) > 0) && hl2Category.MAKE_CATEGORY_MANDATORY && percentagePerCategory <= 0){
-            throw ErrorLib.getErrors().CustomError("", "hl2Services/handlePost/validateCategoryOption", L3_BUDGET_ZERO_CATEGORY_TOTAL_PERCENTAGE_ZERO);
+        if ((Number(data.BUDGET) > 0) && hl2Category.MAKE_CATEGORY_MANDATORY && percentagePerCategory <= 0) {
+            throw ErrorLib.getErrors().CustomError("", "", L3_BUDGET_ZERO_CATEGORY_TOTAL_PERCENTAGE_ZERO);
         }
     }
-    if(thereIsMandatoryCategory) {
+    if (thereIsMandatoryCategory) {
         if ((Number(data.BUDGET) == 0) && percentagePerOption != 0) {
-            throw ErrorLib.getErrors().CustomError("", "hl3Services/handlePost/validateCategoryOption", L3_BUDGET_ZERO_CATEGORY_TOTAL_PERCENTAGE_ZERO);
+            throw ErrorLib.getErrors().CustomError("", "", L3_BUDGET_ZERO_CATEGORY_TOTAL_PERCENTAGE_ZERO);
         }
 
-        if ((Number(data.BUDGET) > 0) && percentagePerOption != 100) {
-            throw ErrorLib.getErrors().CustomError("", "hl3Services/handlePost/validateCategoryOption", L3_CATEGORY_TOTAL_PERCENTAGE);
+        if ((Number(data.BUDGET) > 0) && percentagePerOption != Number(data.BUDGET)) {
+            throw ErrorLib.getErrors().CustomError("", "", L3_CATEGORY_TOTAL_PERCENTAGE);
         }
     }
 
@@ -1058,6 +1286,7 @@ function updateCategoryoption(data, userId) {
             var categoryOption = {
                 in_category_option_level_id: mapCOL[hl3Category.CATEGORY_ID][option.OPTION_ID]
                 , in_amount: option.AMOUNT || 0
+                , in_amount_value: option.AMOUNT_VALUE || 0
                 , in_user_id: userId
                 , in_updated: 0
                 , in_hl3_id: data.HL3_ID
@@ -1123,6 +1352,7 @@ function getCarryOverHl2CategoryOption(hl2_id) {
             category.OPTIONS.map(function (option) {
                 var hl2option = extractElementByList(hl2Cat.OPTIONS, "OPTION_ID", option.OPTION_ID);
                 option.AMOUNT = hl2option ? hl2option.AMOUNT : 0;
+                option.AMOUNT_VALUE = 0;
                 return option;
             });
         }
@@ -1131,6 +1361,6 @@ function getCarryOverHl2CategoryOption(hl2_id) {
 }
 
 function deleteLevel3User(arrDelHl3User) {
-    eventManagementLib.deleteEventApproverByHlIdUserId('HL3',arrDelHl3User);
+    eventManagementLib.deleteEventApproverByHlIdUserId('HL3', arrDelHl3User);
     return dataHl3User.deleteLevel3User(arrDelHl3User);
 }

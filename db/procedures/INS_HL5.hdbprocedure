@@ -55,6 +55,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_HL5"
     , IN in_inherited_creation tinyint
     , IN in_des_type_id bigint
     , IN in_enable_crm_creation tinyint
+    , IN in_dynamic_form_id bigint
 	,OUT out_hl5_id bigint
 	) 
 	LANGUAGE SQLSCRIPT
@@ -118,6 +119,7 @@ BEGIN
     , inherited_creation
     , des_type_id
     , enable_crm_creation
+    , dynamic_form_id
 	)
 	VALUES (
      in_hl5_crm_description
@@ -176,6 +178,7 @@ BEGIN
     , in_inherited_creation
     , in_des_type_id
     , in_enable_crm_creation
+    , in_dynamic_form_id
 );
 	
 	SELECT TOP 1 CURRENT_IDENTITY_VALUE() INTO out_hl5_id FROM "MKTG_PLANNING_TOOL"."HL5";

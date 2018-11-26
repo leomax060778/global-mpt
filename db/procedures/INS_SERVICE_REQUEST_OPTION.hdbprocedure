@@ -1,5 +1,6 @@
 PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_SERVICE_REQUEST_OPTION" (
 	IN in_name NVARCHAR(255),
+	IN in_service_request_form_type_id BIGINT,
 	IN in_user_id BIGINT,
 	OUT out_option_id BIGINT
 )
@@ -7,8 +8,8 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_SERVICE_REQU
 	SQL SECURITY INVOKER
 	AS
 BEGIN
-		INSERT INTO "MKTG_PLANNING_TOOL"."SERVICE_REQUEST_OPTION"(name,created_user_id)
-		VALUES(in_name, in_user_id);
+		INSERT INTO "MKTG_PLANNING_TOOL"."SERVICE_REQUEST_OPTION"(name,service_request_form_type_id, created_user_id)
+		VALUES(in_name, in_service_request_form_type_id, in_user_id);
 
 		SELECT TOP 1 CURRENT_IDENTITY_VALUE() INTO out_option_id FROM "MKTG_PLANNING_TOOL"."SERVICE_REQUEST_OPTION";
 END;

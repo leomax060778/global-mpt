@@ -4,27 +4,29 @@ var dataValidation = mapper.getDataValidation();
 
 /** ***********END INCLUDE LIBRARIES*************** */
 
-var Quarter = {
-	'1' : {
-		start:new Date(new Date().getFullYear(), 0, 1).setHours(0, 0, 0, 0),
-		end: new Date(new Date().getFullYear(), 2, 31).setHours(0, 0, 0, 0)
-	},
-	'2' : {
-		start:new Date(new Date().getFullYear(), 3, 1).setHours(0, 0, 0, 0),
-		end: new Date(new Date().getFullYear(), 5, 30).setHours(0, 0, 0, 0)
-	},
-	'3' : {
-		start:new Date(new Date().getFullYear(), 6, 1).setHours(0, 0, 0, 0),
-		end: new Date(new Date().getFullYear(), 8, 30).setHours(0, 0, 0, 0)
-	},
-	'4' : {
-		start:new Date(new Date().getFullYear(), 9, 1).setHours(0, 0, 0, 0),
-		end: new Date(new Date().getFullYear(), 11, 31).setHours(0, 0, 0, 0)
-	}
-};
+function getQuarterDates() {
+    return {
+        '1' : {
+            start:new Date(new Date().getFullYear(), 0, 1).setHours(0, 0, 0, 0),
+            end: new Date(new Date().getFullYear(), 2, 31).setHours(0, 0, 0, 0)
+        },
+        '2' : {
+            start:new Date(new Date().getFullYear(), 3, 1).setHours(0, 0, 0, 0),
+            end: new Date(new Date().getFullYear(), 5, 30).setHours(0, 0, 0, 0)
+        },
+        '3' : {
+            start:new Date(new Date().getFullYear(), 6, 1).setHours(0, 0, 0, 0),
+            end: new Date(new Date().getFullYear(), 8, 30).setHours(0, 0, 0, 0)
+        },
+        '4' : {
+            start:new Date(new Date().getFullYear(), 9, 1).setHours(0, 0, 0, 0),
+            end: new Date(new Date().getFullYear(), 11, 31).setHours(0, 0, 0, 0)
+        }
+    };
+}
 
 function validateActualDatesRange(campaignTypeId, campaignSubTypeId, Actual_Start_Date, Actual_End_Date){
-
+    var Quarter = getQuarterDates();
 
 	if(dataValidation.getValidateDateRule(campaignTypeId, campaignSubTypeId)){
 		if(!Actual_Start_Date || !Actual_End_Date) return false;

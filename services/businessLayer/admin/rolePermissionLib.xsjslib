@@ -6,7 +6,10 @@ var dataPermissions = mapper.getDataPermission();
 var dataRolePermission = mapper.getDataRolePermission();
 var dataResource = mapper.getDataResource();
 var ErrorLib = mapper.getErrors();
+var config = mapper.getDataConfig();
 var db = mapper.getdbHelper();
+var util = mapper.getUtil();
+var dataUserRole = mapper.getDataUserRole();
 /** ********************************************** */
 
 var RoleEnum = {
@@ -15,6 +18,8 @@ var RoleEnum = {
 	DataEntry: 3,
 	CampaignManager: 4
 };
+
+var RESOURCE = getResourceEnum();
 
 /* Return all permissions for roles */
 function getAllPermissionByRole() {
@@ -103,11 +108,22 @@ function getPermissionByRoleId(roleId) {
         });
 
         if(!configurationExist.length) {
-            resourcesMap[rolePremisision.RESOURCE_ID].CONFIGURATION.push({
+        	var objConf = {
                 PERMISSION: rolePremisision.PERMISSION_NAME
                 , PERMISSION_ID: rolePremisision.PERMISSION_ID
                 , ENABLED: !!rolePremisision.ENABLED
-            });
+            };
+
+        	var resourceChechEnableCreate = !!(RESOURCE.L1 === resourcesMap[rolePremisision.RESOURCE_ID].RESOURCE
+				|| RESOURCE.L2 === resourcesMap[rolePremisision.RESOURCE_ID].RESOURCE
+                || RESOURCE.L3 === resourcesMap[rolePremisision.RESOURCE_ID].RESOURCE
+                || RESOURCE.L4 === resourcesMap[rolePremisision.RESOURCE_ID].RESOURCE);
+
+        	if (config.CreatePermission() == rolePremisision.PERMISSION_NAME && resourceChechEnableCreate){
+                objConf.ENABLE_CREATE = !!rolePremisision.ENABLE_CREATE;
+                resourcesMap[rolePremisision.RESOURCE_ID].ENABLE_CREATE = !!rolePremisision.ENABLE_CREATE;
+			}
+            resourcesMap[rolePremisision.RESOURCE_ID].CONFIGURATION.push(objConf);
         }
 	});
 
@@ -167,6 +183,9 @@ function getPermissionByRole(roleId) {
 				permissionSetting["PERMISSION"] = sysPermissions[p].NAME;
 				permissionSetting["PERMISSION_ID"] = sysPermissions[p].PERMISSION_ID;
 				permissionSetting["ENABLED"] = permissionEnabled;
+                if (config.CreatePermission() == sysPermissions[p].NAME){
+                    permissionSetting["ENABLE_CREATE"] = !!sysPermissions[p].ENABLE_CREATE;
+                }
 				permissionsResource.push(permissionSetting);
 			} // end loop for permissions by role and resource
 
@@ -212,6 +231,7 @@ function updateRolePermission(rolePermissions, modifiedUser) {
 		var resourceId = null;
 		var permissionId = null;
 		var enabled = false;
+		var enable_create = false;
 		var resultTransaction = null;
 		var permissionEnabled = null;
 		if (validateRolePermission(rolePermissions)) {
@@ -227,6 +247,7 @@ function updateRolePermission(rolePermissions, modifiedUser) {
 					for (var r = 0; r < rolePermissions[i].PERMISSIONS[j].CONFIGURATION.length; r++) {
 						permissionId = rolePermissions[i].PERMISSIONS[j].CONFIGURATION[r].PERMISSION_ID;
 						enabled = rolePermissions[i].PERMISSIONS[j].CONFIGURATION[r].ENABLED;
+                        enable_create = !!(rolePermissions[i].PERMISSIONS[j].ENABLE_CREATE);
 						permissionEnabled = typeof (enabled) != 'undefined'
 								&& enabled == true ? 1 : 0;
 
@@ -239,14 +260,14 @@ function updateRolePermission(rolePermissions, modifiedUser) {
 							resultTransaction = dataRolePermission
 									.updateRolePermission(roleId, resourceId,
 											permissionId, permissionEnabled,
-											modifiedUser);
+											modifiedUser, Number(enable_create));
 						} else {
 							// insert the configuration for the role permission
 							// (role, resource and permission)
 							resultTransaction = dataRolePermission
 									.insertRolePermission(roleId, resourceId,
 											permissionId, permissionEnabled,
-											modifiedUser);
+											modifiedUser, Number(enable_create));
 						}
 
 					} // end loop for permissions for role and resource
@@ -368,4 +389,39 @@ function validateRolePermission(rolePermissions) {
 function existsRolePermission(roleId, resourceId, permissionId) {
 	return dataRolePermission.existsRolePermission(roleId, resourceId,
 			permissionId);
+}
+
+function getResourceEnum() {
+    return {
+        L1: "L1",
+        L2: "L2",
+        L3: "L3",
+        L4: "L4"
+    };
+}
+
+function checkEspecialPermission(userSessionID, action, resourceName) {
+    if(!util.isSuperAdmin(userSessionID)) {
+        var userRole = dataUserRole.getUserRoleByUserId(userSessionID);
+        /** Get the ResourceId by Name**/
+        var resourceId = config.getResourceIdByName(resourceName);
+        var permission;
+
+        switch (action) {
+            case "Create":
+                /** Get the PermissionId by Name**/
+                var permissionId = config.getPermissionIdByName(config.CreatePermission());
+                /** Get the Permission**/
+                permission = dataRolePermission.getPermissionByRoleAndResourceAndPermission(userRole[0].ROLE_ID, resourceId, permissionId );
+
+                if (!permission[0].ENABLE_CREATE) {
+                    throw ErrorLib.getErrors().CustomError("", "", "User hasn´t permission for this action.");
+                }
+                break;
+            case "Edit":
+            case "Delete":
+            case "View":
+                break;
+        }
+    }
 }

@@ -7,7 +7,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL1_BY_HL4_I
 		, budget_year_id bigint
 		, region_id integer
 		, budget decimal(19, 6)
-        , team_type_id bigint
+        , planning_purpose_id bigint
         , implement_execution_level tinyint
         , crt_related tinyint
         , is_locked tinyint
@@ -28,7 +28,7 @@ BEGIN
 		, hl1.budget_year_id
 		, hl1.region_id
 		, hl1.budget
-        , hl1.team_type_id
+        , hl1.planning_purpose_id
         , hl1.implement_execution_level
         , hl1.crt_related
         , (CASE WHEN BUY.VERSIONED_END_DATE >= CURRENT_TIMESTAMP THEN 0 ELSE 1 END) AS IS_LOCKED

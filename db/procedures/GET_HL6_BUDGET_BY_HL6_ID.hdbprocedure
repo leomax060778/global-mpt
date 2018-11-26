@@ -12,7 +12,7 @@ organization_name nvarchar(255)
 	SQL SECURITY INVOKER
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL" AS
 BEGIN
-out_result =
+va_hl6_budget =
 	select
 hl6_budget.hl6_budget_id,
         hl6_budget.organization_id,
@@ -24,4 +24,29 @@ left join region on region.region_id = hl6_budget.organization_id
 left join hl2 on hl2.hl2_id = hl6_budget.organization_id
 where hl6_id = in_hl6_id
 and hl6_budget.enabled = 1 and hl6_budget.deleted = 0;
+
+va_regions = select
+	                null as hl6_budget_id
+                    , region_id as organization_id
+                    , 0 as percentage
+                    , 1 as organization_type
+                    , region_name as organization_name
+                    from region
+                    where enabled = 1 and deleted = 0
+                    and region_id not in (
+                        SELECT organization_id FROM :va_hl6_budget where organization_type = 1
+                    );
+    out_result = (SELECT hl6_budget_id
+                        , organization_id
+                        , percentage
+                        , organization_type
+                        , organization_name
+                    FROM :va_hl6_budget)
+                    UNION ALL
+                    (SELECT hl6_budget_id
+                         , organization_id
+                         , percentage
+                         , organization_type
+                         , organization_name
+                     FROM :va_regions);
 END;

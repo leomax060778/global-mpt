@@ -4,6 +4,8 @@ var db = mapper.getdbHelper();
 /** ***********END INCLUDE LIBRARIES*************** */
 
 //STORE PROCEDURE LIST NAME
+var GET_SERVICE_REQUEST_FORM_TYPE = "GET_SERVICE_REQUEST_FORM_TYPE";
+
 // SEGMENTATION_MARKET Section
 var INS_SEGMENTATION_MARKET = "INS_SEGMENTATION_MARKET";
 var UPD_SEGMENTATION_MARKET = "UPD_SEGMENTATION_MARKET";
@@ -550,9 +552,19 @@ function getSegmentationNonAdministrableFields(){
 }
 
 function getSegmentationFormByHl5Id(hl5Id){
-    return db.extractArray(
-        db.executeProcedureManual(GET_SEGMENTATION_FORM_BY_HL5_ID, {in_hl5_id: hl5Id}).out_result
-    );
+    var result = db.executeProcedureManual(GET_SEGMENTATION_FORM_BY_HL5_ID, {in_hl5_id: hl5Id});
+
+    result.FORMS = db.extractArray(result.out_result);
+    result.SEGMENTATION_MARKET = db.extractArray(result.out_result_segmentation_form_market);
+    result.SEGMENTATION_SALE = db.extractArray(result.out_result_segmentation_form_sale);
+    result.SEGMENTATION_INDUSTRY = db.extractArray(result.out_result_segmentation_form_industry);
+    result.SEGMENTATION_FUNCTION = db.extractArray(result.out_result_segmentation_form_function);
+    result.SEGMENTATION_DEPARTMENT = db.extractArray(result.out_result_segmentation_form_department);
+    result.SEGMENTATION_TACTIC = db.extractArray(result.out_result_segmentation_form_tactic);
+    result.SEGMENTATION_ITEM_OF_INTEREST = db.extractArray(result.out_result_segmentation_form_item_of_interest);
+    result.ATTACHMENTS = db.extractArray(result.out_result_segmentation_form_attachment);
+
+    return result;
 }
 
 function getSegmentationFormIdByHl5Id(hl5Id){
@@ -731,36 +743,36 @@ function updateSegmentationForm(segmentationFormId, formStatusDetailId, hl5Id, r
     return db.executeScalarManual(UPD_SEGMENTATION_FORM, parameters, "out_result");
 }
 
-function deleteSegmentationFormBySegmentationFormId(segmentationFormId, userId) {
-    return db.executeScalarManual(DEL_SEGMENTATION_FORM_BY_SEGMENTATION_FORM_ID, {in_segmentation_form_id: segmentationFormId, in_user_id: userId}, "out_result");
+function deleteSegmentationFormBySegmentationFormId(segmentationFormIds, userId) {
+    return db.executeScalarManual(DEL_SEGMENTATION_FORM_BY_SEGMENTATION_FORM_ID, {in_segmentation_form_ids: segmentationFormIds, in_user_id: userId}, "out_result");
 }
 
-function deleteSegmentationFormMarketBySegmentationFormId(segmentationFormId, userId) {
-    return db.executeScalarManual(DEL_SEGMENTATION_FORM_MARKET_BY_SEGMENTATION_FORM_ID, {in_segmentation_form_id: segmentationFormId, in_user_id: userId}, "out_result");
+function deleteSegmentationFormMarketBySegmentationFormId(segmentationFormIds, userId) {
+    return db.executeScalarManual(DEL_SEGMENTATION_FORM_MARKET_BY_SEGMENTATION_FORM_ID, {in_segmentation_form_ids: segmentationFormIds, in_user_id: userId}, "out_result");
 }
 
-function deleteSegmentationFormSaleBySegmentationFormId(segmentationFormId, userId) {
-    return db.executeScalarManual(DEL_SEGMENTATION_FORM_SALE_BY_SEGMENTATION_FORM_ID, {in_segmentation_form_id: segmentationFormId, in_user_id: userId}, "out_result");
+function deleteSegmentationFormSaleBySegmentationFormId(segmentationFormIds, userId) {
+    return db.executeScalarManual(DEL_SEGMENTATION_FORM_SALE_BY_SEGMENTATION_FORM_ID, {in_segmentation_form_ids: segmentationFormIds, in_user_id: userId}, "out_result");
 }
 
-function deleteSegmentationFormIndustryBySegmentationFormId(segmentationFormId, userId) {
-    return db.executeScalarManual(DEL_SEGMENTATION_FORM_INDUSTRY_BY_SEGMENTATION_FORM_ID, {in_segmentation_form_id: segmentationFormId, in_user_id: userId}, "out_result");
+function deleteSegmentationFormIndustryBySegmentationFormId(segmentationFormIds, userId) {
+    return db.executeScalarManual(DEL_SEGMENTATION_FORM_INDUSTRY_BY_SEGMENTATION_FORM_ID, {in_segmentation_form_ids: segmentationFormIds, in_user_id: userId}, "out_result");
 }
 
-function deleteSegmentationFormFunctionBySegmentationFormId(segmentationFormId, userId) {
-    return db.executeScalarManual(DEL_SEGMENTATION_FORM_FUNCTION_BY_SEGMENTATION_FORM_ID, {in_segmentation_form_id: segmentationFormId, in_user_id: userId}, "out_result");
+function deleteSegmentationFormFunctionBySegmentationFormId(segmentationFormIds, userId) {
+    return db.executeScalarManual(DEL_SEGMENTATION_FORM_FUNCTION_BY_SEGMENTATION_FORM_ID, {in_segmentation_form_ids: segmentationFormIds, in_user_id: userId}, "out_result");
 }
 
-function deleteSegmentationFormDepartmentBySegmentationFormId(segmentationFormId, userId) {
-    return db.executeScalarManual(DEL_SEGMENTATION_FORM_DEPARTMENT_BY_SEGMENTATION_FORM_ID, {in_segmentation_form_id: segmentationFormId, in_user_id: userId}, "out_result");
+function deleteSegmentationFormDepartmentBySegmentationFormId(segmentationFormIds, userId) {
+    return db.executeScalarManual(DEL_SEGMENTATION_FORM_DEPARTMENT_BY_SEGMENTATION_FORM_ID, {in_segmentation_form_ids: segmentationFormIds, in_user_id: userId}, "out_result");
 }
 
-function deleteSegmentationFormTacticBySegmentationFormId(segmentationFormId, userId) {
-    return db.executeScalarManual(DEL_SEGMENTATION_FORM_TACTIC_BY_SEGMENTATION_FORM_ID, {in_segmentation_form_id: segmentationFormId, in_user_id: userId}, "out_result");
+function deleteSegmentationFormTacticBySegmentationFormId(segmentationFormIds, userId) {
+    return db.executeScalarManual(DEL_SEGMENTATION_FORM_TACTIC_BY_SEGMENTATION_FORM_ID, {in_segmentation_form_ids: segmentationFormIds, in_user_id: userId}, "out_result");
 }
 
-function deleteSegmentationFormItemOfInterestBySegmentationFormId(segmentationFormId, userId) {
-    return db.executeScalarManual(DEL_SEGMENTATION_FORM_ITEM_OF_INTEREST_BY_SEGMENTATION_FORM_ID, {in_segmentation_form_id: segmentationFormId, in_user_id: userId}, "out_result");
+function deleteSegmentationFormItemOfInterestBySegmentationFormId(segmentationFormIds, userId) {
+    return db.executeScalarManual(DEL_SEGMENTATION_FORM_ITEM_OF_INTEREST_BY_SEGMENTATION_FORM_ID, {in_segmentation_form_ids: segmentationFormIds, in_user_id: userId}, "out_result");
 }
 
 function deleteHardSegmentationFormMarketBySegmentationFormId(segmentationFormId) {
@@ -846,3 +858,8 @@ function countRelatedSegmentationTactic(id){
     return db.executeScalarManual(GET_COUNT_FORM_SEGMENTATION_TACTIC_BY_SEGMENTATION_TACTIC_ID, parameters, "out_result");
 }
 /********END SEGMENTATION TACTIC***************/
+
+function getServiceRequestFormType() {
+    var list = db.executeProcedureManual(GET_SERVICE_REQUEST_FORM_TYPE, {});
+    return db.extractArray(list.out_result);
+}

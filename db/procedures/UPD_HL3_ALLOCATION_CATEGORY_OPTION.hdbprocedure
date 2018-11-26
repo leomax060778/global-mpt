@@ -4,7 +4,8 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::UPD_HL3_ALLOCATI
     	    in_amount DECIMAL(19, 2),
     	    in_user_id bigint,
     	    in_updated TINYINT,
-    	    in_hl3_id bigint
+    	    in_hl3_id bigint,
+    	    in_amount_value DECIMAL(19, 6)
     		),
     	OUT out_result int
     )
@@ -14,11 +15,12 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::UPD_HL3_ALLOCATI
     BEGIN
     		UPDATE HL3_CATEGORY_OPTION SET
     		amount = T.IN_AMOUNT,
+    		amount_value = T.IN_AMOUNT_VALUE,
     		modified_user_id = T.IN_USER_ID,
     		modified_date_tz = CURRENT_TIMESTAMP,
     		updated = T.IN_UPDATED
     		from HL3_CATEGORY_OPTION, (
-    		    select IN_AMOUNT, IN_USER_ID, IN_UPDATED, IN_CATEGORY_OPTION_LEVEL_ID, IN_HL3_ID from :myTable
+    		    select IN_AMOUNT, IN_USER_ID, IN_UPDATED, IN_CATEGORY_OPTION_LEVEL_ID, IN_HL3_ID, IN_AMOUNT_VALUE from :myTable
     		) T
     		where allocation_category_option_level_id = T.IN_CATEGORY_OPTION_LEVEL_ID
     		AND HL3_ID = IN_HL3_ID;

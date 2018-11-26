@@ -19,7 +19,8 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL5_BY_HL4_I
               IN_CRM_CHILD integer,
               PARENT_STATUS_ID integer,
               IS_LEGACY TINYINT,
-              ENABLE_CRM_CREATION TINYINT
+              ENABLE_CRM_CREATION TINYINT,
+              ALLOW_BUDGET_ZERO TINYINT
         )
 )
 LANGUAGE SQLSCRIPT
@@ -41,7 +42,8 @@ va_intermidate = SELECT
                          HL5.HL5_STATUS_DETAIL_ID,
                          HL4.HL4_STATUS_DETAIL_ID AS PARENT_STATUS_ID,
                          0 AS IS_LEGACY,
-                         HL5.ENABLE_CRM_CREATION
+                         HL5.ENABLE_CRM_CREATION,
+                         HL5.ALLOW_BUDGET_ZERO
                     FROM HL5 Hl5
                         INNER JOIN HL4 hl4 ON hl4.HL4_ID = hl5.HL4_ID
                             AND hl4.ENABLED = 1
@@ -82,7 +84,8 @@ aux_out_result = SELECT
                         va_hl5.HL5_CRM_DESCRIPTION,
                         va_hl5.PARENT_STATUS_ID,
                         va_hl5.IS_LEGACY,
-                        va_HL5.ENABLE_CRM_CREATION
+                        va_HL5.ENABLE_CRM_CREATION,
+                        va_HL5.ALLOW_BUDGET_ZERO
                     FROM :va_intermidate va_hl5
                         LEFT JOIN HL6 hl6 ON hl6.HL5_ID = va_hl5.hl5_id
                             AND hl6.ENABLED = 1
@@ -103,7 +106,8 @@ aux_out_result = SELECT
                         va_hl5.HL5_CRM_DESCRIPTION,
                         va_hl5.PARENT_STATUS_ID,
                         va_hl5.IS_LEGACY,
-                        va_HL5.ENABLE_CRM_CREATION;
+                        va_HL5.ENABLE_CRM_CREATION,
+                        va_HL5.ALLOW_BUDGET_ZERO;
 
 
    IF in_include_legacy_records = 1 THEN
@@ -120,7 +124,8 @@ aux_out_result = SELECT
                                         HL5_CRM_DESCRIPTION,
                                         HL5.HL5_STATUS_DETAIL_ID,
                                         HL4.HL4_STATUS_DETAIL_ID AS PARENT_STATUS_ID,
-                                        1 AS IS_LEGACY
+                                        1 AS IS_LEGACY,
+                                        HL5.ALLOW_BUDGET_ZERO
                                    FROM HL5_LEGACY Hl5
                                         INNER JOIN HL4 hl4 ON hl4.HL4_ID = hl5.HL4_ID
                                             AND hl4.ENABLED = 1
@@ -148,7 +153,9 @@ aux_out_result = SELECT
 			                                   va_hl5.ACRONYM,
 			                                   va_hl5.HL5_CRM_DESCRIPTION,
 			                                   va_hl5.PARENT_STATUS_ID,
-			                                   va_hl5.IS_LEGACY
+			                                   va_hl5.IS_LEGACY,
+			                                   1 as ENABLE_CRM_CREATION,
+			                                   va_HL5.ALLOW_BUDGET_ZERO
 			                            FROM :va_intermidate_legacy va_hl5
 			                                INNER JOIN HL6_LEGACY hl6_legacy ON hl6_legacy.HL5_LEGACY_ID = va_hl5.HL5_LEGACY_ID
 			                                    AND hl6_legacy.ENABLED = 1
@@ -170,7 +177,8 @@ aux_out_result = SELECT
 			                                va_hl5.ACRONYM,
 			                                va_hl5.HL5_CRM_DESCRIPTION,
 			                                va_hl5.PARENT_STATUS_ID,
-			                                va_hl5.IS_LEGACY;
+			                                va_hl5.IS_LEGACY,
+			                                va_HL5.ALLOW_BUDGET_ZERO;
 
            aux_out_result =
                            (SELECT  HL5_ID,
@@ -190,7 +198,8 @@ aux_out_result = SELECT
                                     HL5_CRM_DESCRIPTION,
                                     PARENT_STATUS_ID,
                                     IS_LEGACY,
-                                    ENABLE_CRM_CREATION
+                                    ENABLE_CRM_CREATION,
+                                    ALLOW_BUDGET_ZERO
                             FROM :aux_out_result
                            )
 
@@ -203,31 +212,20 @@ aux_out_result = SELECT
                                     HL5_STATUS_DETAIL_ID,
                                     CREATED_BY,
                                     HL5_BUDGET,
-                                    SUM(TOTAL_HL6) AS TOTAL_HL6,
-                                    SUM(QUANTITY_HL6_OUT_BUDGET) AS QUANTITY_HL6_OUT_BUDGET,
-                                    SUM(ALLOCATED) AS ALLOCATED,
-                                    SUM(REMAINING) AS REMAINING,
-                                    SUM(IN_CRM_CHILD) AS IN_CRM_CHILD,
+                                    TOTAL_HL6,
+                                    QUANTITY_HL6_OUT_BUDGET,
+                                    ALLOCATED,
+                                    REMAINING,
+                                    IN_CRM_CHILD,
                                     IMPORTED,
                                     ACRONYM,
                                     HL5_CRM_DESCRIPTION,
                                     PARENT_STATUS_ID,
                                     IS_LEGACY,
-                                    1
+                                    ENABLE_CRM_CREATION,
+                                    ALLOW_BUDGET_ZERO
                             FROM :va_legacy_with_children
-                            GROUP BY HL5_ID,
-                                    HL5_LEGACY_ID,
-                                    CRM_ID,
-                                    STATUS_DETAIL,
-                                    HL5_STATUS_DETAIL_ID,
-                                    CREATED_BY,
-                                    HL5_BUDGET,
-                                    IMPORTED,
-                                    ACRONYM,
-                                    HL5_CRM_DESCRIPTION,
-                                    PARENT_STATUS_ID,
-                                    IS_LEGACY
-                            )
+                           )
                            
                            UNION ALL
                            
@@ -250,7 +248,8 @@ aux_out_result = SELECT
                                   va_hl5.HL5_CRM_DESCRIPTION,
                                   va_hl5.PARENT_STATUS_ID,
                                   va_hl5.IS_LEGACY,
-                                  1
+                                  0 AS ENABLE_CRM_CREATION,
+                                  va_hl5.ALLOW_BUDGET_ZERO
                            FROM :va_intermidate_legacy va_hl5
 
                            WHERE HL5_LEGACY_ID NOT IN (SELECT legacy_aux.HL5_LEGACY_ID FROM :va_legacy_with_children legacy_aux)
@@ -278,7 +277,8 @@ out_result =
                  T.IN_CRM_CHILD,
                  T.PARENT_STATUS_ID,
                  T.IS_LEGACY,
-                 T.ENABLE_CRM_CREATION
+                 T.ENABLE_CRM_CREATION,
+                 T.ALLOW_BUDGET_ZERO
             FROM :aux_out_result T
             GROUP BY
                 T.HL5_ID,
@@ -294,7 +294,8 @@ out_result =
                 T.IN_CRM_CHILD,
                 T.PARENT_STATUS_ID,
                 T.IS_LEGACY,
-                T.ENABLE_CRM_CREATION
+                T.ENABLE_CRM_CREATION,
+                T.ALLOW_BUDGET_ZERO
             ORDER BY T.CRM_ID ASC;
 
 END;

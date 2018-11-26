@@ -16,6 +16,8 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL2_VERSION_
         , implement_execution_level tinyint
         , in_budget tinyint
         , allow_automatic_budget_approval tinyint
+        , planning_purpose_option_id bigint
+        , planning_purpose_option_name nvarchar(255)
 		)
 )
 	LANGUAGE SQLSCRIPT
@@ -40,9 +42,12 @@ BEGIN
         , hl2.implement_execution_level
         , hl2.in_budget
         , hl2.allow_automatic_budget_approval
+        , hl2.planning_purpose_option_id
+        , PLO.name as planning_purpose_option_name
 	FROM HL2_VERSION HL2
 	LEFT JOIN REGION R ON R.region_id = HL2.region_id
 	LEFT JOIN SUBREGION SR ON SR.subregion_id = HL2.subregion_id
+	LEFT JOIN planning_purpose_option PLO ON PLO.planning_purpose_option_id = HL2.planning_purpose_option_id
 	INNER JOIN HL1 ON HL1.HL1_ID = HL2.HL1_ID
     INNER JOIN BUDGET_YEAR BUY ON BUY.BUDGET_YEAR_ID = HL1.BUDGET_YEAR_ID
 	WHERE
@@ -63,9 +68,12 @@ BEGIN
         , hl2.implement_execution_level
         , hl2.in_budget
         , hl2.allow_automatic_budget_approval
+        , hl2.planning_purpose_option_id
+        , PLO.name as planning_purpose_option_name
 	FROM HL2
 	LEFT JOIN REGION R ON R.region_id = HL2.region_id
 	LEFT JOIN SUBREGION SR ON SR.subregion_id = HL2.subregion_id
+	LEFT JOIN planning_purpose_option PLO ON PLO.planning_purpose_option_id = HL2.planning_purpose_option_id
 	INNER JOIN HL1 ON HL1.HL1_ID = HL2.HL1_ID
     INNER JOIN BUDGET_YEAR BUY ON BUY.BUDGET_YEAR_ID = HL1.BUDGET_YEAR_ID
 	WHERE

@@ -59,6 +59,18 @@ function countL5ChangedFieldsByHL5Id(hl5Id) {
     }
 
 }
+
+function getL5CrmBindingFieldsByHl5Id(hl5Id) {
+    var sp_result = dataL5DER.getL5ChangedFieldsByHl5Id(hl5Id);
+    var mapL5CrmBindignFields = {};
+    for (var i = 0; i < sp_result.length; i++) {
+        var obj = sp_result[i];
+        mapL5CrmBindignFields[obj.COLUMN_NAME] = {};
+        mapL5CrmBindignFields[obj.COLUMN_NAME].HL5_CRM_BINDING_ID = obj.ID
+    }
+    return mapL5CrmBindignFields;
+}
+
 function getL5ChangedFieldsByHl5Id(hl5Id, userId) {
     var data = {"hl5": [], "category": []};
     data.STATUS_FLAG = dataHl5.getHl5StatusByHl5Id(hl5Id).HL5_STATUS_DETAIL_ID == HL5_STATUS.DELETION_REQUEST;

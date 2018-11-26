@@ -1290,7 +1290,6 @@ function validate(row) {
         }
 
     } else {
-        throw JSON.stringify(fieldMapper);
         error.details = MSG_FK_MAP_NOT_FOUND;
         throw error;
     }

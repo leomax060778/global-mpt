@@ -4,9 +4,10 @@ var mapper = $.mktgplanningtool.services.commonLib.mapper;
 var httpUtil = mapper.getHttp();
 var ErrorLib = mapper.getErrors();
 var blLevel2 = mapper.getLevel2();
-var businessLavel3 = mapper.getLevel3();
 var config = mapper.getDataConfig();
-var blLevel1 = mapper.getLevel1();
+var config = mapper.getDataConfig();
+var blRolePermission = mapper.getRolePermission();
+var blDynamicForm = mapper.getDynamicFormLib();
 /******************************************/
 
 var method = "GET_ALL";
@@ -15,6 +16,7 @@ var hl2Id = "HL2_ID";
 var HL1_ID = "HL1_ID";
 var GET_ALL_CENTRAL_TEAM = "GET_ALL_CENTRAL_TEAM";
 var GET_DATA_KPI = "GET_DATA_KPI";
+var methodName = "METHOD";
 
 function processRequest(){
 	return httpUtil.processRequest(handleGet,handlePost,handlePut,handleDelete,false,"",true);
@@ -48,6 +50,23 @@ function handleGet(parameters, userSessionID){
 			var rdo = blLevel2.getLevel2Kpi(httpUtil.getUrlParameters().get("HL1_ID"), userSessionID);
 			httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
 		}
+        else if(parameters[0].name == methodName && httpUtil.getUrlParameters().get(methodName) == "GET_DYNAMIC_FORM"){
+            var rdo = blDynamicForm.getFormByRoleId("L2", null, true, userSessionID);
+
+            httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
+        }
+		else if(parameters[0].name == methodName && httpUtil.getUrlParameters().get(methodName) == "GET_DYNAMIC_FORM_BY_BUDGET_YEAR"){
+			var budgetYearId = httpUtil.getUrlParameters().get("BUDGET_YEAR_ID");
+			var rdo = blDynamicForm.getFormByRoleIdBudgetYearId("L2", budgetYearId, null, true, userSessionID);
+
+			httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
+		}
+		else if(parameters[0].name == methodName && httpUtil.getUrlParameters().get(methodName) == "GET_HL2_GROUP_BY_REGION"){
+            var budgetYearId = httpUtil.getUrlParameters().get("BUDGET_YEAR_ID") || null;
+            var rdo = blLevel2.getHl2GroupByRegion(budgetYearId, userSessionID);
+
+            httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
+		}
 		else if (parameters[0].value == section){
 			var budget_year_id = httpUtil.getUrlParameters().get("BUDGET_YEAR_ID") || null;
 			var region_id = httpUtil.getUrlParameters().get("REGION_ID") || null;
@@ -70,16 +89,27 @@ function handleGet(parameters, userSessionID){
 
 //Implementation of POST call -- Insert HL2
 function handlePost(reqBody,userSessionID) {
-    blLevel1.checkPermission(userSessionID, null ,reqBody.HL1_ID);
+    blRolePermission.checkEspecialPermission(userSessionID, "Create", config.level2());
+    blLevel2.checkPermission(userSessionID, null ,reqBody.HL1_ID);
 	var rdo =  blLevel2.insertHl2(reqBody,userSessionID);
 	return httpUtil.handleResponse(rdo,httpUtil.OK,httpUtil.AppJson);
 }
 
 //Implementation of UPDATE call -- UPDATE HL2
 function handlePut(reqBody,userSessionID){
-    blLevel2.checkPermission(userSessionID, null, reqBody.HL2_ID);
-	var rdo =  blLevel2.updateHl2(reqBody,userSessionID);
-	return httpUtil.handleResponse(rdo,httpUtil.OK,httpUtil.AppJson);
+    var method = httpUtil.getUrlParameters().get("METHOD");
+    var rdo = null;
+    var hl2Id = reqBody.HL2_ID || reqBody.ID;
+    blLevel2.checkPermission(userSessionID, null, hl2Id);
+    switch (method) {
+        case 'UPDATE_BUDGET':
+            rdo =  blLevel2.updateBudget(hl2Id,reqBody.BUDGET,userSessionID);
+            break;
+        default:
+            rdo =  blLevel2.updateHl2(reqBody,userSessionID);
+    }
+
+    return httpUtil.handleResponse(rdo,httpUtil.OK,httpUtil.AppJson);
 };
 
 //Implementation of DELETE call -- Delete HL2

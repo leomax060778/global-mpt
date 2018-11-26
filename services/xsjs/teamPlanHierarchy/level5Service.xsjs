@@ -15,6 +15,7 @@ var id = "id";
 var setStatusInCRM = "SETINCRM";
 var setStatusInCRMByUpload = "SET_IN_CRM_STATUS_BY_UPLOAD";
 var changeStatus = "CHANGESTATUS";
+var updateBudget = "UPDATE_HL5_BUDGET";
 // var sendInCrmNotificationMail = "SENDMAIL";
 var getHl5ByUserId = 'GET_HL5_BY_USER_ID';
 var getNewSerialAcronym = "GET_SERIAL";
@@ -109,6 +110,14 @@ function handlePut(reqBody, userId){
                 var enable_crm_creation = parameters.get('ENABLE_CRM_CREATION');
 
                 rdo = hl5.updEnableCrmCreation(hl5Id, enable_crm_creation);
+                return	httpUtil.handleResponse(rdo,httpUtil.OK,httpUtil.AppJson);
+                break;
+            case updateBudget:
+                rdo = hl5.updateHl5Budget(reqBody, userId);
+                return	httpUtil.handleResponse(rdo,httpUtil.OK,httpUtil.AppJson);
+                break;
+            case 'UPDATE_BUDGET':
+                rdo =  hl5.updateBudget(reqBody.ID,reqBody.BUDGET,reqBody.ALLOW_BUDGET_ZERO,reqBody.IS_LEGACY,userId);
                 return	httpUtil.handleResponse(rdo,httpUtil.OK,httpUtil.AppJson);
                 break;
             default:

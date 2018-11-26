@@ -92,8 +92,11 @@ function handlePut(reqBody, userId){
             break;
         case "UPD_ENABLED_CRM_CREATION":
             var enable_crm_creation = parameters.get('ENABLE_CRM_CREATION');
-
             rdo = hl6.updEnableCrmCreation(hl6Id, enable_crm_creation);
+            return	httpUtil.handleResponse(rdo,httpUtil.OK,httpUtil.AppJson);
+            break;
+        case 'UPDATE_BUDGET':
+            rdo =  hl6.updateBudget(reqBody.ID,reqBody.BUDGET, reqBody.ALLOW_BUDGET_ZERO,userId);
             return	httpUtil.handleResponse(rdo,httpUtil.OK,httpUtil.AppJson);
             break;
         default:

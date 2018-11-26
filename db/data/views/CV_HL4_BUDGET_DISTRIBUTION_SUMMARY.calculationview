@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Calculation:scenario xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:Calculation="http://www.sap.com/ndb/BiModelCalculation.ecore" schemaVersion="2.3" id="CV_HL4_BUDGET_DISTRIBUTION_SUMMARY" applyPrivilegeType="ANALYTIC_PRIVILEGE" checkAnalyticPrivileges="true" defaultClient="$$client$$" defaultLanguage="$$language$$" hierarchiesSQLEnabled="false" translationRelevant="true" visibility="reportingEnabled" calculationScenarioType="SCRIPT_BASED" dataCategory="CUBE" enforceSqlExecution="false" executionSemantic="UNDEFINED" scriptParametersCaseSensitive="true">
+  <descriptions defaultDescription="CV_HL1_KPI_DATA"/>
+  <localVariables/>
+  <variableMappings/>
+  <informationModelLayout relativeWidthScenario="27"/>
+  <dataSources/>
+  <calculationViews>
+    <calculationView xsi:type="Calculation:SqlScriptView" id="Script_View">
+      <descriptions/>
+      <viewAttributes>
+        <viewAttribute datatype="BIGINT" id="HL4_ID"/>
+        <viewAttribute datatype="BIGINT" id="HL3_ID"/>
+        <viewAttribute datatype="DECIMAL" id="L4_BUDGET" length="12" scale="2"/>
+        <viewAttribute datatype="DECIMAL" id="L4_BUDGET_PERCENTAGE" length="10" scale="2"/>
+        <viewAttribute datatype="DECIMAL" id="HL4_BUDGET_ALLOCATED" length="19" scale="2"/>
+        <viewAttribute datatype="DECIMAL" id="L4_BUDGET_REMAINING" length="19" scale="2"/>
+        <viewAttribute datatype="INTEGER" id="TOTAL_OF_PRIORITIES"/>
+        <viewAttribute datatype="NVARCHAR" id="L4_ACRONYM" length="255"/>
+        <viewAttribute datatype="DECIMAL" id="L3_BUDGET" length="19" scale="2"/>
+        <viewAttribute datatype="NVARCHAR" id="HL4_CRM_DESCRIPTION" length="255"/>
+        <viewAttribute datatype="BIGINT" id="STATUS_ID"/>
+        <viewAttribute datatype="NVARCHAR" id="STATUS_DETAIL" length="255"/>
+        <viewAttribute datatype="TINYINT" id="ENABLE_CRM_CREATION"/>
+        <viewAttribute datatype="NVARCHAR" id="LEVEL" length="3"/>
+        <viewAttribute datatype="INTEGER" id="IN_CRM_CHILD_HL5"/>
+        <viewAttribute datatype="INTEGER" id="IN_CRM_CHILD_HL6"/>
+      </viewAttributes>
+      <calculatedViewAttributes/>
+      <definition>/********* Begin Procedure Script ************/ 
+BEGIN 
+
+va_hl3 = SELECT HL3.HL3_FNC_BUDGET_TOTAL, HL3.HL3_ID
+	 FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL3&quot; HL3
+	WHERE HL3.ENABLED = 1
+	AND HL3.DELETED = 0;
+
+va_hl5 = SELECT HL5.HL4_ID
+	, COUNT(HL5.HL5_ID) AS HL5_TOTAL_PRIORITIES
+	, SUM(HL5.BUDGET) AS HL4_BUDGET_ALLOCATED
+	FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL5&quot; HL5
+	WHERE HL5.ENABLED = 1
+	AND HL5.DELETED = 0
+	--- This means that will be included those records that aren´t in Deleted In CRM ---
+	  AND HL5.HL5_STATUS_DETAIL_ID != 10
+	GROUP BY HL5.HL4_ID;
+	
+va_in_crm_chil_hl5 = SELECT count(HL5.HL5_ID) AS L5_IN_CRM, HL5.HL4_ID
+			            FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL5&quot; hl5
+			            WHERE HL5.HL5_STATUS_DETAIL_ID = 2
+			                OR HL5.HL5_STATUS_DETAIL_ID = 3
+			                OR HL5.HL5_STATUS_DETAIL_ID = 4
+			            GROUP BY HL5.HL4_ID;
+va_in_crm_chil_hl6 = SELECT count(HL6.HL6_ID) AS L6_IN_CRM, HL6.HL5_ID
+			            FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL6&quot; hl6
+			            WHERE HL6.HL6_STATUS_DETAIL_ID = 2
+			                OR HL6.HL6_STATUS_DETAIL_ID = 3
+			                OR HL6.HL6_STATUS_DETAIL_ID = 4
+			            GROUP BY HL6.HL5_ID;	
+	
+va_hl5_legacy = SELECT HL5.HL4_ID
+	, COUNT(HL5.HL5_LEGACY_ID) AS HL5_LEGACY_TOTAL_PRIORITIES
+	, SUM(HL5.BUDGET) AS HL4_LEGACY_BUDGET_ALLOCATED
+	FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL5_LEGACY&quot; HL5
+	WHERE HL5.ENABLED = 1
+	AND HL5.DELETED = 0
+	--- This means that will be included those records that aren´t in Deleted In CRM ---
+	  AND HL5.HL5_STATUS_DETAIL_ID != 10
+	GROUP BY HL5.HL4_ID;
+
+var_out = select hl4.HL4_ID
+ , hl4.HL3_ID
+ , hl4.BUDGET AS L4_BUDGET
+ , (hl4.BUDGET * 100 / (CASE WHEN T.HL3_FNC_BUDGET_TOTAL = 0 THEN 1 ELSE T.HL3_FNC_BUDGET_TOTAL END)) AS L4_BUDGET_PERCENTAGE
+ , (
+	(COALESCE(K.HL4_BUDGET_ALLOCATED,0) + COALESCE(P.HL4_LEGACY_BUDGET_ALLOCATED,0)) * 100 / (CASE WHEN hl4.BUDGET = 0 THEN 1 ELSE hl4.BUDGET END)
+	)  AS HL4_BUDGET_ALLOCATED
+ , (hl4.BUDGET - (COALESCE(K.HL4_BUDGET_ALLOCATED,0) + COALESCE(P.HL4_LEGACY_BUDGET_ALLOCATED, 0))) AS L4_BUDGET_REMAINING
+ , COALESCE(K.HL5_TOTAL_PRIORITIES,0) + COALESCE(P.HL5_LEGACY_TOTAL_PRIORITIES,0) AS TOTAL_OF_PRIORITIES
+ , hl4.ACRONYM AS L4_ACRONYM
+ , T.HL3_FNC_BUDGET_TOTAL AS L3_BUDGET
+ , hl4.HL4_CRM_DESCRIPTION
+ ,hl4.hl4_status_detail_id AS STATUS_ID
+    , sd.detail  AS STATUS_DETAIL
+    ,HL4.ENABLE_CRM_CREATION
+    , 'HL4' AS LEVEL
+    , O.L5_IN_CRM AS IN_CRM_CHILD_HL5
+    , Q.L6_IN_CRM AS IN_CRM_CHILD_HL6
+FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL4&quot; hl4
+ INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL4_STATUS_DETAIL&quot; sd
+ ON sd.HL4_STATUS_DETAIL_ID = HL4.HL4_STATUS_DETAIL_ID
+INNER JOIN :va_hl3 T ON T.HL3_ID = hl4.HL3_ID
+LEFT JOIN :va_hl5 K ON K.HL4_ID = hl4.HL4_ID
+LEFT JOIN :va_hl5_legacy P ON P.HL4_ID = hl4.HL4_ID
+LEFT JOIN :va_in_crm_chil_hl5 O ON O.HL4_ID = hl4.HL4_ID
+LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL5&quot; hl5
+	ON hl5.HL4_ID = hl4.HL4_ID
+LEFT JOIN :va_in_crm_chil_hl6 Q ON Q.HL5_ID = hl5.HL5_ID
+where hl4.DELETED = 0 AND hl4.ENABLED = 1
+ORDER BY hl4.ACRONYM;
+END /********* End Procedure Script ************/</definition>
+    </calculationView>
+  </calculationViews>
+  <logicalModel id="Script_View">
+    <descriptions/>
+    <attributes>
+      <attribute id="HL4_ID" order="1">
+        <descriptions defaultDescription="HL4_ID"/>
+        <keyMapping columnObjectName="Script_View" columnName="HL4_ID"/>
+      </attribute>
+      <attribute id="HL3_ID" order="2">
+        <descriptions defaultDescription="HL3_ID"/>
+        <keyMapping columnObjectName="Script_View" columnName="HL3_ID"/>
+      </attribute>
+      <attribute id="L4_BUDGET" order="3">
+        <descriptions defaultDescription="L4_BUDGET"/>
+        <keyMapping columnObjectName="Script_View" columnName="L4_BUDGET"/>
+      </attribute>
+      <attribute id="L4_BUDGET_PERCENTAGE" order="4">
+        <descriptions defaultDescription="L4_BUDGET_PERCENTAGE"/>
+        <keyMapping columnObjectName="Script_View" columnName="L4_BUDGET_PERCENTAGE"/>
+      </attribute>
+      <attribute id="L4_ACRONYM" order="8">
+        <descriptions defaultDescription="L4_ACRONYM"/>
+        <keyMapping columnObjectName="Script_View" columnName="L4_ACRONYM"/>
+      </attribute>
+      <attribute id="HL4_CRM_DESCRIPTION" order="10">
+        <descriptions defaultDescription="HL4_CRM_DESCRIPTION"/>
+        <keyMapping columnObjectName="Script_View" columnName="HL4_CRM_DESCRIPTION"/>
+      </attribute>
+      <attribute id="STATUS_DETAIL" order="12">
+        <descriptions defaultDescription="STATUS_DETAIL"/>
+        <keyMapping columnObjectName="Script_View" columnName="STATUS_DETAIL"/>
+      </attribute>
+      <attribute id="ENABLE_CRM_CREATION" order="13">
+        <descriptions defaultDescription="ENABLE_CRM_CREATION"/>
+        <keyMapping columnObjectName="Script_View" columnName="ENABLE_CRM_CREATION"/>
+      </attribute>
+      <attribute id="LEVEL" order="14">
+        <descriptions defaultDescription="LEVEL"/>
+        <keyMapping columnObjectName="Script_View" columnName="LEVEL"/>
+      </attribute>
+    </attributes>
+    <calculatedAttributes/>
+    <privateDataFoundation>
+      <tableProxies/>
+      <joins/>
+      <layout>
+        <shapes/>
+      </layout>
+    </privateDataFoundation>
+    <baseMeasures>
+      <measure id="HL4_BUDGET_ALLOCATED" order="5" aggregationType="sum" measureType="simple">
+        <descriptions defaultDescription="HL4_BUDGET_ALLOCATED"/>
+        <measureMapping columnObjectName="Script_View" columnName="HL4_BUDGET_ALLOCATED"/>
+      </measure>
+      <measure id="L4_BUDGET_REMAINING" order="6" aggregationType="sum" measureType="simple">
+        <descriptions defaultDescription="L4_BUDGET_REMAINING"/>
+        <measureMapping columnObjectName="Script_View" columnName="L4_BUDGET_REMAINING"/>
+      </measure>
+      <measure id="TOTAL_OF_PRIORITIES" order="7" aggregationType="sum" measureType="simple">
+        <descriptions defaultDescription="TOTAL_OF_PRIORITIES"/>
+        <measureMapping columnObjectName="Script_View" columnName="TOTAL_OF_PRIORITIES"/>
+      </measure>
+      <measure id="L3_BUDGET" order="9" aggregationType="sum" measureType="simple">
+        <descriptions defaultDescription="L3_BUDGET"/>
+        <measureMapping columnObjectName="Script_View" columnName="L3_BUDGET"/>
+      </measure>
+      <measure id="STATUS_ID" order="11" aggregationType="sum" measureType="simple">
+        <descriptions defaultDescription="STATUS_ID"/>
+        <measureMapping columnObjectName="Script_View" columnName="STATUS_ID"/>
+      </measure>
+      <measure id="IN_CRM_CHILD_HL5" order="15" aggregationType="sum" measureType="simple">
+        <descriptions defaultDescription="IN_CRM_CHILD_HL5"/>
+        <measureMapping columnObjectName="Script_View" columnName="IN_CRM_CHILD_HL5"/>
+      </measure>
+      <measure id="IN_CRM_CHILD_HL6" order="16" aggregationType="sum" measureType="simple">
+        <descriptions defaultDescription="IN_CRM_CHILD_HL6"/>
+        <measureMapping columnObjectName="Script_View" columnName="IN_CRM_CHILD_HL6"/>
+      </measure>
+    </baseMeasures>
+    <calculatedMeasures/>
+    <restrictedMeasures/>
+    <localDimensions/>
+  </logicalModel>
+  <layout>
+    <shapes>
+      <shape modelObjectName="Output" modelObjectNameSpace="MeasureGroup">
+        <upperLeftCorner x="40" y="85"/>
+      </shape>
+    </shapes>
+  </layout>
+</Calculation:scenario>

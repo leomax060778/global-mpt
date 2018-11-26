@@ -1,0 +1,54 @@
+FUNCTION "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_DYNAMIC_FORM_FIELD_DATA"
+    (in field_name nvarchar(255)
+    , in default_value nvarchar(3000)
+    , in field_key nvarchar(255)
+    )
+	RETURNS result nvarchar(255)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	AS
+BEGIN
+
+    if coalesce(field_name, '') = 'CAMPAIGN_OBJECTIVE_ID' then --CAMPAIGN_OBJECTIVE
+        SELECT NAME INTO result FROM "MKTG_PLANNING_TOOL"."OBJECTIVE" WHERE OBJECTIVE_ID = default_value;
+    ELSEIF coalesce(field_name, '') = 'CAMPAIGN_TYPE_ID' THEN --CAMPAIGN_TYPE
+        SELECT NAME INTO result FROM "MKTG_PLANNING_TOOL"."CAMPAIGN_TYPE" WHERE CAMPAIGN_TYPE_ID = default_value;
+    ELSEIF coalesce(field_name, '') = 'CAMPAIGN_SUBTYPE_ID' THEN --CAMPAIGN_TYPE
+        SELECT NAME INTO result FROM "MKTG_PLANNING_TOOL"."CAMPAIGN_SUB_TYPE" WHERE CAMPAIGN_SUB_TYPE_ID = default_value;
+    ELSEIF coalesce(field_name, '') = 'DES_TYPE_ID' THEN --CAMPAIGN_TYPE
+        SELECT NAME INTO result FROM "MKTG_PLANNING_TOOL"."DES_TYPE" WHERE DES_TYPE_ID = default_value;
+    ELSEIF coalesce(field_name, '') = 'MARKETING_PROGRAM_ID' and coalesce(field_key, '') = 'ID' THEN --MARKETING_PROGRAM
+        SELECT NAME INTO result FROM "MKTG_PLANNING_TOOL"."MARKETING_PROGRAM" WHERE MARKETING_PROGRAM_ID = default_value;
+    ELSEIF coalesce(field_name, '') = 'MARKETING_PROGRAM_ID' and coalesce(FIELD_KEY, '') = 'DESCRIPTION' THEN --MARKETING_PROGRAM
+        SELECT DESCRIPTION INTO result FROM "MKTG_PLANNING_TOOL"."MARKETING_PROGRAM" WHERE MARKETING_PROGRAM_ID = default_value;
+    ELSEIF coalesce(field_name, '') = 'MARKETING_ACTIVITY_ID' and coalesce(field_key, '') = 'ID' THEN --MARKETING_ACTIVITY
+        SELECT NAME INTO result FROM "MKTG_PLANNING_TOOL"."MARKETING_ACTIVITY" WHERE MARKETING_ACTIVITY_ID = default_value;
+    ELSEIF coalesce(field_name, '') = 'MARKETING_ACTIVITY_ID' and coalesce(field_key, '') = 'DESCRIPTION' THEN --MARKETING_ACTIVITY
+        SELECT DESCRIPTION INTO result FROM "MKTG_PLANNING_TOOL"."MARKETING_ACTIVITY" WHERE MARKETING_ACTIVITY_ID = default_value;
+    ELSEIF coalesce(field_name, '') = 'SALES_ORGANIZATION_ID' OR coalesce(field_name, '') = 'MKT_ORG_ID' THEN --SALES_ORGANIZATION
+        SELECT NAME INTO result FROM "MKTG_PLANNING_TOOL"."SALE_ORGANIZATION" WHERE SALES_ORGANIZATION_ID = default_value;
+    ELSEIF coalesce(field_name, '') = 'DISTRIBUTION_CHANNEL_ID' OR coalesce(field_name, '') = 'DIS_CHANNEL_ID' THEN --DISTRIBUTION_CHANNEL
+        SELECT NAME INTO result FROM "MKTG_PLANNING_TOOL"."DISTRIBUTION_CHANNEL" WHERE DISTRIBUTION_CHANNEL_ID = default_value;
+    ELSEIF coalesce(field_name, '') = 'COST_CENTER_ID' THEN --COST_CENTER
+        SELECT NAME INTO result FROM "MKTG_PLANNING_TOOL"."COST_CENTER" WHERE COST_CENTER_ID = default_value;
+    ELSEIF coalesce(field_name, '') = 'BUSINESS_OWNER_ID' THEN --BUSINESS_OWNER
+        SELECT DESCRIPTION INTO result FROM "MKTG_PLANNING_TOOL"."BUSINESS_OWNER" WHERE BUSINESS_OWNER_ID = default_value;
+    ELSEIF coalesce(field_name, '') = 'PRIORITY_ID' THEN --PRIORITY
+        SELECT NAME INTO result FROM "MKTG_PLANNING_TOOL"."PRIORITY" WHERE PRIORITY_ID = default_value;
+    ELSEIF coalesce(field_name, '') = 'ROUTE_TO_MARKET_ID' THEN --ROUTE_TO_MARKET
+        SELECT NAME INTO result FROM "MKTG_PLANNING_TOOL"."ROUTE_TO_MARKET" WHERE ROUTE_TO_MARKET_ID = default_value;
+    ELSEIF coalesce(field_name, '') = 'COUNTRY_ID' THEN --COUNTRY
+        SELECT NAME INTO result FROM "MKTG_PLANNING_TOOL"."COUNTRY" WHERE COUNTRY_ID = default_value;
+    ELSEIF coalesce(field_name, '') = 'BUDGET_YEAR_ID' THEN --BUDGET_YEAR
+        SELECT BUDGET_YEAR INTO result FROM "MKTG_PLANNING_TOOL"."BUDGET_YEAR" WHERE BUDGET_YEAR_ID = default_value;
+    ELSEIF coalesce(field_name, '') = 'TEAM_TYPE_ID' THEN --TEAM_TYPE_ID
+        SELECT NAME INTO result FROM "MKTG_PLANNING_TOOL"."TEAM_TYPE" WHERE TEAM_TYPE_ID = default_value;
+    ELSEIF coalesce(field_name, '') = 'PLANNING_PURPOSE_ID' AND coalesce(field_key, '') = '1' THEN
+        SELECT REGION_NAME into result FROM "MKTG_PLANNING_TOOL"."REGION" WHERE REGION_ID = default_value;
+    ELSEIF coalesce(field_name, '') = 'PLANNING_PURPOSE_ID' AND coalesce(field_key, '') = '2' THEN
+        select NAME into result from "MKTG_PLANNING_TOOL"."PLANNING_PURPOSE" WHERE PLANNING_PURPOSE_ID = default_value;
+    ELSE
+            select '' into result from dummy;
+    END IF;
+END;

@@ -161,6 +161,11 @@ function getSegmentation(){
     return $.mktgplanningtool.services.businessLayer.settings.segmentationLib;
 }
 
+function getLeadForm(){
+    $.import("mktgplanningtool.services.businessLayer.settings","leadFormLib");
+    return $.mktgplanningtool.services.businessLayer.settings.leadFormLib;
+}
+
 function refactorL5L6_getSegmentation(){
     $.import("mktgplanningtool.services.businessLayer.settings","refactorL5L6_segmentationLib");
     return $.mktgplanningtool.services.businessLayer.settings.refactorL5L6_segmentationLib;
@@ -330,6 +335,11 @@ function getEmployeeResponsible(){
 function getApi(){
     $.import("mktgplanningtool.services.businessLayer.api","apiLib");
     return $.mktgplanningtool.services.businessLayer.api.apiLib;
+}
+
+function getApiCSD(){
+    $.import("mktgplanningtool.services.businessLayer.api","apiCSDLib");
+    return $.mktgplanningtool.services.businessLayer.api.apiCSDLib;
 }
 
 function getCurrency(){
@@ -510,6 +520,26 @@ function getEventRequestCategoryOption() {
 function getDataProtection(){
     $.import("mktgplanningtool.services.businessLayer.admin","dataProtectionLib");
     return $.mktgplanningtool.services.businessLayer.admin.dataProtectionLib;
+}
+
+function getDynamicFormLib(){
+    $.import("mktgplanningtool.services.businessLayer.settings","dynamicFormLib");
+    return $.mktgplanningtool.services.businessLayer.settings.dynamicFormLib;
+}
+
+function getPlanningPurposeLib(){
+	$.import("mktgplanningtool.services.businessLayer.settings","planningPurposeLib");
+    return $.mktgplanningtool.services.businessLayer.settings.planningPurposeLib;
+}
+
+function getPlanningPurposeOptionLib(){
+	$.import("mktgplanningtool.services.businessLayer.settings","planningPurposeOptionLib");
+    return $.mktgplanningtool.services.businessLayer.settings.planningPurposeOptionLib;
+}
+
+function getTeamTypeLib(){
+	$.import("mktgplanningtool.services.businessLayer.settings","teamTypeLib");
+    return $.mktgplanningtool.services.businessLayer.settings.teamTypeLib;
 }
 
 /************Data Layer Mapper*****************/
@@ -723,6 +753,10 @@ function getDataSegmentation(){
     return $.mktgplanningtool.services.dataLayer.settings.dataSegmentation;
 }
 
+function getDataLeadForm(){
+    $.import("mktgplanningtool.services.dataLayer.settings","dataLeadForm");
+    return $.mktgplanningtool.services.dataLayer.settings.dataLeadForm;
+}
 
 function getDataConfig(){
     $.import("mktgplanningtool.services.dataLayer.util","dataConfiguration");
@@ -824,6 +858,11 @@ function getDataEmployeeResponsible(){
 function getDataApi(){
     $.import("mktgplanningtool.services.dataLayer.api","dataApi");
     return $.mktgplanningtool.services.dataLayer.api.dataApi;
+}
+
+function getDataApiCSD(){
+    $.import("mktgplanningtool.services.dataLayer.api","dataApiCSD");
+    return $.mktgplanningtool.services.dataLayer.api.dataApiCSD;
 }
 
 function getDataMarketingProgram(){
@@ -962,4 +1001,29 @@ function getDataCustomerDemographics() {
 function getDataDataProtection(){
     $.import("mktgplanningtool.services.dataLayer.admin","dataDataProtection");
     return $.mktgplanningtool.services.dataLayer.admin.dataDataProtection;
+}
+
+function getDataDynamicForm(){
+    $.import("mktgplanningtool.services.dataLayer.setting","dataDynamicForm");
+    return $.mktgplanningtool.services.dataLayer.setting.dataDynamicForm;
+}
+
+function getDataDynamicForm(){
+    $.import("mktgplanningtool.services.dataLayer.settings","dataDynamicForm");
+    return $.mktgplanningtool.services.dataLayer.settings.dataDynamicForm;
+}
+
+function getDataPlanningPurpose(){
+	$.import("mktgplanningtool.services.dataLayer.settings","dataPlanningPurpose");
+    return $.mktgplanningtool.services.dataLayer.settings.dataPlanningPurpose;
+}
+
+function getDataPlanningPurposeOption(){
+	$.import("mktgplanningtool.services.dataLayer.settings","dataPlanningPurposeOption");
+    return $.mktgplanningtool.services.dataLayer.settings.dataPlanningPurposeOption;
+}
+
+function getDataTeamType(){
+	$.import("mktgplanningtool.services.dataLayer.settings","dataTeamType");
+    return $.mktgplanningtool.services.dataLayer.settings.dataTeamType;
 }

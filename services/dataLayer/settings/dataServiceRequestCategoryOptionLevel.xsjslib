@@ -98,33 +98,23 @@ function deleteServiceRequestCategory(categoryId, userId, autoCommit){
 
 
 /***Service Request Option****/
-function insertServiceRequestOption(name, userid, autoCommit){
+function insertServiceRequestOption(name, userid, serviceRequestFormTypeId){
 	var params = {
 		'in_name': name,
+		'in_service_request_form_type_id': serviceRequestFormTypeId,
 		'in_user_id': userid
 	};
-	var rdo;
-	if (autoCommit) {
-		rdo = db.executeScalar(INS_SERVICE_REQUEST_OPTION, params, 'out_option_id');
-	} else {
-		rdo = db.executeScalarManual(INS_SERVICE_REQUEST_OPTION, params, 'out_option_id');
-	}
-	return rdo;
+	return db.executeScalarManual(INS_SERVICE_REQUEST_OPTION, params, 'out_option_id');
 }
 
-function updateServiceRequestOption(option_id, name, userid, autoCommit){
+function updateServiceRequestOption(option_id, name, userid, serviceRequestFormTypeId){
 	var params = {
 		'in_option_id': option_id,
 		'in_name': name,
+        'in_service_request_form_type_id': serviceRequestFormTypeId,
 		'in_user_id': userid
 	};
-	var rdo;
-	if (autoCommit) {
-		rdo = db.executeScalar(UPD_SERVICE_REQUEST_OPTION, params, 'out_result');
-	} else {
-		rdo = db.executeScalarManual(UPD_SERVICE_REQUEST_OPTION, params, 'out_result');
-	}
-	return rdo;
+	return db.executeScalarManual(UPD_SERVICE_REQUEST_OPTION, params, 'out_result');
 }
 
 function deleteServiceRequestOption(option_id, userid, autoCommit){

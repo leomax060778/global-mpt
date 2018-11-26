@@ -146,6 +146,14 @@ function getRoleEnum(){
 	return RoleEnum;
 }
 
+function getCsdUser(){
+    return getConfigurationByName("CsdUser")[0].VALUE;
+}
+
+function getCsdPassword(){
+    return getConfigurationByName("CsdPassword")[0].VALUE;
+}
+
 /*function getOriginMessageInterlock(){
 	return OriginMessageInterlock;
 }*/

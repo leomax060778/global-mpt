@@ -52,6 +52,7 @@ var spUpdateHl6CRMBinding = "UPD_HL6_CHANGED_FIELDS";
 var spGetHl6MyBudgetByHl6Id = "GET_HL6_BUDGET_BY_HL6_ID";
 var spGetHl6SalesByHl6Id = "GET_HL6_SALES_BY_ID";
 var spUpdateHl6Sale = "UPD_HL6_SALES";
+var UPD_HL6_BUDGET = "UPD_HL6_BUDGET";
 
 var spInsHl6Category = "INS_HL6_CATEGORY";
 var spInsHl6CategoryOption = "INS_HL6_CATEGORY_OPTION";
@@ -79,7 +80,7 @@ function insertHl6(hl6CrmDescription,hl6Acronym,budget,hl5Id, routeToMarket
     , event_owner
     , number_of_participants
     , priority_id,co_funded,allow_budget_zero, is_power_user, employeeResponsible, personResponsible, is_complete
-    , autoCommit, imported,import_id, inherited_creation, parent_path, enable_crm_creation){
+    , autoCommit, imported,import_id, inherited_creation, parent_path, enable_crm_creation, dynamicFormId){
     var params = {
         'in_hl6_crm_description' : hl6CrmDescription,
         'in_acronym': hl6Acronym,
@@ -138,6 +139,7 @@ function insertHl6(hl6CrmDescription,hl6Acronym,budget,hl5Id, routeToMarket
         , 'in_inherited_creation' : inherited_creation ? 1 : 0
         ,  'in_parent_path' : parent_path || null
         , 'in_enable_crm_creation': enable_crm_creation
+        , 'in_dynamic_form_id': dynamicFormId || null
     };
 
     var rdo;
@@ -320,6 +322,16 @@ function updHl6ChangedFields(hl6IdCrmBinding,budgetStatus,columnName, changed,us
         rdo = db.executeScalarManual(spUpdateHl6CRMBinding,params,'out_result');
     }
     return db.extractArray(rdo);
+}
+
+function updateBudget(hl6Id,budget,allowBudgetZero,userId) {
+    var parameters = {
+        in_hl6_id: hl6Id,
+        in_updated_budget: budget,
+        in_allow_budget_zero: allowBudgetZero,
+        in_user_id: userId
+    };
+    return db.executeScalarManual(UPD_HL6_BUDGET, parameters, "out_result");
 }
 
 function delHl6Budget(hl6Id,modifiedUserId, autoCommit) {

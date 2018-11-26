@@ -6,16 +6,20 @@ var db = mapper.getdbHelper();
 //STORE PROCEDURE LIST NAME
 var INS_HL1 = "INS_HL1";
 var UPD_HL1 = "UPD_HL1";
+var UPD_HL1_BUDGET = "UPD_HL1_BUDGET";
 var DEL_HL1 = "DEL_HL1";
 // var GET_ALL_HL1 = "GET_ALL_HL1";
 var GET_HL1_BY_ID = "GET_HL1_BY_ID";
 var GET_HL1_BY_USER_ID = "GET_HL1_BY_USER_ID";
+var GET_HL1_BY_BUDGET_YEAR_ID = "GET_HL1_BY_BUDGET_YEAR_ID";
+var GET_HL1_BY_BUDGET_YEAR_REGION = "GET_HL1_BY_BUDGET_YEAR_REGION";
 var GET_HL1_BY_ACRONYM = "GET_HL1_BY_ACRONYM";
 var GET_COUNT_HL2_BY_HL1_ID = "GET_COUNT_HL2_BY_HL1_ID";
 var GET_HL1_ALLOCATED_BUDGET = "GET_HL1_ALLOCATED_BUDGET";
 var GET_HL1_FOR_SEARCH = "GET_HL1_FOR_SEARCH";
 //var GET_ALL_CENTRAL_TEAM = "GET_ALL_CENTRAL_TEAM"; //TODO: review in integration
 var GET_HL1_BY_FILTER = "GET_HL1_BY_FILTER";
+var GET_HL1_ALLOCATION_SUMMARY = "GET_HL1_ALLOCATION_SUMMARY";
 var GET_HL1_KPI_SUMMARY = "GET_HL1_KPI_SUMMARY";
 var INS_HL1_VERSION = "INS_HL1_VERSION";
 var GET_ALL_HL1_VERSION_BY_HL1_ID = "GET_ALL_HL1_VERSION_BY_HL1_ID";
@@ -23,7 +27,7 @@ var GET_HL1_VERSION_BY_FILTER = "GET_HL1_VERSION_BY_FILTER";
 var GET_HL1_VERSION_BY_ID = "GET_HL1_VERSION_BY_ID";
 var GET_HL1_BY_HL4_ID = "GET_HL1_BY_HL4_ID";
 
-function insertLevel1(acronym, description, budgetYearId, regionId, userId, budget, teamTypeId, implementExecutionLevel, crtRelated, import_id, imported) {
+function insertLevel1(acronym, description, budgetYearId, regionId, userId, budget, planningPurposeId, teamTypeId, implementExecutionLevel, crtRelated, import_id, imported) {
     var parameters = {};
     var result = {};
     parameters.in_acronym = acronym;
@@ -32,6 +36,7 @@ function insertLevel1(acronym, description, budgetYearId, regionId, userId, budg
     parameters.in_region_id = regionId;
     parameters.in_user_id = userId;
     parameters.in_budget = budget;
+    parameters.in_planning_purpose_id = planningPurposeId;
     parameters.in_team_type_id = teamTypeId;
     parameters.in_implement_execution_level = implementExecutionLevel;
     parameters.in_crt_related = crtRelated;
@@ -40,7 +45,7 @@ function insertLevel1(acronym, description, budgetYearId, regionId, userId, budg
     return db.executeScalarManual(INS_HL1, parameters, "out_hl1_id");
 }
 
-function updateLevel1(hl1Id, acronym, description, budgetYearId, regionId, userId, budget, teamTypeId, implementExecutionLevel, crtRelated, version) {
+function updateLevel1(hl1Id, acronym, description, budgetYearId, regionId, userId, budget, planningPurposeId, teamTypeId, implementExecutionLevel, crtRelated, version) {
     var parameters = {};
     parameters.in_hl1_id = hl1Id;
     parameters.in_acronym = acronym;
@@ -49,11 +54,21 @@ function updateLevel1(hl1Id, acronym, description, budgetYearId, regionId, userI
     parameters.in_description = description;
     parameters.in_modified_user_id = userId;
     parameters.in_budget = budget;
+    parameters.in_planning_purpose_id = planningPurposeId;
     parameters.in_team_type_id = teamTypeId;
     parameters.in_implement_execution_level = implementExecutionLevel;
     parameters.in_crt_related = crtRelated;
     parameters.in_version = version;
     return db.executeScalarManual(UPD_HL1, parameters, "out_result");
+}
+
+function updateBudget(hl1Id,budget,userId) {
+    var parameters = {
+        in_hl1_id: hl1Id,
+        in_updated_budget: budget,
+        in_user_id: userId
+    };
+    return db.executeScalarManual(UPD_HL1_BUDGET, parameters, "out_result");
 }
 
 function deleteHl1(hl1Id, userId) {
@@ -82,6 +97,11 @@ function getLevel1ById(hl1Id) {
     return {};
 }
 
+function getHl1ByBudgetYearRegion(data){
+	var result = db.executeProcedureManual(GET_HL1_BY_BUDGET_YEAR_REGION, data);
+	return  db.extractArray(result.out_result);
+}
+
 function getLevel1ByUser(isSuperAdmin, userId) {
     var result = {};
     var parameters = {
@@ -92,6 +112,11 @@ function getLevel1ByUser(isSuperAdmin, userId) {
     result.out_result = db.extractArray(list.out_result);
     result.out_total_budget = list.out_total_budget;
     return result;
+}
+
+function getHl1ByBudgetYear(budgetYearid){
+    var list = db.executeProcedureManual(GET_HL1_BY_BUDGET_YEAR_ID, {in_budget_year_id: budgetYearid});
+    return db.extractArray(list.out_result);
 }
 
 function getLevel1ByAcronymByBudgetYearId(acronym, budgetYearId) {
@@ -159,6 +184,19 @@ function getLevel1ByFilters(budgetYearId, regionId, subRegionId, userId, isSuper
     return result;
 }
 
+function getLevel1LobAllocationSummary(budgetYearId, regionId, subRegionId, userId, isSuperAdmin) {
+    var parameters = {};
+    var result = {};
+    parameters.in_budget_year_id = budgetYearId;
+    parameters.in_region_id = regionId;
+    parameters.in_subregion_id = subRegionId;
+    parameters.in_user_id = userId;
+    parameters.in_is_super_Admin = isSuperAdmin ? 1 : 0;
+
+    var list = db.executeProcedureManual(GET_HL1_ALLOCATION_SUMMARY, parameters);
+    return db.extractArray(list.out_result);
+}
+
 function getHl1KpiSummary(budgetYearId, regionId, userId, isSuperAdmin) {
     var parameters = {
         in_budget_year_id: budgetYearId,
@@ -171,7 +209,7 @@ function getHl1KpiSummary(budgetYearId, regionId, userId, isSuperAdmin) {
     return db.extractArray(list.out_result);
 }
 
-function insertLevel1Version(hl1_id, version, acronym, description, budgetYearId, regionId, userId, budget, teamTypeId, implementExecutionLevel, crtRelated) {
+function insertLevel1Version(hl1_id, version, acronym, description, budgetYearId, regionId, userId, budget, planningPurposeId, teamTypeId, implementExecutionLevel, crtRelated) {
     var parameters = {};
     var result = {};
     parameters.in_hl1_id = hl1_id;
@@ -184,6 +222,7 @@ function insertLevel1Version(hl1_id, version, acronym, description, budgetYearId
     parameters.in_created_user_id = userId;
     parameters.in_implement_execution_level = implementExecutionLevel;
     parameters.in_crt_related = crtRelated;
+    parameters.in_planning_purpose_id = planningPurposeId;
     parameters.in_team_type_id = teamTypeId;
     return db.executeScalarManual(INS_HL1_VERSION, parameters, "out_result");
 }

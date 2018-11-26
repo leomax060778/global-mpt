@@ -1,0 +1,43 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL3_ALLOCATION_SUMMARY" ( 
+	IN in_hl2_id BIGINT,
+	IN in_user_id BIGINT,
+	IN in_is_super_Admin TINYINT,
+	OUT out_result TABLE(
+							 HL3_ID BIGINT,
+							 HL2_ID BIGINT,
+                             HL4_TOTAL_COUNT INTEGER,
+                             ACRONYM NVARCHAR(255),
+                             CRM_ID NVARCHAR(25),
+                             IS_LOCKED TINYINT,
+                             CATEGORY_NAME NVARCHAR(255),
+                             OPTION_NAME NVARCHAR(255),
+                             BUDGET_DISTRIBUTION_PERCENTAGE DECIMAL(19, 2),
+                             BUDGET_DISTRIBUTION_AMOUNT DECIMAL(19, 2),
+                             HL3_DESCRIPTION NVARCHAR(255)
+							 )
+) 
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER 
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	READS SQL DATA AS
+BEGIN
+	out_result = SELECT SUMMARY.HL3_ID,
+	                    SUMMARY.HL2_ID,
+                        SUMMARY.TOTAL_OF_PRIORITIES AS hl4_total_count,
+                        SUMMARY.L3_ACRONYM AS ACRONYM,
+                        "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BGY.BUDGET_YEAR, HL1.ACRONYM, UPPER(HL2.ORGANIZATION_ACRONYM), SUMMARY.L3_ACRONYM, '', '', '') AS CRM_ID,
+                        SUMMARY.IS_LOCKED,
+                        SUMMARY.CATEGORY_NAME,
+                        SUMMARY.OPTION_NAME,
+                        SUMMARY.BUDGET_DISTRIBUTION_PERCENTAGE,
+                        SUMMARY.BUDGET_DISTRIBUTION_AMOUNT,
+                        SUMMARY.HL3_DESCRIPTION
+                        FROM  "_SYS_BIC"."mktgplanningtool.db.data.views/CV_HL3_LOB_ALLOCATION_SUMMARY" SUMMARY
+                        INNER JOIN HL2 ON HL2.hl2_id = in_hl2_id
+                        INNER JOIN HL1 ON HL1.hl1_id = HL2.hl1_id
+                        INNER JOIN BUDGET_YEAR BGY ON BGY.budget_year_id = HL1.budget_year_id
+	WHERE SUMMARY.hl2_id = in_hl2_id
+	  AND (in_is_super_Admin = 1 OR SUMMARY.HL3_ID IN (SELECT HL3_ID FROM HL3_USER WHERE USER_ID = in_user_id))
+    ORDER BY SUMMARY.L3_ACRONYM;
+
+END;

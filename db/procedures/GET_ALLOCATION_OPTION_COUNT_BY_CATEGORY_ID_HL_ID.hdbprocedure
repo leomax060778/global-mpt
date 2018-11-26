@@ -1,16 +1,38 @@
 PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_ALLOCATION_OPTION_COUNT_BY_CATEGORY_ID_HL_ID" (
 	IN in_hl_id BIGINT,
 	IN in_category_id bigint,
+	in in_hl4_id bigint,
 	OUT out_result int
 	) 
 	LANGUAGE SQLSCRIPT
 	SQL SECURITY INVOKER 
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL" AS
 BEGIN
+declare out_result_country integer;
+out_result_country:= 0;
+
 	SELECT COUNT(DISTINCT acol.allocation_option_id) into out_result
 	FROM allocation_category_option_level acol
 	inner join allocation_option ao on ao.allocation_option_id = acol.allocation_option_id
 	where allocation_category_id = in_category_id AND hierarchy_level_id = in_hl_id
 	AND acol.deleted = 0 and acol.enabled = 1
 	and ao.deleted = 0 and ao.enabled = 1;
+
+    IF in_hl_id = 2 or in_hl_id = 3 then
+	SELECT count(DISTINCT acol.ALLOCATION_COUNTRY_CATEGORY_OPTION_ID) into out_result_country
+    	from ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL acol
+    	inner join ALLOCATION_COUNTRY_CATEGORY_OPTION ao
+    		on ao.ALLOCATION_COUNTRY_CATEGORY_OPTION_ID = acol.ALLOCATION_COUNTRY_CATEGORY_OPTION_ID
+    	inner join ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_HL2 hl2
+    		on hl2.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID = acol.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID
+    		and hl2.hl2_id = (select hl3.hl2_id from "MKTG_PLANNING_TOOL"."HL4" hl4
+                                                           inner join "MKTG_PLANNING_TOOL"."HL3" hl3 on hl3.hl3_id = hl4.hl3_id
+                                                           where hl4.hl4_id = in_hl4_id)
+    	where allocation_category_id = in_category_id AND hierarchy_level_id = in_hl_id
+    	AND acol.deleted = 0 and acol.enabled = 1
+    	and ao.deleted = 0 and ao.enabled = 1;
+    END IF;
+
+    out_result:= out_result + out_result_country;
+
 END;

@@ -1,0 +1,32 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_PLANNING_PURPOSE_RELATED_DATA" (
+    IN in_related_data NVARCHAR(50),
+    OUT out_result TABLE(
+        RELATED_DATA_NAME NVARCHAR(255),
+        RELATED_DATA_ID BIGINT,
+        RELATED_DATA_TYPE NVARCHAR(50)
+    )
+) 
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER 
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	READS SQL DATA AS
+BEGIN
+    IF in_related_data = 'REGIONAL' THEN
+        out_result = SELECT REGION_NAME AS RELATED_DATA_NAME,
+                            REGION_ID AS RELATED_DATA_ID,
+                            'REGIONAL' AS RELATED_DATA_TYPE
+                     FROM REGION
+                     WHERE ENABLED = 1
+                        AND DELETED = 0
+                        AND IS_GLOBAL_REGION = 0;
+
+    ELSEIF in_related_data = 'GLOBAL' THEN
+        out_result = SELECT REGION_NAME AS RELATED_DATA_NAME,
+                            REGION_ID AS RELATED_DATA_ID,
+                            'GLOBAL' AS RELATED_DATA_TYPE
+                     FROM REGION
+                     WHERE ENABLED = 1
+                         AND DELETED = 0
+                         AND IS_GLOBAL_REGION = 1;
+    END IF;
+END;

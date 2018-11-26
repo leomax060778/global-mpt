@@ -109,80 +109,52 @@ function getSegmentationFormByHl5Id(hl5Id) {
     var result = {};
     var segmentationForms = data.getSegmentationFormByHl5Id(hl5Id);
     segmentationForms = JSON.parse(JSON.stringify(segmentationForms));
-    segmentationForms.forEach(function (segmentationForm) {
-        segmentationForm.ACCEPT_TERMS_STATE = !!Number(segmentationForm.ACCEPT_TERMS_STATE);
-        segmentationForm.SEGMENTATION_MARKET = getMarketForEdit(segmentationForm.SEGMENTATION_FORM_ID);
-        segmentationForm.SEGMENTATION_SALE = getSaleForEdit(segmentationForm.SEGMENTATION_FORM_ID);
-        segmentationForm.SEGMENTATION_INDUSTRY = getIndustryForEdit(segmentationForm.SEGMENTATION_FORM_ID);
-        segmentationForm.SEGMENTATION_FUNCTION = getFunctionForEdit(segmentationForm.SEGMENTATION_FORM_ID);
-        segmentationForm.SEGMENTATION_DEPARTMENT = getDepartmentForEdit(segmentationForm.SEGMENTATION_FORM_ID);
-        segmentationForm.SEGMENTATION_TACTIC = getTacticForEdit(segmentationForm.SEGMENTATION_FORM_ID);
-        segmentationForm.SEGMENTATION_ITEM_OF_INTEREST = getItemForInterestForEdit(segmentationForm.SEGMENTATION_FORM_ID);
-        segmentationForm.ATTACHMENTS = segmentationForm.ATTACHMENT_ID ? getSegmentationFormAttachment(segmentationForm.ATTACHMENT_ID) : [];
-        segmentationForm.TARGET_GROUP_APPROVAL_WORKFLOW = !!segmentationForm.TARGET_GROUP_APPROVAL_WORKFLOW;
-        segmentationForm.APPLY_SALE_PLAY_FOR_TARGET = !!segmentationForm.APPLY_SALE_PLAY_FOR_TARGET;
-        segmentationForm.APPLY_PREDICTIVE_ANALYTICS_FOR_TARGET = !!segmentationForm.APPLY_PREDICTIVE_ANALYTICS_FOR_TARGET;
-        segmentationForm.MATCHING_REQUIRED = !!segmentationForm.APPLY_PREDICTIVE_ANALYTICS_FOR_TARGET;
-        segmentationForm.DEFAULT = {
-            REGION_ID: segmentationForm.REGION_ID
-            , SUBREGION_ID: segmentationForm.SUBREGION_ID
+    segmentationForms.FORMS.forEach(function (elem) {
+        elem.ACCEPT_TERMS_STATE = !!Number(elem.ACCEPT_TERMS_STATE);
+        elem.SEGMENTATION_MARKET = parseSegmentationIDs(segmentationForms.SEGMENTATION_MARKET, elem.SEGMENTATION_FORM_ID, "SEGMENTATION_MARKET_ID");
+        elem.SEGMENTATION_SALE = parseSegmentationIDs(segmentationForms.SEGMENTATION_SALE, elem.SEGMENTATION_FORM_ID, "SEGMENTATION_SALE_ID");
+        elem.SEGMENTATION_INDUSTRY = parseSegmentationIDs(segmentationForms.SEGMENTATION_INDUSTRY, elem.SEGMENTATION_FORM_ID, "SEGMENTATION_INDUSTRY_OPTION_ID");
+        elem.SEGMENTATION_FUNCTION = parseSegmentationIDs(segmentationForms.SEGMENTATION_FUNCTION, elem.SEGMENTATION_FORM_ID, "SEGMENTATION_FUNCTION_ID");
+        elem.SEGMENTATION_DEPARTMENT = parseSegmentationIDs(segmentationForms.SEGMENTATION_DEPARTMENT, elem.SEGMENTATION_FORM_ID, "SEGMENTATION_DEPARTMENT_ID");
+        elem.SEGMENTATION_TACTIC = parseSegmentationIDs(segmentationForms.SEGMENTATION_TACTIC, elem.SEGMENTATION_FORM_ID, "SEGMENTATION_TACTIC_ID");
+        elem.SEGMENTATION_ITEM_OF_INTEREST = parseSegmentationIDs(segmentationForms.SEGMENTATION_ITEM_OF_INTEREST, elem.SEGMENTATION_FORM_ID, "SEGMENTATION_ITEM_OF_INTEREST_ID");
+        elem.ATTACHMENTS = getSegmentationFormAttachment(segmentationForms.ATTACHMENTS, elem.SEGMENTATION_FORM_ID);
+        elem.TARGET_GROUP_APPROVAL_WORKFLOW = !!elem.TARGET_GROUP_APPROVAL_WORKFLOW;
+        elem.APPLY_SALE_PLAY_FOR_TARGET = !!elem.APPLY_SALE_PLAY_FOR_TARGET;
+        elem.APPLY_PREDICTIVE_ANALYTICS_FOR_TARGET = !!elem.APPLY_PREDICTIVE_ANALYTICS_FOR_TARGET;
+        elem.MATCHING_REQUIRED = !!elem.APPLY_PREDICTIVE_ANALYTICS_FOR_TARGET;
+        elem.DEFAULT = {
+            REGION_ID: elem.REGION_ID
+            , SUBREGION_ID: elem.SUBREGION_ID
         };
-        result[segmentationForm.SERVICE_REQUEST_CATEGORY_OPTION_LEVEL_ID] = segmentationForm;
+        result[elem.SERVICE_REQUEST_CATEGORY_OPTION_LEVEL_ID] = elem;
     });
+
     return result;
 }
 
-function getMarketForEdit(segmentation_form_id) {
-    var segmentationMarket = data.getSegmentationFormMarketBySegmentationFormId(segmentation_form_id);
-    return segmentationMarket.map(function (elem) {
-        return elem.SEGMENTATION_MARKET_ID
-    });
+function parseSegmentationIDs(array, segmentationFormId, key){
+    return (
+                array.filter(
+                    function (elem) {
+                        return Number(elem.SEGMENTATION_FORM_ID) === Number(segmentationFormId);
+                })
+            ).map(function(elem){
+                return elem[key];
+            });
 }
 
-function getSaleForEdit(segmentation_form_id) {
-    var segmentationSale = data.getSegmentationFormSaleBySegmentationFormId(segmentation_form_id);
-    return segmentationSale.map(function (elem) {
-        return elem.SEGMENTATION_SALE_ID
-    });
-}
+function getSegmentationFormAttachment(array, segmentationFormId) {
+    var result = array.filter(function (elem) {
+                    return Number(elem.SEGMENTATION_FORM_ID) === Number(segmentationFormId);
+                 });
+    if(!!result && result.length){
+        result.forEach(function(elem){
+            elem.ATTACHMENT_SIZE = (parseFloat(Number(elem.ATTACHMENT_SIZE) / 1048576).toFixed(2)) + " MB";
+        })
+    }
 
-function getIndustryForEdit(segmentation_form_id) {
-    var segmentationIndustry = data.getSegmentationFormIndustryBySegmentationFormId(segmentation_form_id);
-    return segmentationIndustry.map(function (elem) {
-        return elem.SEGMENTATION_INDUSTRY_OPTION_ID
-    });
-}
-
-function getFunctionForEdit(segmentation_form_id) {
-    var segmentationFunction = data.getSegmentationFormFunctionBySegmentationFormId(segmentation_form_id);
-    return segmentationFunction.map(function (elem) {
-        return elem.SEGMENTATION_FUNCTION_ID
-    });
-}
-
-function getDepartmentForEdit(segmentation_form_id) {
-    var segmentationDepartment = data.getSegmentationFormDepartmentBySegmentationFormId(segmentation_form_id);
-    return segmentationDepartment.map(function (elem) {
-        return elem.SEGMENTATION_DEPARTMENT_ID
-    });
-}
-
-function getTacticForEdit(segmentation_form_id) {
-    var segmentationTactic = data.getSegmentationFormTacticBySegmentationFormId(segmentation_form_id);
-    return segmentationTactic.map(function (elem) {
-        return elem.SEGMENTATION_TACTIC_ID
-    });
-}
-
-function getItemForInterestForEdit(segmentation_form_id) {
-    var segmentationItemOfInterest = data.getSegmentationFormItemOfInterestBySegmentationFormId(segmentation_form_id);
-    return segmentationItemOfInterest.map(function (elem) {
-        return elem.SEGMENTATION_ITEM_OF_INTEREST_ID
-    });
-}
-
-function getSegmentationFormAttachment(attachmentId) {
-    return [businessAttachment.getAttachmentById(attachmentId)];
+    return result;
 }
 
 function insertSegmentationForm(segmentationFormInfo, userId) {
@@ -303,32 +275,28 @@ function updateSegmentationForm(segmentationFormInfo, userId) {
 
 function deleteSegmentationForm(hl5Id, userId) {
     var segmentationFormIds = data.getSegmentationFormIdByHl5Id(hl5Id);
-    segmentationFormIds.forEach(function (segmentationForm) {
-        var segmentationFormId = segmentationForm.SEGMENTATION_FORM_ID;
-        data.deleteSegmentationFormMarketBySegmentationFormId(segmentationFormId, userId);
-        data.deleteSegmentationFormSaleBySegmentationFormId(segmentationFormId, userId);
-        data.deleteSegmentationFormIndustryBySegmentationFormId(segmentationFormId, userId);
-        data.deleteSegmentationFormFunctionBySegmentationFormId(segmentationFormId, userId);
-        data.deleteSegmentationFormDepartmentBySegmentationFormId(segmentationFormId, userId);
-        data.deleteSegmentationFormTacticBySegmentationFormId(segmentationFormId, userId);
-        data.deleteSegmentationFormItemOfInterestBySegmentationFormId(segmentationFormId, userId);
-        data.deleteSegmentationFormBySegmentationFormId(segmentationFormId, userId);
-    });
+
+    data.deleteSegmentationFormMarketBySegmentationFormId(segmentationFormIds, userId);
+    data.deleteSegmentationFormSaleBySegmentationFormId(segmentationFormIds, userId);
+    data.deleteSegmentationFormIndustryBySegmentationFormId(segmentationFormIds, userId);
+    data.deleteSegmentationFormFunctionBySegmentationFormId(segmentationFormIds, userId);
+    data.deleteSegmentationFormDepartmentBySegmentationFormId(segmentationFormIds, userId);
+    data.deleteSegmentationFormTacticBySegmentationFormId(segmentationFormIds, userId);
+    data.deleteSegmentationFormItemOfInterestBySegmentationFormId(segmentationFormIds, userId);
+    data.deleteSegmentationFormBySegmentationFormId(segmentationFormIds, userId);
 }
 
 function deleteSegmentationFormByHl5IdOptionId(hl5Id, optionIds, userId) {
     var segmentationFormIds = data.getSegmentationFormByHl5IdOptionId(hl5Id, optionIds);
-    segmentationFormIds.forEach(function (segmentationForm) {
-        var segmentationFormId = segmentationForm.SEGMENTATION_FORM_ID;
-        data.deleteSegmentationFormMarketBySegmentationFormId(segmentationFormId, userId);
-        data.deleteSegmentationFormSaleBySegmentationFormId(segmentationFormId, userId);
-        data.deleteSegmentationFormIndustryBySegmentationFormId(segmentationFormId, userId);
-        data.deleteSegmentationFormFunctionBySegmentationFormId(segmentationFormId, userId);
-        data.deleteSegmentationFormDepartmentBySegmentationFormId(segmentationFormId, userId);
-        data.deleteSegmentationFormTacticBySegmentationFormId(segmentationFormId, userId);
-        data.deleteSegmentationFormItemOfInterestBySegmentationFormId(segmentationFormId, userId);
-        data.deleteSegmentationFormBySegmentationFormId(segmentationFormId, userId);
-    });
+
+    data.deleteSegmentationFormMarketBySegmentationFormId(segmentationFormIds, userId);
+    data.deleteSegmentationFormSaleBySegmentationFormId(segmentationFormIds, userId);
+    data.deleteSegmentationFormIndustryBySegmentationFormId(segmentationFormIds, userId);
+    data.deleteSegmentationFormFunctionBySegmentationFormId(segmentationFormIds, userId);
+    data.deleteSegmentationFormDepartmentBySegmentationFormId(segmentationFormIds, userId);
+    data.deleteSegmentationFormTacticBySegmentationFormId(segmentationFormIds, userId);
+    data.deleteSegmentationFormItemOfInterestBySegmentationFormId(segmentationFormIds, userId);
+    data.deleteSegmentationFormBySegmentationFormId(segmentationFormIds, userId);
 }
 
 function insertSegmentationFormMarket(segmentationFormInfo, segmentationFormId, userId) {
@@ -783,3 +751,7 @@ function insertSegmentationTactic(reqbody, userId) {
 }
 
 /*end segmentation Tactic*/
+
+function getServiceRequestFormType() {
+    return data.getServiceRequestFormType();
+}

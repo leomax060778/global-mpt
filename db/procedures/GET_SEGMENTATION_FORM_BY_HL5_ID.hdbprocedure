@@ -1,97 +1,193 @@
 PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_SEGMENTATION_FORM_BY_HL5_ID" (
     IN in_hl5_id BIGINT,
 	OUT out_result TABLE (
-	SEGMENTATION_FORM_ID BIGINT,
-	FORM_STATUS_DETAIL_ID BIGINT,
-	SERVICE_REQUEST_CATEGORY_OPTION_LEVEL_ID BIGINT,
-    HL5_ID BIGINT,
-    REGION_ID BIGINT,
-    SUBREGION_ID BIGINT,
-    COUNTRY_ID BIGINT,
-    HL4_ID BIGINT,
-    TARGET_GROUP_APPROVAL_WORKFLOW TINYINT,
-    MATCHING_REQUIRED TINYINT,
-    MATCH_CRITERIA_ID INTEGER,
-    NUMBER_OF_RECORD_NEED_MATCHING INTEGER,
-    TARGET_SELECT_CRITERIA_ID INTEGER,
-    SPECIAL_NOTE NVARCHAR(1000),
-    ATTACHMENT_ID BIGINT,
-    REVENUE_RANGE_FROM NVARCHAR(1000),
-    REVENUE_RANGE_TO NVARCHAR(1000),
-    CURRENCY_ID BIGINT,
-    NUMBER_OF_EMPLOYEE_FROM INTEGER,
-    NUMBER_OF_EMPLOYEE_TO INTEGER,
-    CUSTOMER_STATUS_ID INTEGER,
-    REGIONAL_BUYING_CLASSIFICATION_ID BIGINT,
-    COMPETITOR_ID BIGINT,
-    PARTNER_ID BIGINT,
-    UNQUALIFIED_ADDRESS_ID BIGINT,
-    ACCOUNT_WITH_ACTIVE_PIPELINE_ID BIGINT,
-    ACCOUNT_WITH_ACTIVE_LEAD_ID BIGINT,
-    CONTACT_DETAIL NVARCHAR(1000),
-    MAX_CONTACT_PER_ORGANIZATION INTEGER,
-    EXCLUDE_CONTACS_TOUCHED_BY_TELEMARKETING INTEGER,
-    APPLY_SALE_PLAY_FOR_TARGET TINYINT,
-    APPLY_PREDICTIVE_ANALYTICS_FOR_TARGET TINYINT,
-    CAMPAIGN_ID INTEGER,
-    HL5_CRM_DESCRIPTION NVARCHAR(255),
-    SUMMARY NVARCHAR(255),
-    REQUESTOR_NAME NVARCHAR(255),
-    ACCEPT_TERMS_STATE TINYINT
-	)
- 	)
+                            SEGMENTATION_FORM_ID BIGINT,
+                            FORM_STATUS_DETAIL_ID BIGINT,
+                            SERVICE_REQUEST_CATEGORY_OPTION_LEVEL_ID BIGINT,
+                            HL5_ID BIGINT,
+                            REGION_ID BIGINT,
+                            SUBREGION_ID BIGINT,
+                            COUNTRY_ID BIGINT,
+                            HL4_ID BIGINT,
+                            TARGET_GROUP_APPROVAL_WORKFLOW TINYINT,
+                            MATCHING_REQUIRED TINYINT,
+                            MATCH_CRITERIA_ID INTEGER,
+                            NUMBER_OF_RECORD_NEED_MATCHING INTEGER,
+                            TARGET_SELECT_CRITERIA_ID INTEGER,
+                            SPECIAL_NOTE NVARCHAR(1000),
+                            ATTACHMENT_ID BIGINT,
+                            REVENUE_RANGE_FROM NVARCHAR(1000),
+                            REVENUE_RANGE_TO NVARCHAR(1000),
+                            CURRENCY_ID BIGINT,
+                            NUMBER_OF_EMPLOYEE_FROM INTEGER,
+                            NUMBER_OF_EMPLOYEE_TO INTEGER,
+                            CUSTOMER_STATUS_ID INTEGER,
+                            REGIONAL_BUYING_CLASSIFICATION_ID BIGINT,
+                            COMPETITOR_ID BIGINT,
+                            PARTNER_ID BIGINT,
+                            UNQUALIFIED_ADDRESS_ID BIGINT,
+                            ACCOUNT_WITH_ACTIVE_PIPELINE_ID BIGINT,
+                            ACCOUNT_WITH_ACTIVE_LEAD_ID BIGINT,
+                            CONTACT_DETAIL NVARCHAR(1000),
+                            MAX_CONTACT_PER_ORGANIZATION INTEGER,
+                            EXCLUDE_CONTACS_TOUCHED_BY_TELEMARKETING INTEGER,
+                            APPLY_SALE_PLAY_FOR_TARGET TINYINT,
+                            APPLY_PREDICTIVE_ANALYTICS_FOR_TARGET TINYINT,
+                            CAMPAIGN_ID INTEGER,
+                            HL5_CRM_DESCRIPTION NVARCHAR(255),
+                            SUMMARY NVARCHAR(255),
+                            REQUESTOR_NAME NVARCHAR(255),
+                            ACCEPT_TERMS_STATE TINYINT
+    ),
+    OUT out_result_segmentation_form_market TABLE(
+        SEGMENTATION_FORM_SEGMENTATION_MARKET_ID BIGINT,
+        SEGMENTATION_FORM_ID BIGINT,
+        SEGMENTATION_MARKET_ID BIGINT
+    ),
+    OUT out_result_segmentation_form_sale TABLE(
+        SEGMENTATION_FORM_SEGMENTATION_SALE_ID BIGINT,
+        SEGMENTATION_FORM_ID BIGINT,
+        SEGMENTATION_SALE_ID BIGINT
+    ),
+    OUT out_result_segmentation_form_industry TABLE(
+        SEGMENTATION_FORM_SEGMENTATION_INDUSTRY_OPTION_ID BIGINT,
+        SEGMENTATION_FORM_ID BIGINT,
+        SEGMENTATION_INDUSTRY_OPTION_ID BIGINT
+    ),
+    OUT out_result_segmentation_form_function TABLE(
+        SEGMENTATION_FORM_SEGMENTATION_FUNCTION_ID BIGINT,
+        SEGMENTATION_FORM_ID BIGINT,
+        SEGMENTATION_FUNCTION_ID BIGINT
+    ),
+    OUT out_result_segmentation_form_department TABLE(
+        SEGMENTATION_FORM_SEGMENTATION_DEPARTMENT_ID BIGINT,
+        SEGMENTATION_FORM_ID BIGINT,
+        SEGMENTATION_DEPARTMENT_ID BIGINT
+    ),
+    OUT out_result_segmentation_form_tactic TABLE(
+        SEGMENTATION_FORM_SEGMENTATION_TACTIC_ID BIGINT,
+        SEGMENTATION_FORM_ID BIGINT,
+        SEGMENTATION_TACTIC_ID BIGINT
+    ),
+    OUT out_result_segmentation_form_item_of_interest TABLE(
+        SEGMENTATION_FORM_SEGMENTATION_ITEM_OF_INTEREST_ID BIGINT,
+        SEGMENTATION_FORM_ID BIGINT,
+        SEGMENTATION_ITEM_OF_INTEREST_ID BIGINT
+    ),
+    OUT out_result_segmentation_form_attachment TABLE(
+        ATTACHMENT_ID BIGINT,
+		USER_ID BIGINT,
+		ORIGINAL_NAME NVARCHAR(255),
+		SAVED_NAME NVARCHAR(255),
+		ATTACHMENT_SIZE INTEGER,
+		CREATED_DATE NVARCHAR(32)
+    )
+ )
 	LANGUAGE SQLSCRIPT
 	SQL SECURITY INVOKER 
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
 	READS SQL DATA AS
 BEGIN
-
 		out_result = SELECT
-		    SF.SEGMENTATION_FORM_ID,
-		    SF.FORM_STATUS_DETAIL_ID,
-		    SF.SERVICE_REQUEST_CATEGORY_OPTION_LEVEL_ID,
-            SF.HL5_ID,
-            SF.REGION_ID,
-            SF.SUBREGION_ID,
-            SF.COUNTRY AS COUNTRY_ID,
-            SF.HL4_ID,
-            SF.TARGET_GROUP_APPROVAL_WORKFLOW,
-            SF.MATCHING_REQUIRED,
-            SF.MATCH_CRITERIA_ID,
-            SF.NUMBER_OF_RECORD_NEED_MATCHING,
-            SF.TARGET_SELECT_CRITERIA_ID,
-            SF.SPECIAL_NOTE,
-            SF.ATTACHMENT_ID,
-            SF.REVENUE_RANGE_FROM,
-            SF.REVENUE_RANGE_TO,
-            SF.CURRENCY_ID,
-            SF.NUMBER_OF_EMPLOYEE_FROM,
-            SF.NUMBER_OF_EMPLOYEE_TO,
-            SF.CUSTOMER_STATUS_ID,
-            SF.REGIONAL_BUYING_CLASSIFICATION_ID,
-            SF.COMPETITOR_ID,
-            SF.PARTNER_ID,
-            SF.UNQUALIFIED_ADDRESS_ID,
-            SF.ACCOUNT_WITH_ACTIVE_PIPELINE_ID,
-            SF.ACCOUNT_WITH_ACTIVE_LEAD_ID,
-            SF.CONTACT_DETAIL,
-            SF.MAX_CONTACT_PER_ORGANIZATION,
-            SF.EXCLUDE_CONTACS_TOUCHED_BY_TELEMARKETING,
-            SF.APPLY_SALE_PLAY_FOR_TARGET,
-            SF.APPLY_PREDICTIVE_ANALYTICS_FOR_TARGET,
-            SF.HL4_ID AS CAMPAIGN_ID,
-            HL5.HL5_CRM_DESCRIPTION,
-            SF.SUMMARY as SUMMARY,
-            U.USER_NAME AS REQUESTOR_NAME,
-            SF.ACCEPT_TERMS_STATE
-		FROM SEGMENTATION_FORM SF
-		INNER JOIN HL5 ON HL5.HL5_ID = SF.HL5_ID
-		INNER JOIN HL4 ON HL4.HL4_ID = SF.HL4_ID
-		INNER JOIN HL3 ON HL3.HL3_ID = HL4.HL3_ID
-        INNER JOIN HL2 ON HL3.HL2_ID = HL2.HL2_ID
-        INNER JOIN HL1 ON HL2.HL1_ID = HL1.HL1_ID
-        INNER JOIN BUDGET_YEAR BGY ON HL1.BUDGET_YEAR_ID = BGY.BUDGET_YEAR_ID
-        INNER JOIN USER U ON U.USER_ID = SF.CREATED_USER_ID
-        WHERE SF.HL5_ID = in_hl5_id;
+                            SF.SEGMENTATION_FORM_ID,
+                            SF.FORM_STATUS_DETAIL_ID,
+                            SF.SERVICE_REQUEST_CATEGORY_OPTION_LEVEL_ID,
+                            SF.HL5_ID,
+                            SF.REGION_ID,
+                            SF.SUBREGION_ID,
+                            SF.COUNTRY AS COUNTRY_ID,
+                            SF.HL4_ID,
+                            SF.TARGET_GROUP_APPROVAL_WORKFLOW,
+                            SF.MATCHING_REQUIRED,
+                            SF.MATCH_CRITERIA_ID,
+                            SF.NUMBER_OF_RECORD_NEED_MATCHING,
+                            SF.TARGET_SELECT_CRITERIA_ID,
+                            SF.SPECIAL_NOTE,
+                            SF.ATTACHMENT_ID,
+                            SF.REVENUE_RANGE_FROM,
+                            SF.REVENUE_RANGE_TO,
+                            SF.CURRENCY_ID,
+                            SF.NUMBER_OF_EMPLOYEE_FROM,
+                            SF.NUMBER_OF_EMPLOYEE_TO,
+                            SF.CUSTOMER_STATUS_ID,
+                            SF.REGIONAL_BUYING_CLASSIFICATION_ID,
+                            SF.COMPETITOR_ID,
+                            SF.PARTNER_ID,
+                            SF.UNQUALIFIED_ADDRESS_ID,
+                            SF.ACCOUNT_WITH_ACTIVE_PIPELINE_ID,
+                            SF.ACCOUNT_WITH_ACTIVE_LEAD_ID,
+                            SF.CONTACT_DETAIL,
+                            SF.MAX_CONTACT_PER_ORGANIZATION,
+                            SF.EXCLUDE_CONTACS_TOUCHED_BY_TELEMARKETING,
+                            SF.APPLY_SALE_PLAY_FOR_TARGET,
+                            SF.APPLY_PREDICTIVE_ANALYTICS_FOR_TARGET,
+                            SF.HL4_ID AS CAMPAIGN_ID,
+                            HL5.HL5_CRM_DESCRIPTION,
+                            SF.SUMMARY as SUMMARY,
+                            U.USER_NAME AS REQUESTOR_NAME,
+                            SF.ACCEPT_TERMS_STATE
+                    FROM SEGMENTATION_FORM SF
+                        INNER JOIN HL5 ON HL5.HL5_ID = SF.HL5_ID
+                        INNER JOIN HL4 ON HL4.HL4_ID = HL5.HL4_ID
+                        INNER JOIN HL3 ON HL3.HL3_ID = HL4.HL3_ID
+                        INNER JOIN HL2 ON HL3.HL2_ID = HL2.HL2_ID
+                        INNER JOIN HL1 ON HL2.HL1_ID = HL1.HL1_ID
+                        INNER JOIN BUDGET_YEAR BGY ON HL1.BUDGET_YEAR_ID = BGY.BUDGET_YEAR_ID
+                        INNER JOIN USER U ON U.USER_ID = SF.CREATED_USER_ID
+                    WHERE SF.HL5_ID = in_hl5_id
+                        AND SF.ENABLED = 1
+                        AND SF.DELETED = 0;
 
+        out_result_segmentation_form_market = SELECT  SEGMENTATION_FORM_SEGMENTATION_MARKET_ID,
+                                                      SEGMENTATION_FORM_ID,
+                                                      SEGMENTATION_MARKET_ID
+                                              FROM SEGMENTATION_FORM_SEGMENTATION_MARKET
+                                              WHERE SEGMENTATION_FORM_ID IN (SELECT SEGMENTATION_FORM_ID FROM :out_result);
+
+        out_result_segmentation_form_sale = SELECT  SEGMENTATION_FORM_SEGMENTATION_SALE_ID,
+                                                    SEGMENTATION_FORM_ID,
+                                                    SEGMENTATION_SALE_ID
+                                            FROM SEGMENTATION_FORM_SEGMENTATION_SALE
+                                            WHERE SEGMENTATION_FORM_ID IN (SELECT SEGMENTATION_FORM_ID FROM :out_result);
+
+        out_result_segmentation_form_industry = SELECT  SEGMENTATION_FORM_SEGMENTATION_INDUSTRY_OPTION_ID,
+                                                        SEGMENTATION_FORM_ID,
+                                                        SEGMENTATION_INDUSTRY_OPTION_ID
+                                                FROM SEGMENTATION_FORM_SEGMENTATION_INDUSTRY_OPTION
+                                                WHERE SEGMENTATION_FORM_ID IN (SELECT SEGMENTATION_FORM_ID FROM :out_result);
+
+        out_result_segmentation_form_function = SELECT  SEGMENTATION_FORM_SEGMENTATION_FUNCTION_ID,
+                                                        SEGMENTATION_FORM_ID,
+                                                        SEGMENTATION_FUNCTION_ID
+                                                FROM SEGMENTATION_FORM_SEGMENTATION_FUNCTION
+                                                WHERE SEGMENTATION_FORM_ID IN (SELECT SEGMENTATION_FORM_ID FROM :out_result);
+
+        out_result_segmentation_form_department = SELECT  SEGMENTATION_FORM_SEGMENTATION_DEPARTMENT_ID,
+                                                          SEGMENTATION_FORM_ID,
+                                                          SEGMENTATION_DEPARTMENT_ID
+                                                  FROM SEGMENTATION_FORM_SEGMENTATION_DEPARTMENT
+                                                  WHERE SEGMENTATION_FORM_ID IN (SELECT SEGMENTATION_FORM_ID FROM :out_result);
+
+        out_result_segmentation_form_tactic = SELECT    SEGMENTATION_FORM_SEGMENTATION_TACTIC_ID,
+                                                        SEGMENTATION_FORM_ID,
+                                                        SEGMENTATION_TACTIC_ID
+                                              FROM SEGMENTATION_FORM_SEGMENTATION_TACTIC
+                                              WHERE SEGMENTATION_FORM_ID IN (SELECT SEGMENTATION_FORM_ID FROM :out_result);
+
+        out_result_segmentation_form_item_of_interest = SELECT  SEGMENTATION_FORM_SEGMENTATION_ITEM_OF_INTEREST_ID,
+                                                                SEGMENTATION_FORM_ID,
+                                                                SEGMENTATION_ITEM_OF_INTEREST_ID
+                                                          FROM SEGMENTATION_FORM_SEGMENTATION_ITEM_OF_INTEREST
+                                                          WHERE SEGMENTATION_FORM_ID IN (SELECT SEGMENTATION_FORM_ID FROM :out_result);
+
+        out_result_segmentation_form_attachment = SELECT  ATT.ATTACHMENT_ID,
+                                                  						ATT.CREATED_USER_ID as USER_ID,
+                                                  						ATT.ORIGINAL_NAME,
+                                                  						ATT.SAVED_NAME,
+                                                  						ATT.ATTACHMENT_SIZE,
+                                                  						TO_NVARCHAR(ATT.CREATED_DATE_TZ, 'YYYY-MM-DD') AS CREATED_DATE
+                                                  FROM ATTACHMENT ATT
+                                                  WHERE ATT.ENABLED = 1
+                                                  		AND ATT.DELETED = 0
+                                                  		AND ATT.ATTACHMENT_ID IN (SELECT ATTACHMENT_ID FROM :out_result);
 END;

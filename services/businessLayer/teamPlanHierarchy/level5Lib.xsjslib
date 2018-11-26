@@ -42,6 +42,7 @@ var databudgetSpendRequest = mapper.getDataBudgetSpendRequest();
 var dataServiceRequest = mapper.getDataServiceRequest();
 var AllocationOptionLib = mapper.getAllocationOptionLib();
 var blSegmentation = mapper.getSegmentation();
+var blLeadForm = mapper.getLeadForm();
 var expectedOutcomesLevelLib = mapper.getExpectedOutcomesLevelLib();
 var allocationCategoryOptionLevelLib = mapper.getAllocationCategoryOptionLevelLib();
 var dataRTM = mapper.getDataRouteToMarket();
@@ -54,9 +55,12 @@ var allocationCategory = mapper.getAllocationCategoryLib();
 var dataUtil = mapper.getDataUtil();
 var dataHierarchyCategoryCountry = mapper.getDataHierarchyCategoryCountry();
 var dataValidation = mapper.getDataValidation();
+var blDynamicForm = mapper.getDynamicFormLib();
+var dataL5Legacy = mapper.getDataLevel5Legacy();
 /*************************************************/
 
 var levelCampaign = "Marketing Tactic ";
+var L5_MSG_OBJECT_NOT_FOUND = "The Object can not be found.";
 var L5_MSG_INITIATIVE_NOT_FOUND = "The Marketing Tactic ID can not be found.";
 var L5_MSG_USER_NOT_FOUND = "The User can not be found.";
 var L5_MSG_NO_PRIVILEGE = "Not enough privilege to do this action.";
@@ -142,6 +146,12 @@ var PARTNER_TYPE = {
     INTEL: 3
 };
 
+var SERVICE_REQUEST_FORM_TYPE = {
+    LEAD: 1,
+    ACTIVITIES: 2,
+    SEGMENTATION: 3
+};
+
 var HIERARCHY_LEVEL = util.getHierarchyLevelEnum();
 
 var DRAFT_PEFIX = 'DRAFT';
@@ -174,7 +184,7 @@ function getHl5ByHl4Id(id, userId, includeLegacy) {
         hl5List = JSON.parse(JSON.stringify(hl5List));
         hl5List.forEach(function (hl5) {
             var actionPermission = hl5.IS_LEGACY ? {} : getActionPermission(hl5, userId, isSuperAdmin);
-
+            hl5.PATH = hl5.CRM_ID;
             hl5.ENABLE_DELETION = !!actionPermission.ENABLE_DELETION;
             hl5.ENABLE_CHANGE_STATUS = !!actionPermission.ENABLE_CHANGE_STATUS;
             hl5.ENABLE_EDIT = !!actionPermission.ENABLE_EDIT;
@@ -201,14 +211,17 @@ function getHl5ByHl4Id(id, userId, includeLegacy) {
     return response;
 }
 
-function getHl5ById(hl5Id, carryOver, isLegacy) {
-    if (!hl5Id)
-        throw ErrorLib.getErrors().BadRequest("The Parameter ID is not found", "hl5Services/handleGet/getHl5ById", L5_MSG_INITIATIVE_NOT_FOUND);
+function getHl5ById(hl5Id, carryOver, isLegacy, fromCloneMethod) {
+    if (!hl5Id) {
+        throw ErrorLib.getErrors().BadRequest("The Parameter ID is not found", "", L5_MSG_INITIATIVE_NOT_FOUND);
+    }
     var hl5Info = !isLegacy ? dataHl5.getHl5ById(hl5Id) : dataHl5.getHl5LegacyById(hl5Id);
     var hl5 = JSON.parse(JSON.stringify(hl5Info));
-
+    var result = {};
+    var levelString = 'L5';
+    var dynamicFormId = null;
     if(!isLegacy) {
-        if (hl5.HL5_STATUS_DETAIL_ID == HL5_STATUS.DELETED_IN_CRM) {
+        if (Number(hl5.HL5_STATUS_DETAIL_ID) === HL5_STATUS.DELETED_IN_CRM) {
             throw ErrorLib.getErrors().BadRequest("", "", L5_MSG_CANNOT_GET_BY_ID);
         }
         hl5.TARGET_KPIS = !hl5.FORECAST_AT_L5 ? expectedOutcomesLib.getAggregatedKPIByHl5Id(hl5Id) : expectedOutcomesLib.getExpectedOutcomesByHl5Id(hl5Id, hl5.HL4_ID);
@@ -240,7 +253,7 @@ function getHl5ById(hl5Id, carryOver, isLegacy) {
             hl5.SALE_CURRENCY = {ID: internalCofunding.SALE_CURRENCY_ID, VALUE: internalCofunding.SALE_CURRENCY_VALUE};
             hl5.SALE_REQUESTS = internalCofunding.SALE_REQUESTS;
 
-            hl5.CATEGORIES = getCategoryOption(hl5Id);
+            hl5.CATEGORIES = getCategoryOption(hl5Id, fromCloneMethod);
             hl5.SERVICE_REQUEST_CATEGORIES = getServiceRequestCategoryOptionByHl5Id(hl5Id);
 
             hl5.TOTAL_BUDGET = ((Number(hl5.BUDGET_EUROS) + Number(hl5.INTEL_TOTAL_BUDGET_EUROS)
@@ -251,6 +264,7 @@ function getHl5ById(hl5Id, carryOver, isLegacy) {
 
             hl5.BUDGET = (Number(hl5.BUDGET) * Number(hl5.CURRENCY_VALUE)).toFixed(2);
             hl5.IS_IN_CRM = !!dataHl5.hl5ExistsInCrm(hl5Id);
+            dynamicFormId = hl5.DYNAMIC_FORM_ID;
         } else {
             hl5.CATEGORIES = level6Lib.getCarryOverHl5CategoryOption(hl5Id, hl5.HL4_ID);
             hl5.BUDGET = 0;
@@ -261,8 +275,14 @@ function getHl5ById(hl5Id, carryOver, isLegacy) {
             hl5.CO_FUNDED = 0;
             hl5.ALLOW_BUDGET_ZERO = 0;
             hl5.STATUS = undefined;
+            levelString = 'L6';
         }
         hl5 = serverToUiParser(hl5);
+
+        result = {
+            HL5: hl5,
+            DYNAMIC_FORM: blDynamicForm.getFormByParentId(hl5.HL5_ID, levelString, dynamicFormId, true, isLegacy)
+        }
     } else {
         hl5.BUDGET = 0;
         hl5.HL5_CRM_DESCRIPTION = undefined;
@@ -272,9 +292,11 @@ function getHl5ById(hl5Id, carryOver, isLegacy) {
         hl5.CO_FUNDED = 0;
         hl5.ALLOW_BUDGET_ZERO = 0;
         hl5.STATUS = undefined;
+
+        result = hl5;
     }
 
-    return hl5;
+    return result;
 }
 
 function getHl5ByUserId(userId, isMarketingTacticView) {
@@ -388,6 +410,9 @@ function insertHl5(data, userId) {
     var hl5_id = 0;
     data = uiToServerParser(data);
 
+    //complete data with dynamic form data configuration
+    data = util.completeFromDynamicForm(data.HL4_ID, "L5", data, true);
+
     if (!hasAdditionalFields(data.CAMPAIGN_TYPE_ID)) {
         data.VENUE = null;
         data.CITY = null;
@@ -400,7 +425,6 @@ function insertHl5(data, userId) {
         data.NUMBER_OF_PARTICIPANTS = null;
     }
 
-
     var automaticApproval = blLevel2.getHl2AllowAutomaticBudgetApprovalByHl4Id(data.HL4_ID);
     data.AUTOMATIC_APPROVAL = automaticApproval;
     var conversionValue = dataCurrency.getCurrencyValueId(data.EURO_CONVERSION_ID);
@@ -409,7 +433,7 @@ function insertHl5(data, userId) {
         data.IN_BUDGET = 1;
     } else {
         data.BUDGET = Number(data.BUDGET) / conversionValue;
-        data.IN_BUDGET = checkBudgetStatus(data.HL4_ID, hl5_id, data.BUDGET);
+        data.IN_BUDGET = (!!data.AUTOMATIC_APPROVAL)? 1 : checkBudgetStatus(data.HL4_ID, hl5_id, data.BUDGET); //TODO: use AUTOMATIC_APPROVAL till the new flag is setted
     }
 
     var validationResult = validateHl5(data, userId);
@@ -451,6 +475,7 @@ function insertHl5(data, userId) {
             insertInternalCofunding(data, automaticApproval, userId);
             insertExternalCoFunding(data, automaticApproval, userId);
             insertCategoryOption(data, userId);
+
             insertHl5RequestCategoryOption(hl5_id, data.SERVICE_REQUEST_CATEGORIES, userId);
         }
 
@@ -523,6 +548,7 @@ function insertDataHl5(acronym, data) {
         , data.INHERITED_CREATION || 0
         , data.DES_TYPE_ID || null
         , data.ENABLE_CRM_CREATION || 0
+        , data.DYNAMIC_FORM_ID || null
     );
 }
 
@@ -536,13 +562,26 @@ function insertHl5RequestCategoryOption(hl5Id, requestCategoryOption, userId) {
                 , in_user_id: userId
             });
 
-            if (option.FORM && option.ASSOCIATED_FORM) {
+            if (option.FORM) {
                 option.FORM.HL5_ID = hl5Id;
-                // option.FORM.FORM_STATUS_DETAIL_ID = option.FORM_STATUS_DETAIL_ID;
-                switch (option.ASSOCIATED_FORM) {
-                    case 'SegmentationForm':
-                        blSegmentation.processForm(option.FORM, userId);
-                        break;
+                option.FORM.SERVICE_REQUEST_CATEGORY_OPTION_LEVEL_ID = option.SERVICE_REQUEST_CATEGORY_OPTION_LEVEL_ID;
+                option.FORM.SERVICE_REQUEST_FORM_TYPE_ID = option.SERVICE_REQUEST_FORM_TYPE_ID;
+                if(option.FORM.ORGANIZATION_TYPE && option.FORM.ORGANIZATION_TYPE === "REGIONAL"){
+                	option.FORM.REGION_ID = option.FORM.ORGANIZATION_ID;
+                }
+                if(option.SERVICE_REQUEST_FORM_TYPE_ID){
+                    switch (Number(option.SERVICE_REQUEST_FORM_TYPE_ID)) {
+                        case SERVICE_REQUEST_FORM_TYPE.LEAD:
+                            blLeadForm.insertLeadForm(option.FORM, userId);
+                            break;
+                        case SERVICE_REQUEST_FORM_TYPE.ACTIVITIES:
+
+                            break;
+                        case SERVICE_REQUEST_FORM_TYPE.SEGMENTATION:
+                            blSegmentation.processForm(option.FORM, userId);
+                            break;
+                    }
+
                 }
             }
         });
@@ -552,20 +591,29 @@ function insertHl5RequestCategoryOption(hl5Id, requestCategoryOption, userId) {
 
 function updateHl5RequestCategoryOption(hl5Id, requestCategoryOption, userId) {
     var serviceRequestCategoryOptionList = dataServiceRequest.getServiceRequestCategoryOptionByHlId(hl5Id, LEVEL_STRING);
-    var optionToDelete = [];
+    var optionSegmentationToDelete = [];
+    var optionLeadToDelete = [];
 
     serviceRequestCategoryOptionList = JSON.parse(JSON.stringify(serviceRequestCategoryOptionList));
     serviceRequestCategoryOptionList.forEach(function (option) {
         if (!requestCategoryOption.filter(function (elem) {
-                return elem.SERVICE_REQUEST_CATEGORY_OPTION_LEVEL_ID == option.SERVICE_REQUEST_CATEGORY_OPTION_LEVEL_ID
-            }).length) {
+            return Number(elem.SERVICE_REQUEST_CATEGORY_OPTION_LEVEL_ID) === Number(option.SERVICE_REQUEST_CATEGORY_OPTION_LEVEL_ID);
+        }).length) {
             option.HL5_ID = hl5Id;
-            optionToDelete.push({in_service_request_category_option_level_id: option.SERVICE_REQUEST_CATEGORY_OPTION_LEVEL_ID});
+            switch (Number(option.SERVICE_REQUEST_FORM_TYPE_ID)) {
+                case SERVICE_REQUEST_FORM_TYPE.SEGMENTATION:
+                    optionSegmentationToDelete.push({in_service_request_category_option_level_id: option.SERVICE_REQUEST_CATEGORY_OPTION_LEVEL_ID});
+                    break;
+                case SERVICE_REQUEST_FORM_TYPE.LEAD:
+                    optionLeadToDelete.push({in_service_request_category_option_level_id: option.SERVICE_REQUEST_CATEGORY_OPTION_LEVEL_ID});
+                    break;
+            }
         }
-
     });
 
-    blSegmentation.deleteSegmentationFormByHl5IdOptionId(hl5Id, optionToDelete, userId);
+    blSegmentation.deleteSegmentationFormByHl5IdOptionId(hl5Id, optionSegmentationToDelete, userId);
+
+    blLeadForm.deleteLeadFormByHl5Id(hl5Id, userId);
 
     dataHl5.deleteHl5RequestCategoryOption(hl5Id, userId);
     // dataHl5.deleteHardHl5RequestCategoryOption(hl5Id);
@@ -745,6 +793,10 @@ function updateHl5(data, userId) {
     }
 
     data = uiToServerParser(data);
+
+    //complete data with dynamic form data configuration
+    data = util.completeFromDynamicForm(data.HL4_ID, "L5", data);
+
     if (!hasAdditionalFields(data.CAMPAIGN_TYPE_ID)) {
         data.VENUE = null;
         data.CITY = null;
@@ -765,7 +817,7 @@ function updateHl5(data, userId) {
         data.IN_BUDGET = 1;
     } else {
         data.BUDGET = Number(data.BUDGET) / conversionValue;
-        data.IN_BUDGET = checkBudgetStatus(data.HL4_ID, data.HL5_ID, data.BUDGET);
+        data.IN_BUDGET = (!!data.AUTOMATIC_APPROVAL)? 1 : checkBudgetStatus(data.HL4_ID, data.HL5_ID, data.BUDGET); //TODO: use AUTOMATIC_APPROVAL till the new flag is setted
     }
 
     var ownMoneyBudgetSpendRequestStatus = budgetSpendRequest.getOwnMoneyBudgetSpendRequestStatusByHlIdLevel(data.HL5_ID, LEVEL_STRING);
@@ -780,17 +832,17 @@ function updateHl5(data, userId) {
         }
         level6Lib.checkBudgetStatus(data);
     }
-    
+
     //We need the new values because of the Pending Budget validations performed in the validateHL5 Function
     if (Number(data.ALLOW_BUDGET_ZERO)) {
         budgetSpendRequest.setBudgetSpendRequestStatusNoLongerRequested(data.HL5_ID, LEVEL_STRING, userId);
     } else if (!Number(data.CO_FUNDED)) {
         budgetSpendRequest.disableCoFundedBudgetSpendRequests(data.HL5_ID, LEVEL_STRING, userId);
     } else {
-        updateInternalCofunding(data, automaticApproval, userId);  
-        updateExternalCoFunding(data, automaticApproval, userId); 
+        updateInternalCofunding(data, automaticApproval, userId);
+        updateExternalCoFunding(data, automaticApproval, userId);
     }
-    
+
     var validationResult = validateHl5(data, userId);
     data.STATUS_DETAIL_ID = validationResult.statusId;
 
@@ -920,6 +972,35 @@ function updateHl5(data, userId) {
             return {SUCCESS_MESSAGE: MSG_ENABLE_CRM_CREATION, EXECUTE_CANCEL_CONFIRMATION: 1, HL5_ID: data.HL5_ID};
         }
     }
+}
+
+function updateBudget(hl5Id, budget, allowBudgetZero, isLegacy, userId) {
+    var response = null;
+    var reqBody = {
+        HL5_ID: hl5Id,
+        BUDGET: budget,
+        ALLOW_BUDGET_ZERO: allowBudgetZero
+    };
+    if(!Number(isLegacy)){
+        var changedFields = level5DER.getL5CrmBindingFieldsByHl5Id(hl5Id);
+        var budgetField = changedFields.BUDGET || null;
+
+        if (!budgetField) {
+            var parameters = [{
+                "in_hl5_id": hl5Id,
+                "in_column_name": 'BUDGET',
+                "in_changed": 1,
+                "in_user_id": userId,
+                "in_display_name": 'Budget'
+            }];
+            insertInCrmBinding(parameters, []);
+        }
+        response = updateHl5Budget(reqBody, userId);
+    } else {
+        response = dataL5Legacy.updateHl5LegacyBudget(reqBody,userId);
+    }
+
+    return response;
 }
 
 function validateChangedKPIs(hl5Object, oldKPIs, oldForecastAtL5) {
@@ -1108,6 +1189,9 @@ function isComplete(data, fromChangeStatusOnDemand) {
             case "ACRONYM":
                 isComplete = (/^[A-Z0-9_]{7}$/.test(data.ACRONYM));
                 break;
+            case "ACRONYM":
+                isComplete = (/^[A-Z0-9_]{7}$/.test(data.ACRONYM));
+                break;
             default:
                 if (notValidate.indexOf(crmBindingField) < 0) {
                     isComplete = !!data[crmBindingField];
@@ -1141,7 +1225,9 @@ function validateBudget(data, fromChangeStatusOnDemand) {
     } else {
         if (data.AUTOMATIC_APPROVAL) {
             if (!!Number(data.BUDGET)) {
-                if (!!Number(data.IN_BUDGET) || fromChangeStatusOnDemand) {
+                //TODO: in later versions there is going to be another flag to allow the user to be over budget, for now we don't need the code.
+
+                /*if (!!Number(data.IN_BUDGET) || fromChangeStatusOnDemand) {
                     var budgetSpendRequestStatus = budgetSpendRequest.getBudgetSpendRequestsStatus();
                     var ownMoneyBudgetSpendRequestStatus = budgetSpendRequest.getOwnMoneyBudgetSpendRequestStatusByHlIdLevel(data.HL5_ID || 0, LEVEL_STRING);
                     if (!ownMoneyBudgetSpendRequestStatus || (ownMoneyBudgetSpendRequestStatus && ownMoneyBudgetSpendRequestStatus != budgetSpendRequestStatus.APPROVED)) {
@@ -1165,7 +1251,10 @@ function validateBudget(data, fromChangeStatusOnDemand) {
                         var hasBudgetRequestPending = !Number(budgetSpendRequest.countPendingBudgetRequestByHl5Id(data.HL5_ID || '0'));
                         isComplete = hasBudgetRequestApproved && hasBudgetRequestPending;
                     }
-                }
+                }*/
+
+                //Workaround till the new flag is setted.
+                isComplete = true;
             } else {
                 if (Number(data.CO_FUNDED)) {
                     isComplete = (data.SALE_REQUESTS && data.SALE_REQUESTS.length) || (data.PARTNERS && data.PARTNERS.length);
@@ -1384,7 +1473,7 @@ function validateBudgetStatus(hl5){
         });*/
         if (
         	(!ownMoneyBudgetSpendRequestStatus || (!!ownMoneyBudgetSpendRequestStatus && Number(ownMoneyBudgetSpendRequestStatus) !== budgetSpendRequestStatus.APPROVED))
-            || 
+            ||
             budgetSpendRequest.checkPendingCoFundedBudgetSpendRequestByHlIdLevel(hl5_id, LEVEL_STRING)
             ) {
             valid = false;
@@ -1534,8 +1623,9 @@ function isCategoryOptionComplete(data) {
         //TODO review. Workaround for empty categories on edit
         //throw ErrorLib.getErrors().CustomError("","hl5Services/handlePost/insertHl5", L5_CATEGORY_OPTIONS_NOT_EMPTY);
 
-        if (!data.HL5_ID && hl5Category.OPTIONS.length !== dataOption.getAllocationOptionCountByCategoryIdLevelId(hl5Category.CATEGORY_ID, LEVEL_STRING.toLowerCase()))
+        if (!data.HL5_ID && hl5Category.OPTIONS.length !== dataOption.getAllocationOptionCountByCategoryIdLevelId(hl5Category.CATEGORY_ID, LEVEL_STRING.toLowerCase(), data.HL4_ID)) {
             throw ErrorLib.getErrors().CustomError("", "", L5_CATEGORY_OPTIONS_INCORRECT_NUMBER);
+        }
 
         hl5Category.OPTIONS.forEach(function (option) {
             if (!option.OPTION_ID || !Number(option.OPTION_ID))
@@ -1856,7 +1946,16 @@ function getServiceRequestCategoryOptionByHl5Id(hl5Id) {
     var serviceRequestCategoryOptionList = dataServiceRequest.getServiceRequestCategoryOptionByHlId(hl5Id, LEVEL_STRING);
 
     if (serviceRequestCategoryOptionList && serviceRequestCategoryOptionList.length) {
-        var segmentationForms = blSegmentation.getSegmentationFormByHl5Id(hl5Id);
+        var segmentationForms = [];
+        var leadForms = [];
+        var form = {};
+        if(hl5Id){
+            segmentationForms = blSegmentation.getSegmentationFormByHl5Id(hl5Id);
+            leadForms = blLeadForm.getLeadFormByHl5Id(hl5Id);
+        }
+
+        //throw JSON.stringify({leadForms: leadForms, serviceRequestCategoryOptionList: serviceRequestCategoryOptionList});
+
         for (var i = 0; i < serviceRequestCategoryOptionList.length; i++) {
             if (!result[serviceRequestCategoryOptionList[i].SERVICE_REQUEST_CATEGORY_ID]) {
                 result[serviceRequestCategoryOptionList[i].SERVICE_REQUEST_CATEGORY_ID] = {
@@ -1864,12 +1963,23 @@ function getServiceRequestCategoryOptionByHl5Id(hl5Id) {
                     , OPTIONS: []
                 }
             }
+
+            //Yes, we can do it shorter, but long strings can be confusing.
+
+            if(segmentationForms[serviceRequestCategoryOptionList[i].SERVICE_REQUEST_CATEGORY_OPTION_LEVEL_ID]){
+                form = segmentationForms[serviceRequestCategoryOptionList[i].SERVICE_REQUEST_CATEGORY_OPTION_LEVEL_ID];
+            }else if(leadForms[serviceRequestCategoryOptionList[i].SERVICE_REQUEST_CATEGORY_OPTION_LEVEL_ID]){
+                form = leadForms[serviceRequestCategoryOptionList[i].SERVICE_REQUEST_CATEGORY_OPTION_LEVEL_ID];
+            }
+
+
             result[serviceRequestCategoryOptionList[i].SERVICE_REQUEST_CATEGORY_ID].OPTIONS.push({
                 OPTION_NAME: serviceRequestCategoryOptionList[i].OPTION_NAME,
+                SERVICE_REQUEST_FORM_TYPE_ID: serviceRequestCategoryOptionList[i].SERVICE_REQUEST_FORM_TYPE_ID,
                 SERVICE_REQUEST_CATEGORY_OPTION_LEVEL_ID: serviceRequestCategoryOptionList[i].SERVICE_REQUEST_CATEGORY_OPTION_LEVEL_ID,
                 IS_CHECKED: !!serviceRequestCategoryOptionList[i].IS_CHECKED,
                 ASSOCIATED_FORM: serviceRequestCategoryOptionList[i].OPTION_NAME == 'Segmentation Request' ? 'SegmentationForm' : null,
-                FORM: !!serviceRequestCategoryOptionList[i].IS_CHECKED ? segmentationForms[serviceRequestCategoryOptionList[i].SERVICE_REQUEST_CATEGORY_OPTION_LEVEL_ID] : undefined,
+                FORM: !!serviceRequestCategoryOptionList[i].IS_CHECKED ? form : undefined,
                 FORM_STATUS_DETAIL_ID: !!serviceRequestCategoryOptionList[i].IS_CHECKED && segmentationForms[serviceRequestCategoryOptionList[i].SERVICE_REQUEST_CATEGORY_OPTION_LEVEL_ID] ?
                     segmentationForms[serviceRequestCategoryOptionList[i].SERVICE_REQUEST_CATEGORY_OPTION_LEVEL_ID].FORM_STATUS_DETAIL_ID
                     : undefined
@@ -2589,8 +2699,8 @@ function getExternalCofunding(hl5Id) {
     };
 }
 
-function getCategoryOption(hl5Id) {
-    return allocationCategoryOptionLevelLib.getHlCategoryOptionByLevelHlId(LEVEL_STRING, hl5Id);
+function getCategoryOption(hl5Id, fromCloneMethod) {
+    return allocationCategoryOptionLevelLib.getHlCategoryOptionByLevelHlId(LEVEL_STRING, hl5Id, fromCloneMethod);
 }
 
 function getCategoryOptionVersioned(hl5Id) {
@@ -2624,7 +2734,7 @@ function uiToServerParser(object, isClone) {
 
     data = JSON.parse(data);
 
-    data.BUDGET_DISTRIBUTION = data.BUDGET_DISTRIBUTION.REGIONS.concat(data.BUDGET_DISTRIBUTION.CENTRAL_TEAMS);
+    data.BUDGET_DISTRIBUTION = data.BUDGET_DISTRIBUTION.REGIONS;
     data.SALES = data.SALES.REGIONS.concat(data.SALES.CENTRAL_TEAMS.concat(data.SALES.OTHERS));
 
     if (!isClone) {
@@ -2714,7 +2824,7 @@ function serverToUiParser(object) {
 }
 
 function clone(cloneHl5Id, userId) {
-    var data = getHl5ById(cloneHl5Id);
+    var data = getHl5ById(cloneHl5Id, false, false, true).HL5;
     var currencyId = uploadLib.getDefaultCurrencyForBudgetYearByPath(data);
     var budgetYear = dataValidation.getBudgetYearByIdLevel(data.HL4_ID, 'HL4')[0];
     data.ENABLE_CRM_CREATION = budgetYear ? Number(budgetYear.ENABLE_CRM_CREATION) : 0;
@@ -2733,6 +2843,7 @@ function clone(cloneHl5Id, userId) {
     data.EURO_CONVERSION_ID = currencyId;
     data.SALE_CURRENCY_ID = currencyId;
     data.INHERITED_CREATION = 1;
+    data = util.completeFromDynamicForm(data.HL4_ID, "L5", data, false, false, true);
     var hl5_id = insertDataHl5(acronym, data);
     pathBL.insParentPath(LEVEL_STRING.toLowerCase(), hl5_id, data.HL4_ID, userId);
     data.HL5_ID = hl5_id;
@@ -2892,4 +3003,19 @@ function insertInCrmVersion(hl5Id) {
 
 function updEnableCrmCreation(hl5Id, flag) {
     return dataHl5.updEnableCrmCreation(hl5Id, flag);
+}
+
+function updateHl5Budget(reqBody, userId){
+    if(!reqBody){
+        throw ErrorLib.getErrors().BadRequest("The Object is not found", "hl5Services/handlePut/updateHl5Budget", L5_MSG_OBJECT_NOT_FOUND);
+    }
+
+    if (!reqBody.HL5_ID){
+        throw ErrorLib.getErrors().BadRequest("The Parameter ID is not found", "hl5Services/handlePut/updateHl5Budget", L5_MSG_INITIATIVE_NOT_FOUND);
+    }
+    if (!userId){
+        throw ErrorLib.getErrors().BadRequest("The Parameter User ID is not found", "hl5Services/handlePut/updateHl5Budget", L5_MSG_USER_NOT_FOUND);
+    }
+
+    return dataHl5.updateHl5Budget(reqBody, userId);
 }

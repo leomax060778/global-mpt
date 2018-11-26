@@ -1,25 +1,21 @@
-PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::UPD_HL5_BUDGET"
-(
-	in in_hl5_budget_id bigint,
-	in in_organization_id bigint,
-	in in_percentage decimal(19, 6),
-	in in_organization_type tinyint,
-	in in_modified_user_id bigint,
-	out out_result bigint
-) 
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::UPD_HL5_BUDGET" (
+    IN in_hl5_id BIGINT,
+    IN in_allow_budget_zero TINYINT,
+    IN in_in_budget DECIMAL(19,6),
+    IN in_modified_user_id BIGINT,
+    OUT out_result BIGINT
+)
 	LANGUAGE SQLSCRIPT
 	SQL SECURITY INVOKER 
-	DEFAULT SCHEMA "MKTG_PLANNING_TOOL" AS
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL" 
+	AS
 BEGIN
-
-	UPDATE HL5_BUDGET
-	SET
-	organization_id = in_organization_id,
-	percentage = in_percentage,
-	organization_type = in_organization_type,
-	modified_user_id = in_modified_user_id,
-	modified_date_tz = CURRENT_TIMESTAMP
-	where hl5_budget_id = in_hl5_budget_id;
-	
-	SELECT ::ROWCOUNT INTO out_result FROM DUMMY;
+    UPDATE HL5
+    SET ALLOW_BUDGET_ZERO = in_allow_budget_zero,
+        BUDGET = in_in_budget,
+        MODIFIED_USER_ID = in_modified_user_id,
+        MODIFIED_DATE_TZ = CURRENT_TIMESTAMP
+    WHERE HL5_ID = in_hl5_id;
+    
+    SELECT ::ROWCOUNT INTO out_result FROM DUMMY;
 END;

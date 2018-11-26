@@ -16,6 +16,7 @@ var spGET_COUNT_HL5_BY_HL4_ID = "GET_COUNT_HL5_BY_HL4_ID";
 var spGET_COUNT_HL5_HL6_IN_CRM_BY_HL4_ID = "GET_COUNT_HL5_HL6_IN_CRM_BY_HL4_ID";
 var GET_IMPLEMENT_EXECUTION_LEVEL_BY_HL4_ID = "GET_IMPLEMENT_EXECUTION_LEVEL_BY_HL4_ID";
 var GET_HL4_BY_BUDGET_YEAR = "GET_HL4_BY_BUDGET_YEAR";
+var GET_HL4_KPI_SUMMARY = "GET_HL4_KPI_SUMMARY";
 
 var spInsertHl4 = "INS_HL4";
 var spInsertHl4CategoryOption = "INS_HL4_CATEGORY_OPTION";
@@ -27,6 +28,7 @@ var spSetHl4InBudget = "HL4_CHANGE_IN_BUDGET";
 var spSetHl4OutBudget = "HL4_CHANGE_OUT_BUDGET";
 
 var spUpdateHl4 = "UPD_HL4";
+var UPD_HL4_BUDGET = "UPD_HL4_BUDGET";
 var spUpdateHl4CategoryOption = "UPD_HL4_CATEGORY_OPTION";
 var spUpdateHl4CRMBinding = "UPD_HL4_CHANGED_FIELDS";
 
@@ -158,6 +160,19 @@ function getHl4ByBudgetYear(hl4Id) {
     return db.extractArray(rdo.out_result);
 }
 
+function getHl4KpiSummary(hl3Id){
+
+    if(hl3Id){
+        var parameters = {
+            in_hl3_id: hl3Id
+        };
+        var result = db.executeProcedureManual(GET_HL4_KPI_SUMMARY, parameters);
+        return db.extractArray(result.out_result);
+    }
+    return null;
+
+}
+
 function insertHl4(reqBody, userId) {
     var params = {};
 
@@ -227,6 +242,15 @@ function updateHl4(reqBody, userId) {
 
     var rdo = db.executeScalarManual(spUpdateHl4, params, 'out_result');
     return rdo;
+}
+
+function updateBudget(hl4Id,budget,userId) {
+    var parameters = {
+        in_hl4_id: hl4Id,
+        in_updated_budget: budget,
+        in_user_id: userId
+    };
+    return db.executeScalarManual(UPD_HL4_BUDGET, parameters, "out_result");
 }
 
 function updateHl4CategoryOption(parameters) {

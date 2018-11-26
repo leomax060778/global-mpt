@@ -7,7 +7,8 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_USERS_BY_HL2
 	    LAST_NAME nvarchar(255),
 	    EMAIL nvarchar(255),
 	    PHONE nvarchar(255),
-	    ROLE_NAME nvarchar(255)),
+	    ROLE_NAME nvarchar(255),
+	    ROLE_ID bigint),
 	OUT users_out TABLE(
 	    USER_ID bigint,
         USER_NAME nvarchar(255),
@@ -15,7 +16,8 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_USERS_BY_HL2
         LAST_NAME nvarchar(255),
         EMAIL nvarchar(255),
         PHONE nvarchar(255),
-        ROLE_NAME nvarchar(255)
+        ROLE_NAME nvarchar(255),
+        ROLE_ID bigint
         )
 )
  
@@ -35,7 +37,8 @@ users_in =  SELECT DISTINCT u.user_id,
                             u.LAST_NAME,
                             u.EMAIL,
                             u.PHONE,
-                            role.NAME AS ROLE_NAME
+                            role.NAME AS ROLE_NAME,
+                            role.role_id
             FROM USER u
                 INNER JOIN HL2_USER hl2User ON hl2User.user_id=u.user_id
                 INNER JOIN USER_ROLE userRole ON userRole.user_id = u.user_id
@@ -52,7 +55,8 @@ users_out = SELECT DISTINCT u.user_id,
                             u.LAST_NAME,
                             u.EMAIL,
                             u.PHONE,
-                            role.NAME AS ROLE_NAME
+                            role.NAME AS ROLE_NAME,
+                            role.role_id
             FROM HL1_USER L1
                 INNER JOIN user u ON L1.user_id = u.user_id
                 INNER JOIN USER_ROLE userRole ON userRole.user_id = u.user_id

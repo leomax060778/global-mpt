@@ -1,6 +1,7 @@
 PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::UPD_SERVICE_REQUEST_OPTION" (
 	IN in_option_id BIGINT,
 	IN in_name NVARCHAR(255),
+	IN in_service_request_form_type_id BIGINT,
 	IN in_user_id BIGINT,
 	OUT out_result BIGINT
 )
@@ -11,6 +12,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::UPD_SERVICE_REQU
 BEGIN
         UPDATE SERVICE_REQUEST_OPTION
         SET name = in_name,
+            service_request_form_type_id = in_service_request_form_type_id,
             modified_date_tz = CURRENT_TIMESTAMP,
             modified_user_id = in_user_id
         WHERE service_request_option_id = in_option_id;

@@ -1,0 +1,23 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::DEL_PLANNING_PURPOSE_OPTION_RELATIONSHIP" (
+    IN planningPurposeOptionRelation TABLE(
+                in_planning_purpose_option_id bigint,
+        	    in_user_id bigint
+        		),
+    OUT out_result bigint
+)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER 
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL" AS
+BEGIN
+    UPDATE PLANNING_PURPOSE_OPTION SET
+        PLANNING_PURPOSE_ID = NULL,
+        MODIFIED_USER_ID = T.IN_USER_ID,
+        MODIFIED_DATE_TZ = CURRENT_TIMESTAMP
+
+    FROM PLANNING_PURPOSE_OPTION, (
+        SELECT IN_PLANNING_PURPOSE_OPTION_ID, IN_USER_ID FROM :planningPurposeOptionRelation
+    ) T
+    WHERE PLANNING_PURPOSE_OPTION_ID = T.IN_PLANNING_PURPOSE_OPTION_ID;
+
+	SELECT ::ROWCOUNT INTO out_result FROM DUMMY;
+END;

@@ -111,11 +111,12 @@ function getAssignedOptionByCategoryIdByLevelId(categoryId, levelId){
 	return db.extractArray(result.out_result);
 }
 
-function getAllocationOptionCountByCategoryIdLevelId(categoryId, level){
+function getAllocationOptionCountByCategoryIdLevelId(categoryId, level, hl4_id){
 	if(categoryId && level){
 		var params = {
 			'in_hl_id':hierarchyLevel[level],
-			'in_category_id': categoryId
+			'in_category_id': categoryId,
+			'in_hl4_id': hl4_id || 0
 		};
 		return db.executeScalarManual(GET_ALLOCATION_OPTION_COUNT_BY_CATEGORY_ID_HL_ID, params, "out_result");
 	}

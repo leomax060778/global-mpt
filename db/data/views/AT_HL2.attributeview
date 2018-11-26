@@ -55,6 +55,10 @@
       <descriptions defaultDescription="MODIFIED_DATE_TZ"/>
       <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL2" columnName="MODIFIED_DATE_TZ"/>
     </attribute>
+    <attribute id="VERSION" order="14" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="VERSION"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL2" columnName="VERSION"/>
+    </attribute>
   </attributes>
   <calculatedAttributes/>
   <privateDataFoundation>

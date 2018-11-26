@@ -1,0 +1,21 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::UPD_HL5_LEGACY_BUDGET" (
+	IN in_hl5_id bigint,
+	IN in_user_id bigint,
+	IN in_updated_budget DECIMAL(19, 6),
+	IN in_allow_budget_zero TINYINT,
+	OUT out_result bigint
+	)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL" AS
+BEGIN
+	UPDATE HL5_LEGACY SET
+	HL5_LEGACY.modified_date_tz = CURRENT_TIMESTAMP
+    ,HL5_LEGACY.modified_user_id = in_user_id
+    ,HL5_LEGACY.budget = in_updated_budget
+    ,HL5_LEGACY.allow_budget_zero = in_allow_budget_zero
+	WHERE HL5_LEGACY.hl5_legacy_id = in_hl5_id;
+
+	SELECT ::ROWCOUNT INTO out_result FROM DUMMY;
+
+END;

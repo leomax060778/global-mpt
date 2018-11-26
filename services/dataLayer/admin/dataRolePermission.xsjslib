@@ -56,32 +56,29 @@ function existsRolePermission(roleId, resourceId, permissionId) {
 	return exists;
 }
 
-function insertRolePermission(roleId, resourceId, permissionId, enabled,
-		createUser) {
+function insertRolePermission(roleId, resourceId, permissionId, enabled, createUser, enable_create) {
 	var parameters = {};
 	parameters.in_role_id = roleId;
 	parameters.in_resource_id = resourceId;
 	parameters.in_permission_id = permissionId;
 	parameters.in_enabled = enabled;
 	parameters.in_created_user_id = createUser;
+	parameters.in_enable_create = enable_create;
 
-	return db.executeScalarManual(spInsertRolePermission, parameters,
-			"out_role_permission_id");
+	return db.executeScalarManual(spInsertRolePermission, parameters, "out_role_permission_id");
 }
 
-function updateRolePermission(roleId, resourceId, permissionId, enabled,
-		modUser) {
+function updateRolePermission(roleId, resourceId, permissionId, enabled, modUser, enable_create) {
 	var parameters = {};
 	parameters.in_role_id = roleId;
 	parameters.in_resource_id = resourceId;
 	parameters.in_permission_id = permissionId;
 	parameters.in_enabled = enabled;
 	parameters.in_user_id = modUser;
+	parameters.in_enable_create = enable_create;
 
-	return db.executeScalarManual(spUpdateRolePermission, parameters,
-			"out_result");
+	return db.executeScalarManual(spUpdateRolePermission, parameters, "out_result");
 }
-
 
 function getResourcePermissionByRole(roleId) {
     var params = {'in_role_id': roleId};

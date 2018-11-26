@@ -16,7 +16,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL1_BY_USER_
 		, REGION_NAME NVARCHAR(255)
 		, BUDGET_YEAR BIGINT
 		, budget DECIMAL(19, 2)
-        , team_type_id BIGINT
+        , planning_purpose_id BIGINT
         , implement_execution_level TINYINT
         , crt_related TINYINT
 		)
@@ -46,7 +46,7 @@ BEGIN
 		, R.REGION_NAME
 		, BUY.BUDGET_YEAR
 		, HL1.budget
-        , HL1.TEAM_TYPE_ID
+        , HL1.planning_purpose_id
         , HL1.implement_execution_level
         , HL1.CRT_RELATED
 	FROM HL1

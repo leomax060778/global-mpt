@@ -1,0 +1,15 @@
+FUNCTION "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_SHOW_ADDITIONAL_FIELDS" (
+	IN in_field_name NVARCHAR(255),
+	IN in_default_value NVARCHAR(255)
+) 
+	RETURNS result TINYINT
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER AS
+BEGIN
+	IF coalesce(in_field_name, '') = 'CAMPAIGN_TYPE_ID'
+	THEN 
+		SELECT SHOW_ADDITIONAL_FIELDS INTO result FROM "MKTG_PLANNING_TOOL"."CAMPAIGN_TYPE" WHERE CAMPAIGN_TYPE_ID = in_default_value;
+	ELSE
+            select 0 into result from dummy;
+    END IF;
+END;

@@ -81,6 +81,9 @@ function handleGet(parameters, userSessionID) {
         case "GET_SEGMENTATION_TACTIC_BY_ID":
             rdo = blSegmentation.getSegmentationTacticById(httpUtil.getUrlParameterByName("ENTITY_ID"));
             break;
+        case "GET_SERVICE_REQUEST_FORM_TYPE":
+            rdo = blSegmentation.getServiceRequestFormType();
+            break;
         default:
             throw ErrorLib.getErrors().BadRequest("","segmentationService/handleGet","invalid parameter name.");
             break;

@@ -5,12 +5,17 @@ var httpUtil = mapper.getHttp();
 var businessLavel3 = mapper.getLevel3();
 var ErrorLib = mapper.getErrors();
 var config = mapper.getDataConfig();
+var blRolePermission = mapper.getRolePermission();
+var blDynamicForm = mapper.getDynamicFormLib();
+
 /** *************************************** */
+
 var section = "FOR_SEARCH";
 var GET_ALL_HL3 = "GET_ALL_HL3";
 var GET_BY_HL3_ID = "GET_BY_HL3_ID";
 var GET_DATA_KPI = "GET_DATA_KPI";
 var categories = "HL2_CATEGORIES";
+var GET_DYNAMIC_FORM = "GET_DYNAMIC_FORM";
 
 // Main function
 function processRequest() {
@@ -19,7 +24,9 @@ function processRequest() {
 
 // function to manage an post request
 function handlePost(reqBody, userSessionID) {
+    blRolePermission.checkEspecialPermission(userSessionID, "Create", config.level3());
     businessLavel3.checkPermission(userSessionID, null ,reqBody.IN_HL2_ID);
+    businessLavel3.checkEspecialPermission(userSessionID, "Create");
 	var rdo = businessLavel3.insertHl3(reqBody, userSessionID);
 	return httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
 }
@@ -60,6 +67,16 @@ function handleGet(parameters, userSessionID) {
 		} else if (parameters[0].name === GET_DATA_KPI) {
 			rdo = businessLavel3.getLevel3Kpi(httpUtil.getUrlParameters().get("HL2_ID"), userSessionID);
 			httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
+		} else if(parameters[0].name == "METHOD" && method == "GET_DYNAMIC_FORM"){
+			//DYNAMIC FORM GET
+			var rdo = blDynamicForm.getFormByRoleId("L3", null, true, userSessionID);
+			httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
+
+		} else if(parameters[0].name == "METHOD" && httpUtil.getUrlParameters().get("METHOD") == "GET_DYNAMIC_FORM_BY_BUDGET_YEAR"){
+			var budgetYearId = httpUtil.getUrlParameters().get("BUDGET_YEAR_ID");
+			var rdo = blDynamicForm.getFormByRoleIdBudgetYearId("L3", budgetYearId, null, true, userSessionID);
+
+			httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
 		} else if (parameters[0].value === section){
 			budgetYearId = httpUtil.getUrlParameters().get("BUDGET_YEAR_ID") || null;
 			regionId = httpUtil.getUrlParameters().get("REGION_ID") || null;
@@ -69,7 +86,8 @@ function handleGet(parameters, userSessionID) {
 			rdo = businessLavel3.getLevel3ForSearch(userSessionID,budgetYearId,regionId,subRegionId,offset,limit);
 			httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
 		} else if (parameters[0] && parameters[0].value === 'ALL'){
-            rdo = businessLavel3.getAllHl3GroupByHl1(budgetYearId, regionId, subRegionId);
+			var generalFilter = httpUtil.getUrlParameters().get("GENERAL_FILTER") || null;
+            rdo = businessLavel3.getAllHl3GroupByHl1(budgetYearId, regionId, subRegionId, generalFilter);
             httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
         } else if (parameters[0] && parameters[0].value === 'BY_USER'){
             rdo = businessLavel3.getHl3ByUserGroupByHl1(userSessionID, budgetYearId, regionId, subRegionId);
@@ -87,9 +105,19 @@ function handleGet(parameters, userSessionID) {
 }
 
 function handlePut(reqBody,userSessionID) {
-    businessLavel3.checkPermission(userSessionID, null, reqBody.HL3_ID);
-    var rdo = businessLavel3.updateHl3(reqBody, userSessionID);
-    httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
+    var method = httpUtil.getUrlParameters().get("METHOD");
+    var rdo = null;
+    var hl3Id = reqBody.HL3_ID || reqBody.ID;
+    businessLavel3.checkPermission(userSessionID, null, hl3Id);
+    switch (method) {
+        case 'UPDATE_BUDGET':
+            rdo =  businessLavel3.updateBudget(hl3Id,reqBody.BUDGET,userSessionID);
+            break;
+        default:
+            rdo =  businessLavel3.updateHl3(reqBody,userSessionID);
+    }
+
+    return httpUtil.handleResponse(rdo,httpUtil.OK,httpUtil.AppJson);
 }
 
 // function to manage an del request

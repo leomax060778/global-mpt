@@ -10,6 +10,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL3_CATEGORY
     , category_option_level_id integer
     , amount decimal(19,2)
     , make_category_mandatory tinyint
+    , amount_value decimal(19,6)
 	)
 ) 
 	LANGUAGE SQLSCRIPT
@@ -28,6 +29,7 @@ BEGIN
 	, hl3CO.allocation_category_option_level_id as category_option_level_id
 	, hl3CO.amount
 	, ACOL.make_category_mandatory
+	, hl3CO.amount_value
 	FROM hl3_category_option hl3CO
 	inner join allocation_category_option_level ACOL on hl3CO.allocation_category_option_level_id = ACOL.allocation_category_option_level_id
 	AND ACOL.enabled = 1 AND ACOL.deleted = 0
@@ -46,6 +48,7 @@ BEGIN
                         , ACOL.allocation_category_option_level_id as category_option_level_id
                         , 0 as amount
                         , ACOL.make_category_mandatory
+                        , 0 as amount_value
 	            from allocation_category_option_level ACOL
                 inner join allocation_category ac on ACOL.allocation_category_id = ac.allocation_category_id
                 inner join allocation_option ao on acol.allocation_option_id = ao.allocation_option_id
@@ -64,6 +67,7 @@ BEGIN
                            , CATEGORY_OPTION_LEVEL_ID
                            , AMOUNT
                            , MAKE_CATEGORY_MANDATORY
+                           , AMOUNT_VALUE
                     FROM
                     ((select CATEGORY_ID
                             , HL3_ID
@@ -74,6 +78,7 @@ BEGIN
                             , CATEGORY_OPTION_LEVEL_ID
                             , AMOUNT
                             , MAKE_CATEGORY_MANDATORY
+                            , AMOUNT_VALUE
                     from :va_hl3_category_option)
                     UNION
                     (select CATEGORY_ID
@@ -85,6 +90,7 @@ BEGIN
                            , CATEGORY_OPTION_LEVEL_ID
                            , AMOUNT
                            , MAKE_CATEGORY_MANDATORY
+                           , AMOUNT_VALUE
                      from :va_category))
                      ORDER BY CATEGORY_NAME, OPTION_NAME;
 END;
