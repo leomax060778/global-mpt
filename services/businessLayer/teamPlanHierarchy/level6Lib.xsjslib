@@ -215,6 +215,9 @@ function getHl6ById(hl6Id, fromCloneMethod) {
     }
 
 	var hl6 = JSON.parse(JSON.stringify(dataHl6.getHl6ById(hl6Id)));
+	var isLegacy = !!hl6.HL5_LEGACY_ID;
+
+	var parentId = isLegacy ? hl6.HL5_LEGACY_ID : hl6.HL5_ID;
 
 	var defaultKpi = {
 		COMMENTS : '',
@@ -273,7 +276,7 @@ function getHl6ById(hl6Id, fromCloneMethod) {
 
     return {
         HL6: hl6,
-        DYNAMIC_FORM: blDynamicForm.getFormByParentId(hl6.HL5_ID, 'L6', hl6.DYNAMIC_FORM_ID, true)
+        DYNAMIC_FORM: blDynamicForm.getFormByParentId(parentId, 'L6', hl6.DYNAMIC_FORM_ID, true, isLegacy)
     };
 }
 

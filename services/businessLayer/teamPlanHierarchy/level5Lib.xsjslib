@@ -219,6 +219,7 @@ function getHl5ById(hl5Id, carryOver, isLegacy, fromCloneMethod) {
     var hl5 = JSON.parse(JSON.stringify(hl5Info));
     var result = {};
     var levelString = 'L5';
+    var levelId = null;
     var dynamicFormId = null;
     if(!isLegacy) {
         if (Number(hl5.HL5_STATUS_DETAIL_ID) === HL5_STATUS.DELETED_IN_CRM) {
@@ -227,6 +228,7 @@ function getHl5ById(hl5Id, carryOver, isLegacy, fromCloneMethod) {
         hl5.TARGET_KPIS = !hl5.FORECAST_AT_L5 ? expectedOutcomesLib.getAggregatedKPIByHl5Id(hl5Id) : expectedOutcomesLib.getExpectedOutcomesByHl5Id(hl5Id, hl5.HL4_ID);
         hl5.FORECAST_AT_L5 = !!Number(hl5.FORECAST_AT_L5);
         if (!carryOver) {
+            levelId = hl5.HL4_ID;
             var internalCofunding = getInternalCofunding(hl5Id);
             var externalCofunding = getExternalCofunding(hl5Id);
             hl5.BUDGET_EUROS = (Number(hl5.BUDGET));
@@ -276,13 +278,13 @@ function getHl5ById(hl5Id, carryOver, isLegacy, fromCloneMethod) {
             hl5.ALLOW_BUDGET_ZERO = 0;
             hl5.STATUS = undefined;
             levelString = 'L6';
+            levelId = hl5.HL5_ID;
         }
         hl5 = serverToUiParser(hl5);
 
-        result = {
-            HL5: hl5,
-            DYNAMIC_FORM: blDynamicForm.getFormByParentId(hl5.HL5_ID, levelString, dynamicFormId, true, isLegacy)
-        }
+        result.HL5 = hl5;
+        result.DYNAMIC_FORM = blDynamicForm.getFormByParentId(levelId, levelString, dynamicFormId, true, isLegacy);
+
     } else {
         hl5.BUDGET = 0;
         hl5.HL5_CRM_DESCRIPTION = undefined;

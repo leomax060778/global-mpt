@@ -68,7 +68,8 @@ var GENERAL_FILTER_MAP = {
     PRODUCT_MARKETING: 2,
     FUNCTIONAL_TEAMS: 3,
     COMMUNICATIONS: 4,
-    BUSINESS_STRATEGY_CULTURE: 5
+    BUSINESS_STRATEGY_CULTURE: 5,
+    OTHER_MARKETING: 6
 };
 
 // Get all Level 3 data by level 2 id
@@ -317,7 +318,7 @@ function getHl3ByPlanningPurpose(userId, isSA, budgetYearId, generalFilter) {
                         };
                     }
 
-                    if (!collection[item.PLANNING_PURPOSE_ID].CHILDREN[item.HL1_ID].CHILDREN[item.HL2_ID]) {
+                    if (!collection[item.PLANNING_PURPOSE_ID].CHILDREN[item.HL1_ID].CHILDREN[item.HL2_ID] && !!item.HL2_ID) {
                         collection[item.PLANNING_PURPOSE_ID].CHILDREN[item.HL1_ID].CHILDREN[item.HL2_ID] = {
                             HL2_ID: item.HL2_ID
                             , PATH: item.HL2_PATH
@@ -326,11 +327,14 @@ function getHl3ByPlanningPurpose(userId, isSA, budgetYearId, generalFilter) {
                         };
                     }
 
-                    collection[item.PLANNING_PURPOSE_ID].CHILDREN[item.HL1_ID].CHILDREN[item.HL2_ID].CHILDREN.push({
-                        HL3_ID: item.HL3_ID,
-                        PATH: item.HL3_PATH,
-                        HL3_DESCRIPTION: item.HL3_DESCRIPTION
-                    });
+                    if(!!item.HL3_ID){
+                        collection[item.PLANNING_PURPOSE_ID].CHILDREN[item.HL1_ID].CHILDREN[item.HL2_ID].CHILDREN.push({
+                            HL3_ID: item.HL3_ID,
+                            PATH: item.HL3_PATH,
+                            HL3_DESCRIPTION: item.HL3_DESCRIPTION
+                        });
+                    }
+
                 // }
             }
         });

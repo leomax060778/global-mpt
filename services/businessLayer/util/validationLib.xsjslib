@@ -45,10 +45,12 @@ function validateActualDatesRange(campaignTypeId, campaignSubTypeId, Actual_Star
 }
 
 function getMinMaxDateByIdAndLevel(HlId, Level){
-	var bYear = dataValidation.getBudgetYearByIdLevel(HlId, Level, 0);
-    var minDate = new Date(bYear[0].BUDGET_YEAR, 0, 1);
-    var maxDate = new Date(bYear[0].BUDGET_YEAR, 11, 31);
-
+	var bYear = dataValidation.getBudgetYearByIdLevel(HlId, Level, 0)[0];
+    //var minDate = new Date(bYear.BUDGET_YEAR, 0, 1);
+    //var maxDate = new Date(bYear.BUDGET_YEAR, 11, 31);
+    // throw JSON.stringify(bYear);
+    var minDate = new Date(bYear.START_DATE);
+    var maxDate = new Date(bYear.END_DATE);
     return {MIN_DATE : formatDateToString(minDate), MAX_DATE: formatDateToString(maxDate)};
 }
 
