@@ -191,10 +191,10 @@ BEGIN
                              '' AS MARKETING_ACTIVITYID, -- HL4 doesn't have this field
                              BO.CRM_KEY AS BUSINESS_OWNER,
                              PR.CRM_KEY AS PRIORITY,
-                             '20180101010000' AS PLANSTART , -- HL4 doesn't have this field
-                             '20181231010000' AS PLANFINISH, -- HL4 doesn't have this field
-                             '20180101010000' AS ACTUALSTART , -- HL4 doesn't have this field
-                             '20181231010000' AS ACTUALFINISH, -- HL4 doesn't have this field
+                             CONCAT(CONCAT('20',(SELECT TOP 1 BUDGET_YEAR FROM :VA_PATH_TABLE)), '0101010000') AS PLANSTART , -- HL4 doesn't have this field
+                             CONCAT(CONCAT('20',(SELECT TOP 1 BUDGET_YEAR FROM :VA_PATH_TABLE)), '1231010000') AS PLANFINISH, -- HL4 doesn't have this field
+                             CONCAT(CONCAT('20',(SELECT TOP 1 BUDGET_YEAR FROM :VA_PATH_TABLE)), '0101010000') AS ACTUALSTART , -- HL4 doesn't have this field
+                             CONCAT(CONCAT('20',(SELECT TOP 1 BUDGET_YEAR FROM :VA_PATH_TABLE)), '1231010000') AS ACTUALFINISH, -- HL4 doesn't have this field
                              '' AS SHOW_CALENDAR, -- HL4 doesn't have this field
                              SO.CRM_KEY AS MKT_ORG,
                              DC.CRM_KEY AS DIS_CHANNEL,
