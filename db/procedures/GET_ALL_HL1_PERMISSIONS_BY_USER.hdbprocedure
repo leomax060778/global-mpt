@@ -4,6 +4,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_ALL_HL1_PERM
 	    LEVEL integer,
 		LEVEL_ID bigint
 		, acronym nvarchar(25)
+		, description nvarchar(255)
 		, permission tinyint
 		)
 )
@@ -14,7 +15,14 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_ALL_HL1_PERM
 BEGIN
 
 	out_result =
-	SELECT 1 as LEVEL, HL1.HL1_ID AS LEVEL_ID, HL1.ACRONYM, CASE WHEN COALESCE(HL1_USER.USER_ID,0) > 0 THEN 1 ELSE 0 END AS PERMISSION
+	SELECT  1 as LEVEL,
+	        HL1.HL1_ID AS LEVEL_ID,
+	        HL1.ACRONYM,
+	        HL1.DESCRIPTION,
+	        CASE WHEN COALESCE(HL1_USER.USER_ID,0) > 0
+	            THEN 1
+	            ELSE 0
+	            END AS PERMISSION
     FROM HL1 LEFT OUTER JOIN HL1_USER ON (HL1.HL1_ID = HL1_USER.HL1_ID AND HL1_USER.USER_ID = in_user_id)
     WHERE HL1.ENABLED = 1 AND HL1.DELETED = 0
     ORDER BY HL1.ACRONYM;

@@ -8,6 +8,7 @@ var spGetHl4Byhl3Id = "GET_HL4_BY_HL3_ID";
 var spGetHl4ById = "GET_HL4_BY_ID";
 var spGetHl4CarryOverById = "GET_HL4_CARRY_OVER_BY_ID";
 var spGetHl4ByAcronym = "GET_HL4_BY_ACRONYM";
+var spGetAllHl4ByAcronym = "GET_ALL_HL4_BY_ACRONYM";
 var spGetCountHl5ByHl4Id = "GET_COUNT_HL5_BY_HL4_ID";
 var spGetHl4StatusByHl4Id = "GET_HL4_STATUS_BY_HL4_ID";
 var spGetHl4ForSerach = "GET_HL4_FOR_SEARCH";
@@ -17,6 +18,7 @@ var spGET_COUNT_HL5_HL6_IN_CRM_BY_HL4_ID = "GET_COUNT_HL5_HL6_IN_CRM_BY_HL4_ID";
 var GET_IMPLEMENT_EXECUTION_LEVEL_BY_HL4_ID = "GET_IMPLEMENT_EXECUTION_LEVEL_BY_HL4_ID";
 var GET_HL4_BY_BUDGET_YEAR = "GET_HL4_BY_BUDGET_YEAR";
 var GET_HL4_KPI_SUMMARY = "GET_HL4_KPI_SUMMARY";
+var GET_HL4_PATH_BY_USER_ID = "GET_HL4_PATH_BY_USER_ID";
 
 var spInsertHl4 = "INS_HL4";
 var spInsertHl4CategoryOption = "INS_HL4_CATEGORY_OPTION";
@@ -45,6 +47,8 @@ var spGetHl4ForHl4Validation = "GET_HL4_FOR_HL4_VALIDATION";
 var spGetCategoryForHl4Validation = "GET_CATEGORY_OPTION_FOR_HL4_VALIDATION";
 var spResetHl4CategoryOptionUpdated = "RESET_HL4_CATEGORY_OPTION_UPDATED";
 var GET_HL4_FOR_EMAIL = "GET_HL4_FOR_EMAIL";
+var spGET_DUPLICATED_HL4_CRM_PATH_BY_HL4_ID = "GET_DUPLICATED_HL4_CRM_PATH_BY_HL4_ID";
+var GET_HL4_PATH_BY_USER_ID_GLOBAL_REGION = "GET_HL4_PATH_BY_USER_ID_GLOBAL_REGION";
 
 var UPD_DELETION_REASON = "UPD_HL4_DELETION_REASON";
 var INS_HL4_IN_CRM_VERSION = "INS_HL4_IN_CRM_VERSION";
@@ -111,12 +115,31 @@ function getHl4ByAcronym(acronym, hl2_id) {
         return {};
 }
 
+function getAllHl4ByAcronym(acronym, hl4Id) {
+    var parameters = {};
+    parameters.in_acronym = acronym.toUpperCase();
+    parameters.in_hl4_id = hl4Id || 0;
+
+    var result = db.executeProcedureManual(spGetAllHl4ByAcronym, parameters);
+    return db.extractArray(result.out_result);
+}
+
 function getHl4StatusByHl4Id(hl4_id) {
     if (hl4_id != "") {
         var rdo = db.executeProcedureManual(spGetHl4StatusByHl4Id, {'in_hl4_id': hl4_id});
         return db.extractArray(rdo.out_result)[0];
     }
     return null;
+}
+
+function getDuplicatedHl4CRMPath(hl4Id, hl3Id, hl4Acronym){
+    var params = {};
+    params.in_hl4_id = hl4Id || 0;
+    params.in_hl3_id = Number(hl3Id);
+    params.in_hl4_acronym = hl4Acronym;
+
+    var result = db.executeProcedure(spGET_DUPLICATED_HL4_CRM_PATH_BY_HL4_ID, params);
+    return db.extractArray(result.out_result);
 }
 
 function getCountHl4Childrens(hl4_id) {
@@ -171,6 +194,30 @@ function getHl4KpiSummary(hl3Id){
     }
     return null;
 
+}
+
+function getHl4PathByUserId(userId, isSA, budgetYearId, regionId, subRegionId) {
+    var parameters = {
+        in_user_id: userId,
+        in_is_super_Admin: isSA ? 1 : 0,
+        in_budget_year_id:  budgetYearId,
+        in_region_id:  regionId,
+        in_subregion_id:  subRegionId
+    };
+
+    var list = db.executeProcedureManual(GET_HL4_PATH_BY_USER_ID, parameters);
+    return db.extractArray(list.out_result);
+}
+
+function getHl4ByPlanningPurpose(userId, isSA, budgetYearId){
+    var parameters = {
+        in_user_id: userId,
+        in_is_super_Admin: isSA ? 1 : 0,
+        in_budget_year_id:  budgetYearId
+    };
+
+    var list = db.executeProcedureManual(GET_HL4_PATH_BY_USER_ID_GLOBAL_REGION, parameters);
+    return db.extractArray(list.out_result);
 }
 
 function insertHl4(reqBody, userId) {

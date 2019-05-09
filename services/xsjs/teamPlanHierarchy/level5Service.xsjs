@@ -59,7 +59,7 @@ function handleGet(params, userId) {
     } else if (in_hl5_id) {
         var isCarryOver = httpUtil.getUrlParameters().get("METHOD") == "CARRY_OVER";
         var isLegacy = httpUtil.getUrlParameters().get("METHOD") == "NEW_LEGACY";
-        result = hl5.getHl5ById(in_hl5_id, isCarryOver, isLegacy);
+        result = hl5.getHl5ById(in_hl5_id, isCarryOver, isLegacy, userId);
     } else if (search_section && search_section == section){
         budgetYearId = httpUtil.getUrlParameters().get("BUDGET_YEAR_ID") || null;
         var regionId = httpUtil.getUrlParameters().get("REGION_ID") || null;

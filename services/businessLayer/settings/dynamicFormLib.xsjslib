@@ -9,6 +9,7 @@ var dataHl2 = mapper.getDataLevel2();
 var roleLib = mapper.getRole();
 var dataUserRole = mapper.getDataUserRole();
 var budgetYearLib = mapper.getBudgetYear();
+var dataValidation = mapper.getDataValidation();
 
 /** ***********END INCLUDE LIBRARIES*************** */
 
@@ -25,12 +26,27 @@ var PARENT_IS_MISSING = "Parent was not found.";
 var WRONG_LEVEL = "Level not found.";
 var ERRROR_NO_ASSOCIATED_DYNAMIC_FORM = "There is no dynamic form associated with the user role.";
 var ERROR_BUDGET_DISTRIBUTION = "The My Budget distribution percentage should be equal to 100%.";
-
+var ERROR_HL2_UNDEFINED = "The L2 can not be found";
+var ERROR_MISSING_INFORMATION = "The Filter Information to search for Dynamic Forms can not be found";
+var ERROR_USER_ID_UNDEFINED = "The User can not be found";
+var ERROR_PARENT_UNDEFINED = "The Parent Level can not be found";
+var ERROR_HIERARCHY_PARENT_UNDEFINED = "The Parent Hierarchy Level can not be found";
+var ERROR_ROLE_ID_UNDEFINED = "The User Role can not be found";
+var ERROR_BUDGET_YEAR_UNDEFINED = "The Budget Year can not be found";
 var HIERARCHY_LEVEL = util.getHierarchyLevelEnum();
 
 function isPlannificationLevel(levelId) {
     return HIERARCHY_LEVEL["HL1"] === levelId || HIERARCHY_LEVEL["HL2"] === levelId || HIERARCHY_LEVEL["HL3"] === levelId || HIERARCHY_LEVEL["HL4"] === levelId;
 }
+
+var HIERARCHY_LEVEL_MAP = {
+    1: 'HL4',
+    2: 'HL5',
+    3: 'HL6',
+    6: 'HL1',
+    5: 'HL2',
+    4: 'HL3'
+};
 
 /************** GET **************/
 
@@ -122,6 +138,131 @@ function getDynamicFormFieldsById(levelId, formUid, formId, isNewRecord, fromDyn
     } else {
         throw ErrorLib.getErrors().CustomError("", "", FORM_FIELDS_NOT_FOUND);
     }
+}
+
+/**
+ * Obtain the Dynamic Form ID configured for any new hierarchy level
+ * @param hierarchyLevelId {!number}: the hierarchy level id that requires the form
+ * @param filterInformation {!Object}: the necessary information to target the Dynamic Form.
+ * @param filterInformation.userId {?number}: required for L1/L2/L3/L4, the current user ID
+ * @param filterInformation.parentLevelId (?number): required for L2/L3/L4, ID of the parent level.
+ * @param filterInformation.parentHierarchyLevelId (?number): required for L1/L2/L3/L4, Hierarchy Level ID of the parent level.
+ * @param filterInformation.budgetYearId (?number): required for L1, ID of the Budget Year used to create de L1.
+ * @param filterInformation.hl2Id (?number): required for L5/L6, ID of the L2 related to search the Dynamic Form ID based on that.
+ * @returns {number|null}
+ */
+function getDynamicFormIdForNewRecords(hierarchyLevelId, filterInformation){
+    validateFilterInformation(hierarchyLevelId, filterInformation);
+    var result = null;
+
+    /** Divided in L5/L6 and others **/
+    switch(Number(hierarchyLevelId)){
+        case 2:
+        case 3:
+            //L5/L6, its corresponding Dynamic Form is stored in the HL2 table
+            result = getDynamicFormIdByHl2Id(hierarchyLevelId, filterInformation.hl2Id);
+            break;
+        default:
+            //L1/L2/L3/L4
+            var userRole = dataUserRole.getUserRoleByUserId(filterInformation.userId);
+
+            if(!userRole || userRole.length === 0){
+                throw ErrorLib.getErrors().CustomError("Role not found", "ROLE_ID not found", ERROR_ROLE_ID_UNDEFINED);
+            }
+
+            var budgetYear = filterInformation.budgetYearId ?
+                [{BUDGET_YEAR_ID: filterInformation.budgetYearId}]
+                : dataValidation.getBudgetYearByIdLevel(filterInformation.parentLevelId, HIERARCHY_LEVEL_MAP[filterInformation.parentHierarchyLevelId]);
+
+            if(!budgetYear || budgetYear.length === 0){
+                throw ErrorLib.getErrors().CustomError("Budget Year not found", "BUDGET_YEAR_ID not found", ERROR_BUDGET_YEAR_UNDEFINED);
+            }
+
+            result = getDynamicFormIdByRoleId(hierarchyLevelId, userRole[0].ROLE_ID, budgetYear[0].BUDGET_YEAR_ID);
+            break;
+    }
+
+    return result;
+}
+
+function validateFilterInformation(hierarchyLevelId, filterInformation){
+    //L1/L2/L3/L4
+    if(!filterInformation){
+        throw ErrorLib.getErrors().CustomError("Missing Information not found", "filterInformation Object not found", ERROR_MISSING_INFORMATION);
+    }
+
+    switch(Number(hierarchyLevelId)){
+        case 2:
+        case 3:
+            if(!filterInformation.hl2Id){
+                throw ErrorLib.getErrors().CustomError("L2 not found", "HL2_ID not found", ERROR_HL2_UNDEFINED);
+            }
+
+            break;
+        case 6:
+            if(!filterInformation.userId){
+                throw ErrorLib.getErrors().CustomError("User not found", "USER_ID not found", ERROR_USER_ID_UNDEFINED);
+            }
+            if(!filterInformation.budgetYearId){
+                throw ErrorLib.getErrors().CustomError("Budget Year not found", "budgetYearId not found", ERROR_BUDGET_YEAR_UNDEFINED);
+            }
+            break;
+        default:
+            if(!filterInformation.userId){
+                throw ErrorLib.getErrors().CustomError("User not found", "USER_ID not found", ERROR_USER_ID_UNDEFINED);
+            }
+            if(!filterInformation.parentLevelId){
+                throw ErrorLib.getErrors().CustomError("Parent Level not found", "parentLevelId not found", ERROR_PARENT_UNDEFINED);
+            }
+            if(!filterInformation.parentHierarchyLevelId){
+                throw ErrorLib.getErrors().CustomError("Parent Hierarchy Level not found", "parentHierarchyLevelId not found", ERROR_HIERARCHY_PARENT_UNDEFINED);
+            }
+
+            break;
+    }
+}
+
+function getDynamicFormIdByHl2Id(hierarchyLevelId, hl2Id){
+    var data = dataDynamicForm.getDynamicFormIdByHl2Id(hl2Id);
+    var result = null;
+
+    if(data){
+        if(Number(hierarchyLevelId) === 2){
+            result = data.DYNAMIC_FORM_ID_L5 || data.DEFAULT_DYNAMIC_FORM_ID_L5;
+        }else{
+            result = data.DYNAMIC_FORM_ID_L6 || data.DEFAULT_DYNAMIC_FORM_ID_L6;
+        }
+    }
+
+    return result;
+}
+
+function getDynamicFormIdByRoleId(hierarchyLevelId, roleId, budgetYearId){
+    var data = dataDynamicForm.getDynamicFormIdByRoleId(roleId, budgetYearId);
+    var result = null;
+    
+    if(data){
+        switch(Number(hierarchyLevelId)){
+            case 1:
+                //Level 4
+                result = data.DYNAMIC_FORM_ID_L4 || data.DEFAULT_DYNAMIC_FORM_ID_L4;
+                break;
+            case 6:
+                //Level 1
+                result = data.DYNAMIC_FORM_ID_L1 || data.DEFAULT_DYNAMIC_FORM_ID_L1;
+                break;
+            case 5:
+                //Level 2
+                result = data.DYNAMIC_FORM_ID_L2 || data.DEFAULT_DYNAMIC_FORM_ID_L2;
+                break;
+            case 4:
+                //Level 3
+                result = data.DYNAMIC_FORM_ID_L3 || data.DEFAULT_DYNAMIC_FORM_ID_L3;
+                break;
+        }
+    }
+
+    return result;
 }
 
 /** @Deprecated, use getFormByRoleAndBudgetYear instead **/
@@ -271,9 +412,10 @@ function getFormByParentId(parentId, level, formId, isNewRecord, isLegacyParent)
 
     if (!formId) {
         var hl2 = dataHl2.getHl2FormAssociatedByLevelHlId(LEVEL_STRING, parentId, Number(isLegacyParent) || 0);
-        if (!hl2) {
+        
+        if (!hl2 || (hl2 && !hl2['DYNAMIC_FORM_' + level + '_UID'])) {
             var defaultForms = getDefaultDynamicForm();
-            formUid = defaultForms[HIERARCHY_LEVEL[LEVEL_STRING]].DYNAMIC_FORM_UID;
+            formUid = defaultForms[HIERARCHY_LEVEL[LEVEL_STRING]]? defaultForms[HIERARCHY_LEVEL[LEVEL_STRING]].DYNAMIC_FORM_UID : null;
         } else {
             formUid = hl2['DYNAMIC_FORM_' + level + '_UID'];
         }
@@ -340,20 +482,23 @@ function getNewTargetKpi(arrTargetKpi, dynamicFormId, tabIsHidden) {
         for (var i = 0; i < arrTargetKpi.length; i++) {
             var kpiField = arrTargetKpi[i];
 
-            if (tabIsHidden || kpiField.HIDDEN) {
-                var defaultValue = Number(kpiField.DEFAULT_VALUE);
-                if (kpiField.FIELD_NAME === "COMMENTS") {
-                    defaultValue = defaultValue || kpiField.DEFAULT_VALUE || "";
-                }
-                var kpi = {};
-                kpi.DYNAMIC_FORM_ID = dynamicFormId;
-                kpi.DYNAMIC_FORM_FIELD_ID = kpiField.DYNAMIC_FORM_FIELD_ID;
-                kpi.DEFAULT_VALUE = defaultValue;
-                arrDynamicFormDefaultValue.push(kpi);
-
+            var defaultValue = Number(kpiField.DEFAULT_VALUE);
+            if (kpiField.FIELD_NAME === "COMMENTS") {
+                defaultValue = defaultValue || kpiField.DEFAULT_VALUE || "";
             }
+
+            //Object construction to insert in DYNAMIC_FORM_DEFAULT_VALUE even if there is not default value,
+            //because now we need to store de HIDDEN column always
+            var kpi = {};
+            kpi.DYNAMIC_FORM_ID = dynamicFormId;
+            kpi.DYNAMIC_FORM_FIELD_ID = kpiField.DYNAMIC_FORM_FIELD_ID;
+            kpi.DEFAULT_VALUE = defaultValue || null;
+            kpi.HIDDEN = !!kpiField.HIDDEN ? 1 : 0;
+
+            arrDynamicFormDefaultValue.push(kpi);
         }
     }
+
     return arrDynamicFormDefaultValue;
 }
 
@@ -363,15 +508,17 @@ function getNewBudgetSpendRequest(arrBudgetSpendRequest, dynamicFormId) {
         for (var i = 0; i < arrBudgetSpendRequest.length; i++) {
             var objBudget = arrBudgetSpendRequest[i];
 
-            if (objBudget.HIDDEN) {
-                var dataBudget = {};
-                dataBudget.DYNAMIC_FORM_ID = dynamicFormId;
-                dataBudget.DYNAMIC_FORM_FIELD_ID = objBudget.DYNAMIC_FORM_FIELD_ID;
-                dataBudget.DEFAULT_VALUE = objBudget.DEFAULT_VALUE;
-                arrDynamicFormDefaultValue.push(dataBudget);
-            }
+            //Object construction to insert in DYNAMIC_FORM_DEFAULT_VALUE even if there is not default value,
+            //because now we need to store de HIDDEN column always
+            var dataBudget = {};
+            dataBudget.DYNAMIC_FORM_ID = dynamicFormId;
+            dataBudget.DYNAMIC_FORM_FIELD_ID = objBudget.DYNAMIC_FORM_FIELD_ID;
+            dataBudget.HIDDEN = !!objBudget.HIDDEN ? 1 : 0;
+            dataBudget.DEFAULT_VALUE = objBudget.DEFAULT_VALUE || null;
+            arrDynamicFormDefaultValue.push(dataBudget);
         }
     }
+
     return arrDynamicFormDefaultValue;
 }
 
@@ -383,21 +530,29 @@ function getNewTacticsDetails(arrTacticsDetail, dynamicFormId, tabIsHidden, hier
 
             validateFields(objTacticDetail);
 
-            if (tabIsHidden || objTacticDetail.HIDDEN) {
-                var dataBudget = {};
-                dataBudget.DYNAMIC_FORM_ID = dynamicFormId;
-                dataBudget.DYNAMIC_FORM_FIELD_ID = objTacticDetail.DYNAMIC_FORM_FIELD_ID;
-                switch (objTacticDetail.FIELD_NAME) {
-                    case 'BUDGET':
-                        dataBudget.DEFAULT_VALUE = Number(objTacticDetail.DEFAULT_VALUE) || null;
-                        break;
-                    default:
-                        dataBudget.DEFAULT_VALUE = !objTacticDetail.MANDATORY ? (typeof objTacticDetail.DEFAULT_VALUE === "string" ? objTacticDetail.DEFAULT_VALUE.trim() : objTacticDetail.DEFAULT_VALUE) || null : objTacticDetail.DEFAULT_VALUE.trim();
-                }
-                arrDynamicFormDefaultValue.push(dataBudget);
+            //Object construction to insert in DYNAMIC_FORM_DEFAULT_VALUE even if there is not default value,
+            //because now we need to store de HIDDEN column always
+            var dataBudget = {};
+            dataBudget.DYNAMIC_FORM_ID = dynamicFormId;
+            dataBudget.DYNAMIC_FORM_FIELD_ID = objTacticDetail.DYNAMIC_FORM_FIELD_ID;
+            dataBudget.HIDDEN = !!objTacticDetail.HIDDEN ? 1: 0;
+
+            switch (objTacticDetail.FIELD_NAME) {
+                case 'BUDGET':
+                    dataBudget.DEFAULT_VALUE = Number(objTacticDetail.DEFAULT_VALUE) || null;
+                    break;
+                default:
+                    dataBudget.DEFAULT_VALUE =
+                        !objTacticDetail.MANDATORY ?
+                        (typeof objTacticDetail.DEFAULT_VALUE === "string" ? objTacticDetail.DEFAULT_VALUE.trim() : objTacticDetail.DEFAULT_VALUE) || null
+                            :
+                            (!!objTacticDetail.DEFAULT_VALUE) ? objTacticDetail.DEFAULT_VALUE.trim() : null;
+                    break;
             }
+            arrDynamicFormDefaultValue.push(dataBudget);
         }
     }
+
     return arrDynamicFormDefaultValue;
 }
 
@@ -560,8 +715,10 @@ function CreateDynamicFormFieldsValues(data, dynamicFormId, userId) {
     var arrDynamicFormDefaultValue = [];
 
     arrDynamicFormDefaultValue = getNewDynamicFormDefaultValue(data, dynamicFormId);
-    if (arrDynamicFormDefaultValue.length)
+    if (arrDynamicFormDefaultValue.length){
+
         dataDynamicForm.insertDynamicFormDefaultValue(arrDynamicFormDefaultValue, userId);
+    }
 
     return 1;
 }
@@ -578,14 +735,16 @@ function CreateDynamicFormAllocations(data, dynamicFormId, userId) {
             for (var i = 0; i < arrAllocations.length; i++) {
                 var objDinamicFormAllocation = {};
                 var allocation = arrAllocations[i];
-                if (allocation.HIDDEN) {
-                    objDinamicFormAllocation.DYNAMIC_FORM_ID = dynamicFormId;
-                    objDinamicFormAllocation.ALLOCATION_CATEGORY_ID = allocation.ALLOCATION_CATEGORY_ID;
-                    objDinamicFormAllocation.ALLOCATION_OPTION_ID = Number(allocation.ALLOCATION_OPTION_ID) || null;
-                    objDinamicFormAllocation.BUDGET_PERCENTAGE = Number(allocation.BUDGET_DEFAULT_VALUE) || 0;
-                    objDinamicFormAllocation.KPI_PERCENTAGE = Number(allocation.KPI_DEFAULT_VALUE) || 0;
-                    arrAllocation.push(objDinamicFormAllocation);
-                }
+
+                objDinamicFormAllocation.DYNAMIC_FORM_ID = dynamicFormId;
+                objDinamicFormAllocation.ALLOCATION_CATEGORY_ID = allocation.ALLOCATION_CATEGORY_ID;
+                objDinamicFormAllocation.ALLOCATION_OPTION_ID = Number(allocation.ALLOCATION_OPTION_ID) || null;
+                objDinamicFormAllocation.BUDGET_PERCENTAGE = Number(allocation.BUDGET_DEFAULT_VALUE) || 0;
+                objDinamicFormAllocation.KPI_PERCENTAGE = Number(allocation.KPI_DEFAULT_VALUE) || 0;
+                objDinamicFormAllocation.HIDDEN = !!allocation.HIDDEN ? 1 : 0;
+
+                arrAllocation.push(objDinamicFormAllocation);
+
             }
         }
 
@@ -619,12 +778,14 @@ function CreateDynamicFormMyBudget(data, dynamicFormId, userId) {
                     arrRegion.push(objDynamicFormMyBudget);
                 }
             }
-            if(distributionPercentage!==100) {
+            if(distributionPercentage!==100 && distributionPercentage !== 0) {
                 throw ErrorLib.getErrors().CustomError("", "", ERROR_BUDGET_DISTRIBUTION);
             }
 
-            if (arrRegion.length)
+            if (arrRegion.length && distributionPercentage === 100){
                 dataDynamicForm.insertDynamicFormMyBudget(arrRegion, userId);
+            }
+
         }
     }
     return 1;
@@ -915,9 +1076,9 @@ function dynamicFormMapCreator(fieldList, selectedAllocationList, allocationList
             if (field.FIELD_NAME === "CAMPAIGN_TYPE_ID") {
                 dynamicFormFieldsMap[field.DYNAMIC_FORM_UID][field.TAB_NAME]['SHOW_ADDITIONAL_FIELDS_VALUE'] = showAdditionalFields;
             }
-            if (currentField.HIDDEN) {
-                dynamicFormFieldsMap[field.DYNAMIC_FORM_UID][field.TAB_NAME][currentField.FIELD_NAME + '_VALUE'] = currentField.DEFAULT_VALUE;
-            }
+
+            dynamicFormFieldsMap[field.DYNAMIC_FORM_UID][field.TAB_NAME][currentField.FIELD_NAME + '_VALUE'] = currentField.DEFAULT_VALUE;
+
         } else {
             dynamicFormFieldsMap[field.DYNAMIC_FORM_UID][field.TAB_NAME][field.DYNAMIC_FORM_FIELD_ID] = currentField;
         }
@@ -926,6 +1087,7 @@ function dynamicFormMapCreator(fieldList, selectedAllocationList, allocationList
     // Create map with all the available categories for the current level
     if (allocationList.length > 0) {
         //Create Allocation field map
+
         allocationList.forEach(function (category) {
             allocationMap[category.CATEGORY_ID] = allocationMap[category.CATEGORY_ID] || {};
             var optionMap = {};
@@ -934,7 +1096,9 @@ function dynamicFormMapCreator(fieldList, selectedAllocationList, allocationList
                 optionMap[option.OPTION_ID] = {
                     "OPTION_ID": option.OPTION_ID,
                     "OPTION_NAME": option.OPTION_NAME,
-                    "CATEGORY_OPTION_LEVEL_ID": option.CATEGORY_OPTION_LEVEL_ID
+                    "CATEGORY_OPTION_LEVEL_ID": option.CATEGORY_OPTION_LEVEL_ID,
+                    "BUDGET_PERCENTAGE": option.DEFAULT_BUDGET_PERCENTAGE,
+                    "KPI_PERCENTAGE": option.DEFAULT_KPI_PERCENTAGE
                 };
             });
             // Generic object to fill with all the category information
@@ -958,21 +1122,26 @@ function dynamicFormMapCreator(fieldList, selectedAllocationList, allocationList
         dynamicFormFieldsMap[formUid].DYNAMIC_FORMS_ALLOCATION_DETAIL = allocationMap;
 
         // Set the dynamic form category/option to the allocation map created above
+
         selectedAllocationList.forEach(function (allocation) {
-            dynamicFormFieldsMap[formUid].DYNAMIC_FORMS_ALLOCATION_DETAIL[allocation.ALLOCATION_CATEGORY_ID] = {
-                "FIELD_NAME": "ALLOCATION_CATEGORY_OPTION_LEVEL_ID",
-                "CATEGORY_DEFAULT_NAME": allocation.CATEGORY_DEFAULT_NAME,
-                "ALLOCATION_CATEGORY_ID": allocation.ALLOCATION_CATEGORY_ID,
-                "OPTION_DEFAULT_NAME": allocation.OPTION_DEFAULT_NAME,
-                "ALLOCATION_OPTION_ID": allocation.ALLOCATION_OPTION_ID,
-                "MANDATORY": !forValidationPurpose && isPlannificationLevel(Number(levelId)) ? false : !!allocation.MANDATORY,
-                "OPTIONS_LIMIT": allocation.OPTIONS_LIMIT,
-                "KPI_DEFAULT_VALUE": allocation.KPI_PERCENTAGE,
-                "BUDGET_DEFAULT_VALUE": allocation.BUDGET_PERCENTAGE,
-                "OPTIONS": allocationMap[allocation.ALLOCATION_CATEGORY_ID].OPTIONS,
-                "HIDDEN": !!allocation.HIDDEN,
-                "FIELD_TYPE": "select"
-            };
+
+                // throw JSON.stringify(allocation.ALLOCATION_CATEGORY_ID);
+                dynamicFormFieldsMap[formUid].DYNAMIC_FORMS_ALLOCATION_DETAIL[allocation.ALLOCATION_CATEGORY_ID] = {
+                    "FIELD_NAME": "ALLOCATION_CATEGORY_OPTION_LEVEL_ID",
+                    "CATEGORY_DEFAULT_NAME": allocation.CATEGORY_DEFAULT_NAME,
+                    "ALLOCATION_CATEGORY_ID": allocation.ALLOCATION_CATEGORY_ID,
+                    "OPTION_DEFAULT_NAME": allocation.OPTION_DEFAULT_NAME,
+                    "ALLOCATION_OPTION_ID": allocation.ALLOCATION_OPTION_ID,
+                    "MANDATORY": !forValidationPurpose && isPlannificationLevel(Number(levelId)) ? false : !!allocation.MANDATORY,
+                    "OPTIONS_LIMIT": allocation.OPTIONS_LIMIT,
+                    "KPI_DEFAULT_VALUE": allocation.KPI_PERCENTAGE,
+                    "BUDGET_DEFAULT_VALUE": allocation.BUDGET_PERCENTAGE,
+                    "OPTIONS": allocationMap[allocation.ALLOCATION_CATEGORY_ID].OPTIONS,
+                    "HIDDEN": !!allocation.HIDDEN,
+                    "FIELD_TYPE": "select"
+                };
+
+
         });
     }
 

@@ -68,6 +68,8 @@ function getReportExportData(filter, method) {
         , 'MODIFIED_DATE'
         , 'STATUS'
         , 'DES'
+        , 'REPUTATION_INITIATIVE'
+        , 'REPUTATION_INITIATIVE_AUDIENCE'
     ];
 
     var commonFields = [
@@ -89,6 +91,8 @@ function getReportExportData(filter, method) {
         , 'PARTNER_CONTRIBUTION'
         , 'STATUS'
         , 'DES'
+        , 'REPUTATION_INITIATIVE'
+        , 'REPUTATION_INITIATIVE_AUDIENCE'
     ];
 
     var kpiFields = [
@@ -104,6 +108,8 @@ function getReportExportData(filter, method) {
         , 'CLOUD'
         , 'STATUS'
         , 'DES'
+        , 'REPUTATION_INITIATIVE'
+        , 'REPUTATION_INITIATIVE_AUDIENCE'
     ];
 
     if (!filter.SCOPE) {

@@ -65,6 +65,9 @@ var L3_MSG_INITIATIVE_BUSINESS = "The Initiative/Campaign business value can not
 var L3_MSG_INITIATIVE_ACRONYM = "The Initiative/Campaign acronym can not be null or empty.";
 var L3_MSG_INITIATIVE_IN_CRM = "Cannot modified CRM ID if already exists in CRM.";
 var L3_MSG_INITIATIVE_EXISTS = "Another Initiative/Campaign with the same acronym already exists on this plan.";
+var L4_MSG_INITIATIVE_CREATED = "Another Initiative/Campaign with the same acronym already exists.";
+var L4_MSG_CRM_PATH_CREATED = "Another Initiative/Campaign or Priority/Sub-Team with the same CRM ID already exists.";
+var L4_MSG_INITIATIVE_EXISTS_IN_L3 = "Another Priority/Sub-team with the same acronym already exists.";
 var L3_MSG_INITIATIVE_ACRONYM_LENGTH = "The Initiative/Campaign Acronym length must be 3 characters.";
 var L3_MSG_INITIATIVE_CRM_DESCRIPTION = "The Initiative/Campaign CRM description can not be null or empty.";
 var L3_MSG_INITIATIVE_BUDGET_VALUE = "The Initiative/Campaign Budget value must be greater than zero.";
@@ -114,6 +117,16 @@ var USER_ROLE = {
     ADMIN: 2,
     DATA_ENTRY: 3,
     CAMPAIGN_MANAGER: 4
+};
+
+var GENERAL_FILTER_MAP = {
+    REGIONAL_MARKETING: 1,
+    PRODUCT_MARKETING: 2,
+    FUNCTIONAL_TEAMS: 3,
+    COMMUNICATIONS: 4,
+    BUSINESS_STRATEGY_CULTURE: 5,
+    OTHER_MARKETING: 6,
+    INDUSTRY_MARKETING: 7
 };
 
 var LEVEL_STRING = 'HL4';
@@ -184,12 +197,14 @@ function getHL4CarryOverById(hl4Id, userId) {
     if (!hl4Id) {
         throw ErrorLib.getErrors().BadRequest("The HL4 ID could not be found.", "", L4_ID_NOT_FOUND);
     }
+    var budgetYearId = budgetYear.getBudgetYearByLevelParent(5, hl4Id);
+    var requiredDFObject = JSON.parse(JSON.stringify(budgetYear.getRequireDynamicFormByBudgetYearId(budgetYearId)));
 
-    return {
-        HL4: dataHl4.getHL4CarryOverById(hl4Id),
-        DYNAMIC_FORM: blDynamicForm.getFormByParentId(hl4Id, 'L5', null, true, false)
-    };
+    var result = {};
+    result.HL4 = dataHl4.getHL4CarryOverById(hl4Id);
+    result.DYNAMIC_FORM = (Number(requiredDFObject.REQUIRE_DYNAMIC_FORM) === 1) ? blDynamicForm.getFormByParentId(hl4Id, 'L5', null, true, false) : blDynamicForm.getCompleteForm(HIERARCHY_LEVEL.HL5);
 
+    return result;
 }
 
 function getParentRemainingBudgetByParentId(hl3Id) {
@@ -313,6 +328,161 @@ function getLevel4Kpi(hl3Id, userId) {
     return result;
 }
 
+function getMarketingTacticsTree(budgetYearId, regionId, subRegionId, generalFilter){
+    return getHl4ByUserGroupByHl1(null, budgetYearId, regionId, subRegionId, generalFilter);
+}
+
+function getHl4ByUserGroupByHl1(userId, budgetYearId, regionId, subRegionId, generalFilter) {
+    var currentRegion = regionId ? regionId : 0;
+    var superRegion = [];
+    var isSA = userId ? util.isSuperAdmin(userId) : 1;
+    var hl3 = dataHl4.getHl4PathByUserId(userId || 0, isSA, budgetYearId || 0, regionId || 0, subRegionId || 0);
+    var collection = {};
+
+    var parser = function (object) {
+        var data2 = JSON.stringify(object, function (key, value) {
+            if (value) {
+                Object.keys(value).forEach(function (k) {
+                    if (k === "CHILDREN") {
+                        value[k] = util.objectToArray(value[k]);
+                    }
+                });
+            }
+            return value;
+        });
+
+        data2 = JSON.parse(data2);
+
+        return util.objectToArray(data2);
+    };
+
+    if (!generalFilter || generalFilter === "REGIONAL_MARKETING") {
+
+        hl3.forEach(function (item) {
+            if (Number(item.HL1_REGION_ID) !== 0) { //The 'zero' part is only for broken records in Dev/Testing
+                if (!collection[item.HL1_REGION_ID]) {
+                    collection[item.HL1_REGION_ID] = {
+                        PATH: item.HL1_REGION_NAME,
+                        REGION_ID: item.HL1_REGION_ID,
+                        CHILDREN: {}
+                    }
+                }
+
+                if (!collection[item.HL1_REGION_ID].CHILDREN[item.HL1_ID]) {
+                    collection[item.HL1_REGION_ID].CHILDREN[item.HL1_ID] = {
+                        HL1_ID: item.HL1_ID
+                        , PATH: item.HL1_PATH
+                        , HL1_DESCRIPTION: item.HL1_DESCRIPTION
+                        , CHILDREN: {}
+                    };
+                }
+
+                if (!collection[item.HL1_REGION_ID].CHILDREN[item.HL1_ID].CHILDREN[item.HL2_ID]) {
+                    collection[item.HL1_REGION_ID].CHILDREN[item.HL1_ID].CHILDREN[item.HL2_ID] = {
+                        HL2_ID: item.HL2_ID
+                        , PATH: item.HL2_PATH
+                        , HL2_DESCRIPTION: item.HL2_DESCRIPTION
+                        , CHILDREN: []
+                    };
+                }
+
+                if (!collection[item.HL1_REGION_ID].CHILDREN[item.HL1_ID].CHILDREN[item.HL2_ID].CHILDREN[item.HL3_ID]) {
+                    collection[item.HL1_REGION_ID].CHILDREN[item.HL1_ID].CHILDREN[item.HL2_ID].CHILDREN[item.HL3_ID] = {
+                        HL3_ID: item.HL3_ID,
+                        PATH: item.HL3_PATH,
+                        HL3_DESCRIPTION: item.HL3_DESCRIPTION,
+                        CHILDREN: []
+                    };
+                }
+
+                collection[item.HL1_REGION_ID].CHILDREN[item.HL1_ID].CHILDREN[item.HL2_ID].CHILDREN[item.HL3_ID].CHILDREN.push({
+                    HL4_ID: item.HL4_ID,
+                    PATH: item.HL4_PATH,
+                    HL4_DESCRIPTION: item.HL4_DESCRIPTION
+                });
+            }
+        });
+
+        var regions = {PATH: "Regions", CHILDREN: parser(collection)};
+        superRegion.push(regions);
+
+    }
+
+    if (!generalFilter || generalFilter !== "REGIONAL_MARKETING") {
+
+        if (!Number(currentRegion)) {
+            var globalCollection = getHl4ByPlanningPurpose(userId || 0, isSA, budgetYearId || 0, generalFilter);
+            if (globalCollection && Object.keys(globalCollection).length) {
+                var global = {PATH: "Hierarchy", CHILDREN: parser(globalCollection)};
+                superRegion.push(global);
+            }
+
+        }
+    }
+
+    return superRegion;
+}
+
+function getHl4ByPlanningPurpose(userId, isSA, budgetYearId, generalFilter) {
+    var hl3 = dataHl4.getHl4ByPlanningPurpose(userId, isSA, budgetYearId);
+
+    var collection = {};
+    var includeIndustry = !!(generalFilter && generalFilter === "PRODUCT_MARKETING");
+
+    if (hl3 && hl3.length) {
+        hl3.forEach(function (item) {
+            if(!generalFilter || (GENERAL_FILTER_MAP[generalFilter] === Number(item.PLANNING_PURPOSE_ID)) || (includeIndustry && GENERAL_FILTER_MAP.INDUSTRY_MARKETING === Number(item.PLANNING_PURPOSE_ID))){
+                if (!collection[item.PLANNING_PURPOSE_ID]) {
+                    collection[item.PLANNING_PURPOSE_ID] = {
+                        PATH: item.PLANNING_PURPOSE_NAME,
+                        PLANNING_PURPOSE_ID: item.PLANNING_PURPOSE_ID,
+                        CHILDREN: {}
+                    }
+                }
+
+                if (!collection[item.PLANNING_PURPOSE_ID].CHILDREN[item.HL1_ID]) {
+                    collection[item.PLANNING_PURPOSE_ID].CHILDREN[item.HL1_ID] = {
+                        HL1_ID: item.HL1_ID
+                        , PATH: item.HL1_PATH
+                        , HL1_DESCRIPTION: item.HL1_DESCRIPTION
+                        , CHILDREN: {}
+                    };
+                }
+
+                if (!collection[item.PLANNING_PURPOSE_ID].CHILDREN[item.HL1_ID].CHILDREN[item.HL2_ID] && !!item.HL2_ID) {
+                    collection[item.PLANNING_PURPOSE_ID].CHILDREN[item.HL1_ID].CHILDREN[item.HL2_ID] = {
+                        HL2_ID: item.HL2_ID
+                        , PATH: item.HL2_PATH
+                        , HL2_DESCRIPTION: item.HL2_DESCRIPTION
+                        , CHILDREN: []
+                    };
+                }
+
+                if (!collection[item.PLANNING_PURPOSE_ID].CHILDREN[item.HL1_ID].CHILDREN[item.HL2_ID].CHILDREN[item.HL3_ID] && !!item.HL3_ID) {
+                    collection[item.PLANNING_PURPOSE_ID].CHILDREN[item.HL1_ID].CHILDREN[item.HL2_ID].CHILDREN[item.HL3_ID] = {
+                        HL3_ID: item.HL3_ID
+                        , PATH: item.HL3_PATH
+                        , HL3_DESCRIPTION: item.HL3_DESCRIPTION
+                        , CHILDREN: []
+                    };
+                }
+
+                if(!!item.HL4_ID){
+                    collection[item.PLANNING_PURPOSE_ID].CHILDREN[item.HL1_ID].CHILDREN[item.HL2_ID].CHILDREN[item.HL3_ID].CHILDREN.push({
+                        HL4_ID: item.HL4_ID,
+                        PATH: item.HL4_PATH,
+                        HL4_DESCRIPTION: item.HL4_DESCRIPTION
+                    });
+                }
+
+            }
+        });
+    }
+
+    return collection;
+}
+
+
 /** INSERT **/
 function insertHl4(data, userId) {
     var budgetYearId = budgetYear.getBudgetYearByLevelParent(4, data.HL3_ID);
@@ -320,7 +490,7 @@ function insertHl4(data, userId) {
     var requiredDFObject = JSON.parse(JSON.stringify(budgetYear.getRequireDynamicFormByBudgetYearId(budgetYearId)));
 
     //Complete data with dynamic form (if the Budget Year requires it).
-    data = (Number(requiredDFObject.REQUIRE_DYNAMIC_FORM) === 1) ? util.completeFromDynamicFormByRole(userId, HIERARCHY_LEVEL["HL4"], data, budgetYearId) : data;
+    data = (Number(requiredDFObject.REQUIRE_DYNAMIC_FORM) === 1) ? util.completeNewLevelFromDynamicFormByRole(userId, HIERARCHY_LEVEL["HL4"], data, budgetYearId, data.HL3_ID) : data;
 
     data.HL3_INFORMATION = getHl3ForHl4Validation(data.HL3_ID, 0);
     data.HL4_INFORMATION = data.HL4_ID ? getHl4ForHl4Validation(0) : {};
@@ -780,11 +950,20 @@ function validateRequiredFields(data, userId) {
         throw ErrorLib.getErrors().CustomError("", "", L3_MSG_INITIATIVE_ACRONYM_LENGTH);
     }
 
-    // Validate whether Acronym already exists or not
+    // Validate whether Acronym already exists or not between L4 in the same Priority/Sub-Team
+    // if (existsHl4inPlan(data)) {
+    //     throw ErrorLib.getErrors().CustomError("", "", L3_MSG_INITIATIVE_EXISTS);
+    // }
 
-    if (existsHl4inPlan(data)) {
-        throw ErrorLib.getErrors().CustomError("", "", L3_MSG_INITIATIVE_EXISTS);
+    // Validate whether Acronym already exists
+    if (existsHl4CRMPath(data)) {
+        throw ErrorLib.getErrors().CustomError("", "", L4_MSG_CRM_PATH_CREATED);
     }
+
+    // Validate if the Acronym is being used by any L3
+    // if (!util.validateDuplicatedAcronym(data.ACRONYM, "HL4")) {
+    //     throw ErrorLib.getErrors().CustomError("", "", L4_MSG_INITIATIVE_EXISTS_IN_L3);
+    // }
 
     //Validate HL4_CRM_DESCRIPTION
     if (!data.HL4_CRM_DESCRIPTION) {
@@ -1155,6 +1334,27 @@ function validateSaleOthers(others) {
 function getLevel4ByAcronym(acronym, hl2_id) {
     return dataHl4.getHl4ByAcronym(acronym, hl2_id);
 }
+/**
+ *
+ * @param acronym: the acronym to be found
+ * @param hl4Id (Optional): the L4 to avoid
+ * @returns [*]
+ */
+function getAllHl4ByAcronym(acronym, hl4Id){
+    return dataHl4.getAllHl4ByAcronym(acronym, hl4Id);
+}
+
+function getDuplicatedHl4CRMPath(hl4Id, hl3Id, hl4Acronym){
+    return dataHl4.getDuplicatedHl4CRMPath(hl4Id, hl3Id, hl4Acronym);
+}
+
+function existsHl4CRMPath(objHL4) {
+    if ((!objHL4) || (objHL4 && !objHL4.ACRONYM)){
+        throw ErrorLib.getErrors().CustomError("", "", "Acronym not found");
+    }
+
+    return getDuplicatedHl4CRMPath(objHL4.HL4_ID, objHL4.HL3_ID, objHL4.ACRONYM).length !== 0;
+}
 
 function existsHl4inPlan(objHL4) {
     //Search the same acronym in all HL4 Childrens of the HL3
@@ -1298,11 +1498,13 @@ function setHl4StatusInCRM(hl4_id, userId) {
 
     if (hl4Ids.length) {
         var hl4InCrm = massSetHl4Status(hl4Ids, userId);
-        mail.massSendInCRMMail(hl4InCrm, "hl4");
+
         hl4Ids.forEach(function (value) {
             insertInCrmVersion(value.hl4_id);
             dataL4Report.updateLevel4ReportForDownload(value.hl4_id);
-        })
+        });
+
+        mail.massSendInCRMMail(hl4InCrm, "hl4");
     }
     return 1;
 }

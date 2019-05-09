@@ -23,6 +23,17 @@ function getDesTypeById(desTypeId) {
     return dataDesType.getDesTypeById(desTypeId);
 }
 
+function getDesTypeForLegacyRecords(hierarchyLevelId){
+    return dataDesType.getDesTypeForLegacyRecords(hierarchyLevelId);
+}
+
+function getParentIdsByDesTypeId(desTypeId){
+    if(!desTypeId){
+        throw ErrorLib.getErrors().CustomError("", "Parameter desTypeId not found.", DES_TYPE_ID_MISS);
+    }
+
+    return dataDesType.getParentIdsByDesTypeId(desTypeId);
+}
 
 function validateDesType(data) {
 

@@ -1,0 +1,28 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_COST_CENTER_BY_SEARCH" (
+ 	IN IN_SEARCH_STRING NVARCHAR(255),
+ 	OUT out_result TABLE(
+    	COST_CENTER_ID BIGINT,
+    	NAME nvarchar(255),
+    	CODE NVARCHAR(255),
+        SALE_ORGANIZATION_ID BIGINT,
+        PERSON_RESPONSIBLE NVARCHAR(10)
+    )
+ )
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	READS SQL DATA AS
+BEGIN
+
+    out_result =   SELECT
+                        CV_CCS.COST_CENTER_ID,
+                        CV_CCS.NAME,
+                        CV_CCS.COST_CENTER_CODE as CODE,
+                        CV_CCS.SALE_ORGANIZATION_ID,
+                        CV_CCS.PERSON_RESPONSIBLE
+                    FROM "_SYS_BIC"."mktgplanningtool.db.data.views/CV_SEARCH_COST_CENTER" CV_CCS
+                    WHERE CONTAINS((NAME, COST_CENTER_CODE), IN_SEARCH_STRING)
+                    ORDER BY CV_CCS.NAME, CV_CCS.COST_CENTER_CODE
+                    LIMIT 99;
+
+END;

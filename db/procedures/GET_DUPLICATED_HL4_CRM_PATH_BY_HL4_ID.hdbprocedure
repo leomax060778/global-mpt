@@ -1,0 +1,99 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_DUPLICATED_HL4_CRM_PATH_BY_HL4_ID" (
+    IN in_hl4_id BIGINT,
+    IN in_hl3_id BIGINT,
+    IN in_hl4_acronym NVARCHAR(25),
+	OUT out_result TABLE(
+	    LEVEL_ID BIGINT,
+	    HIERARCHY_LEVEL NVARCHAR(3),
+	    ACRONYM NVARCHAR(25),
+	    ORGANIZATION_ACRONYM NVARCHAR(25)
+	)
+)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	READS SQL DATA AS
+BEGIN
+        va_budget_year =
+            SELECT HL1.BUDGET_YEAR_ID
+            FROM HL3
+                INNER JOIN HL2 ON HL3.HL2_ID = HL2.HL2_ID
+                INNER JOIN HL1 ON HL2.HL1_ID = HL1.HL1_ID
+            WHERE HL3.HL3_ID = in_hl3_id;
+
+        va_hl2_acronym =
+                    SELECT HL2.ORGANIZATION_ACRONYM
+                    FROM HL3
+                        INNER JOIN HL2 ON HL3.HL2_ID = HL2.HL2_ID
+                        INNER JOIN HL1 ON HL2.HL1_ID = HL1.HL1_ID
+                    WHERE HL3.HL3_ID = in_hl3_id;
+
+        va_crm_information_to_compare =
+            (SELECT  HL1.BUDGET_YEAR_ID,
+                    HL2.ORGANIZATION_ACRONYM,
+                    HL3.ACRONYM,
+                    null as HL4_ID
+                FROM HL3
+                    INNER JOIN HL2 ON HL3.HL2_ID = HL2.HL2_ID
+                    INNER JOIN HL1 ON HL2.HL1_ID = HL1.HL1_ID
+                        AND HL1.BUDGET_YEAR_ID IN (SELECT compb.BUDGET_YEAR_ID FROM :va_budget_year compb)
+                WHERE HL3.ACRONYM = in_hl4_acronym)
+
+                UNION
+
+            (SELECT  HL1.BUDGET_YEAR_ID,
+                    HL2.ORGANIZATION_ACRONYM,
+                    HL4.ACRONYM,
+                    HL4.HL4_ID
+                FROM HL4
+                    INNER JOIN HL3 ON HL4.HL3_ID = HL3.HL3_ID
+                    INNER JOIN HL2 ON HL3.HL2_ID = HL2.HL2_ID
+                    INNER JOIN HL1 ON HL2.HL1_ID = HL1.HL1_ID
+                        AND HL1.BUDGET_YEAR_ID IN (SELECT compb.BUDGET_YEAR_ID FROM :va_budget_year compb)
+                WHERE HL4.ACRONYM = in_hl4_acronym);
+
+        out_result =
+
+        (SELECT DISTINCT
+                HL3.HL3_ID AS LEVEL_ID,
+                'HL3' AS HIERARCHY_LEVEL,
+                HL3.ACRONYM,
+                HL2.ORGANIZATION_ACRONYM
+            FROM HL3
+                INNER JOIN HL2 ON HL3.HL2_ID = HL2.HL2_ID
+                    AND HL2.ENABLED = 1
+                    AND HL2.DELETED = 0
+                    AND HL2.ORGANIZATION_ACRONYM IN (SELECT comp.ORGANIZATION_ACRONYM FROM :va_hl2_acronym comp)
+                INNER JOIN HL1 ON HL2.HL1_ID = HL1.HL1_ID
+                    AND HL1.ENABLED = 1
+                    AND HL1.DELETED = 0
+                    AND HL1.BUDGET_YEAR_ID IN (SELECT comp.BUDGET_YEAR_ID FROM :va_crm_information_to_compare comp)
+            WHERE  HL3.ENABLED = 1
+                    AND HL3.DELETED = 0
+                    AND HL3.ACRONYM IN (SELECT comp.ACRONYM FROM :va_crm_information_to_compare comp)
+        )
+
+            UNION
+
+            (SELECT DISTINCT
+                HL4.HL4_ID AS LEVEL_ID,
+                'HL4' AS HIERARCHY_LEVEL,
+                HL4.ACRONYM,
+                HL2.ORGANIZATION_ACRONYM
+                FROM HL4
+                    INNER JOIN HL3 ON HL4.HL3_ID = HL3.HL3_ID
+                        AND HL3.ENABLED = 1
+                        AND HL3.DELETED = 0
+                    INNER JOIN HL2 ON HL3.HL2_ID = HL2.HL2_ID
+                        AND HL2.ENABLED = 1
+                        AND HL2.DELETED = 0
+                        AND HL2.ORGANIZATION_ACRONYM IN (SELECT comp.ORGANIZATION_ACRONYM FROM :va_hl2_acronym comp)
+                    INNER JOIN HL1 ON HL2.HL1_ID = HL1.HL1_ID
+                        AND HL1.ENABLED = 1
+                        AND HL1.DELETED = 0
+                        AND HL1.BUDGET_YEAR_ID IN (SELECT comp.BUDGET_YEAR_ID FROM :va_crm_information_to_compare comp)
+                WHERE HL4.ACRONYM IN (SELECT comp.ACRONYM FROM :va_crm_information_to_compare comp)
+                    AND (HL4.HL4_ID != in_hl4_id OR in_hl4_id = 0)
+                    AND HL4.ENABLED = 1
+                    AND HL4.DELETED = 0);
+END;

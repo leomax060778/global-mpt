@@ -7,6 +7,7 @@ var util = mapper.getUtil();
 /*************************************************/
 
 var PARAMETERS_NOT_FOUND = "The parameters can not be found.";
+var SEARCH_STRING_NOT_FOUND = "The data to search can not be found.";
 var HL_NOT_FOUND = "The current level can not be found";
 var BUDGET_YEAR_ID_NOT_FOUND = "The Budget Year can not be found";
 
@@ -117,4 +118,18 @@ function getHLBySearch(params, userSessionID){
 	}
 
 	return searchResult;
+}
+
+function getCostCenterBySearch(params, userSessionID){
+
+	if(!params || (params && params.length === 0)){
+		throw ErrorLib.getErrors().BadRequest("Parameters not found", "", PARAMETERS_NOT_FOUND);
+	}
+
+	if(!params.SEARCH_STRING){
+		throw ErrorLib.getErrors().BadRequest("Search string not found", "", SEARCH_STRING_NOT_FOUND);
+	}
+
+	var searchString = '%'+params.SEARCH_STRING+'%';
+	return dataSearch.getCostCenterBySearch(searchString);
 }

@@ -35,6 +35,8 @@
         <viewAttribute datatype="TIMESTAMP" id="MODIFIED_DATE"/>
         <viewAttribute datatype="NVARCHAR" id="STATUS" length="25"/>
         <viewAttribute datatype="NVARCHAR" id="DES" length="25"/>
+        <viewAttribute id="REPUTATION_INITIATIVE" datatype="NVARCHAR" length="255"/>
+        <viewAttribute id="REPUTATION_INITIATIVE_AUDIENCE" datatype="NVARCHAR" length="255"/>
       </viewAttributes>
       <calculatedViewAttributes/>
       <definition> 
@@ -160,6 +162,8 @@ va_l1_result = SELECT HL1.HL1_ID AS HL_ID
 				, HL1.MODIFIED_DATE
 				, '' AS STATUS
 				, '' AS DES
+				, '' AS REPUTATION_INITIATIVE
+				, '' AS REPUTATION_INITIATIVE_AUDIENCE
 				FROM :va_l1 HL1
 				LEFT JOIN :va_l1_mnp MNP ON HL1.HL1_ID = MNP.HL1_ID
 				LEFT JOIN :va_l1_mtp MTP ON HL1.HL1_ID = MTP.HL1_ID
@@ -287,6 +291,8 @@ va_l2_result = SELECT HL2.HL2_ID AS HL_ID
 				, HL2.MODIFIED_DATE
 				, '' AS STATUS
 				, '' AS DES
+				, '' AS REPUTATION_INITIATIVE
+				, '' AS REPUTATION_INITIATIVE_AUDIENCE
 				FROM :va_l2 HL2
 				LEFT JOIN :va_l2_mnp MNP ON HL2.HL2_ID = MNP.HL2_ID
 				LEFT JOIN :va_l2_mtp MTP ON HL2.HL2_ID = MTP.HL2_ID
@@ -416,6 +422,8 @@ va_l3_result = SELECT HL3.HL3_ID AS HL_ID
 				, HL3.MODIFIED_DATE
 				, '' AS STATUS
 				, '' AS DES
+				, '' AS REPUTATION_INITIATIVE
+				, '' AS REPUTATION_INITIATIVE_AUDIENCE
 				FROM :va_l3 HL3
 				LEFT JOIN :va_l3_mnp MNP ON HL3.HL3_ID = MNP.HL3_ID
 				LEFT JOIN :va_l3_mtp MTP ON HL3.HL3_ID = MTP.HL3_ID
@@ -548,6 +556,8 @@ va_l4_result = SELECT HL4.HL4_ID AS HL_ID
 				, HL4.MODIFIED_DATE
 				, HL4.STATUS
 				, '' AS DES
+				, '' AS REPUTATION_INITIATIVE
+				, '' AS REPUTATION_INITIATIVE_AUDIENCE
 				FROM :va_l4 HL4
 				LEFT JOIN :va_l4_mnp MNP ON HL4.HL4_ID = MNP.HL4_ID
 				LEFT JOIN :va_l4_mtp MTP ON HL4.HL4_ID = MTP.HL4_ID
@@ -685,10 +695,38 @@ va_l5_lead_volume = SELECT HL5_EO.HL5_ID
 			AND HL5_EOD.ENABLED = 1
 			AND HL5_EOD.DELETED = 0
 			AND EOO.EXPORT_KEY = 'LEAD_VOLUME';
+			
+va_l5_reputation_initiative = SELECT hl5CategoryOption.HL5_ID, 
+                            category.NAME AS CATEGORY_NAME, 
+                            hl5CategoryOption.AMOUNT AS OPTION_AMOUNT, 
+                            options.NAME AS OPTION_NAME
+							FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL5_CATEGORY_OPTION&quot; hl5CategoryOption
+							INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_ALLOCATION_CATEGORY_OPTION_LEVEL&quot; ACOL
+							ON ACOL.ALLOCATION_CATEGORY_OPTION_LEVEL_ID = hl5CategoryOption.ALLOCATION_CATEGORY_OPTION_LEVEL_ID
+							INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_ALLOCATION_OPTION&quot; options ON options.ALLOCATION_OPTION_ID = ACOL.ALLOCATION_OPTION_ID
+							INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_ALLOCATION_CATEGORY&quot; category ON category.ALLOCATION_CATEGORY_ID = ACOL.ALLOCATION_CATEGORY_ID
+							WHERE hl5CategoryOption.ENABLED = 1 
+							AND hl5CategoryOption.DELETED = 0
+							AND hl5CategoryOption.AMOUNT != 0
+							AND category.NAME = 'Reputation Initiative';
+							
+va_l5_reputation_initiative_audience = SELECT hl5CategoryOption.HL5_ID, 
+                            category.NAME AS CATEGORY_NAME, 
+                            hl5CategoryOption.AMOUNT AS OPTION_AMOUNT, 
+                            options.NAME AS OPTION_NAME
+							FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL5_CATEGORY_OPTION&quot; hl5CategoryOption
+							INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_ALLOCATION_CATEGORY_OPTION_LEVEL&quot; ACOL
+							ON ACOL.ALLOCATION_CATEGORY_OPTION_LEVEL_ID = hl5CategoryOption.ALLOCATION_CATEGORY_OPTION_LEVEL_ID
+							INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_ALLOCATION_OPTION&quot; options ON options.ALLOCATION_OPTION_ID = ACOL.ALLOCATION_OPTION_ID
+							INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_ALLOCATION_CATEGORY&quot; category ON category.ALLOCATION_CATEGORY_ID = ACOL.ALLOCATION_CATEGORY_ID
+							WHERE hl5CategoryOption.ENABLED = 1 
+							AND hl5CategoryOption.DELETED = 0 
+							AND hl5CategoryOption.AMOUNT != 0
+							AND category.NAME = 'Reputation Initiative Audience';							
 
 va_l5_result = SELECT HL5.HL5_ID AS HL_ID
 				, HL5.HIERARCHY_LEVEL_ID
-								, HL5.HIERARCHY_LEVEL_VALUE
+				, HL5.HIERARCHY_LEVEL_VALUE
 				, HL5.CRM_ID
 				, HL5.CAMP_OBJ_TYPE
 				, HL5.BUDGET
@@ -713,11 +751,15 @@ va_l5_result = SELECT HL5.HL5_ID AS HL_ID
 				, HL5.MODIFIED_DATE
 				, HL5.STATUS
 				, HL5.DES
+				, REPUTATION_INITIATIVE.OPTION_NAME AS REPUTATION_INITIATIVE
+				, REPUTATION_INITIATIVE_AUDIENCE.OPTION_NAME AS REPUTATION_INITIATIVE_AUDIENCE
 				FROM :va_l5 HL5
 				LEFT JOIN :va_l5_mnp MNP ON HL5.HL5_ID = MNP.HL5_ID
 				LEFT JOIN :va_l5_mtp MTP ON HL5.HL5_ID = MTP.HL5_ID
 				LEFT JOIN :va_l5_mip MIP ON HL5.HL5_ID = MIP.HL5_ID
 				LEFT JOIN :va_l5_lead_volume LEAD_VOLUME ON HL5.HL5_ID = LEAD_VOLUME.HL5_ID
+				LEFT JOIN :va_l5_reputation_initiative REPUTATION_INITIATIVE ON HL5.HL5_ID = REPUTATION_INITIATIVE.HL5_ID
+				LEFT JOIN :va_l5_reputation_initiative_audience REPUTATION_INITIATIVE_AUDIENCE ON HL5.HL5_ID = REPUTATION_INITIATIVE_AUDIENCE.HL5_ID
 				ORDER BY HL5.CRM_ID;
 
 va_l6 = (SELECT HL6_ID
@@ -848,6 +890,34 @@ va_l6_lead_volume = SELECT HL6_EO.HL6_ID
 			AND HL6_EOD.DELETED = 0
 			AND EOO.EXPORT_KEY = 'LEAD_VOLUME';
 
+va_l6_reputation_initiative = SELECT hl6CategoryOption.HL6_ID, 
+                            category.NAME AS CATEGORY_NAME, 
+                            hl6CategoryOption.AMOUNT AS OPTION_AMOUNT, 
+                            options.NAME AS OPTION_NAME
+							FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL6_CATEGORY_OPTION&quot; hl6CategoryOption
+							INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_ALLOCATION_CATEGORY_OPTION_LEVEL&quot; ACOL
+							ON ACOL.ALLOCATION_CATEGORY_OPTION_LEVEL_ID = hl6CategoryOption.ALLOCATION_CATEGORY_OPTION_LEVEL_ID
+							INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_ALLOCATION_OPTION&quot; options ON options.ALLOCATION_OPTION_ID = ACOL.ALLOCATION_OPTION_ID
+							INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_ALLOCATION_CATEGORY&quot; category ON category.ALLOCATION_CATEGORY_ID = ACOL.ALLOCATION_CATEGORY_ID
+							WHERE hl6CategoryOption.ENABLED = 1 
+							AND hl6CategoryOption.DELETED = 0
+							AND hl6CategoryOption.AMOUNT != 0
+							AND category.NAME = 'Reputation Initiative';
+							
+va_l6_reputation_initiative_audience = SELECT hl6CategoryOption.HL6_ID, 
+                            category.NAME AS CATEGORY_NAME, 
+                            hl6CategoryOption.AMOUNT AS OPTION_AMOUNT, 
+                            options.NAME AS OPTION_NAME
+							FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL6_CATEGORY_OPTION&quot; hl6CategoryOption
+							INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_ALLOCATION_CATEGORY_OPTION_LEVEL&quot; ACOL
+							ON ACOL.ALLOCATION_CATEGORY_OPTION_LEVEL_ID = hl6CategoryOption.ALLOCATION_CATEGORY_OPTION_LEVEL_ID
+							INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_ALLOCATION_OPTION&quot; options ON options.ALLOCATION_OPTION_ID = ACOL.ALLOCATION_OPTION_ID
+							INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_ALLOCATION_CATEGORY&quot; category ON category.ALLOCATION_CATEGORY_ID = ACOL.ALLOCATION_CATEGORY_ID
+							WHERE hl6CategoryOption.ENABLED = 1 
+							AND hl6CategoryOption.DELETED = 0 
+							AND hl6CategoryOption.AMOUNT != 0
+							AND category.NAME = 'Reputation Initiative Audience';
+
 va_l6_result = SELECT HL6.HL6_ID AS HL_ID
 				, HL6.HIERARCHY_LEVEL_ID
 				, HL6.HIERARCHY_LEVEL_VALUE
@@ -875,11 +945,15 @@ va_l6_result = SELECT HL6.HL6_ID AS HL_ID
 				, HL6.MODIFIED_DATE
 				, HL6.STATUS
 				, '' AS DES
+				, REPUTATION_INITIATIVE.OPTION_NAME AS REPUTATION_INITIATIVE
+				, REPUTATION_INITIATIVE_AUDIENCE.OPTION_NAME AS REPUTATION_INITIATIVE_AUDIENCE
 				FROM :va_l6 HL6
 				LEFT JOIN :va_l6_mnp MNP ON HL6.HL6_ID = MNP.HL6_ID
 				LEFT JOIN :va_l6_mtp MTP ON HL6.HL6_ID = MTP.HL6_ID
 				LEFT JOIN :va_l6_mip MIP ON HL6.HL6_ID = MIP.HL6_ID
 				LEFT JOIN :va_l6_lead_volume LEAD_VOLUME ON HL6.HL6_ID = LEAD_VOLUME.HL6_ID
+				LEFT JOIN :va_l6_reputation_initiative REPUTATION_INITIATIVE ON HL6.HL6_ID = REPUTATION_INITIATIVE.HL6_ID
+				LEFT JOIN :va_l6_reputation_initiative_audience REPUTATION_INITIATIVE_AUDIENCE ON HL6.HL6_ID = REPUTATION_INITIATIVE_AUDIENCE.HL6_ID
 				ORDER BY HL6.CRM_ID;
 
 var_out = SELECT HIERARCHY_LEVEL_ID
@@ -908,6 +982,8 @@ var_out = SELECT HIERARCHY_LEVEL_ID
             , MODIFIED_DATE
             , STATUS
             , DES
+            , REPUTATION_INITIATIVE
+			, REPUTATION_INITIATIVE_AUDIENCE
 FROM ((SELECT HL_ID
 				, HIERARCHY_LEVEL_ID
 				, HIERARCHY_LEVEL_VALUE
@@ -935,6 +1011,8 @@ FROM ((SELECT HL_ID
 				, MODIFIED_DATE
 				, STATUS
 				, DES
+				, REPUTATION_INITIATIVE
+			    , REPUTATION_INITIATIVE_AUDIENCE
 from :va_l1_result HL1)
 UNION
 (SELECT HL_ID
@@ -964,6 +1042,8 @@ UNION
 				, MODIFIED_DATE
 				, STATUS
 				, DES
+				, REPUTATION_INITIATIVE
+			    , REPUTATION_INITIATIVE_AUDIENCE
 from :va_l2_result HL2)
 UNION
 (SELECT HL_ID
@@ -993,6 +1073,8 @@ UNION
 				, MODIFIED_DATE
 				, STATUS
 				, DES
+				, REPUTATION_INITIATIVE
+			    , REPUTATION_INITIATIVE_AUDIENCE
 from :va_l3_result HL3)
 UNION
 (SELECT HL_ID
@@ -1022,6 +1104,8 @@ UNION
 				, MODIFIED_DATE
 				, STATUS
 				, DES
+				, REPUTATION_INITIATIVE
+			    , REPUTATION_INITIATIVE_AUDIENCE
 from :va_l4_result HL4)
 UNION
 (SELECT HL_ID
@@ -1051,7 +1135,9 @@ UNION
 				, MODIFIED_DATE
 				, STATUS
 				, DES
-from :va_l5_result HL5)
+				, REPUTATION_INITIATIVE
+			    , REPUTATION_INITIATIVE_AUDIENCE
+from :va_l5_result HL5) 
 UNION
 (SELECT HL_ID
 				, HIERARCHY_LEVEL_ID
@@ -1080,6 +1166,8 @@ UNION
 				, MODIFIED_DATE
 				, STATUS
 				, DES
+				, REPUTATION_INITIATIVE
+			    , REPUTATION_INITIATIVE_AUDIENCE
 from :va_l6_result HL6));
 
 END /********* End Procedure Script ************/</definition>
@@ -1191,6 +1279,15 @@ END /********* End Procedure Script ************/</definition>
       <attribute id="DES" order="26">
         <descriptions defaultDescription="DES"/>
         <keyMapping columnObjectName="Script_View" columnName="DES"/>
+      </attribute>
+    
+      <attribute id="REPUTATION_INITIATIVE" order="27">
+    
+        <keyMapping columnObjectName="Script_View" columnName="REPUTATION_INITIATIVE"/>
+    
+      </attribute>
+      <attribute id="REPUTATION_INITIATIVE_AUDIENCE" order="28">
+        <keyMapping columnObjectName="Script_View" columnName="REPUTATION_INITIATIVE_AUDIENCE"/>
       </attribute>
     </attributes>
     <calculatedAttributes/>

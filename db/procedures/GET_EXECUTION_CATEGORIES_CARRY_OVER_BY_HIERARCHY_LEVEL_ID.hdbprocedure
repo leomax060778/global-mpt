@@ -1,0 +1,302 @@
+--/*
+--** Stored Procedure Name: GET_EXECUTION_CATEGORIES_CARRY_OVER_BY_HIERARCHY_LEVEL_ID
+--** @Description: obtain all the Category Options, Country Category Options and Hidden Category Options for the current
+--** level, and all the selected Category Options from the parent, in order to match them with the current relations.
+--** @IN in_hierarchy_level_id (BIGINT): the ID of the HL5.
+--** @IN in_parent_id (BIGINT): the ID of the HL5.
+--** @IN in_dynamic_form_id (BIGINT): the ID of the HL5.
+--** @OUT: out_result_parent (TABLE): table with All *selected Category Options related to the parent level.
+--** @OUT: out_result (TABLE): table with All Category Options related to the current level, even selected or not.
+--*/
+
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_EXECUTION_CATEGORIES_CARRY_OVER_BY_HIERARCHY_LEVEL_ID" (
+	IN in_hierarchy_level_id BIGINT,
+	IN in_parent_id BIGINT,
+	IN in_dynamic_form_id BIGINT,
+	OUT out_result_parent TABLE (
+	    ALLOCATION_CATEGORY_OPTION_LEVEL_ID INTEGER,
+	    CATEGORY_ID INTEGER,
+	    OPTION_ID INTEGER,
+	    AMOUNT DECIMAL(19,2),
+	    AMOUNT_KPI DECIMAL(19,2)
+	),
+
+	OUT out_result TABLE (
+        CATEGORY_ID INTEGER,
+        ALLOCATION_CATEGORY_OPTION_LEVEL_ID INTEGER,
+        ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID INTEGER,
+        HIERARCHY_LEVEL_ID INTEGER,
+        MEASURE_ID INTEGER,
+        CATEGORY_NAME NVARCHAR(60),
+        DESCRIPTION NVARCHAR(255),
+        IN_PROCESSING_REPORT TINYINT,
+        OPTION_ID INTEGER,
+        OPTION_NAME NVARCHAR(60),
+        MAKE_CATEGORY_MANDATORY TINYINT,
+        SINGLE_OPTION_ONLY TINYINT,
+        CATEGORY_TYPE_ID INTEGER,
+        AVAILABLE_IN_EVENT_REQUEST TINYINT,
+        OPTIONS_LIMIT INTEGER,
+        DEFAULT_BUDGET_PERCENTAGE DECIMAL(19,2),
+        DEFAULT_KPI_PERCENTAGE DECIMAL(19,2)
+        )
+	)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	READS SQL DATA AS
+BEGIN
+
+    IF in_hierarchy_level_id = 2 THEN
+
+		hl2_table = SELECT l2.HL2_ID
+					FROM HL4 l4
+					INNER JOIN HL3 l3
+						ON l4.HL3_ID = l3.HL3_ID
+					INNER JOIN HL2 l2
+						ON l3.HL2_ID = l2.HL2_ID
+					WHERE l4.HL4_ID = in_parent_id
+						AND l4.ENABLED = 1
+						AND l4.DELETED = 0;
+
+        out_result_parent = SELECT acol.ALLOCATION_CATEGORY_OPTION_LEVEL_ID,
+                                   ac.ALLOCATION_CATEGORY_ID AS CATEGORY_ID,
+                                   ao.ALLOCATION_OPTION_ID AS OPTION_ID,
+                                   hl4_co.AMOUNT AS AMOUNT,
+                                   hl4_co.AMOUNT AS AMOUNT_KPI
+                            FROM HL4_CATEGORY_OPTION hl4_co
+                                INNER JOIN ALLOCATION_CATEGORY_OPTION_LEVEL acol
+                                    ON acol.ALLOCATION_CATEGORY_OPTION_LEVEL_ID = hl4_co.ALLOCATION_CATEGORY_OPTION_LEVEL_ID
+                                        AND acol.ENABLED = 1
+                                        AND acol.DELETED = 0
+                                INNER JOIN ALLOCATION_CATEGORY ac
+                                    ON ac.ALLOCATION_CATEGORY_ID = acol.ALLOCATION_CATEGORY_ID
+                                INNER JOIN ALLOCATION_OPTION ao
+                                    ON ao.ALLOCATION_OPTION_ID = acol.ALLOCATION_OPTION_ID
+                            WHERE hl4_co.HL4_ID = in_parent_id
+                                AND hl4_co.AMOUNT != 0
+                                AND hl4_co.ENABLED = 1
+                                AND hl4_co.DELETED = 0;
+
+    ELSE
+
+        hl2_table = SELECT l2.HL2_ID
+        					FROM HL5 l5
+        					INNER JOIN HL4 l4
+        					    ON l5.HL4_ID = l4.HL4_ID
+        					INNER JOIN HL3 l3
+        						ON l4.HL3_ID = l3.HL3_ID
+        					INNER JOIN HL2 l2
+        						ON l3.HL2_ID = l2.HL2_ID
+        					WHERE l5.HL5_ID = in_parent_id
+        						AND l5.ENABLED = 1
+        						AND l5.DELETED = 0;
+
+        out_result_parent = SELECT acol.ALLOCATION_CATEGORY_OPTION_LEVEL_ID,
+                                   ac.ALLOCATION_CATEGORY_ID AS CATEGORY_ID,
+                                   ao.ALLOCATION_OPTION_ID AS OPTION_ID,
+                                   hl5_co.AMOUNT,
+                                   hl5_co.AMOUNT_KPI
+                            FROM HL5_CATEGORY_OPTION hl5_co
+                                INNER JOIN ALLOCATION_CATEGORY_OPTION_LEVEL acol
+                                    ON acol.ALLOCATION_CATEGORY_OPTION_LEVEL_ID = hl5_co.ALLOCATION_CATEGORY_OPTION_LEVEL_ID
+                                        AND acol.ENABLED = 1
+                                        AND acol.DELETED = 0
+                                INNER JOIN ALLOCATION_CATEGORY ac
+                                    ON ac.ALLOCATION_CATEGORY_ID = acol.ALLOCATION_CATEGORY_ID
+                                INNER JOIN ALLOCATION_OPTION ao
+                                    ON ao.ALLOCATION_OPTION_ID = acol.ALLOCATION_OPTION_ID
+                            WHERE hl5_co.HL5_ID = in_parent_id
+                                AND hl5_co.AMOUNT != 0
+                                AND hl5_co.ENABLED = 1
+                                AND hl5_co.DELETED = 0;
+
+    END IF;
+
+    IF in_dynamic_form_id != 0 THEN
+
+        hidden_ids = SELECT df_alloc.ALLOCATION_CATEGORY_ID
+                     FROM DYNAMIC_FORM_ALLOCATION df_alloc
+                     WHERE df_alloc.DYNAMIC_FORM_ID = in_dynamic_form_id
+                        AND df_alloc.HIDDEN = 1
+                        AND df_alloc.ENABLED = 1
+                        AND df_alloc.DELETED = 0;
+
+        va_allocation_category_option = (SELECT ac.ALLOCATION_CATEGORY_ID AS CATEGORY_ID,
+                                                acol.ALLOCATION_CATEGORY_OPTION_LEVEL_ID,
+                                                NULL AS ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID,
+                                                acol.HIERARCHY_LEVEL_ID,
+                                                ac.MEASURE_ID,
+                                                ac.NAME AS CATEGORY_NAME,
+                                                ac.DESCRIPTION,
+                                                acol.IN_PROCESSING_REPORT,
+                                                ao.ALLOCATION_OPTION_ID AS OPTION_ID,
+                                                ao.NAME AS OPTION_NAME,
+                                                acol.make_category_mandatory,
+                                                ac.SINGLE_OPTION_ONLY,
+                                                ac.CATEGORY_TYPE_ID,
+                                                acol.AVAILABLE_IN_EVENT_REQUEST,
+                                                acol.OPTIONS_LIMIT,
+                                                DF_ALLOC.BUDGET_PERCENTAGE AS DEFAULT_BUDGET_PERCENTAGE,
+                                                DF_ALLOC.KPI_PERCENTAGE AS DEFAULT_KPI_PERCENTAGE
+
+                                        FROM allocation_category_option_level acol
+                                            INNER JOIN allocation_category ac
+                                                ON acol.ALLOCATION_CATEGORY_ID = ac.ALLOCATION_CATEGORY_ID
+                                            INNER JOIN allocation_option ao
+                                                ON acol.ALLOCATION_OPTION_ID = ao.ALLOCATION_OPTION_ID
+                                            LEFT JOIN DYNAMIC_FORM_ALLOCATION DF_ALLOC
+                                                ON DF_ALLOC.ALLOCATION_CATEGORY_ID = ac.ALLOCATION_CATEGORY_ID
+                                                    AND DF_ALLOC.ALLOCATION_OPTION_ID = ao.ALLOCATION_OPTION_ID
+                                                    AND DF_ALLOC.ENABLED = 1
+                                                    AND DF_ALLOC.DELETED = 0
+                                                    AND (DF_ALLOC.HIDDEN = 0 OR DF_ALLOC.HIDDEN IS NULL)
+                                                    AND (DF_ALLOC.DYNAMIC_FORM_ID = in_dynamic_form_id)
+                                        WHERE acol.HIERARCHY_LEVEL_ID = in_hierarchy_level_id
+                                            AND acol.ALLOCATION_CATEGORY_ID NOT IN (SELECT h_cat.ALLOCATION_CATEGORY_ID FROM :hidden_ids h_cat)
+                                            AND ac.ENABLED = 1
+                                            AND ac.DELETED = 0
+                                            AND ao.ENABLED = 1
+                                            AND ao.DELETED = 0
+                                            AND acol.ENABLED = 1
+                                            AND acol.DELETED = 0
+                                        ORDER BY UPPER(ac.name),
+                                         upper(ao.name))
+
+                                        UNION
+
+                                        (SELECT ac.ALLOCATION_CATEGORY_ID AS CATEGORY_ID,
+                                                NULL AS ALLOCATION_CATEGORY_OPTION_LEVEL_ID,
+                                                acol.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID,
+                                                acol.HIERARCHY_LEVEL_ID,
+                                                ac.MEASURE_ID,
+                                                ac.NAME AS CATEGORY_NAME,
+                                                ac.DESCRIPTION,
+                                                acol.IN_PROCESSING_REPORT,
+                                                ao.ALLOCATION_COUNTRY_CATEGORY_OPTION_ID AS OPTION_ID,
+                                                ao.NAME AS OPTION_NAME,
+                                                acol.make_category_mandatory,
+                                                ac.SINGLE_OPTION_ONLY,
+                                                ac.CATEGORY_TYPE_ID,
+                                                0 AS AVAILABLE_IN_EVENT_REQUEST,
+                                                acol.OPTIONS_LIMIT,
+                                                NULL AS DEFAULT_BUDGET_PERCENTAGE,
+                                                NULL AS DEFAULT_KPI_PERCENTAGE
+
+                                        FROM ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL acol
+                                        INNER JOIN allocation_category ac
+                                            ON acol.ALLOCATION_CATEGORY_ID = ac.ALLOCATION_CATEGORY_ID
+                                        INNER JOIN ALLOCATION_COUNTRY_CATEGORY_OPTION ao
+                                            ON acol.ALLOCATION_COUNTRY_CATEGORY_OPTION_ID = ao.ALLOCATION_COUNTRY_CATEGORY_OPTION_ID
+                                        INNER JOIN ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_HL2 hl2_acol
+                                            ON hl2_acol.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID = acol.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID
+                                                AND hl2_acol.HL2_ID IN (SELECT hl2_t.HL2_ID FROM :hl2_table hl2_t)
+                                        WHERE acol.HIERARCHY_LEVEL_ID = in_hierarchy_level_id
+                                        AND ac.ENABLED = 1
+                                        AND ac.DELETED = 0
+                                        AND ao.ENABLED = 1
+                                        AND ao.DELETED = 0
+                                        AND acol.ENABLED = 1
+                                        AND acol.DELETED = 0
+                                        ORDER BY UPPER(ac.name),
+                                            UPPER(ao.name)
+                                        );
+
+    ELSE
+
+    va_allocation_category_option =
+                                    (SELECT ac.ALLOCATION_CATEGORY_ID AS CATEGORY_ID,
+                                            acol.ALLOCATION_CATEGORY_OPTION_LEVEL_ID,
+                                            NULL AS ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID,
+                                            acol.HIERARCHY_LEVEL_ID,
+                                            ac.MEASURE_ID,
+                                            ac.NAME AS CATEGORY_NAME,
+                                            ac.DESCRIPTION,
+                                            acol.IN_PROCESSING_REPORT,
+                                            ao.ALLOCATION_OPTION_ID AS OPTION_ID,
+                                            ao.NAME AS OPTION_NAME,
+                                            acol.make_category_mandatory,
+                                            ac.SINGLE_OPTION_ONLY,
+                                            ac.CATEGORY_TYPE_ID,
+                                            acol.AVAILABLE_IN_EVENT_REQUEST,
+                                            acol.OPTIONS_LIMIT,
+                                            null AS DEFAULT_BUDGET_PERCENTAGE,
+                                            null AS DEFAULT_KPI_PERCENTAGE
+
+                                    FROM allocation_category_option_level acol
+                                        INNER JOIN allocation_category ac
+                                            ON acol.ALLOCATION_CATEGORY_ID = ac.ALLOCATION_CATEGORY_ID
+                                        INNER JOIN allocation_option ao
+                                            ON acol.ALLOCATION_OPTION_ID = ao.ALLOCATION_OPTION_ID
+                                    WHERE acol.HIERARCHY_LEVEL_ID = in_hierarchy_level_id
+                                        AND ac.ENABLED = 1
+                                        AND ac.DELETED = 0
+                                        AND ao.ENABLED = 1
+                                        AND ao.DELETED = 0
+                                        AND acol.ENABLED = 1
+                                        AND acol.DELETED = 0
+                                    ORDER BY UPPER(ac.name),
+                                     upper(ao.name))
+
+                                    UNION
+
+                                    (SELECT ac.ALLOCATION_CATEGORY_ID AS CATEGORY_ID,
+                                            NULL AS ALLOCATION_CATEGORY_OPTION_LEVEL_ID,
+                                            acol.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID,
+                                            acol.HIERARCHY_LEVEL_ID,
+                                            ac.MEASURE_ID,
+                                            ac.NAME AS CATEGORY_NAME,
+                                            ac.DESCRIPTION,
+                                            acol.IN_PROCESSING_REPORT,
+                                            ao.ALLOCATION_COUNTRY_CATEGORY_OPTION_ID AS OPTION_ID,
+                                            ao.NAME AS OPTION_NAME,
+                                            acol.make_category_mandatory,
+                                            ac.SINGLE_OPTION_ONLY,
+                                            ac.CATEGORY_TYPE_ID,
+                                            0 AS AVAILABLE_IN_EVENT_REQUEST,
+                                            acol.OPTIONS_LIMIT,
+                                            NULL AS DEFAULT_BUDGET_PERCENTAGE,
+                                            NULL AS DEFAULT_KPI_PERCENTAGE
+
+                                    FROM ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL acol
+                                    INNER JOIN allocation_category ac
+                                        ON acol.ALLOCATION_CATEGORY_ID = ac.ALLOCATION_CATEGORY_ID
+                                    INNER JOIN ALLOCATION_COUNTRY_CATEGORY_OPTION ao
+                                        ON acol.ALLOCATION_COUNTRY_CATEGORY_OPTION_ID = ao.ALLOCATION_COUNTRY_CATEGORY_OPTION_ID
+                                    INNER JOIN ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_HL2 hl2_acol
+                                        ON hl2_acol.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID = acol.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID
+                                            AND hl2_acol.HL2_ID IN (SELECT hl2_t.HL2_ID FROM :hl2_table hl2_t)
+                                    WHERE acol.HIERARCHY_LEVEL_ID = in_hierarchy_level_id
+                                    AND ac.ENABLED = 1
+                                    AND ac.DELETED = 0
+                                    AND ao.ENABLED = 1
+                                    AND ao.DELETED = 0
+                                    AND acol.ENABLED = 1
+                                    AND acol.DELETED = 0
+                                    ORDER BY UPPER(ac.name),
+                                        UPPER(ao.name)
+                                    );
+
+    END IF;
+
+    out_result = SELECT CATEGORY_ID,
+                        ALLOCATION_CATEGORY_OPTION_LEVEL_ID,
+                        ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID,
+                        HIERARCHY_LEVEL_ID,
+                        MEASURE_ID,
+                        CATEGORY_NAME,
+                        DESCRIPTION,
+                        IN_PROCESSING_REPORT,
+                        OPTION_ID,
+                        OPTION_NAME,
+                        make_category_mandatory,
+                        SINGLE_OPTION_ONLY,
+                        CATEGORY_TYPE_ID,
+                        AVAILABLE_IN_EVENT_REQUEST,
+                        OPTIONS_LIMIT,
+                        DEFAULT_BUDGET_PERCENTAGE,
+                        DEFAULT_KPI_PERCENTAGE
+                    FROM :va_allocation_category_option
+                    ORDER BY CATEGORY_NAME, OPTION_NAME;
+
+END;

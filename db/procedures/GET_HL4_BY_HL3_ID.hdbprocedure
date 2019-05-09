@@ -56,7 +56,9 @@ va_intermidate = SELECT
     INNER JOIN hl4_status_detail hl4_status_detail ON hl4_status_detail.hl4_status_detail_id = hl4.hl4_status_detail_id
     INNER JOIN "MKTG_PLANNING_TOOL"."USER" userTable ON userTable.USER_ID = hl4.created_user_id
     WHERE hl4.enabled=1 AND hl4.deleted=0
-	AND hl3.hl3_id = in_hl3_id;
+	AND hl3.hl3_id = in_hl3_id
+	--- This means that will be included those records that aren´t in Deleted In CRM ---
+    AND hl4.HL4_STATUS_DETAIL_ID != 10;
 
 va_hl6 = SELECT HL6.HL6_ID, HL6.HL5_ID
             FROM HL6

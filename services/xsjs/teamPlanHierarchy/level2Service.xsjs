@@ -27,10 +27,8 @@ function handleGet(parameters, userSessionID){
 	if(parameters.length > 0){
         blLevel2.checkPermission(userSessionID, parameters[0].name, parameters[0].value);
 		if (parameters[0].name == hl2Id){
-			// var objLevel2 = {};
-			// objLevel2.IN_HL2_ID = parameters[0].value;
 			var isCarryOver = httpUtil.getUrlParameters().get("METHOD") == "CARRY_OVER";
-			var rdo = blLevel2.getLevel2ById(parameters[0].value, isCarryOver);
+			var rdo = blLevel2.getLevel2ById(parameters[0].value, isCarryOver, userSessionID);
 			httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
 		}
 		else if (parameters[0].name == GET_ALL_CENTRAL_TEAM){

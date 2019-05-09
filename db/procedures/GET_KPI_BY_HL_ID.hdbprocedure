@@ -1,33 +1,47 @@
 PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_KPI_BY_HL_ID" (
 		IN in_hl_id bigint,
 		OUT out_result TABLE (
-			OUTCOMES_TYPE_ID BIGINT
-			, OUTCOMES_TYPE_NAME NVARCHAR(127)
-			, HIERARCHY_LEVEL_ID BIGINT
-			, OUTCOMES_ID BIGINT
-			, OUTCOMES_NAME NVARCHAR(255)
-			, SHOW_WIZARD TINYINT
-			, KPI_DISTRIBUTION TINYINT
+			OUTCOMES_TYPE_ID BIGINT,
+			OUTCOMES_TYPE_NAME NVARCHAR(127),
+			DEFAULT TINYINT,
+			HIERARCHY_LEVEL_ID BIGINT,
+			OUTCOMES_ID BIGINT,
+			OUTCOMES_NAME NVARCHAR(255),
+			SHOW_WIZARD TINYINT,
+			KPI_DISTRIBUTION TINYINT
 			)
 	) 
 	LANGUAGE SQLSCRIPT
 	SQL SECURITY INVOKER 
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL" AS
 BEGIN
-    va_kpi_benchmark = SELECT DISTINCT EXPECTED_OUTCOME_OPTION_ID FROM KPI_BENCHMARK WHERE ENABLED = 1 AND DELETED = 0;
+    va_kpi_benchmark =  SELECT DISTINCT EXPECTED_OUTCOME_OPTION_ID
+                        FROM KPI_BENCHMARK
+                        WHERE   ENABLED = 1
+                            AND DELETED = 0;
 
-	out_result = SELECT DISTINCT EO.EXPECTED_OUTCOME_ID AS OUTCOMES_TYPE_ID
-                        , EO.NAME AS OUTCOMES_TYPE_NAME
-                        ,EOL.HIERARCHY_LEVEL_ID
-                            ,eoo.expected_outcome_option_id AS OUTCOMES_ID
-                            , eoo.NAME as OUTCOMES_NAME
-                            , CASE WHEN KPI_BENCHMARK.EXPECTED_OUTCOME_OPTION_ID IS NULL THEN 0 ELSE 1 END AS SHOW_WIZARD
-                            , EOL.KPI_DISTRIBUTION
-                        FROM EXPECTED_OUTCOME_LEVEL EOL
-                        INNER JOIN EXPECTED_OUTCOME EO ON EO.EXPECTED_OUTCOME_ID = EOL.EXPECTED_OUTCOME_ID AND EO.ENABLED = 1 AND EO.DELETED = 0
-                        INNER JOIN EXPECTED_OUTCOME_OPTION EOO ON EOO.EXPECTED_OUTCOME_OPTION_ID = EOL.EXPECTED_OUTCOME_OPTION_ID  AND EOO.ENABLED = 1 AND EOO.DELETED = 0
-                        left join :va_kpi_benchmark KPI_BENCHMARK on eoo.expected_outcome_option_id = KPI_BENCHMARK.EXPECTED_OUTCOME_OPTION_ID
-                        WHERE EOL.HIERARCHY_LEVEL_ID = IN_HL_ID
-                        AND EOL.ENABLED = 1 AND EOL.DELETED = 0
-                        ORDER BY EO.NAME, eoo.NAME;
+	out_result =    SELECT DISTINCT
+	                    EO.EXPECTED_OUTCOME_ID AS OUTCOMES_TYPE_ID,
+	                    EO.NAME AS OUTCOMES_TYPE_NAME,
+	                    EO.DEFAULT,
+	                    EOL.HIERARCHY_LEVEL_ID,
+                        eoo.expected_outcome_option_id AS OUTCOMES_ID,
+                        eoo.NAME as OUTCOMES_NAME,
+                        CASE WHEN KPI_BENCHMARK.EXPECTED_OUTCOME_OPTION_ID IS NULL THEN 0 ELSE 1 END AS SHOW_WIZARD,
+                        EOL.KPI_DISTRIBUTION
+                    FROM EXPECTED_OUTCOME_LEVEL EOL
+                    INNER JOIN EXPECTED_OUTCOME EO
+                        ON EO.EXPECTED_OUTCOME_ID = EOL.EXPECTED_OUTCOME_ID
+                            AND EO.ENABLED = 1
+                            AND EO.DELETED = 0
+                    INNER JOIN EXPECTED_OUTCOME_OPTION EOO
+                        ON EOO.EXPECTED_OUTCOME_OPTION_ID = EOL.EXPECTED_OUTCOME_OPTION_ID
+                            AND EOO.ENABLED = 1
+                            AND EOO.DELETED = 0
+                    LEFT JOIN :va_kpi_benchmark KPI_BENCHMARK
+                        ON eoo.expected_outcome_option_id = KPI_BENCHMARK.EXPECTED_OUTCOME_OPTION_ID
+                    WHERE EOL.HIERARCHY_LEVEL_ID = IN_HL_ID
+                        AND EOL.ENABLED = 1
+                        AND EOL.DELETED = 0
+                    ORDER BY EO.NAME, eoo.NAME;
 END;

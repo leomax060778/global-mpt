@@ -82,6 +82,14 @@ function handleGet(params, userId) {
             case 'GET_DATA_KPI':
                 result = hl4.getLevel4Kpi(parameters.HL3_ID, userId);
                 break;
+            case 'GET_MARKETING_TACTICS_TREE':
+                var budgetYearId = parameters.BUDGET_YEAR_ID || 0;
+                var regionId = parameters.REGION_ID || 0;
+                var subRegionId = parameters.SUBREGION_ID || 0;
+                var generalFilter = httpUtil.getUrlParameters().get("GENERAL_FILTER") || null;
+
+                result = hl4.getMarketingTacticsTree(budgetYearId, regionId, subRegionId, generalFilter);
+                break;
             default:
 
                 throw ErrorLib.getErrors().BadRequest("","","invalid METHOD, can be: GET_HL4_BY_HL3_ID, CARRY_OVER, GET_HL4_BY_ID or GET_PARENT_REMAINING_BUDGET.");

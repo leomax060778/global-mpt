@@ -1,0 +1,25 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_DES_TYPE_FOR_LEGACY_RECORDS" (
+	OUT out_result TABLE (
+	    DES_TYPE_ID BIGINT,
+        NAME NVARCHAR(255),
+        AUTOMATIC_APPROVAL TINYINT
+    )
+)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER 
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	READS SQL DATA AS
+BEGIN
+    out_result =	SELECT DISTINCT des_cst.DES_TYPE_ID,
+                            des.NAME,
+                            des.AUTOMATIC_APPROVAL
+                    FROM DES_TYPE_CAMPAIGN_SUB_TYPE des_cst
+                    INNER JOIN DES_TYPE des
+                        ON des.DES_TYPE_ID = des_cst.DES_TYPE_ID
+                            AND des.ENABLED = 1
+                            AND des.DELETED = 0
+                    WHERE des_cst.SHOW_IN_LEGACY = 1
+                        AND des_cst.ENABLED = 1
+                        AND des_cst.DELETED = 0
+                    ORDER BY NAME ASC;
+END;

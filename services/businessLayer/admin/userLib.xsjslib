@@ -808,6 +808,10 @@ function getPermissionForLevelByUser(level, levelId, userId) {
     return dbUser.getPermissionForLevelByUser(level, levelId, userId);
 }
 
+function getPermissionForLevelByUserBudgetYearId(level, levelId, budgetYearId, userId) {
+    return dbUser.getPermissionForLevelByUserBudgetYearId(level, levelId, budgetYearId, userId);
+}
+
 //Verify if the user is in the HL2 Budget Approver list
 function validateHL2BudgetApproverByUserId(HL2Id, userId) {
     if (!HL2Id) {

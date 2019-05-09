@@ -1,0 +1,16 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_DUPLICATED_HL3_ACRONYM" (
+    IN in_acronym NVARCHAR(25),
+	OUT out_result BIGINT
+)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	READS SQL DATA AS
+BEGIN
+
+    SELECT COUNT(HL4_ID) INTO out_result
+        FROM HL4
+        WHERE HL4.ACRONYM = in_acronym
+            AND HL4.deleted = 0
+            AND HL4.enabled = 1;
+END;

@@ -53,7 +53,8 @@ var L3_CATEGORY_OPTIONS_NOT_EMPTY = "Option percentage should be less than or eq
 var L3_BUDGET_ZERO_CATEGORY_TOTAL_PERCENTAGE_ZERO = "When Sub-Team budget is zero then Category total percentage should be equal to 0%.";
 var L3_APPROVERS_NOT_FOUND = "Approvers data was not found.";
 var L3_BUDGET_EXCEEDED = "The maximum number for Budget was exceeded."
-
+var L3_MSG_INITIATIVE_EXISTS_IN_L4 = "Another Initiative/Campaign with the same acronym already exists.";
+var L3_MSG_CRM_PATH_CREATED = "Another Initiative/Campaign or Priority/Sub-Team with the same CRM ID already exists.";
 var HIERARCHY_LEVEL = {
     HL1: 6,
     HL2: 5,
@@ -68,7 +69,9 @@ var GENERAL_FILTER_MAP = {
     PRODUCT_MARKETING: 2,
     FUNCTIONAL_TEAMS: 3,
     COMMUNICATIONS: 4,
-    BUSINESS_STRATEGY_CULTURE: 5
+    BUSINESS_STRATEGY_CULTURE: 5,
+    OTHER_MARKETING: 6,
+    INDUSTRY_MARKETING: 7
 };
 
 // Get all Level 3 data by level 2 id
@@ -266,11 +269,13 @@ function getHl3ByUserGroupByHl1(userId, budgetYearId, regionId, subRegionId, gen
 
 function getHl3ByPlanningPurpose(userId, isSA, budgetYearId, generalFilter) {
     var hl3 = data.getHl3ByPlanningPurpose(userId, isSA, budgetYearId);
+
     var collection = {};
+    var includeIndustry = !!(generalFilter && generalFilter === "PRODUCT_MARKETING");
 
     if (hl3 && hl3.length) {
         hl3.forEach(function (item) {
-            if(!generalFilter || GENERAL_FILTER_MAP[generalFilter] === Number(item.PLANNING_PURPOSE_ID)){
+            if(!generalFilter || (GENERAL_FILTER_MAP[generalFilter] === Number(item.PLANNING_PURPOSE_ID)) || (includeIndustry && GENERAL_FILTER_MAP.INDUSTRY_MARKETING === Number(item.PLANNING_PURPOSE_ID))){
                 if (!collection[item.PLANNING_PURPOSE_ID]) {
                     collection[item.PLANNING_PURPOSE_ID] = {
                         PATH: item.PLANNING_PURPOSE_NAME,
@@ -317,7 +322,7 @@ function getHl3ByPlanningPurpose(userId, isSA, budgetYearId, generalFilter) {
                         };
                     }
 
-                    if (!collection[item.PLANNING_PURPOSE_ID].CHILDREN[item.HL1_ID].CHILDREN[item.HL2_ID]) {
+                    if (!collection[item.PLANNING_PURPOSE_ID].CHILDREN[item.HL1_ID].CHILDREN[item.HL2_ID] && !!item.HL2_ID) {
                         collection[item.PLANNING_PURPOSE_ID].CHILDREN[item.HL1_ID].CHILDREN[item.HL2_ID] = {
                             HL2_ID: item.HL2_ID
                             , PATH: item.HL2_PATH
@@ -326,11 +331,14 @@ function getHl3ByPlanningPurpose(userId, isSA, budgetYearId, generalFilter) {
                         };
                     }
 
-                    collection[item.PLANNING_PURPOSE_ID].CHILDREN[item.HL1_ID].CHILDREN[item.HL2_ID].CHILDREN.push({
-                        HL3_ID: item.HL3_ID,
-                        PATH: item.HL3_PATH,
-                        HL3_DESCRIPTION: item.HL3_DESCRIPTION
-                    });
+                    if(!!item.HL3_ID){
+                        collection[item.PLANNING_PURPOSE_ID].CHILDREN[item.HL1_ID].CHILDREN[item.HL2_ID].CHILDREN.push({
+                            HL3_ID: item.HL3_ID,
+                            PATH: item.HL3_PATH,
+                            HL3_DESCRIPTION: item.HL3_DESCRIPTION
+                        });
+                    }
+
                 // }
             }
         });
@@ -453,7 +461,7 @@ function insertHl3(objHl3, userId) {
     var requiredDFObject = JSON.parse(JSON.stringify(budgetYear.getRequireDynamicFormByBudgetYearId(budgetYearId)));
 
     //Complete data with dynamic form (if the Budget Year requires it).
-    objHl3 = (Number(requiredDFObject.REQUIRE_DYNAMIC_FORM) === 1)? util.completeFromDynamicFormByRole(userId, HIERARCHY_LEVEL["HL3"], objHl3, budgetYearId): objHl3;
+    objHl3 = (Number(requiredDFObject.REQUIRE_DYNAMIC_FORM) === 1)? util.completeNewLevelFromDynamicFormByRole(userId, HIERARCHY_LEVEL["HL3"], objHl3, budgetYearId, objHl3.HL2_ID): objHl3;
 
     validateFormHl3(objHl3);
     validateKpi(objHl3);
@@ -522,6 +530,17 @@ function insertLevel3Version(currentHL3, userId) {
     }
 }
 
+function existsHl3CRMPath(hl3Id, hl2Id, hl3Acronym){
+    if (!hl2Id){
+        throw ErrorLib.getErrors().CustomError("", "", "Parent not found");
+    }
+    if (!hl3Acronym){
+        throw ErrorLib.getErrors().CustomError("", "", "Acronym not found");
+    }
+
+    return data.getDuplicatedHl3CRMPath(hl3Id, hl2Id, hl3Acronym).length !== 0;
+}
+
 // Update an object of HL3
 //return an object {"out_result_hl3": {},"out_result_hl3_fnc": null,"out_crm_id": "0","out_budget_flag": 0}
 //"out_crm_id": "0". More than zero if some acronym or description or business owner changed
@@ -542,7 +561,7 @@ function updateHl3(objHl3, userId) {
         currentHL3.ASSIGNED_USERS = hl3Users.users_in;
         currentHL3.BUDGET_APPROVERS = budgetSpendRequestLib.getL3BudgetApproverByL3Id(objHl3.HL3_ID).assigned;
         currentHL3.EVENT_APPROVERS = eventApprover.assigned;
-        currentHL3.CATEGORIES = getCategoryOption(data.HL3_ID);
+        currentHL3.CATEGORIES = getCategoryOption(objHl3.HL3_ID);
         //Complete data with current HL1 using the dynamic form "hidden" as reference to update
         objHl3 = util.completeDynamicFormEdition(userId, HIERARCHY_LEVEL["HL3"], objHl3, currentHL3, budgetYearId);
     }
@@ -554,10 +573,16 @@ function updateHl3(objHl3, userId) {
     validateCategoryOption(objHl3);
     var result = {};
 
-    if (existsHl3(objHl3, userId))
+    if (existsHl3(objHl3, userId)){
         throw ErrorLib.getErrors().CustomError("",
             "",
             L2_MSG_TEAM_EXISTS);
+    }
+
+    // Validate if the Acronym is being used by any L4
+    if (existsHl3CRMPath(objHl3.HL3_ID, objHl3.HL2_ID, objHl3.ACRONYM)) {
+        throw ErrorLib.getErrors().CustomError("", "", L3_MSG_CRM_PATH_CREATED);
+    }
 
     var hl2 = dataHl2.getLevel2ById(objHl3.HL2_ID);
 
@@ -714,10 +739,16 @@ function validateFormHl3(objHl3) {
     });
     isValid = true;
 
-    if (existsHl3(objHl3))
+    if (existsHl3(objHl3)){
         throw ErrorLib.getErrors().CustomError("",
             "",
             L2_MSG_TEAM_EXISTS);
+    }
+
+    // Validate if the Acronym is being used by any L4
+    if (existsHl3CRMPath(objHl3.HL3_ID, objHl3.HL2_ID, objHl3.ACRONYM)) {
+        throw ErrorLib.getErrors().CustomError("", "", L3_MSG_CRM_PATH_CREATED);
+    }
 
     return isValid;
 }
@@ -1342,9 +1373,9 @@ function contains(a, obj) {
     return false;
 }
 
-function getCarryOverHl2CategoryOption(hl2_id) {
+function getCarryOverHl2CategoryOption(hl2_id, userId) {
     var hl2_category = JSON.parse(JSON.stringify(blLevel2.getCategoryOption(hl2_id)));
-    var hl3_category = JSON.parse(JSON.stringify(allocationCategory.getCategoryOptionByHierarchyLevelId(HIERARCHY_LEVEL.HL3)));
+    var hl3_category = JSON.parse(JSON.stringify(allocationCategory.getCategoryOptionCarryOverByHierarchyLevelId(HIERARCHY_LEVEL.HL3, hl2_id, userId)));
 
     return hl3_category.map(function (category) {
         var hl2Cat = extractElementByList(hl2_category, "CATEGORY_ID", category.CATEGORY_ID);

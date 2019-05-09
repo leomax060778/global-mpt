@@ -42,13 +42,13 @@ IF in_is_super_Admin = 1 THEN
     	HL2.HL2_ID,
     	HL2.ORGANIZATION_ACRONYM as H2_ACRONYM,
     	HL2.ORGANIZATION_NAME as HL2_DESCRIPTION
-    FROM HL3 hl3
-        INNER JOIN HL2 hl2 ON hl2.hl2_id = hl3.hl2_id AND hl2.enabled=1 AND hl2.deleted=0
-        INNER JOIN HL1 hl1 ON hl1.hl1_id = hl2.hl1_id AND hl1.enabled=1 AND hl1.deleted=0
-        INNER JOIN BUDGET_YEAR BGY ON hl1.budget_year_id = BGY.budget_year_id AND BGY.enabled=1 AND BGY.deleted=0
+    FROM HL1 hl1
+        LEFT JOIN HL2 hl2 ON hl2.hl1_id = hl1.hl1_id AND hl2.enabled=1 AND hl2.deleted=0
+        LEFT JOIN HL3 hl3 ON hl2.hl2_id = hl3.hl2_id AND hl3.enabled=1 AND hl3.deleted=0
+        LEFT JOIN BUDGET_YEAR BGY ON hl1.budget_year_id = BGY.budget_year_id AND BGY.enabled=1 AND BGY.deleted=0
         INNER JOIN PLANNING_PURPOSE PL ON HL1.PLANNING_PURPOSE_ID = PL.PLANNING_PURPOSE_ID AND PL.TEAM_TYPE_ID = 2 --Global
     	LEFT JOIN PLANNING_PURPOSE_OPTION PLO ON HL2.PLANNING_PURPOSE_OPTION_ID = PLO.PLANNING_PURPOSE_OPTION_ID
-    where hl3.enabled=1 AND hl3.deleted=0
+    where hl1.enabled=1 AND hl1.deleted=0
 	    AND (BGY.BUDGET_YEAR_ID = in_budget_year_id OR in_budget_year_id = 0)
 	    ORDER BY HL1.ACRONYM, BGY.BUDGET_YEAR, hl3.acronym;
 ELSE
@@ -70,14 +70,14 @@ ELSE
         	HL2.HL2_ID,
         	HL2.ORGANIZATION_ACRONYM as H2_ACRONYM,
         	HL2.ORGANIZATION_NAME as HL2_DESCRIPTION 
-        FROM HL3 hl3
-            INNER JOIN HL3_USER hl3User ON hl3.hl3_id = hl3User.hl3_id and hl3User.USER_ID = in_user_id
-            INNER JOIN HL2 hl2 ON hl2.hl2_id = hl3.hl2_id AND hl2.enabled=1 AND hl2.deleted=0
-            INNER JOIN HL1 hl1 ON hl1.hl1_id = hl2.hl1_id AND hl1.enabled=1 AND hl1.deleted=0
-            INNER JOIN BUDGET_YEAR BGY ON hl1.budget_year_id = BGY.budget_year_id AND BGY.enabled=1 AND BGY.deleted=0
+        FROM HL1 hl1
+            LEFT JOIN HL2 hl2 ON hl2.hl1_id = hl1.hl1_id AND hl2.enabled=1 AND hl2.deleted=0
+            LEFT JOIN HL3 hl3 ON hl3.hl2_id = hl2.hl2_id AND hl3.enabled=1 AND hl3.deleted=0
+            LEFT JOIN HL3_USER hl3User ON hl3.hl3_id = hl3User.hl3_id and hl3User.USER_ID = in_user_id
+            LEFT JOIN BUDGET_YEAR BGY ON hl1.budget_year_id = BGY.budget_year_id AND BGY.enabled=1 AND BGY.deleted=0
             INNER JOIN PLANNING_PURPOSE PL ON HL1.PLANNING_PURPOSE_ID = PL.PLANNING_PURPOSE_ID AND PL.TEAM_TYPE_ID = 2 --Global
         	LEFT JOIN PLANNING_PURPOSE_OPTION PLO ON HL2.PLANNING_PURPOSE_OPTION_ID = PLO.PLANNING_PURPOSE_OPTION_ID
-        WHERE hl3.enabled=1 AND hl3.deleted=0
+        WHERE hl1.enabled=1 AND hl1.deleted=0
     	    AND (BGY.BUDGET_YEAR_ID = in_budget_year_id OR in_budget_year_id = 0)
     	    ORDER BY HL1.ACRONYM, BGY.BUDGET_YEAR, hl3.acronym;
 END IF;

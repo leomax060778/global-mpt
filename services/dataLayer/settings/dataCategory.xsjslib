@@ -7,6 +7,9 @@ var ErrorLib = mapper.getErrors();
 var spGetCountByHlId = "GET_CATEGORY_COUNT_BY_HL_ID";
 var spGET_CATEGORY_BY_HIERARCHY_LEVEL_ID = "GET_CATEGORY_BY_HIERARCHY_LEVEL_ID";
 var GET_CATEGORY_OPTION_BY_HIERARCHY_LEVEL_ID = "GET_CATEGORY_OPTION_BY_HIERARCHY_LEVEL_ID";
+var GET_PLANNING_CATEGORIES_CARRY_OVER_BY_HIERARCHY_LEVEL_ID = "GET_PLANNING_CATEGORIES_CARRY_OVER_BY_HIERARCHY_LEVEL_ID";
+var GET_EXECUTION_CATEGORIES_CARRY_OVER_BY_HIERARCHY_LEVEL_ID = "GET_EXECUTION_CATEGORIES_CARRY_OVER_BY_HIERARCHY_LEVEL_ID";
+var GET_HIDDEN_CATEGORIES_BY_HIERARCHY_LEVEL_ID = "GET_HIDDEN_CATEGORIES_BY_HIERARCHY_LEVEL_ID";
 
 var spINS_CATEGORY = "INS_CATEGORY";
 
@@ -67,6 +70,39 @@ function getAllocationCategoryType(){
 	return db.extractArray(result.out_result);
 }
 
+function getPlanningCarryOverCategoriesByHierarchyLevelId(hierarchyLevelId, dynamicFormId){
+	var params = {};
+	params.in_hierarchy_level_id = hierarchyLevelId;
+	params.in_dynamic_form_id = dynamicFormId;
+
+	var result = db.executeProcedure(GET_PLANNING_CATEGORIES_CARRY_OVER_BY_HIERARCHY_LEVEL_ID, params);
+
+	return db.extractArray(result.out_result);
+}
+
+function getExecutionCarryOverCategoriesByHierarchyLevelId(hierarchyLevelId, dynamicFormId, parentId){
+    var params = {};
+    params.in_hierarchy_level_id = hierarchyLevelId;
+    params.in_parent_id = parentId;
+    params.in_dynamic_form_id = dynamicFormId;
+	var result = {};
+    var spResult = db.executeProcedure(GET_EXECUTION_CATEGORIES_CARRY_OVER_BY_HIERARCHY_LEVEL_ID, params);
+
+    result.out_result = db.extractArray(spResult.out_result);
+    result.out_result_parent = db.extractArray(spResult.out_result_parent);
+
+    return result;
+}
+
+function getHiddenCategoriesByHierarchyLevelId(hierarchyLevelId, dynamicFormId){
+    var params = {};
+    params.in_hierarchy_level_id = hierarchyLevelId;
+    params.in_dynamic_form_id = dynamicFormId;
+
+    var result = db.executeProcedure(GET_HIDDEN_CATEGORIES_BY_HIERARCHY_LEVEL_ID, params);
+
+    return db.extractArray(result.out_result);
+}
 
 function getCategoryOptionByHierarchyLevelId(hierarchy_level_id, hl2Id, filterEventRequestAllocation){
 	var params = {

@@ -12,19 +12,22 @@ function processRequest(){
 	return httpUtil.processRequest(handleGet,handlePost,handlePut,handleDelete,false,"",true);
 }
 
-function handleGet(){
+function handleGet(params, userId){
 	var result = [];
 	var parameters = httpUtil.getUrlParameters();
 	var hierarchy_level_id = parameters.get("HIERARCHY_LEVEL_ID");
 	var hl4_id = parameters.get("HL4_ID");
+	var parentLevelId = parameters.get("PARENT_LEVEL_ID");
 	var method = parameters.get("METHOD");
 	var categoryType = parameters.get("CATEGORY_TYPE");
 	if(method && method == 'CATEGORY_TYPE'){
         result = AllocationCategory.getAllocationCategoryType();
-	} else {
+	} else if (method && method == 'CARRY_OVER') {
+    	result = AllocationCategory.getCategoryOptionCarryOverByHierarchyLevelId(hierarchy_level_id, parentLevelId, userId);
+	}else{
         if(hierarchy_level_id) {
         	var fromEventRequest = method == 'EVENT_REQUEST_ALLOCATION';
-            result = AllocationCategory.getCategoryOptionByHierarchyLevelId(hierarchy_level_id, hl4_id, Number(fromEventRequest));
+            result = AllocationCategory.getCategoryOptionByHierarchyLevelId(hierarchy_level_id, hl4_id, Number(fromEventRequest), userId);
         } else {
             result = AllocationCategory.getAllocationCategory(categoryType);
         }

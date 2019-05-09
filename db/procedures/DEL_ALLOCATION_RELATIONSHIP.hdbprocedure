@@ -23,8 +23,7 @@ DECLARE levelName nvarchar(255);
             , ACOL.ENABLED = 0
             , ACOL.modified_user_id = in_user_id
             , ACOL.modified_date_tz = CURRENT_TIMESTAMP
-        WHERE ACOL.ALLOCATION_CATEGORY_OPTION_LEVEL_ID NOT IN (SELECT  ALLOCATION_CATEGORY_OPTION_LEVEL_ID FROM HL1_CATEGORY_OPTION WHERE DELETED = 0 AND ENABLED = 1 )
-        AND HIERARCHY_LEVEL_ID = in_level_id
+        WHERE HIERARCHY_LEVEL_ID = in_level_id
         AND ACOL.ALLOCATION_OPTION_ID NOT IN (SELECT in_allocation_option_id FROM  :optionList)
      AND ALLOCATION_CATEGORY_ID = in_category_id;
 
@@ -34,8 +33,7 @@ DECLARE levelName nvarchar(255);
             , ACOL.ENABLED = 0
             , ACOL.modified_user_id = in_user_id
             , ACOL.modified_date_tz = CURRENT_TIMESTAMP
-        WHERE ACOL.ALLOCATION_CATEGORY_OPTION_LEVEL_ID NOT IN (SELECT  ALLOCATION_CATEGORY_OPTION_LEVEL_ID FROM HL2_CATEGORY_OPTION WHERE DELETED = 0 AND ENABLED = 1 )
-        AND HIERARCHY_LEVEL_ID = in_level_id
+        WHERE HIERARCHY_LEVEL_ID = in_level_id
         AND ACOL.ALLOCATION_OPTION_ID NOT IN (SELECT in_allocation_option_id FROM  :optionList)
      AND ALLOCATION_CATEGORY_ID = in_category_id;
 
@@ -45,8 +43,7 @@ DECLARE levelName nvarchar(255);
             , ACOL.ENABLED = 0
             , ACOL.modified_user_id = in_user_id
             , ACOL.modified_date_tz = CURRENT_TIMESTAMP
-        WHERE ACOL.ALLOCATION_CATEGORY_OPTION_LEVEL_ID NOT IN (SELECT  ALLOCATION_CATEGORY_OPTION_LEVEL_ID FROM HL3_CATEGORY_OPTION WHERE DELETED = 0 AND ENABLED = 1 )
-        AND HIERARCHY_LEVEL_ID = in_level_id
+        WHERE HIERARCHY_LEVEL_ID = in_level_id
         AND ACOL.ALLOCATION_OPTION_ID NOT IN (SELECT in_allocation_option_id FROM  :optionList)
      AND ALLOCATION_CATEGORY_ID = in_category_id;
 
@@ -56,8 +53,7 @@ DECLARE levelName nvarchar(255);
             , ACOL.ENABLED = 0
             , ACOL.modified_user_id = in_user_id
             , ACOL.modified_date_tz = CURRENT_TIMESTAMP
-        WHERE ACOL.ALLOCATION_CATEGORY_OPTION_LEVEL_ID NOT IN (SELECT  ALLOCATION_CATEGORY_OPTION_LEVEL_ID FROM HL4_CATEGORY_OPTION WHERE DELETED = 0 AND ENABLED = 1 )
-        AND HIERARCHY_LEVEL_ID = in_level_id
+        WHERE HIERARCHY_LEVEL_ID = in_level_id
         AND ACOL.ALLOCATION_OPTION_ID NOT IN (SELECT in_allocation_option_id FROM  :optionList)
      AND ALLOCATION_CATEGORY_ID = in_category_id;
 
@@ -67,8 +63,7 @@ DECLARE levelName nvarchar(255);
             , ACOL.ENABLED = 0
             , ACOL.modified_user_id = in_user_id
             , ACOL.modified_date_tz = CURRENT_TIMESTAMP
-            WHERE ACOL.ALLOCATION_CATEGORY_OPTION_LEVEL_ID NOT IN (SELECT  ALLOCATION_CATEGORY_OPTION_LEVEL_ID FROM HL5_CATEGORY_OPTION WHERE DELETED = 0 AND ENABLED = 1 )
-            AND HIERARCHY_LEVEL_ID = in_level_id
+            WHERE HIERARCHY_LEVEL_ID = in_level_id
             AND ACOL.ALLOCATION_OPTION_ID NOT IN (SELECT in_allocation_option_id FROM  :optionList)
              AND ALLOCATION_CATEGORY_ID = in_category_id;
 
@@ -78,8 +73,7 @@ DECLARE levelName nvarchar(255);
             , ACOL.ENABLED = 0
             , ACOL.modified_user_id = in_user_id
             , ACOL.modified_date_tz = CURRENT_TIMESTAMP
-            WHERE ACOL.ALLOCATION_CATEGORY_OPTION_LEVEL_ID NOT IN (SELECT  ALLOCATION_CATEGORY_OPTION_LEVEL_ID FROM HL6_CATEGORY_OPTION WHERE DELETED = 0 AND ENABLED = 1 )
-            AND HIERARCHY_LEVEL_ID = in_level_id
+            WHERE HIERARCHY_LEVEL_ID = in_level_id
             AND ACOL.ALLOCATION_OPTION_ID NOT IN (SELECT in_allocation_option_id FROM  :optionList)
              AND ALLOCATION_CATEGORY_ID = in_category_id;
      END IF;

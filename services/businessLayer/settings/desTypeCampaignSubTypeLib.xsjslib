@@ -20,8 +20,10 @@ function getDesTypeByCampaignSubTypeId(campaignSubtypeId, userId) {
 
     //Build result
     var result = {};
+    result.SHOW_IN_LEGACY = data.RESULT && data.RESULT.length? data.RESULT[0].SHOW_IN_LEGACY : 0;
     result.AVAILABLES = data.AVAILABLES;
     result.ASSIGNED = data.ASSIGNED;
+
     return result;
 }
 
@@ -55,21 +57,15 @@ function updateDesCampaignSubType(data, userId) {
             , in_campaign_sub_type_id: Number(data.CAMPAIGN_SUB_TYPE_ID)
             , in_created_user_id: userId}
     });
-    //TODO: Validation FOR NEXT SPRINT
-    //var desTypeToDelete = dataDesTypeCampaignSubType.getDesTypeCampaignSubTypeToDelete(data.CAMPAIGN_SUB_TYPE_ID, desTypeList, userId);
 
     var desTypeCampaignTypeDeletedCount = dataDesTypeCampaignSubType.deleteDesTypeCampaignSubType(data.CAMPAIGN_SUB_TYPE_ID);
-
-    //TODO: Validation FOR NEXT SPRINT
-    /*
-    if (desTypeToDelete !== desTypeToDelete.length) {
-        message = "Some DES Type could not be removed because they are in use";
-    }
-    */
 
     if(desTypeList.length) {
         dataDesTypeCampaignSubType.insertDesTypeCampaignSubType(desTypeList);
     }
+
+    //Update Show In Legacy flag
+    // dataDesTypeCampaignSubType.updateDesTypeCampaignSubTypeFlags(data, userId);
 
     return desTypeList.length;
 }

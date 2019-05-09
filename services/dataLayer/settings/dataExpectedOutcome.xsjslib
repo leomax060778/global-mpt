@@ -82,9 +82,10 @@ var spDeleteHl1ExpOutcomeDetail = "DEL_HL1_EXPECTED_OUTCOMES_DETAIL_BY_HL1_ID";
 /****end L2**************************************************/
 
 
-function insertExpectedOutcome(name,userId,autoCommit){
+function insertExpectedOutcome(name, pDefault, userId, autoCommit){
     var params = {
         'in_name': name,
+        'in_default': pDefault || 0,
         'in_user_id': userId
     };
     var rdo;
@@ -96,10 +97,11 @@ function insertExpectedOutcome(name,userId,autoCommit){
     return rdo;
 }
 
-function updateExpectedOutcome(expected_outcome_id,name,userId,autoCommit){
+function updateExpectedOutcome(expected_outcome_id,name, pDefault, userId,autoCommit){
     var params = {
         'in_expected_outcome_id': expected_outcome_id,
         'in_name': name,
+        'in_default': pDefault,
         'in_user_id': userId
     };
     var rdo;

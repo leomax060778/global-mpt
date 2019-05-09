@@ -28,6 +28,7 @@ var INS_HL2_VERSION = "INS_HL2_VERSION";
 var GET_HL2_VERSION_BY_FILTER = "GET_HL2_VERSION_BY_FILTER";
 var GET_HL2_VERSION_BY_ID = "GET_HL2_VERSION_BY_ID";
 var GET_HL2_BY_HL4_ID = "GET_HL2_BY_HL4_ID";
+var GET_HL2_BY_HL5_ID = "GET_HL2_BY_HL5_ID";
 var GET_HL2_ASSOCIATED_FORM_BY_LEVEL_HL_ID = "GET_HL2_ASSOCIATED_FORM_BY_LEVEL_HL_ID";
 var GET_HL2_BY_BUDGET_YEAR_REGION = "GET_HL2_BY_BUDGET_YEAR_REGION";
 var GET_HL2_BY_BUDGET_YEAR_PLANNING_PURPOSE = "GET_HL2_BY_BUDGET_YEAR_PLANNING_PURPOSE";
@@ -138,6 +139,10 @@ function getHl2AllowAutomaticBudgetApprovalByHl5Id(l5Id){
 
 function getHl2ByHl4Id(hl4Id){
     var result = db.executeProcedureManual(GET_HL2_BY_HL4_ID, {'in_hl4_id': hl4Id});
+    return db.extractArray(result.out_result)[0];
+}
+function getHl2ByHl5Id(hl5Id){
+    var result = db.executeProcedureManual(GET_HL2_BY_HL5_ID, {'in_hl5_id': hl5Id});
     return db.extractArray(result.out_result)[0];
 }
 

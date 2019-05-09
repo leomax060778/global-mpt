@@ -15,7 +15,8 @@ var LEVEL_NOT_SUPPORTED = "Level is not supported.";
 
 var map = {
     'IN_EXPECTED_OUTCOME_ID': 'EXPECTED_OUTCOME_ID',
-    'IN_NAME': 'EXPECTED_OUTCOME_NAME'
+    'IN_NAME': 'EXPECTED_OUTCOME_NAME',
+    'IN_DEFAULT': 'DEFAULT'
 };
 
 var HIERARCHY_LEVEL = {
@@ -73,7 +74,7 @@ function insertExpectedOutcome(expectedOutcome, userId) {
     expectedOutcome = uiToServerParser(expectedOutcome);
     validate(expectedOutcome);
 
-    return dataExpectedOutcome.insertExpectedOutcome(expectedOutcome.EXPECTED_OUTCOME_NAME, userId);
+    return dataExpectedOutcome.insertExpectedOutcome(expectedOutcome.EXPECTED_OUTCOME_NAME, expectedOutcome.DEFAULT, userId);
 }
 
 function updateExpectedOutcome(expectedOutcome, userId) {
@@ -82,7 +83,7 @@ function updateExpectedOutcome(expectedOutcome, userId) {
         throw ErrorLib.getErrors().CustomError("", "expectedOutcomeServices/handlePut/updateExpectedOutcome", EXPECTED_OUTCOMES_NOT_FOUND);
 
     validate(expectedOutcome);
-    return dataExpectedOutcome.updateExpectedOutcome(expectedOutcome.EXPECTED_OUTCOME_ID, expectedOutcome.EXPECTED_OUTCOME_NAME, userId);
+    return dataExpectedOutcome.updateExpectedOutcome(expectedOutcome.EXPECTED_OUTCOME_ID, expectedOutcome.EXPECTED_OUTCOME_NAME, expectedOutcome.DEFAULT, userId);
 }
 
 function deleteExpectedOutcome(expectedOutcome, userId) {

@@ -3,7 +3,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::UPD_ALLOCATION_O
 	IN in_hierarchy_level_id INTEGER,
 	IN in_make_category_mandatory TINYINT,
 	IN in_in_processing_report TINYINT,
-
+	IN in_show_in_legacy TINYINT,
 	IN in_available_in_event_request TINYINT,
 	IN in_options_limit integer,
 	OUT out_result BIGINT
@@ -17,7 +17,8 @@ BEGIN
         SET make_category_mandatory = in_make_category_mandatory,
             in_processing_report = in_in_processing_report,
             options_limit = in_options_limit,
-            available_in_event_request = in_available_in_event_request
+            available_in_event_request = in_available_in_event_request,
+            show_in_legacy = in_show_in_legacy
         WHERE ALLOCATION_CATEGORY_ID = in_category_id
             AND HIERARCHY_LEVEL_ID = in_hierarchy_level_id;
 

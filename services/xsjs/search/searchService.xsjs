@@ -13,9 +13,19 @@ function processRequest(){
 
 function handleGet(parameters, userSessionID){
 	var params = httpUtil.getUrlParameters();
+	var jsonParams = httpUtil.getJSONParameters();
 	var rdo;
-	
-	rdo = searchLib.getHLBySearch(params, userSessionID);
+
+	if(jsonParams.METHOD){
+		switch(jsonParams.METHOD){
+			case 'SEARCH_COST_CENTER':
+				rdo = searchLib.getCostCenterBySearch(jsonParams, userSessionID);
+				break;
+		}
+	}else{
+		rdo = searchLib.getHLBySearch(params, userSessionID);
+	}
+
 	httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
 };
 

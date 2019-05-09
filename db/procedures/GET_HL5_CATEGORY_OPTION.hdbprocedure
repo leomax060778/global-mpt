@@ -32,7 +32,7 @@ va_allocation_from_dynamic_form =
     inner join allocation_category ac on acol.allocation_category_id = ac.allocation_category_id
     inner join allocation_option ao on acol.allocation_option_id = ao.allocation_option_id
     inner join dynamic_form_allocation on acol.allocation_category_id = dynamic_form_allocation.allocation_category_id
-        and acol.allocation_option_id = dynamic_form_allocation.allocation_option_id
+        and acol.allocation_option_id = dynamic_form_allocation.allocation_option_id and dynamic_form_allocation.hidden = 1 --Difference
     inner join dynamic_form on dynamic_form.dynamic_form_id = dynamic_form_allocation.dynamic_form_id
     inner join hl5 on hl5.dynamic_form_id = dynamic_form.dynamic_form_id
     inner join hl5_category_option hl5co on hl5co.enabled = 1 and hl5co.deleted = 0 and hl5co.hl5_id = hl5.hl5_id

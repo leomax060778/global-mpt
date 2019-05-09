@@ -1,0 +1,101 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL5_LEGACY_CATEGORY_OPTION" (
+	IN in_hl_id BIGINT,
+	OUT out_result TABLE (
+	    HL5_LEGACY_ID INTEGER,
+	    CATEGORY_OPTION_ID INTEGER,
+	    CATEGORY_OPTION_LEVEL_ID INTEGER,
+	    AMOUNT DECIMAL(19,2),
+	    CATEGORY_ID INTEGER,
+	    CATEGORY_NAME NVARCHAR(60),
+	    SINGLE_OPTION_ONLY TINYINT,
+	    CATEGORY_TYPE_ID INTEGER,
+	    OPTION_ID INTEGER,
+	    OPTION_NAME NVARCHAR(60),
+	    MAKE_CATEGORY_MANDATORY TINYINT,
+	    OPTIONS_LIMIT INTEGER
+	)
+) 
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER 
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	READS SQL DATA AS
+BEGIN
+    var_hl5_category_legacy_ids = SELECT ALLOCATION_CATEGORY_OPTION_LEVEL_ID 
+                                  FROM HL5_CATEGORY_OPTION_LEGACY
+                                  WHERE HL5_LEGACY_ID = in_hl_id
+                                    AND ENABLED = 1
+                                    AND DELETED = 0;
+                                  
+	va_hl5_category_option = (SELECT hl5_cat_opt.HL5_LEGACY_ID,
+	                                 hl5_cat_opt.HL5_CATEGORY_OPTION_LEGACY_ID        AS CATEGORY_OPTION_ID,
+                                     hl5_cat_opt.ALLOCATION_CATEGORY_OPTION_LEVEL_ID  AS CATEGORY_OPTION_LEVEL_ID,
+                                     hl5_cat_opt.AMOUNT,
+                                     ac.ALLOCATION_CATEGORY_ID AS CATEGORY_ID,
+                                     ac.NAME                   AS CATEGORY_NAME,
+                                     ac.SINGLE_OPTION_ONLY,
+                                     ac.CATEGORY_TYPE_ID,
+                                     ao.ALLOCATION_OPTION_ID   AS OPTION_ID,
+                                     ao.NAME                   AS OPTION_NAME,
+                                     acol.MAKE_CATEGORY_MANDATORY,
+                                     acol.OPTIONS_LIMIT
+
+                                 FROM HL5_CATEGORY_OPTION_LEGACY hl5_cat_opt
+                                 INNER JOIN ALLOCATION_CATEGORY_OPTION_LEVEL acol
+                                     ON hl5_cat_opt.ALLOCATION_CATEGORY_OPTION_LEVEL_ID = acol.ALLOCATION_CATEGORY_OPTION_LEVEL_ID
+                                         AND acol.SHOW_IN_LEGACY = 1
+                                         AND acol.ENABLED = 1
+                                         AND acol.DELETED = 0
+                                 INNER JOIN ALLOCATION_OPTION ao
+                                     ON acol.ALLOCATION_OPTION_ID = ao.ALLOCATION_OPTION_ID
+                                 INNER JOIN ALLOCATION_CATEGORY ac
+                                     ON acol.ALLOCATION_CATEGORY_ID = ac.ALLOCATION_CATEGORY_ID
+                                 WHERE hl5_cat_opt.HL5_LEGACY_ID = in_hl_id
+                                     AND hl5_cat_opt.ENABLED = 1
+                                     AND hl5_cat_opt.DELETED = 0
+                                 )
+
+                                 UNION
+
+                                 (SELECT NULL AS HL5_LEGACY_ID,
+                                         NULL AS CATEGORY_OPTION_ID,
+                                         acol.ALLOCATION_CATEGORY_OPTION_LEVEL_ID  AS CATEGORY_OPTION_LEVEL_ID,
+                                         0 AS AMOUNT,
+                                         ac.ALLOCATION_CATEGORY_ID AS CATEGORY_ID,
+                                         ac.NAME                   AS CATEGORY_NAME,
+                                         ac.SINGLE_OPTION_ONLY,
+                                         ac.CATEGORY_TYPE_ID,
+                                         ao.ALLOCATION_OPTION_ID   AS OPTION_ID,
+                                         ao.NAME                   AS OPTION_NAME,
+                                         acol.MAKE_CATEGORY_MANDATORY,
+                                         acol.OPTIONS_LIMIT
+
+                                  FROM ALLOCATION_CATEGORY_OPTION_LEVEL acol
+                                  INNER JOIN ALLOCATION_OPTION ao
+                                    ON acol.ALLOCATION_OPTION_ID = ao.ALLOCATION_OPTION_ID
+                                  INNER JOIN ALLOCATION_CATEGORY ac
+                                    ON acol.ALLOCATION_CATEGORY_ID = ac.ALLOCATION_CATEGORY_ID
+                                  WHERE acol.SHOW_IN_LEGACY = 1
+                                    AND acol.ALLOCATION_CATEGORY_OPTION_LEVEL_ID 
+                                        NOT IN (SELECT alloc_ids.ALLOCATION_CATEGORY_OPTION_LEVEL_ID 
+                                                 FROM :var_hl5_category_legacy_ids alloc_ids)
+                                    AND acol.HIERARCHY_LEVEL_ID = 2 --HL5
+                                    AND acol.ENABLED = 1
+                                    AND acol.DELETED = 0
+                                 );
+
+	out_result =
+                SELECT  HL5_LEGACY_ID,
+                        CATEGORY_OPTION_ID,
+                        CATEGORY_OPTION_LEVEL_ID,
+                        AMOUNT,
+                        CATEGORY_ID,
+                        CATEGORY_NAME,
+                        SINGLE_OPTION_ONLY,
+                        CATEGORY_TYPE_ID,
+                        OPTION_ID,
+                        OPTION_NAME,
+                        MAKE_CATEGORY_MANDATORY,
+                        OPTIONS_LIMIT
+                FROM :va_hl5_category_option
+                ORDER BY CATEGORY_NAME, OPTION_NAME;
+END;

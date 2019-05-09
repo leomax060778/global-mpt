@@ -1,5 +1,6 @@
 PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_EXPECTED_OUTCOME" (
 		IN in_name NVARCHAR(255),
+		IN in_default TINYINT,
 		IN in_user_id BIGINT,
 		OUT out_outcome_id BIGINT
 	)
@@ -8,8 +9,22 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_EXPECTED_OUT
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
 	AS
 BEGIN
-		INSERT INTO "MKTG_PLANNING_TOOL"."EXPECTED_OUTCOME" (name,created_user_id)
-		VALUES (in_name,in_user_id);
+    --First remove the previous default in order to have only one record as default
+    IF in_default = 1 THEN
+         UPDATE EXPECTED_OUTCOME
+         SET default = 0,
+                modified_user_id = in_user_id,
+                modified_date_tz = CURRENT_TIMESTAMP
+         WHERE default = 1;
+    END IF;
 
-		SELECT TOP 1 CURRENT_IDENTITY_VALUE() INTO out_outcome_id FROM "MKTG_PLANNING_TOOL"."EXPECTED_OUTCOME";
+    INSERT INTO "MKTG_PLANNING_TOOL"."EXPECTED_OUTCOME" (
+        name,
+        default,
+        created_user_id)
+    VALUES (in_name,
+            in_default,
+            in_user_id);
+
+    SELECT TOP 1 CURRENT_IDENTITY_VALUE() INTO out_outcome_id FROM "MKTG_PLANNING_TOOL"."EXPECTED_OUTCOME";
 END;
