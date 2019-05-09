@@ -31,7 +31,7 @@ function handleGet(parameters, userSessionID){
 
 		if (parameters[0].name == hl1Id){
 			var isCarryOver = httpUtil.getUrlParameters().get("METHOD") == "CARRY_OVER";
-			var rdo = blLevel1.getLevel1ById(parameters[0].value, isCarryOver);
+			var rdo = blLevel1.getLevel1ById(parameters[0].value, isCarryOver, userSessionID);
 			httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
 		}
 		else if (parameters[0].name == GET_HL1_BY_FILTER){

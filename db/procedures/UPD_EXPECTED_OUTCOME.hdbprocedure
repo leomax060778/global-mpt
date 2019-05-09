@@ -1,6 +1,7 @@
 PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::UPD_EXPECTED_OUTCOME" (
         in in_expected_outcome_id bigint,
 		in in_name nvarchar(255),
+		in in_default tinyint,
 		in in_user_id bigint,
 		out out_result bigint
 	)
@@ -9,12 +10,21 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::UPD_EXPECTED_OUT
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
 	AS
 BEGIN
-		UPDATE EXPECTED_OUTCOME
-		SET
-		name = in_name,
-		modified_user_id = in_user_id,
-		modified_date_tz = CURRENT_TIMESTAMP
-		where expected_outcome_id = in_expected_outcome_id;
+    --First remove the previous default in order to have only one record as default
+    IF in_default = 1 THEN
+         UPDATE EXPECTED_OUTCOME
+         SET default = 0,
+                modified_user_id = in_user_id,
+                modified_date_tz = CURRENT_TIMESTAMP
+         WHERE default = 1;
+    END IF;
 
-		SELECT ::ROWCOUNT INTO out_result FROM DUMMY;
+    UPDATE EXPECTED_OUTCOME
+    SET name = in_name,
+        default = in_default,
+        modified_user_id = in_user_id,
+        modified_date_tz = CURRENT_TIMESTAMP
+    where expected_outcome_id = in_expected_outcome_id;
+
+    SELECT ::ROWCOUNT INTO out_result FROM DUMMY;
 END;

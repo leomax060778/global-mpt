@@ -6,6 +6,7 @@ var dataCategoryOptionLevel = mapper.getDataCategoryOptionLevel();
 var dataL6DER = mapper.getDataLevel6Report();
 var dataL5DER = mapper.getDataLevel5Report();
 var dataCategory = mapper.getDataCategory();
+var dataUtil = mapper.getDataUtil();
 var blDynamicForm = mapper.getDynamicFormLib();
 var allocationCategory = mapper.getAllocationCategoryLib();
 /** ***********END INCLUDE LIBRARIES*************** */
@@ -36,6 +37,26 @@ function validateBudget(value) {
 
 function validateMaximValue(value) {
     return Number(value) <= MAX_BUDGET;
+}
+
+function validateDuplicatedAcronym(acronym, level) {
+    var duplicatedData = null;
+
+    switch(level){
+        case "HL3":
+            duplicatedData = dataUtil.getDuplicatedHL3Acronym(acronym);
+            break;
+        case "HL4":
+            duplicatedData = dataUtil.getDuplicatedHL4Acronym(acronym);
+            break;
+        default:
+            throw ErrorLib.getErrors()
+                .CustomError("", "util/validateDuplicatedAcronym",
+                    "Unable to find the Hierarchy Level.");
+            break;
+    }
+
+    return Number(duplicatedData) === 0;
 }
 
 function numberToLocaleString(budget) {
@@ -864,6 +885,126 @@ function completeFromDynamicFormByRole(userId, hierarchyLevelId, payload, budget
                 break;
         }
     });
+
+    //Check for hidden tabs without fields available to hide but required in order to Insert
+    if (dynamicFormConfiguration.DYNAMIC_FORM_CONFIG_DATA.TAB_NAME.DYNAMIC_FORMS_ALLOCATION_DETAIL && dynamicFormConfiguration.DYNAMIC_FORM_CONFIG_DATA.TAB_NAME.DYNAMIC_FORMS_ALLOCATION_DETAIL.HIDDEN) {
+        requiredFieldError.push("Budget Distribution");
+    }
+    if (dynamicFormConfiguration.DYNAMIC_FORM_CONFIG_DATA.TAB_NAME.USER_ASSOCIATION && dynamicFormConfiguration.DYNAMIC_FORM_CONFIG_DATA.TAB_NAME.USER_ASSOCIATION.HIDDEN) {
+        requiredFieldError.push("User Association");
+    }
+    if (dynamicFormConfiguration.DYNAMIC_FORM_CONFIG_DATA.TAB_NAME.BUDGET_EVENT_APPROVERS && dynamicFormConfiguration.DYNAMIC_FORM_CONFIG_DATA.TAB_NAME.BUDGET_EVENT_APPROVERS.HIDDEN) {
+        requiredFieldError.push("Budget Approvers / Event Approvers");
+    }
+
+    if (requiredFieldError.length) {
+        throw ErrorLib.getErrors().DynamicFormError("Form Configuration error.", null, requiredFieldError);
+    }
+
+    payload.DYNAMIC_FORM_ID = dynamicFormConfiguration.DYNAMIC_FORM_ID;
+    return payload;
+}
+
+/**
+ * Function to complete Payload with all the hidden attributes defined in the Dynamic Form assigned to the level
+ * @param userId (Number) the current User ID
+ * @param hierarchyLevelId (Number) the hierarchy level that is going to be completed
+ * @param payload (Object) the payload itself
+ * @param budgetYearId (Number) the corresponding Budget Year ID
+ * @param parentId (Number) the Level ID of the parent (Ej: HL5 -> HL4_ID).
+ * @returns {Object} the payload with all the information addded.
+ */
+function completeNewLevelFromDynamicFormByRole(userId, hierarchyLevelId, payload, budgetYearId, parentId) {
+    var objectData = {};
+    var dynamicFormHiddenCategories = null;
+    //List of required fields that are hidden and does not have default value.
+    var requiredFieldError = [];
+
+    payload = JSON.parse(JSON.stringify(payload));
+
+    var dynamicFormConfiguration = blDynamicForm.getFormByRoleAndBudgetYear(budgetYearId, null, false, userId, hierarchyLevelId, true);
+    dynamicFormHiddenCategories = allocationCategory.getHiddenCategoriesByHierarchyLevelId(hierarchyLevelId, parentId, userId, budgetYearId);
+
+    var tabKeys = Object.keys(dynamicFormConfiguration.DYNAMIC_FORM_CONFIG_DATA.DYNAMIC_FIELDS);
+
+    tabKeys.forEach(function (tabName) {
+        var i;
+        // Equivalent to Object.values() method because the method is not supported on the current JS version
+        var arrDataTab = Object.keys(dynamicFormConfiguration.DYNAMIC_FORM_CONFIG_DATA.DYNAMIC_FIELDS[tabName]).map(function (key) {
+            return dynamicFormConfiguration.DYNAMIC_FORM_CONFIG_DATA.DYNAMIC_FIELDS[tabName][key];
+        });
+
+        // Replace the data values with the default values
+        switch (tabName) {
+            case "PLAN":
+            case "TEAM":
+            case "DESCRIPTION":
+            case "PRIORITY_SUB_TEAM":
+                for (i = 0; i < arrDataTab.length; i++) {
+                    if (arrDataTab[i]) {
+                        objectData = arrDataTab[i];
+                        if (objectData.HIDDEN) {
+                            switch (objectData.FIELD_NAME) {
+                                case "IMPLEMENT_EXECUTION_LEVEL":
+                                case "CRT_RELATED":
+                                    payload[objectData.FIELD_NAME] = !!objectData.DEFAULT_VALUE ? 1 : 0;
+                                    break;
+                                case "PLANNING_PURPOSE_ID":
+                                    if (payload.TEAM_TYPE_ID == TEAM_TYPE.REGIONAL) {
+                                        payload.REGION_ID = objectData.DEFAULT_VALUE;
+                                        payload.PLANNING_PURPOSE_ID = null;
+                                    } else if (payload.TEAM_TYPE_ID == TEAM_TYPE.GLOBAL) {
+                                        payload.REGION_ID = null;
+                                        payload.PLANNING_PURPOSE_ID = objectData.DEFAULT_VALUE;
+                                    }
+                                    break;
+                                default:
+                                    payload[objectData.FIELD_NAME] = objectData.DEFAULT_VALUE;
+                                    break;
+                            }
+
+                            //iF the hidden field is mandatory and has not default value, then add the field to the error stack
+                            if (objectData.MANDATORY && !objectData.DEFAULT_VALUE && !isSpecialCase(objectData)) {
+                                requiredFieldError.push(objectData.FIELD_DISPLAY_NAME);
+                            }
+                        }
+                    }
+                }
+                break;
+            case "CAMPAIGN_FORECASTING_KPIS":
+                for (i = 0; i < arrDataTab.length; i++) {
+                    if (arrDataTab[i]) {
+                        objectData = arrDataTab[i];
+                        if (objectData.HIDDEN) {
+                            payload["TARGET_KPIS"][objectData.FIELD_NAME] = objectData.DEFAULT_VALUE;
+                            //If there are no comments and the whole tab is hidden, then it is an error on insertion
+                            if (dynamicFormConfiguration.DYNAMIC_FORM_CONFIG_DATA.TAB_NAME.CAMPAIGN_FORECASTING_KPIS.HIDDEN &&
+                                objectData.FIELD_NAME == "COMMENTS" &&
+                                !objectData.DEFAULT_VALUE
+                            ) {
+                                requiredFieldError.push("Campaign Forecasting KPIs.");
+                            }
+                        }
+                    }
+                }
+                break;
+            case "DYNAMIC_FORMS_ALLOCATION_DETAIL":
+                //Now the hidden categories are managed bellow
+                break;
+        }
+    });
+
+    if(dynamicFormHiddenCategories && dynamicFormHiddenCategories.length){
+        dynamicFormHiddenCategories.forEach(function(hiddenCategory){
+            //If the hidden field is mandatory and has not default value, then add the field to the error stack
+            if (!!hiddenCategory.MANDATORY && hiddenCategory.DEFAULT_TOTAL_AMOUNT !== 100) {
+                requiredFieldError.push("Attributes: " + hiddenCategory.CATEGORY_NAME);
+            }
+
+            payload.CATEGORIES.push(hiddenCategory);
+        });
+
+    }
 
     //Check for hidden tabs without fields available to hide but required in order to Insert
     if (dynamicFormConfiguration.DYNAMIC_FORM_CONFIG_DATA.TAB_NAME.DYNAMIC_FORMS_ALLOCATION_DETAIL && dynamicFormConfiguration.DYNAMIC_FORM_CONFIG_DATA.TAB_NAME.DYNAMIC_FORMS_ALLOCATION_DETAIL.HIDDEN) {

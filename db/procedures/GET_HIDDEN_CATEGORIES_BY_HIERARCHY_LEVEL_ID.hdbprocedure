@@ -1,0 +1,84 @@
+--/*
+--** Stored Procedure Name: GET_HIDDEN_CATEGORIES_BY_HIERARCHY_LEVEL_ID
+--** @Description: obtain all Hidden Category Options for the current level
+--** @IN in_hierarchy_level_id (BIGINT): the ID of the HL4.
+--** @IN in_dynamic_form_id (BIGINT): the ID of the HL4.
+--** @OUT: out_result (TABLE): table with All Hidden Category Options related to the current level, even selected or not.
+--*/
+
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HIDDEN_CATEGORIES_BY_HIERARCHY_LEVEL_ID" (
+	IN in_hierarchy_level_id BIGINT,
+	IN in_dynamic_form_id BIGINT,
+	OUT out_result TABLE (
+        CATEGORY_ID INTEGER,
+        ALLOCATION_CATEGORY_OPTION_LEVEL_ID INTEGER,
+        HIERARCHY_LEVEL_ID INTEGER,
+        MEASURE_ID INTEGER,
+        CATEGORY_NAME NVARCHAR(60),
+        DESCRIPTION NVARCHAR(255),
+        IN_PROCESSING_REPORT TINYINT,
+        OPTION_ID INTEGER,
+        OPTION_NAME NVARCHAR(60),
+        MAKE_CATEGORY_MANDATORY TINYINT,
+        SINGLE_OPTION_ONLY TINYINT,
+        CATEGORY_TYPE_ID INTEGER,
+        AVAILABLE_IN_EVENT_REQUEST TINYINT,
+        OPTIONS_LIMIT INTEGER,
+        DEFAULT_BUDGET_PERCENTAGE DECIMAL(19,2),
+        DEFAULT_KPI_PERCENTAGE DECIMAL(19,2)
+        )
+	)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	READS SQL DATA AS
+BEGIN
+
+        hidden_ids =    SELECT ALLOCATION_CATEGORY_ID
+                        FROM DYNAMIC_FORM_ALLOCATION df_alloc
+                        WHERE df_alloc.DYNAMIC_FORM_ID = in_dynamic_form_id
+                            AND df_alloc.ENABLED = 1
+                            AND df_alloc.DELETED = 0
+                            AND df_alloc.HIDDEN = 1;
+
+        out_result =
+                    SELECT  ac.ALLOCATION_CATEGORY_ID AS CATEGORY_ID,
+                            acol.ALLOCATION_CATEGORY_OPTION_LEVEL_ID,
+                            acol.HIERARCHY_LEVEL_ID,
+                            ac.MEASURE_ID,
+                            ac.NAME AS CATEGORY_NAME,
+                            ac.DESCRIPTION,
+                            acol.IN_PROCESSING_REPORT,
+                            AO.ALLOCATION_OPTION_ID AS OPTION_ID,
+                            AO.NAME AS OPTION_NAME,
+                            acol.make_category_mandatory,
+                            ac.SINGLE_OPTION_ONLY,
+                            ac.CATEGORY_TYPE_ID,
+                            acol.AVAILABLE_IN_EVENT_REQUEST,
+                            acol.OPTIONS_LIMIT,
+                            df_alloc.BUDGET_PERCENTAGE AS DEFAULT_BUDGET_PERCENTAGE,
+                            df_alloc.KPI_PERCENTAGE AS DEFAULT_KPI_PERCENTAGE
+
+                        FROM ALLOCATION_CATEGORY_OPTION_LEVEL acol
+                            INNER JOIN ALLOCATION_CATEGORY ac
+                                ON acol.ALLOCATION_CATEGORY_ID = ac.ALLOCATION_CATEGORY_ID
+                            INNER JOIN allocation_option ao
+                                ON acol.ALLOCATION_OPTION_ID = ao.ALLOCATION_OPTION_ID
+                            LEFT JOIN DYNAMIC_FORM_ALLOCATION df_alloc
+                                ON df_alloc.ALLOCATION_CATEGORY_ID = ac.ALLOCATION_CATEGORY_ID
+                                    AND df_alloc.ALLOCATION_OPTION_ID = ao.ALLOCATION_OPTION_ID
+                                    AND df_alloc.ENABLED = 1
+                                    AND df_alloc.DELETED = 0
+                                    AND df_alloc.HIDDEN = 1
+                                    AND df_alloc.DYNAMIC_FORM_ID = in_dynamic_form_id
+                                    AND df_alloc.BUDGET_PERCENTAGE = 100
+                        WHERE acol.HIERARCHY_LEVEL_ID = in_hierarchy_level_id
+                            AND acol.ALLOCATION_CATEGORY_ID IN (SELECT h_cat.ALLOCATION_CATEGORY_ID FROM :hidden_ids h_cat)
+                            AND ac.ENABLED = 1
+                            AND ac.DELETED = 0
+                            AND ao.ENABLED = 1
+                            AND ao.DELETED = 0
+                            AND acol.ENABLED = 1
+                            AND acol.DELETED = 0
+                        ORDER BY UPPER(ac.NAME), UPPER(ao.NAME);
+END;

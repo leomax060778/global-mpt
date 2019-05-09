@@ -16,6 +16,8 @@ var GET_ALL_DYNAMIC_FORM_FIELDS_BY_LEVEL = "GET_ALL_DYNAMIC_FORM_FIELDS_BY_LEVEL
 var GET_COUNT_HL_BY_DYNAMIC_FORM_ID = "GET_COUNT_HL_BY_DYNAMIC_FORM_ID";
 var GET_COUNT_ROLE_BY_DYNAMIC_FORM_ID = "GET_COUNT_ROLE_BY_DYNAMIC_FORM_ID";
 var GET_DYNAMIC_FORM_BY_NAME = "GET_DYNAMIC_FORM_BY_NAME";
+var GET_DYNAMIC_FORM_ID_BY_HL2_ID = "GET_DYNAMIC_FORM_ID_BY_HL2_ID";
+var GET_DYNAMIC_FORM_ID_BY_ROLE_ID = "GET_DYNAMIC_FORM_ID_BY_ROLE_ID";
 
 var INS_DYNAMIC_FORM_DEFAULT_VALUE = "INS_DYNAMIC_FORM_DEFAULT_VALUE";
 var INS_DYNAMIC_FORM_TAB = "INS_DYNAMIC_FORM_TAB";
@@ -78,6 +80,23 @@ function getDynamicFormByUId(formId) {
     if (list.length)
         return list[0];
     return null;
+}
+
+function getDynamicFormIdByHl2Id(hl2Id){
+    var params = {};
+    params.in_hl2_id = hl2Id;
+    var result = db.extractArray(db.executeProcedureManual(GET_DYNAMIC_FORM_ID_BY_HL2_ID, params).out_result);
+
+    return (result && result.length)? result[0] : null;
+}
+
+function getDynamicFormIdByRoleId(roleId, budgetYearId){
+    var params = {};
+    params.in_role_id = roleId;
+    params.in_budget_year_id = budgetYearId;
+    var result = db.extractArray(db.executeProcedureManual(GET_DYNAMIC_FORM_ID_BY_ROLE_ID, params).out_result);
+
+    return (result && result.length)? result[0] : null;
 }
 
 function getDynamicFormDetailedById(formId, levelId) {

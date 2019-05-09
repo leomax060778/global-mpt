@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Calculation:scenario xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:Calculation="http://www.sap.com/ndb/BiModelCalculation.ecore" schemaVersion="2.3" id="CV_SEARCH_COST_CENTER" applyPrivilegeType="ANALYTIC_PRIVILEGE" checkAnalyticPrivileges="true" defaultClient="$$client$$" defaultLanguage="$$language$$" hierarchiesSQLEnabled="false" translationRelevant="true" visibility="reportingEnabled" calculationScenarioType="SCRIPT_BASED" dataCategory="CUBE" enforceSqlExecution="false" executionSemantic="UNDEFINED" scriptParametersCaseSensitive="true">
+  <descriptions defaultDescription="CV_SEARCH_COST_CENTER"/>
+  <localVariables/>
+  <variableMappings/>
+  <informationModelLayout relativeWidthScenario="27"/>
+  <dataSources/>
+  <calculationViews>
+    <calculationView xsi:type="Calculation:SqlScriptView" id="Script_View">
+      <descriptions/>
+      <viewAttributes>
+        <viewAttribute datatype="BIGINT" id="COST_CENTER_ID"/>
+        <viewAttribute datatype="NVARCHAR" id="NAME" length="255"/>
+        <viewAttribute datatype="NVARCHAR" id="COST_CENTER_CODE" length="255"/>
+        <viewAttribute datatype="BIGINT" id="SALE_ORGANIZATION_ID"/>
+        <viewAttribute datatype="NVARCHAR" id="PERSON_RESPONSIBLE" length="10"/>
+      </viewAttributes>
+      <calculatedViewAttributes/>
+      <definition> 
+  /********* Begin Procedure Script ************/ 
+ BEGIN 
+ 	 var_out = 
+ 	 	SELECT  ATCS.COST_CENTER_ID,
+				ATCS.NAME,
+			    ATCS.COST_CENTER_CODE,
+			    ATCS.SALE_ORGANIZATION_ID,
+			    ATCS.PERSON_RESPONSIBLE
+ 	 	FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_SEARCH_COST_CENTER&quot; ATCS
+ 	 	WHERE ATCS.ENABLED = 1 AND ATCS.DELETED = 0;
+ 	 			
+END /********* End Procedure Script ************/</definition>
+    </calculationView>
+  </calculationViews>
+  <logicalModel id="Script_View">
+    <descriptions/>
+    <attributes>
+      <attribute id="NAME" order="2">
+        <descriptions defaultDescription="NAME"/>
+        <keyMapping columnObjectName="Script_View" columnName="NAME"/>
+      </attribute>
+      <attribute id="COST_CENTER_CODE" order="3">
+        <descriptions defaultDescription="CODE"/>
+        <keyMapping columnObjectName="Script_View" columnName="COST_CENTER_CODE"/>
+      </attribute>
+      <attribute id="PERSON_RESPONSIBLE" order="5">
+        <descriptions defaultDescription="PERSON_RESPONSIBLE"/>
+        <keyMapping columnObjectName="Script_View" columnName="PERSON_RESPONSIBLE"/>
+      </attribute>
+    </attributes>
+    <calculatedAttributes/>
+    <privateDataFoundation>
+      <tableProxies/>
+      <joins/>
+      <layout>
+        <shapes/>
+      </layout>
+    </privateDataFoundation>
+    <baseMeasures>
+      <measure id="COST_CENTER_ID" order="1" aggregationType="sum" measureType="simple">
+        <descriptions defaultDescription="COST_CENTER_ID"/>
+        <measureMapping columnObjectName="Script_View" columnName="COST_CENTER_ID"/>
+      </measure>
+      <measure id="SALE_ORGANIZATION_ID" order="4" aggregationType="sum" measureType="simple">
+        <descriptions defaultDescription="SALE_ORGANIZATION_ID"/>
+        <measureMapping columnObjectName="Script_View" columnName="SALE_ORGANIZATION_ID"/>
+      </measure>
+    </baseMeasures>
+    <calculatedMeasures/>
+    <restrictedMeasures/>
+    <localDimensions/>
+  </logicalModel>
+  <layout>
+    <shapes>
+      <shape modelObjectName="Output" modelObjectNameSpace="MeasureGroup">
+        <upperLeftCorner x="40" y="85"/>
+      </shape>
+    </shapes>
+  </layout>
+</Calculation:scenario>

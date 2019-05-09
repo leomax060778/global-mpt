@@ -217,6 +217,10 @@ function getHl6ById(hl6Id, fromCloneMethod) {
 	var hl6 = JSON.parse(JSON.stringify(dataHl6.getHl6ById(hl6Id)));
 	var isLegacy = !!hl6.HL5_LEGACY_ID;
 
+	var budgetYearData = budgetYear.getBudgetYearByLevelParent(6, hl6.HL5_ID, isLegacy, isLegacy? 1:0);
+	var budgetYearId = isLegacy? budgetYearData.BUDGET_YEAR_ID : budgetYearData; //Because it returns the object or the ID only depending on the legacy
+	var requiredDFObject = JSON.parse(JSON.stringify(budgetYear.getRequireDynamicFormByBudgetYearId(budgetYearId)));
+
 	var parentId = isLegacy ? hl6.HL5_LEGACY_ID : hl6.HL5_ID;
 
 	var defaultKpi = {
@@ -274,10 +278,11 @@ function getHl6ById(hl6Id, fromCloneMethod) {
 
     hl6 = serverToUiParser(hl6);
 
-    return {
-        HL6: hl6,
-        DYNAMIC_FORM: blDynamicForm.getFormByParentId(parentId, 'L6', hl6.DYNAMIC_FORM_ID, true, isLegacy)
-    };
+	var result = {};
+	result.HL6 = hl6;
+	result.DYNAMIC_FORM = (Number(requiredDFObject.REQUIRE_DYNAMIC_FORM) === 1) ? blDynamicForm.getFormByParentId(parentId, 'L6', hl6.DYNAMIC_FORM_ID, true, isLegacy) : blDynamicForm.getCompleteForm(HIERARCHY_LEVEL.HL6);
+
+    return result;
 }
 
 function getUserById(id) {
@@ -390,8 +395,12 @@ function insertHl6(data, userId, isLegacy) {
 
     data = uiToServerParser(data);
 
-    // Complete data with dynamic form data configuration
-    data = util.completeFromDynamicForm(hl5Id, "L6", data, true, isLegacy);
+	var budgetYearData = budgetYear.getBudgetYearByLevelParent(6, hl5Id, isLegacy, isLegacy? 1:0);
+	var budgetYearId = isLegacy? budgetYearData.BUDGET_YEAR_ID : budgetYearData; //Because it returns the object or the ID only depending on the legacy
+	var requiredDFObject = JSON.parse(JSON.stringify(budgetYear.getRequireDynamicFormByBudgetYearId(budgetYearId)));
+
+	//complete data with dynamic form data configuration (if the Budget Year requires it).
+	data = (Number(requiredDFObject.REQUIRE_DYNAMIC_FORM) === 1) ? util.completeFromDynamicForm(hl5Id, "L6", data, true, isLegacy) : data;
 
 	if (!hasAdditionalFields(data.CAMPAIGN_TYPE_ID)) {
 		data.VENUE = null;
@@ -423,8 +432,8 @@ function insertHl6(data, userId, isLegacy) {
 
 	if (data.STATUS_DETAIL_ID > 0) {
 		data.CREATED_USER_ID = userId;
-        var budgetYear = dataValidation.getBudgetYearByIdLevel(hl5Id, 'HL5', Number(!!isLegacy))[0];
-        data.ENABLE_CRM_CREATION = budgetYear ? Number(budgetYear.ENABLE_CRM_CREATION) : 0;
+        var budgetYearObject = dataValidation.getBudgetYearByIdLevel(hl5Id, 'HL5', Number(!!isLegacy))[0];
+        data.ENABLE_CRM_CREATION = budgetYearObject ? Number(budgetYearObject.ENABLE_CRM_CREATION) : 0;
 		var validAcronym = !data.ACRONYM ? getNewHl6Id(hl5Id, isLegacy)
 				: data.ACRONYM;
 
@@ -690,7 +699,15 @@ function updateHl6(data, userId, isLegacy) {
 
 	level4Lib.getImplementExecutionLevel(l4Id);
 	data = uiToServerParser(data);
-    data = util.completeFromDynamicForm(hl5Id, "L6", data, Number(isLegacy));
+
+	var budgetYearData = budgetYear.getBudgetYearByLevelParent(6, hl5Id, !!isLegacy, !!isLegacy? 1:0);
+	var budgetYearId = isLegacy? budgetYearData.BUDGET_YEAR_ID : budgetYearData; //Because it returns the object or the ID only depending on the legacy
+	var requiredDFObject = JSON.parse(JSON.stringify(budgetYear.getRequireDynamicFormByBudgetYearId(budgetYearId)));
+
+	if (Number(requiredDFObject.REQUIRE_DYNAMIC_FORM) === 1) {
+		data = util.completeFromDynamicForm(hl5Id, "L6", data, Number(isLegacy));
+	}
+
 	if (!hasAdditionalFields(data.CAMPAIGN_TYPE_ID)) {
 		data.VENUE = null;
 		data.CITY = null;
@@ -752,12 +769,12 @@ function updateHl6(data, userId, isLegacy) {
 	data.STATUS_DETAIL_ID = validationResult.statusId;
 	if (data.STATUS_DETAIL_ID > 0) {
 		data.CREATED_USER_ID = userId;
-        var budgetYear = dataValidation.getBudgetYearByIdLevel(hl5Id, 'HL5', Number(!!isLegacy))[0];
+        var budgetYearObject = dataValidation.getBudgetYearByIdLevel(hl5Id, 'HL5', Number(!!isLegacy))[0];
         var changedFields = crmFieldsHaveChanged(data, Number(data.IS_COMPLETE), userId, false, objHL6);
         if(!changedFields.crmFieldsHaveChanged || changedFields.onlyBudget){
             data.ENABLE_CRM_CREATION = 1;
         } else {
-            data.ENABLE_CRM_CREATION = data.STATUS_DETAIL_ID == HL6_STATUS.IN_PROGRESS? Number(budgetYear.ENABLE_CRM_CREATION) : 1;
+            data.ENABLE_CRM_CREATION = data.STATUS_DETAIL_ID == HL6_STATUS.IN_PROGRESS? Number(budgetYearObject.ENABLE_CRM_CREATION) : 1;
         }
 		var validAcronym = !data.ACRONYM ? getNewHl6Id(hl5Id, isLegacy)
 				: data.ACRONYM;
@@ -1814,11 +1831,13 @@ function setStatusInCRM(hl6_id, userId) {
 
 	if (hl6Ids.length) {
 		var hl6InCrm = massSetHl6Status(hl6Ids, userId);
-		mail.massSendInCRMMail(hl6InCrm, LEVEL_STRING.toLowerCase());
+
 		hl6Ids.forEach(function(value) {
 			insertInCrmVersion(value.hl6_id);
 			dataL6Report.updateLevel6ReportForDownload(value.hl6_id);
-		})
+		});
+
+        mail.massSendInCRMMail(hl6InCrm, LEVEL_STRING.toLowerCase());
 	}
 	return 1;
 }
@@ -2754,26 +2773,8 @@ function getCategoryOptionVersioned(hl6Id) {
 			.getHlCategoryOptionVersionedByLevelHlId(LEVEL_STRING, hl6Id);
 }
 
-function getCarryOverHl5CategoryOption(hl5_id, hl4_id) {
-	var hl5_category = JSON.parse(JSON.stringify(level5Lib
-			.getCategoryOption(hl5_id)));
-	var hl6_category = JSON.parse(JSON.stringify(allocationCategory
-			.getCategoryOptionByHierarchyLevelId(HIERARCHY_LEVEL.HL6, hl4_id)));
-
-	return hl6_category.map(function(category) {
-		var hl5Cat = extractElementByList(hl5_category, "CATEGORY_ID",
-				category.CATEGORY_ID);
-		if (hl5Cat) {
-			category.OPTIONS.map(function(option) {
-				var hl5option = extractElementByList(hl5Cat.OPTIONS,
-						"OPTION_ID", option.OPTION_ID);
-				option.AMOUNT = hl5option ? hl5option.AMOUNT : 0;
-				option.AMOUNT_KPI = hl5option ? hl5option.AMOUNT_KPI : 0;
-				return option;
-			});
-		}
-		return category;
-	});
+function getCarryOverHl5CategoryOption(hl5_id, hl4_id, userId) {
+	return allocationCategory.getCategoryOptionCarryOverByHierarchyLevelId(HIERARCHY_LEVEL.HL6, hl5_id, userId);
 }
 
 function uiToServerParser(object, isClone) {

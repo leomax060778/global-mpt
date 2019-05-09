@@ -65,7 +65,7 @@ function getAllocationCategoryByCategoryIdLevelId(categoryId, levelId){
 	return db.extractArray(rdo.out_result);
 }
 
-function insertAllocationCATEGORYOptionLevel(categoryId, optionId, levelId, inProcessingReport, userId, make_category_mandatory, in_options_limit, in_available_in_event_request, autoCommit) {
+function insertAllocationCATEGORYOptionLevel(categoryId, optionId, levelId, inProcessingReport, userId, make_category_mandatory, in_options_limit, in_available_in_event_request, in_show_in_legacy, autoCommit) {
 	var params = {
 		'in_category_id': categoryId,
 		'in_option_id': optionId,
@@ -75,7 +75,8 @@ function insertAllocationCATEGORYOptionLevel(categoryId, optionId, levelId, inPr
 
         'in_make_category_mandatory': make_category_mandatory,
         'in_options_limit': in_options_limit,
-        'in_available_in_event_request': in_available_in_event_request
+        'in_available_in_event_request': in_available_in_event_request,
+		'in_show_in_legacy': in_show_in_legacy
 	};
 	var rdo;
 	if (autoCommit) {
@@ -102,7 +103,16 @@ function updateAllocationCategoryOptionLevelProcessingReport(categoryId, levelId
 	return rdo;
 }
 
-function updateAllocationCategoryOptionLevel(categoryId, levelId, optionId, processingReport, userId, make_category_mandatory, in_options_limit, in_available_in_event_request, autoCommit){
+function updateAllocationCategoryOptionLevel(categoryId,
+											 levelId,
+											 optionId,
+											 processingReport,
+											 userId,
+											 make_category_mandatory,
+											 in_options_limit,
+											 in_available_in_event_request,
+											 show_in_legacy,
+											 autoCommit){
 
     var params = {
         'in_category_id': categoryId,
@@ -112,7 +122,8 @@ function updateAllocationCategoryOptionLevel(categoryId, levelId, optionId, proc
         'in_in_processing_report':processingReport,
         'in_make_category_mandatory':make_category_mandatory,
         'in_options_limit': in_options_limit,
-        'in_available_in_event_request': in_available_in_event_request
+        'in_available_in_event_request': in_available_in_event_request,
+		'in_show_in_legacy': show_in_legacy
     };
 
     return db.executeScalarManual(UPD_ALLOCATION_CATEGORY_OPTION_LEVEL,params,'out_result');
@@ -126,6 +137,7 @@ function updateAllocationOptionFlags(reqBody){
 	params.in_in_processing_report = reqBody.IN_PROCESSING_REPORT;
 	params.in_options_limit = reqBody.IN_OPTIONS_LIMIT;
 	params.in_available_in_event_request = reqBody.AVAILABLE_IN_EVENT_REQUEST;
+	params.in_show_in_legacy = reqBody.IN_SHOW_IN_LEGACY;
 
 	return db.executeScalarManual(UPD_ALLOCATION_OPTION_FLAGS, params, 'out_result');
 }

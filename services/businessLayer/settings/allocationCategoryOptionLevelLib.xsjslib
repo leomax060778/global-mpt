@@ -73,6 +73,8 @@ function updateCategoryOptionLevel(data, userId) {
             if (optionToDelete.length) {
                 associationDeleteCount = dataCategoryOptionLevel.deleteAllocationCATEGORYOptionLevel(data.IN_CATEGORY_ID, hierarchylevel, allocationOptions, userId);
             }
+            //Now the condition its not going to be valid anymore, because the logic to not remove the
+            //Category Options in use was removed.
             if (associationDeleteCount !== optionToDelete.length) {
                 message = "Some options could not be removed because they are in use";
             }
@@ -85,8 +87,8 @@ function updateCategoryOptionLevel(data, userId) {
                 if (categoryOptionLevelInfo && Number(categoryOptionLevelInfo.CATEGORY_ID) !== Number(data.IN_CATEGORY_ID)) {
                     optionIds.push(data.IN_OPTION_LIST[i]);
                     categoryOptionToMessage.push({
-                        CATEGORY_ID: categoryOptionLevelInfo.CATEGORY_ID
-                        , OPTION_ID: data.IN_OPTION_LIST[i]
+                        CATEGORY_ID: categoryOptionLevelInfo.CATEGORY_ID,
+                        OPTION_ID: data.IN_OPTION_LIST[i]
                     })
                 }
 
@@ -99,13 +101,17 @@ function updateCategoryOptionLevel(data, userId) {
                         userId,
                         data.IN_MAKE_CATEGORY_MANDATORY,
                         data.IN_OPTIONS_LIMIT || OPTIONS_LIMIT_DEFAULT,
-                        Number(data.AVAILABLE_IN_EVENT_REQUEST) || 0);
+                        Number(data.AVAILABLE_IN_EVENT_REQUEST) || 0,
+                        data.IN_SHOW_IN_LEGACY || 0
+                        );
+
                     //Update Make Category Mandatory and In Processing Report flags to avoid duplicated registers
                     var reqBody = {
                         CATEGORY_ID: data.IN_CATEGORY_ID,
                         HIERARCHY_LEVEL_ID: hierarchylevel,
                         MAKE_CATEGORY_MANDATORY: data.IN_MAKE_CATEGORY_MANDATORY,
                         IN_PROCESSING_REPORT: data.IN_PROCESSING_REPORT,
+                        IN_SHOW_IN_LEGACY: data.IN_SHOW_IN_LEGACY || 0,
                         IN_OPTIONS_LIMIT: data.IN_OPTIONS_LIMIT || OPTIONS_LIMIT_DEFAULT,
                         AVAILABLE_IN_EVENT_REQUEST: Number(data.AVAILABLE_IN_EVENT_REQUEST) || 0
 
@@ -122,7 +128,8 @@ function updateCategoryOptionLevel(data, userId) {
 
                         data.IN_MAKE_CATEGORY_MANDATORY,
                         data.IN_OPTIONS_LIMIT  || OPTIONS_LIMIT_DEFAULT,
-                        Number(data.AVAILABLE_IN_EVENT_REQUEST) || 0);
+                        Number(data.AVAILABLE_IN_EVENT_REQUEST) || 0,
+                        data.IN_SHOW_IN_LEGACY || 0);
 
                 }
 

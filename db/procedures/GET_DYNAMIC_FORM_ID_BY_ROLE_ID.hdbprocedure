@@ -1,0 +1,80 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_DYNAMIC_FORM_ID_BY_ROLE_ID" (
+    IN in_role_id BIGINT,
+    IN in_budget_year_id BIGINT,
+	OUT out_result TABLE(
+	    ROLE_ID BIGINT,
+		DYNAMIC_FORM_ID_L1 INTEGER,
+		DYNAMIC_FORM_ID_L2 INTEGER,
+		DYNAMIC_FORM_ID_L3 INTEGER,
+		DYNAMIC_FORM_ID_L4 INTEGER,
+		DEFAULT_DYNAMIC_FORM_ID_L1 INTEGER,
+		DEFAULT_DYNAMIC_FORM_ID_L2 INTEGER,
+		DEFAULT_DYNAMIC_FORM_ID_L3 INTEGER,
+		DEFAULT_DYNAMIC_FORM_ID_L4 INTEGER
+	)
+)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	READS SQL DATA AS
+BEGIN
+
+    out_result = SELECT df_role.ROLE_ID,
+                        MIN(dynamicL1.DYNAMIC_FORM_ID) AS DYNAMIC_FORM_ID_L1,
+                        MIN(dynamicL2.DYNAMIC_FORM_ID) AS DYNAMIC_FORM_ID_L2,
+                        MIN(dynamicL3.DYNAMIC_FORM_ID) AS DYNAMIC_FORM_ID_L3,
+                        MIN(dynamicL4.DYNAMIC_FORM_ID) AS DYNAMIC_FORM_ID_L4,
+                        MIN(defaultL1.DYNAMIC_FORM_ID) AS DEFAULT_DYNAMIC_FORM_ID_L1,
+                        MIN(defaultL2.DYNAMIC_FORM_ID) AS DEFAULT_DYNAMIC_FORM_ID_L2,
+                        MIN(defaultL3.DYNAMIC_FORM_ID) AS DEFAULT_DYNAMIC_FORM_ID_L3,
+                        MIN(defaultL4.DYNAMIC_FORM_ID) AS DEFAULT_DYNAMIC_FORM_ID_L4
+                 FROM DYNAMIC_FORM_ROLE df_role
+                 LEFT JOIN DYNAMIC_FORM dynamicL1
+                    ON dynamicL1.DYNAMIC_FORM_ID = df_role.DYNAMIC_FORM_ID
+                        AND dynamicL1.HIERARCHY_LEVEL_ID = 4 --L1
+                        AND dynamicL1.ENABLED = 1
+                        AND dynamicL1.DELETED = 0
+                 LEFT JOIN DYNAMIC_FORM dynamicL2
+                    ON dynamicL2.DYNAMIC_FORM_ID = df_role.DYNAMIC_FORM_ID
+                        AND dynamicL2.HIERARCHY_LEVEL_ID = 5 --L2
+                        AND dynamicL2.ENABLED = 1
+                        AND dynamicL2.DELETED = 0
+                 LEFT JOIN DYNAMIC_FORM dynamicL3
+                     ON dynamicL3.DYNAMIC_FORM_ID = df_role.DYNAMIC_FORM_ID
+                         AND dynamicL3.HIERARCHY_LEVEL_ID = 6 --L3
+                         AND dynamicL3.ENABLED = 1
+                         AND dynamicL3.DELETED = 0
+                 LEFT JOIN DYNAMIC_FORM dynamicL4
+                     ON dynamicL4.DYNAMIC_FORM_ID = df_role.DYNAMIC_FORM_ID
+                         AND dynamicL4.HIERARCHY_LEVEL_ID = 1 --L4
+                         AND dynamicL4.ENABLED = 1
+                         AND dynamicL4.DELETED = 0
+                 LEFT JOIN DYNAMIC_FORM defaultL1
+                    ON defaultL1.DEFAULT_FORM = 1
+                        AND defaultL1.HIERARCHY_LEVEL_ID = 4 --L1
+                        AND defaultL1.ENABLED = 1
+                        AND defaultL1.DELETED = 0
+                 LEFT JOIN DYNAMIC_FORM defaultL2
+                    ON defaultL2.DEFAULT_FORM = 1
+                        AND defaultL2.HIERARCHY_LEVEL_ID = 5 --L2
+                        AND defaultL2.ENABLED = 1
+                        AND defaultL2.DELETED = 0
+                 LEFT JOIN DYNAMIC_FORM defaultL3
+                    ON defaultL3.DEFAULT_FORM = 1
+                        AND defaultL3.HIERARCHY_LEVEL_ID = 6 --L3
+                        AND defaultL3.ENABLED = 1
+                        AND defaultL3.DELETED = 0
+                 LEFT JOIN DYNAMIC_FORM defaultL4
+                    ON defaultL4.DEFAULT_FORM = 1
+                        AND defaultL4.HIERARCHY_LEVEL_ID = 1 --L4
+                        AND defaultL4.ENABLED = 1
+                        AND defaultL4.DELETED = 0
+                 INNER JOIN BUDGET_YEAR byear
+                    ON df_role.BUDGET_YEAR_ID = byear.BUDGET_YEAR_ID
+                        AND byear.REQUIRE_DYNAMIC_FORM = 1 -- Filter only L2 with Budget Year that requires DF
+                 WHERE  df_role.ROLE_ID = in_role_id
+                    AND df_role.BUDGET_YEAR_ID = in_budget_year_id
+                    AND df_role.ENABLED = 1
+                    AND df_role.DELETED = 0
+                 GROUP BY df_role.ROLE_ID;
+END;

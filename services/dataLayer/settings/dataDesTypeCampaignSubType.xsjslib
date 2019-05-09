@@ -6,6 +6,7 @@ var db = mapper.getdbHelper();
 var GET_DES_TYPE_CAMPAIGN_SUB_TYPE_BY_DES_TYPE_ID = "GET_DES_TYPE_CAMPAIGN_SUB_TYPE_BY_DES_TYPE_ID";
 var INS_DES_TYPE_CAMPAIGN_SUB_TYPE = "INS_DES_TYPE_CAMPAIGN_SUB_TYPE";
 var DEL_DES_TYPE_CAMPAIGN_SUB_TYPE = "DEL_DES_TYPE_CAMPAIGN_SUB_TYPE";
+var UPD_DES_TYPE_CAMPAIGN_SUB_TYPE = "UPD_DES_TYPE_CAMPAIGN_SUB_TYPE";
 
 function getDesTypeCampaignSubType(campaignSubtypeId){
     var params = {};
@@ -33,3 +34,11 @@ function deleteDesTypeCampaignSubType(campaignSubtypeId){
     return db.executeScalarManual(DEL_DES_TYPE_CAMPAIGN_SUB_TYPE, params, 'out_result');
 }
 
+function updateDesTypeCampaignSubTypeFlags(data, userId){
+    var params = {};
+    params.in_campaign_sub_type_Id = data.CAMPAIGN_SUB_TYPE_ID;
+    params.in_modified_user_id = userId;
+    params.in_show_in_legacy = !!data.SHOW_IN_LEGACY ? 1: 0;
+
+    return db.executeScalarManual(UPD_DES_TYPE_CAMPAIGN_SUB_TYPE, params, 'out_result');
+}

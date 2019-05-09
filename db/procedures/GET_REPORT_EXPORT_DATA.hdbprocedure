@@ -31,6 +31,8 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_REPORT_EXPOR
             , MODIFIED_DATE TIMESTAMP
             , STATUS NVARCHAR(30)
             , DES NVARCHAR(30)
+            , REPUTATION_INITIATIVE NVARCHAR(255)
+            , REPUTATION_INITIATIVE_AUDIENCE NVARCHAR(255)
 		)
 	)
 	LANGUAGE SQLSCRIPT
@@ -65,6 +67,8 @@ BEGIN
                                     , MODIFIED_DATE
                                     , STATUS
                                     , DES
+                                    , REPUTATION_INITIATIVE
+                                    , REPUTATION_INITIATIVE_AUDIENCE
                  FROM "_SYS_BIC"."mktgplanningtool.db.data.views/CV_REPORT_EXPORT_DATA"
                  WHERE HIERARCHY_LEVEL_ID IN (SELECT HIERARCHY_LEVEL_ID FROM :IN_HIERARCHY_LEVEL)
                  AND IN_DELTA_TIME_LAST_UPDATE <= MODIFIED_DATE;
@@ -95,6 +99,8 @@ BEGIN
                                          , MODIFIED_DATE
                                          , STATUS
                                          , DES
+                                         , REPUTATION_INITIATIVE
+                                         , REPUTATION_INITIATIVE_AUDIENCE
                      FROM "_SYS_BIC"."mktgplanningtool.db.data.views/CV_REPORT_EXPORT_DATA";
              END IF;
     ELSE
@@ -124,6 +130,8 @@ BEGIN
                                             , MODIFIED_DATE
                                             , STATUS
                                             , DES
+                                            , REPUTATION_INITIATIVE
+                                            , REPUTATION_INITIATIVE_AUDIENCE
                          FROM "_SYS_BIC"."mktgplanningtool.db.data.views/CV_REPORT_EXPORT_DATA"
                           WHERE HIERARCHY_LEVEL_ID IN (SELECT HIERARCHY_LEVEL_ID FROM :IN_HIERARCHY_LEVEL)
                              AND IN_DELTA_TIME_LAST_UPDATE <= MODIFIED_DATE
@@ -154,6 +162,8 @@ BEGIN
                                                          , MODIFIED_DATE
                                                          , STATUS
                                                          , DES
+                                                         , REPUTATION_INITIATIVE
+                                                         , REPUTATION_INITIATIVE_AUDIENCE
                                      FROM "_SYS_BIC"."mktgplanningtool.db.data.views/CV_REPORT_EXPORT_DATA"
                                      WHERE STATUS = IN_STATUS;
                      END IF;

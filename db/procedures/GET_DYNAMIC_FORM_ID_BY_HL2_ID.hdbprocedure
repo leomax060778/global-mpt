@@ -1,0 +1,47 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_DYNAMIC_FORM_ID_BY_HL2_ID" (
+    IN in_hl2_id BIGINT,
+	OUT out_result TABLE(
+		DYNAMIC_FORM_ID_L5 BIGINT,
+		DYNAMIC_FORM_ID_L6 BIGINT,
+		DEFAULT_DYNAMIC_FORM_ID_L5 BIGINT,
+		DEFAULT_DYNAMIC_FORM_ID_L6 BIGINT
+	)
+)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	READS SQL DATA AS
+BEGIN
+
+    out_result = SELECT dynamicL5.DYNAMIC_FORM_ID AS DYNAMIC_FORM_ID_L5,
+                        dynamicL6.DYNAMIC_FORM_ID AS DYNAMIC_FORM_ID_L6,
+                        defaultL5.DYNAMIC_FORM_ID AS DEFAULT_DYNAMIC_FORM_ID_L5,
+                        defaultL6.DYNAMIC_FORM_ID AS DEFAULT_DYNAMIC_FORM_ID_L6
+                 FROM HL2 l2
+                 LEFT JOIN DYNAMIC_FORM dynamicL5
+                    ON dynamicL5.DYNAMIC_FORM_UID = l2.DYNAMIC_FORM_L5_UID
+                        AND dynamicL5.HIERARCHY_LEVEL_ID = 2 --L5
+                        AND dynamicL5.ENABLED = 1
+                        AND dynamicL5.DELETED = 0
+                 LEFT JOIN DYNAMIC_FORM dynamicL6
+                    ON dynamicL6.DYNAMIC_FORM_UID = l2.DYNAMIC_FORM_L6_UID
+                        AND dynamicL6.HIERARCHY_LEVEL_ID = 3 --L6
+                        AND dynamicL6.ENABLED = 1
+                        AND dynamicL6.DELETED = 0
+                 LEFT JOIN DYNAMIC_FORM defaultL5
+                    ON defaultL5.DEFAULT_FORM = 1
+                        AND defaultL5.HIERARCHY_LEVEL_ID = 2 --L5
+                        AND defaultL5.ENABLED = 1
+                        AND defaultL5.DELETED = 0
+                 LEFT JOIN DYNAMIC_FORM defaultL6
+                    ON defaultL6.DEFAULT_FORM = 1
+                        AND defaultL6.HIERARCHY_LEVEL_ID = 3 --L6
+                        AND defaultL6.ENABLED = 1
+                        AND defaultL6.DELETED = 0
+                 INNER JOIN HL1 l1
+                    ON l1.HL1_ID = l2.HL1_ID
+                 INNER JOIN BUDGET_YEAR byear
+                    ON byear.BUDGET_YEAR_ID = l1.BUDGET_YEAR_ID
+                        AND byear.REQUIRE_DYNAMIC_FORM = 1 -- Filter only L2 with Budget Year that requires DF
+                 WHERE  l2.HL2_ID = in_hl2_id;
+END;

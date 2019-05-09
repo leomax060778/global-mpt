@@ -2,7 +2,8 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_DYNAMIC_FORM
 	IN dynamic_form_default_value_table table(
 	    DYNAMIC_FORM_ID BIGINT,
         DYNAMIC_FORM_FIELD_ID BIGINT,
-        DEFAULT_VALUE NVARCHAR(3000)
+        DEFAULT_VALUE NVARCHAR(3000),
+        HIDDEN TINYINT
 	),
 	IN in_user_id BIGINT,
 	OUT dynamic_form_default_value_id bigint)
@@ -11,9 +12,19 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_DYNAMIC_FORM
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
 	AS
 BEGIN
- 	INSERT INTO "MKTG_PLANNING_TOOL"."DYNAMIC_FORM_DEFAULT_VALUE" (DYNAMIC_FORM_ID, DYNAMIC_FORM_FIELD_ID, DEFAULT_VALUE, CREATED_USER_ID)
-    SELECT DYNAMIC_FORM_ID, DYNAMIC_FORM_FIELD_ID, DEFAULT_VALUE, :in_user_id from :dynamic_form_default_value_table T;
+ 	INSERT INTO "MKTG_PLANNING_TOOL"."DYNAMIC_FORM_DEFAULT_VALUE" (
+ 	    DYNAMIC_FORM_ID,
+ 	    DYNAMIC_FORM_FIELD_ID,
+ 	    DEFAULT_VALUE,
+ 	    HIDDEN,
+ 	    CREATED_USER_ID
+ 	    )
+    SELECT  DYNAMIC_FORM_ID,
+            DYNAMIC_FORM_FIELD_ID,
+            DEFAULT_VALUE,
+            HIDDEN,
+            :in_user_id
+    FROM :dynamic_form_default_value_table T;
 
 	SELECT TOP 1 CURRENT_IDENTITY_VALUE() INTO dynamic_form_default_value_id FROM "MKTG_PLANNING_TOOL"."DYNAMIC_FORM_DEFAULT_VALUE";
-
 END;

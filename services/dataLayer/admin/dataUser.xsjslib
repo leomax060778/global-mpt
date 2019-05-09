@@ -28,6 +28,10 @@ var spGET_ALL_HL1_PERMISSIONS_BY_USER = "GET_ALL_HL1_PERMISSIONS_BY_USER";
 var spGET_ALL_HL2_PERMISSIONS_BY_USER = "GET_ALL_HL2_PERMISSIONS_BY_USER";
 var spGET_ALL_HL3_PERMISSIONS_BY_USER = "GET_ALL_HL3_PERMISSIONS_BY_USER";
 
+var spGET_ALL_HL1_PERMISSIONS_BY_USER_BUDGET_YEAR_ID = "GET_ALL_HL1_PERMISSIONS_BY_USER_BUDGET_YEAR_ID";
+var spGET_ALL_HL2_PERMISSIONS_BY_USER_BUDGET_YEAR_ID = "GET_ALL_HL2_PERMISSIONS_BY_USER_BUDGET_YEAR_ID";
+var spGET_ALL_HL3_PERMISSIONS_BY_USER_BUDGET_YEAR_ID = "GET_ALL_HL3_PERMISSIONS_BY_USER_BUDGET_YEAR_ID";
+
 /** *************************************************** */
 
 function getPermissionForLevelByUser(level, levelId, userId){
@@ -43,6 +47,35 @@ function getPermissionForLevelByUser(level, levelId, userId){
 		return db.extractArray(rdo.out_result);
 	}
 	return null;
+}
+
+function getPermissionForLevelByUserBudgetYearId(level, levelId, budgetYearId, userId){
+	var params = {};
+	params.in_user_id = userId;
+	params.in_budget_year_id = budgetYearId;
+
+	if(levelId){
+		params.in_level_id = levelId;
+	}
+
+	var rdo;
+
+	switch(Number(level)){
+		case 1:
+			rdo = db.executeProcedure(spGET_ALL_HL1_PERMISSIONS_BY_USER_BUDGET_YEAR_ID, params);
+			break;
+		case 2:
+			rdo = db.executeProcedure(spGET_ALL_HL2_PERMISSIONS_BY_USER_BUDGET_YEAR_ID, params);
+			break;
+		case 3:
+			rdo = db.executeProcedure(spGET_ALL_HL3_PERMISSIONS_BY_USER_BUDGET_YEAR_ID, params);
+			break;
+		default:
+			return null;
+			break;
+	}
+
+	return db.extractArray(rdo.out_result);
 }
 
 function getAllUser() {

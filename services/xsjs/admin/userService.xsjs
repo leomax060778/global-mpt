@@ -20,6 +20,7 @@ var getUsersByHl1Id = "USERSBYHL1ID";
 var getUsersByHl2Id = "USERSBYHL2ID";
 var getUsersByHl3Id = "USERSBYHL3ID";
 var getPermissionsByUser = "PERMISSIONSBYUSER";
+var getPermissionsByUserBudgetYearId = "PERMISSION_BY_USER_BUDGET_YEAR_ID";
 var hl2Id = "hl2Id";
 var level3 = "L3";
 var getRequestAccess = "GET_ACCESS_REQUESTS";
@@ -41,50 +42,51 @@ function handleGet(parameters, userId) {
         switch (aCmd) {
             case getAll: //get all users
                 rdo = user.getAll();
-                return httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
                 break;
             case getAllByUserName:
             	rdo = user.getAllUserByUserName(userName);
-                return httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
             	break;
             case getUserbyId: // get one user by id
                 rdo = user.getUserById(parameters[1].value);
-                return httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
                 break;
             case getUserApproversbyId: // get one user by id
                 rdo = user.getUserApproversByHL1Id(parameters[1].value);
-                return httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
                 break;
             case getUsersByHl1Id:
                 rdo = user.getUserByHl1Id(parameters[1].value);
-
-                return httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
                 break;
             case getUsersByHl2Id:
-
-                if (level == level3)
+                if (level == level3){
                     rdo = user.getUserByHl2IdToNewL3(parameters[1].value);
-                else
+                }else {
                     rdo = user.getUserByHl2Id(parameters[1].value);
-
-                return httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
+                }
                 break;
             case getUsersByHl3Id:
                 rdo = user.getUserByHl3Id(parameters[1].value);
-                return httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
                 break;
             case getPermissionsByUser:
                 rdo = user.getPermissionForLevelByUser(
-                    parameters.get('LEVEL'),parameters.get('LEVEL_ID'),parameters.get('USER_ID'));
-                return httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
+                    parameters.get('LEVEL'),
+                    parameters.get('LEVEL_ID'),
+                    parameters.get('USER_ID'));
+                break;
+            case getPermissionsByUserBudgetYearId:
+                rdo = user.getPermissionForLevelByUserBudgetYearId(
+                    parameters.get('LEVEL'),
+                    parameters.get('LEVEL_ID') || null,
+                    parameters.get('BUDGET_YEAR_ID'),
+                    parameters.get('USER_ID'));
                 break;
             case getRequestAccess:
                 rdo = requestAccess.getAllRequestAccess();
-                return httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
                 break;
             default:
                 throw ErrorLib.getErrors().BadRequest("", "userServices/handleGet", "insufficient parameters");
+                break;
         }
+
+        return httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
     }
     //if not match with any request supported, then return a bad request error
     throw ErrorLib.getErrors().BadRequest("", "userServices/handleGet", parameters);

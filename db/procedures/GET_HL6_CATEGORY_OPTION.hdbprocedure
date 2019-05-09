@@ -30,7 +30,7 @@ BEGIN
     inner join allocation_category ac on acol.allocation_category_id = ac.allocation_category_id
     inner join allocation_option ao on acol.allocation_option_id = ao.allocation_option_id
     inner join dynamic_form_allocation on acol.allocation_category_id = dynamic_form_allocation.allocation_category_id
-        and acol.allocation_option_id = dynamic_form_allocation.allocation_option_id
+        and acol.allocation_option_id = dynamic_form_allocation.allocation_option_id and dynamic_form_allocation.hidden = 1
     inner join dynamic_form on dynamic_form.dynamic_form_id = dynamic_form_allocation.dynamic_form_id
     inner join hl6 on hl6.dynamic_form_id = dynamic_form.dynamic_form_id
     inner join hl6_category_option hl6co on hl6co.enabled = 1 and hl6co.deleted = 0 and hl6co.hl6_id = hl6.hl6_id

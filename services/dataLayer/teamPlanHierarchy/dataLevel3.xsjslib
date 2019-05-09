@@ -20,6 +20,7 @@ var GET_HL3 = "GET_HL3";
 var GET_HL3_CARRY_OVER_BY_ID = "GET_HL3_CARRY_OVER_BY_ID";
 var GET_GLOBAL_TEAM = "GET_GLOBAL_TEAM";
 var GET_HL3_BY_ACRONYM = "GET_HL3_BY_ACRONYM";
+var spGET_DUPLICATED_HL3_CRM_PATH_BY_HL3_ID = "GET_DUPLICATED_HL3_CRM_PATH_BY_HL3_ID";
 var DEL_HL3 = "DEL_HL3";
 var spUpdateHl3BudgetStatus = "UPD_HL3_STATUS_BUDGET";
 var GET_ALL_HL3_VERSION_BY_HL3_ID = "GET_ALL_HL3_VERSION_BY_HL3_ID";
@@ -107,6 +108,16 @@ function getAllLevel3(objHl2, userId, isSA) {
 	result.out_total_allocated = list.out_total_allocated;
 	result.out_remaining_budget = list.out_remaining_budget;
 	return result;
+}
+
+function getDuplicatedHl3CRMPath(hl3Id, hl2Id, hl3Acronym){
+    var params = {};
+    params.in_hl3_id = hl3Id || 0;
+    params.in_hl2_id = Number(hl2Id);
+    params.in_hl3_acronym = hl3Acronym;
+
+    var result = db.executeProcedure(spGET_DUPLICATED_HL3_CRM_PATH_BY_HL3_ID, params);
+    return db.extractArray(result.out_result);
 }
 
 function getLobAllocationSummary(objHl2, userId, isSA) {

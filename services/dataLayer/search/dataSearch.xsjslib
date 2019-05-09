@@ -4,6 +4,7 @@ var db = mapper.getdbHelper();
 var ErrorLib = mapper.getErrors();
 /*************END INCLUDE LIBRARIES****************/
 var spGetHLBySearch = "GET_HL_BY_SEARCH";
+var spGetCostCenterBySearch = "GET_COST_CENTER_BY_SEARCH";
 
 function getHLBySearch(parameters) {
 	var params = {};
@@ -24,4 +25,12 @@ function getHLBySearch(parameters) {
 	object.total_rows = result.TOTAL_ROWS;
 	
 	return object;
+}
+
+function getCostCenterBySearch(searchString){
+	var params = {};
+	params.IN_SEARCH_STRING = searchString;
+
+	var result = db.executeProcedure(spGetCostCenterBySearch, params);
+	return db.extractArray(result.out_result);
 }

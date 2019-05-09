@@ -174,47 +174,52 @@ BEGIN
 
 --SALES ORGANIZATION
 aux_sales_organization_hl6_result =
-	select
-        sum(COALESCE(T3.AMOUNT, T.AMOUNT, 0)) AS AMOUNT
-        , hl6.hl6_id
-
-    from (select
-    		hl6_sales.HL6_SALES_ID,
-    		hl6_sales.amount,
-      	    hl6_sales.currency_id,
-      	    hl6_id
-        	from hl6_sales
-        	where hl6_sales.enabled = 1 and hl6_sales.deleted = 0) T
-        	inner join hl6 on hl6.hl6_id = T.hl6_id and hl6.enabled = 1 and hl6.deleted = 0
-            LEFT JOIN HL6_SALE_BUDGET_SPEND_REQUEST T2 ON T.HL6_SALES_ID = T2.HL6_SALES_ID
-            LEFT JOIN BUDGET_SPEND_REQUEST T3 ON T2.BUDGET_SPEND_REQUEST_ID = T3.BUDGET_SPEND_REQUEST_ID
-      and (T3.BUDGET_SPEND_REQUEST_STATUS_ID = 1 OR T3.BUDGET_SPEND_REQUEST_STATUS_ID = 2) -- 1: Pending  / 2: Aproved
-    group by hl6.hl6_id;
+	SELECT
+        sum(COALESCE(T3.AMOUNT, T.AMOUNT, 0)) AS AMOUNT,
+        hl6.hl6_id
+    FROM (  SELECT  hl6_sales.HL6_SALES_ID,
+    		        hl6_sales.amount,
+                    hl6_sales.currency_id,
+                    hl6_id
+            FROM hl6_sales
+            WHERE hl6_sales.enabled = 1
+                AND hl6_sales.deleted = 0
+         ) T
+    INNER JOIN hl6
+        ON hl6.hl6_id = T.hl6_id
+            AND hl6.enabled = 1
+            AND hl6.deleted = 0
+    LEFT JOIN HL6_SALE_BUDGET_SPEND_REQUEST T2
+        ON T.HL6_SALES_ID = T2.HL6_SALES_ID
+    LEFT JOIN BUDGET_SPEND_REQUEST T3
+        ON T2.BUDGET_SPEND_REQUEST_ID = T3.BUDGET_SPEND_REQUEST_ID
+            AND (T3.BUDGET_SPEND_REQUEST_STATUS_ID = 1 OR T3.BUDGET_SPEND_REQUEST_STATUS_ID = 2) -- 1: Pending  / 2: Aproved
+    GROUP BY hl6.hl6_id;
 
 aux_sales_organization_hl5_result =
-	select
-        sum(COALESCE(T3.AMOUNT, T.AMOUNT, 0)) AS AMOUNT
-        , hl5.hl5_id
-
-    from (select
+	SELECT
+        sum(COALESCE(T3.AMOUNT, T.AMOUNT, 0)) AS AMOUNT,
+        hl5.hl5_id
+    FROM (SELECT
     		hl5_sales.HL5_SALES_ID,
     		hl5_sales.amount,
       	    hl5_sales.currency_id,
       	    hl5_id
-        	from hl5_sales
-        	where hl5_sales.enabled = 1 and hl5_sales.deleted = 0) T
-        	inner join hl5 on hl5.hl5_id = T.hl5_id and hl5.enabled = 1 and hl5.deleted = 0
+          FROM hl5_sales
+          WHERE hl5_sales.enabled = 1 AND hl5_sales.deleted = 0
+          ) T
+        	INNER JOIN hl5 ON hl5.hl5_id = T.hl5_id AND hl5.enabled = 1 AND hl5.deleted = 0
             LEFT JOIN HL5_SALE_BUDGET_SPEND_REQUEST T2 ON T.HL5_SALES_ID = T2.HL5_SALES_ID
             LEFT JOIN BUDGET_SPEND_REQUEST T3 ON T2.BUDGET_SPEND_REQUEST_ID = T3.BUDGET_SPEND_REQUEST_ID
-      and (T3.BUDGET_SPEND_REQUEST_STATUS_ID = 1 OR T3.BUDGET_SPEND_REQUEST_STATUS_ID = 2) -- 1: Pending  / 2: Aproved
-    group by hl5.hl5_id;
+      AND (T3.BUDGET_SPEND_REQUEST_STATUS_ID = 1 OR T3.BUDGET_SPEND_REQUEST_STATUS_ID = 2) -- 1: Pending  / 2: Aproved
+    GROUP BY hl5.hl5_id;
 
 --external_funding
 aux_external_funding_hl6 =
-        select
+        SELECT
         T.hl6_id,
-        sum(coalesce(t.value, coalesce(bsr.amount,0))) as hl6_External_Funding
-        from (SELECT
+        sum(coalesce(t.value, coalesce(bsr.amount,0))) AS hl6_External_Funding
+        FROM (SELECT
         hl6_partner.value,
         hl6_partner.budget_spend_request_id,
         hl6_partner.currency_id,
@@ -222,16 +227,16 @@ aux_external_funding_hl6 =
         FROM hl6_partner
         WHERE hl6_partner.enabled = 1
         AND hl6_partner.deleted = 0) t
-        inner join currency c on c.euro_conversion_id = t.currency_id
-        inner join budget_spend_request bsr on bsr.budget_spend_request_id = t.budget_spend_request_id
+        INNER JOIN currency c ON c.euro_conversion_id = t.currency_id
+        INNER JOIN budget_spend_request bsr ON bsr.budget_spend_request_id = t.budget_spend_request_id
         WHERE (bsr.BUDGET_SPEND_REQUEST_STATUS_ID = 1 OR bsr.BUDGET_SPEND_REQUEST_STATUS_ID = 2) -- 1: Pending  / 2: Aproved
-        group by T.hl6_id;
+        GROUP BY T.hl6_id;
 
 aux_external_funding_hl5 =
-        select
+        SELECT
         T.hl5_id,
-        sum(coalesce(t.value, coalesce(bsr.amount,0))) as hl5_External_Funding
-        from (SELECT
+        sum(coalesce(t.value, coalesce(bsr.amount,0))) AS hl5_External_Funding
+        FROM (SELECT
         hl5_partner.value,
         hl5_partner.budget_spend_request_id,
         hl5_partner.currency_id,
@@ -239,250 +244,347 @@ aux_external_funding_hl5 =
         FROM hl5_partner
         WHERE hl5_partner.enabled = 1
         AND hl5_partner.deleted = 0) t
-        inner join budget_spend_request bsr on bsr.budget_spend_request_id = t.budget_spend_request_id
+        INNER JOIN budget_spend_request bsr ON bsr.budget_spend_request_id = t.budget_spend_request_id
         WHERE (bsr.BUDGET_SPEND_REQUEST_STATUS_ID = 1 OR bsr.BUDGET_SPEND_REQUEST_STATUS_ID = 2) -- 1: Pending  / 2: Aproved
-        group by T.hl5_id;
+        GROUP BY T.hl5_id;
 
 
 --GET ALL DATA TO HL5 AND HL6 AND THEIR HL4
 out_result =
 	SELECT
-	REGION.REGION_NAME as REGION,
-	SUBREGION.SUBREGION_NAME as MARKET_UNIT,
-	"MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(
-	BYEAR.BUDGET_YEAR, HL1.ACRONYM, hl2.ORGANIZATION_ACRONYM, HL3.ACRONYM, '', '', '') AS HL3_CRM_ID,
-	"MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(
-    BYEAR.BUDGET_YEAR, HL1.ACRONYM, hl2.ORGANIZATION_ACRONYM, HL3.ACRONYM, HL4.ACRONYM, '', '') AS HL4_CRM_ID,
-    HL4.HL4_CRM_DESCRIPTION AS HL4_DESCRIPTION,
-    HL5.HL5_ID AS HL5_ID,
-    HL5.HL5_CRM_DESCRIPTION AS HL5_CRM_DESCRIPTION,
-    HL5.ACRONYM AS HL5_ACRONYM,
-    HL5.DISTRIBUTION_CHANNEL_ID AS HL5_DISTRIBUTION_CHANNEL_ID,
-    HL5.BUDGET AS HL5_BUDGET,
-    aux_external_funding_hl5.hl5_External_Funding AS HL5_EXTERNAL_FUNDING,
-    TSalesOrganization_hl5.AMOUNT AS HL5_OTHER_BUDGET,
-    HL5.HL4_ID AS HL4_ID,
-    HL5CO.NAME AS HL5_CAMPAIGN_OBJECTIVE, --ID
-    HL5CT.NAME AS HL5_CAMPAIGN_TYPE, --ID
-    DES_TYPE.NAME AS HL5_DES_TYPE,
-    HL5CS.NAME AS HL5_CAMPAIGN_SUBTYPE, --ID
-    HL5_MARKETING_PROGRAM.DESCRIPTION AS HL5_MARKETING_PROGRAM,
-    UPPER(HL5_MARKETING_ACTIVITY.NAME) AS HL5_MARKETING_ACTIVITY_ID,
-    UPPER(HL5_MARKETING_ACTIVITY.DESCRIPTION) AS HL5_MARKETING_ACTIVITY,
-    HL5.ACTUAL_START_DATE AS HL5_ACTUAL_START_DATE,
-    HL5.ACTUAL_END_DATE AS HL5_ACTUAL_END_DATE,
-    HL5.SHOW_ON_DG_CALENDAR AS HL5_SHOW_ON_DG_CALENDAR,
-    HL5_BUSINESS_OWNER.DESCRIPTION AS HL5_BUSINESS_OWNER,
-    HL5.EMPLOYEE_RESPONSIBLE_ID AS HL5_EMPLOYEE_RESPONSIBLE_ID,
-    HL5_COST_CENTER.COST_CENTER_CODE AS HL5_COST_CENTER,
-    HL5_COST_CENTER.NAME AS HL5_COST_CENTER_NAME,
-    HL5.IN_BUDGET AS HL5_IN_BUDGET,
-    HL5.BUDGET_SPEND_Q1 AS HL5_BUDGET_SPEND_Q1,
-    HL5.BUDGET_SPEND_Q2 AS HL5_BUDGET_SPEND_Q2,
-    HL5.BUDGET_SPEND_Q3 AS HL5_BUDGET_SPEND_Q3,
-    HL5.BUDGET_SPEND_Q4 AS HL5_BUDGET_SPEND_Q4,
-    HL5.EURO_CONVERSION_ID AS HL5_EURO_CONVERSION_ID,
-    HL5_STATUS_DETAIL.DETAIL AS HL5_HL5_STATUS_DETAIL,
-    HL5.CREATED_DATE_TZ AS HL5_CREATED_DATE_TZ,
-    HL5.MODIFIED_DATE_TZ AS HL5_MODIFIED_DATE_TZ,
-    HL5.CREATED_USER_ID AS HL5_CREATED_USER_ID,
+        REGION.REGION_NAME                          AS REGION,
+        SUBREGION.SUBREGION_NAME                    AS MARKET_UNIT,
+        "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(
+        BYEAR.BUDGET_YEAR, HL1.ACRONYM,
+        hl2.ORGANIZATION_ACRONYM,
+        HL3.ACRONYM, '', '', '')                    AS HL3_CRM_ID,
+        "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(
+        BYEAR.BUDGET_YEAR, HL1.ACRONYM,
+        hl2.ORGANIZATION_ACRONYM,
+        HL3.ACRONYM, HL4.ACRONYM,'', '')            AS HL4_CRM_ID,
+        HL4.HL4_CRM_DESCRIPTION                     AS HL4_DESCRIPTION,
+        HL5.HL5_ID                                  AS HL5_ID,
+        HL5.HL5_CRM_DESCRIPTION                     AS HL5_CRM_DESCRIPTION,
+        HL5.ACRONYM                                 AS HL5_ACRONYM,
+        HL5.DISTRIBUTION_CHANNEL_ID                 AS HL5_DISTRIBUTION_CHANNEL_ID,
+        HL5.BUDGET                                  AS HL5_BUDGET,
+        aux_external_funding_hl5.hl5_External_Funding AS HL5_EXTERNAL_FUNDING,
+        TSalesOrganization_hl5.AMOUNT               AS HL5_OTHER_BUDGET,
+        HL5.HL4_ID                                  AS HL4_ID,
+        HL5CO.NAME                                  AS HL5_CAMPAIGN_OBJECTIVE, --ID
+        HL5CT.NAME                                  AS HL5_CAMPAIGN_TYPE, --ID
+        DES_TYPE.NAME                               AS HL5_DES_TYPE,
+        HL5CS.NAME                                  AS HL5_CAMPAIGN_SUBTYPE, --ID
+        HL5_MARKETING_PROGRAM.DESCRIPTION           AS HL5_MARKETING_PROGRAM,
+        UPPER(HL5_MARKETING_ACTIVITY.NAME)          AS HL5_MARKETING_ACTIVITY_ID,
+        UPPER(HL5_MARKETING_ACTIVITY.DESCRIPTION)   AS HL5_MARKETING_ACTIVITY,
+        HL5.ACTUAL_START_DATE                       AS HL5_ACTUAL_START_DATE,
+        HL5.ACTUAL_END_DATE                         AS HL5_ACTUAL_END_DATE,
+        HL5.SHOW_ON_DG_CALENDAR                     AS HL5_SHOW_ON_DG_CALENDAR,
+        HL5_BUSINESS_OWNER.DESCRIPTION              AS HL5_BUSINESS_OWNER,
+        HL5.EMPLOYEE_RESPONSIBLE_ID                 AS HL5_EMPLOYEE_RESPONSIBLE_ID,
+        HL5_COST_CENTER.COST_CENTER_CODE            AS HL5_COST_CENTER,
+        HL5_COST_CENTER.NAME                        AS HL5_COST_CENTER_NAME,
+        HL5.IN_BUDGET                               AS HL5_IN_BUDGET,
+        HL5.BUDGET_SPEND_Q1                         AS HL5_BUDGET_SPEND_Q1,
+        HL5.BUDGET_SPEND_Q2                         AS HL5_BUDGET_SPEND_Q2,
+        HL5.BUDGET_SPEND_Q3                         AS HL5_BUDGET_SPEND_Q3,
+        HL5.BUDGET_SPEND_Q4                         AS HL5_BUDGET_SPEND_Q4,
+        HL5.EURO_CONVERSION_ID                      AS HL5_EURO_CONVERSION_ID,
+        HL5_STATUS_DETAIL.DETAIL                    AS HL5_HL5_STATUS_DETAIL,
+        HL5.CREATED_DATE_TZ                         AS HL5_CREATED_DATE_TZ,
+        HL5.MODIFIED_DATE_TZ                        AS HL5_MODIFIED_DATE_TZ,
+        HL5.CREATED_USER_ID                         AS HL5_CREATED_USER_ID,
 
-    HL5_CREATED_USER.USER_NAME AS HL5_CREATED_USERNAME,
-    CONCAT(CONCAT(HL5_CREATED_USER.FIRST_NAME, ' '), HL5_CREATED_USER.LAST_NAME) AS HL5_CREATED_USER,
+        HL5_CREATED_USER.USER_NAME                  AS HL5_CREATED_USERNAME,
+        CONCAT(
+            CONCAT(HL5_CREATED_USER.FIRST_NAME, ' '),
+            HL5_CREATED_USER.LAST_NAME
+        )                                           AS HL5_CREATED_USER,
 
-    HL5.MODIFIED_USER_ID AS HL5_MODIFIED_USER_ID,
+        HL5.MODIFIED_USER_ID                        AS HL5_MODIFIED_USER_ID,
 
-    HL5_MODIFIED_USER.USER_NAME AS HL5_MODIFIED_USERNAME,
-    CONCAT(CONCAT(HL5_MODIFIED_USER.FIRST_NAME, ' '), HL5_MODIFIED_USER.LAST_NAME) AS HL5_MODIFIED_USER,
+        HL5_MODIFIED_USER.USER_NAME                 AS HL5_MODIFIED_USERNAME,
+        CONCAT(
+            CONCAT(
+                HL5_MODIFIED_USER.FIRST_NAME, ' '),
+            HL5_MODIFIED_USER.LAST_NAME
+         )                                          AS HL5_MODIFIED_USER,
 
-    HL5.ENABLED AS HL5_ENABLED,
-    HL5.DELETED AS HL5_DELETED,
-    HL5.ROUTE_TO_MARKET_ID AS HL5_ROUTE_TO_MARKET_ID,
-    HL5.VENUE AS HL5_VENUE,
-    HL5.CITY AS HL5_CITY,
-    HL5.COUNTRY AS HL5_COUNTRY,
-    HL5.URL AS HL5_URL,
-    HL5_SALE_ORGANIZATION.NAME AS HL5_SALES_ORGANIZATION,
-    HL5.PLANNED_START_DATE AS HL5_PLANNED_START_DATE,
-    HL5.PLANNED_END_DATE AS HL5_PLANNED_END_DATE,
-    HL5.STREET AS HL5_STREET,
-    HL5.POSTAL_CODE AS HL5_POSTAL_CODE,
-    HL5.PRIORITY_ID AS HL5_PRIORITY_ID,
-    HL5.NUMBER_OF_PARTICIPANTS AS HL5_NUMBER_OF_PARTICIPANTS,
-    HL5.REGION AS HL5_REGION,
-    HL5.EVENT_OWNER AS HL5_EVENT_OWNER,
-    HL5.CO_FUNDED AS HL5_CO_FUNDED,
-    HL5.ALLOW_BUDGET_ZERO AS HL5_ALLOW_BUDGET_ZERO,
-    HL5.IS_POWER_USER AS HL5_IS_POWER_USER,
-    HL5.DELETED_TOKEN AS HL5_DELETED_TOKEN,
-    HL5.EMPLOYEE_RESPONSIBLE_USER AS HL5_EMPLOYEE_RESPONSIBLE_USER,
-    HL5.PERSON_RESPONSIBLE AS HL5_PERSON_RESPONSIBLE,
-    HL5.IS_COMPLETE AS HL5_IS_COMPLETE,
-    HL5.FORECAST_AT_L5 AS HL5_FORECAST_AT_L5,
-    "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(
-    BYEAR.BUDGET_YEAR, HL1.ACRONYM, hl2.ORGANIZATION_ACRONYM, HL3.ACRONYM, HL4.ACRONYM, HL5.ACRONYM, '') AS HL5_CRM_ID,
-    HL6.HL6_ID AS HL6_ID,
-    HL6.HL6_CRM_DESCRIPTION AS HL6_CRM_DESCRIPTION,
-    HL6.ACRONYM AS HL6_ACRONYM,
-    HL6.BUDGET AS HL6_BUDGET,
-    aux_external_funding_hl6.hl6_External_Funding AS HL6_EXTERNAL_FUNDING,
-    TSalesOrganization_hl6.AMOUNT AS HL6_OTHER_BUDGET,
-    HL6.ROUTE_TO_MARKET_ID AS HL6_ROUTE_TO_MARKET_ID,
-    HL6CO.NAME AS HL6_CAMPAIGN_OBJECTIVE, --ID
-    HL6CT.NAME AS HL6_CAMPAIGN_TYPE, --ID
-    HL6CS.NAME AS HL6_CAMPAIGN_SUBTYPE, --ID
-    HL6_MARKETING_PROGRAM.DESCRIPTION AS HL6_MARKETING_PROGRAM,
-    UPPER(HL6_MARKETING_ACTIVITY.NAME) AS HL6_MARKETING_ACTIVITY_ID,
-    UPPER(HL6_MARKETING_ACTIVITY.DESCRIPTION) AS HL6_MARKETING_ACTIVITY,
-    HL6.ACTUAL_START_DATE AS HL6_ACTUAL_START_DATE,
-    HL6.ACTUAL_END_DATE AS HL6_ACTUAL_END_DATE,
-    HL6.SHOW_ON_DG_CALENDAR AS HL6_SHOW_ON_DG_CALENDAR,
-    HL6_BUSINESS_OWNER.DESCRIPTION AS HL6_BUSINESS_OWNER,
-    HL6.EMPLOYEE_RESPONSIBLE_ID AS HL6_EMPLOYEE_RESPONSIBLE_ID,
-    HL6_COST_CENTER.COST_CENTER_CODE AS HL6_COST_CENTER,
-    HL6_COST_CENTER.NAME AS HL6_COST_CENTER_NAME,
-    HL6.IN_BUDGET AS HL6_IN_BUDGET,
-    HL6.BUDGET_SPEND_Q1 AS HL6_BUDGET_SPEND_Q1,
-    HL6.BUDGET_SPEND_Q2 AS HL6_BUDGET_SPEND_Q2,
-    HL6.BUDGET_SPEND_Q3 AS HL6_BUDGET_SPEND_Q3,
-    HL6.BUDGET_SPEND_Q4 AS HL6_BUDGET_SPEND_Q4,
-    HL6.EURO_CONVERSION_ID AS HL6_EURO_CONVERSION_ID,
-    HL6_STATUS_DETAIL.DETAIL AS HL6_HL6_STATUS_DETAIL,
-	HL6_SALE_ORGANIZATION.NAME AS HL6_SALES_ORGANIZATION,
-    HL6.CREATED_DATE_TZ AS HL6_CREATED_DATE_TZ,
-    HL6.MODIFIED_DATE_TZ AS HL6_MODIFIED_DATE_TZ,
-    HL6.CREATED_USER_ID AS HL6_CREATED_USER_ID,
+        HL5.ENABLED                                 AS HL5_ENABLED,
+        HL5.DELETED                                 AS HL5_DELETED,
+        HL5.ROUTE_TO_MARKET_ID                      AS HL5_ROUTE_TO_MARKET_ID,
+        HL5.VENUE                                   AS HL5_VENUE,
+        HL5.CITY                                    AS HL5_CITY,
+        HL5.COUNTRY                                 AS HL5_COUNTRY,
+        HL5.URL                                     AS HL5_URL,
+        HL5_SALE_ORGANIZATION.NAME                  AS HL5_SALES_ORGANIZATION,
+        HL5.PLANNED_START_DATE                      AS HL5_PLANNED_START_DATE,
+        HL5.PLANNED_END_DATE                        AS HL5_PLANNED_END_DATE,
+        HL5.STREET                                  AS HL5_STREET,
+        HL5.POSTAL_CODE                             AS HL5_POSTAL_CODE,
+        HL5.PRIORITY_ID                             AS HL5_PRIORITY_ID,
+        HL5.NUMBER_OF_PARTICIPANTS                  AS HL5_NUMBER_OF_PARTICIPANTS,
+        HL5.REGION                                  AS HL5_REGION,
+        HL5.EVENT_OWNER                             AS HL5_EVENT_OWNER,
+        HL5.CO_FUNDED                               AS HL5_CO_FUNDED,
+        HL5.ALLOW_BUDGET_ZERO                       AS HL5_ALLOW_BUDGET_ZERO,
+        HL5.IS_POWER_USER                           AS HL5_IS_POWER_USER,
+        HL5.DELETED_TOKEN                           AS HL5_DELETED_TOKEN,
+        HL5.EMPLOYEE_RESPONSIBLE_USER               AS HL5_EMPLOYEE_RESPONSIBLE_USER,
+        HL5.PERSON_RESPONSIBLE                      AS HL5_PERSON_RESPONSIBLE,
+        HL5.IS_COMPLETE                             AS HL5_IS_COMPLETE,
+        HL5.FORECAST_AT_L5                          AS HL5_FORECAST_AT_L5,
+        "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(
+        BYEAR.BUDGET_YEAR, HL1.ACRONYM,
+        hl2.ORGANIZATION_ACRONYM, HL3.ACRONYM,
+        HL4.ACRONYM, HL5.ACRONYM, '')               AS HL5_CRM_ID,
+        HL6.HL6_ID                                  AS HL6_ID,
+        HL6.HL6_CRM_DESCRIPTION                     AS HL6_CRM_DESCRIPTION,
+        HL6.ACRONYM                                 AS HL6_ACRONYM,
+        HL6.BUDGET                                  AS HL6_BUDGET,
+        aux_external_funding_hl6.hl6_External_Funding AS HL6_EXTERNAL_FUNDING,
+        TSalesOrganization_hl6.AMOUNT               AS HL6_OTHER_BUDGET,
+        HL6.ROUTE_TO_MARKET_ID                      AS HL6_ROUTE_TO_MARKET_ID,
+        HL6CO.NAME                                  AS HL6_CAMPAIGN_OBJECTIVE, --ID
+        HL6CT.NAME                                  AS HL6_CAMPAIGN_TYPE, --ID
+        HL6CS.NAME                                  AS HL6_CAMPAIGN_SUBTYPE, --ID
+        HL6_MARKETING_PROGRAM.DESCRIPTION           AS HL6_MARKETING_PROGRAM,
+        UPPER(HL6_MARKETING_ACTIVITY.NAME)          AS HL6_MARKETING_ACTIVITY_ID,
+        UPPER(HL6_MARKETING_ACTIVITY.DESCRIPTION)   AS HL6_MARKETING_ACTIVITY,
+        HL6.ACTUAL_START_DATE                       AS HL6_ACTUAL_START_DATE,
+        HL6.ACTUAL_END_DATE                         AS HL6_ACTUAL_END_DATE,
+        HL6.SHOW_ON_DG_CALENDAR                     AS HL6_SHOW_ON_DG_CALENDAR,
+        HL6_BUSINESS_OWNER.DESCRIPTION              AS HL6_BUSINESS_OWNER,
+        HL6.EMPLOYEE_RESPONSIBLE_ID                 AS HL6_EMPLOYEE_RESPONSIBLE_ID,
+        HL6_COST_CENTER.COST_CENTER_CODE            AS HL6_COST_CENTER,
+        HL6_COST_CENTER.NAME                        AS HL6_COST_CENTER_NAME,
+        HL6.IN_BUDGET                               AS HL6_IN_BUDGET,
+        HL6.BUDGET_SPEND_Q1                         AS HL6_BUDGET_SPEND_Q1,
+        HL6.BUDGET_SPEND_Q2                         AS HL6_BUDGET_SPEND_Q2,
+        HL6.BUDGET_SPEND_Q3                         AS HL6_BUDGET_SPEND_Q3,
+        HL6.BUDGET_SPEND_Q4                         AS HL6_BUDGET_SPEND_Q4,
+        HL6.EURO_CONVERSION_ID                      AS HL6_EURO_CONVERSION_ID,
+        HL6_STATUS_DETAIL.DETAIL                    AS HL6_HL6_STATUS_DETAIL,
+        HL6_SALE_ORGANIZATION.NAME                  AS HL6_SALES_ORGANIZATION,
+        HL6.CREATED_DATE_TZ                         AS HL6_CREATED_DATE_TZ,
+        HL6.MODIFIED_DATE_TZ                        AS HL6_MODIFIED_DATE_TZ,
+        HL6.CREATED_USER_ID                         AS HL6_CREATED_USER_ID,
 
-    HL6_CREATED_USER.USER_NAME AS HL6_CREATED_USERNAME,
-    CONCAT(CONCAT(HL6_CREATED_USER.FIRST_NAME, ' '), HL6_CREATED_USER.LAST_NAME) AS HL6_CREATED_USER,
+        HL6_CREATED_USER.USER_NAME                  AS HL6_CREATED_USERNAME,
+        CONCAT(
+            CONCAT(
+                HL6_CREATED_USER.FIRST_NAME, ' '
+            ),
+            HL6_CREATED_USER.LAST_NAME
+        )                                           AS HL6_CREATED_USER,
 
-    HL6.MODIFIED_USER_ID AS HL6_MODIFIED_USER_ID,
+        HL6.MODIFIED_USER_ID                        AS HL6_MODIFIED_USER_ID,
 
-    HL6_MODIFIED_USER.USER_NAME AS HL6_MODIFIED_USERNAME,
-    CONCAT(CONCAT(HL6_MODIFIED_USER.FIRST_NAME, ' '), HL6_MODIFIED_USER.LAST_NAME) AS HL6_MODIFIED_USER,
+        HL6_MODIFIED_USER.USER_NAME                 AS HL6_MODIFIED_USERNAME,
+        CONCAT(
+            CONCAT(
+                HL6_MODIFIED_USER.FIRST_NAME, ' '
+             ),
+             HL6_MODIFIED_USER.LAST_NAME
+            )                                       AS HL6_MODIFIED_USER,
 
-    HL6.ENABLED AS HL6_ENABLED,
-    HL6.DELETED AS HL6_DELETED,
-    HL6.DISTRIBUTION_CHANNEL_ID AS HL6_DISTRIBUTION_CHANNEL_ID,
-    HL6.VENUE AS HL6_VENUE,
-    HL6.CITY AS HL6_CITY,
-    HL6.COUNTRY AS HL6_COUNTRY,
-    HL6.URL AS HL6_URL,
-    HL6.RESULTS_CAMPAIGN_Q1 AS HL6_RESULTS_CAMPAIGN_Q1,
-    HL6.RESULTS_CAMPAIGN_Q2 AS HL6_RESULTS_CAMPAIGN_Q2,
-    HL6.RESULTS_CAMPAIGN_Q3 AS HL6_RESULTS_CAMPAIGN_Q3,
-    HL6.RESULTS_CAMPAIGN_Q4 AS HL6_RESULTS_CAMPAIGN_Q4,
-    HL6.PLANNED_START_DATE AS HL6_PLANNED_START_DATE,
-    HL6.PLANNED_END_DATE AS HL6_PLANNED_END_DATE,
-    HL6.STREET AS HL6_STREET,
-    HL6.POSTAL_CODE AS HL6_POSTAL_CODE,
-    HL6.PRIORITY_ID AS HL6_PRIORITY_ID,
-    HL6.NUMBER_OF_PARTICIPANTS AS HL6_NUMBER_OF_PARTICIPANTS,
-    HL6.REGION AS HL6_REGION,
-    HL6.EVENT_OWNER AS HL6_EVENT_OWNER,
-    HL6.CO_FUNDED AS HL6_CO_FUNDED,
-    HL6.ALLOW_BUDGET_ZERO AS HL6_ALLOW_BUDGET_ZERO,
-    HL6.IS_POWER_USER AS HL6_IS_POWER_USER,
-    HL6.DELETED_TOKEN AS HL6_DELETED_TOKEN,
-    HL6.EMPLOYEE_RESPONSIBLE_USER AS HL6_EMPLOYEE_RESPONSIBLE_USER,
-    HL6.PERSON_RESPONSIBLE AS HL6_PERSON_RESPONSIBLE,
-    HL6.IS_COMPLETE AS HL6_IS_COMPLETE,
-    CASE WHEN (HL6.ACRONYM <> '') THEN "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(
-    BYEAR.BUDGET_YEAR, HL1.ACRONYM, hl2.ORGANIZATION_ACRONYM, HL3.ACRONYM, HL4.ACRONYM, HL5.ACRONYM, HL6.ACRONYM) ELSE '' END AS HL6_CRM_ID
+        HL6.ENABLED                                 AS HL6_ENABLED,
+        HL6.DELETED                                 AS HL6_DELETED,
+        HL6.DISTRIBUTION_CHANNEL_ID                 AS HL6_DISTRIBUTION_CHANNEL_ID,
+        HL6.VENUE                                   AS HL6_VENUE,
+        HL6.CITY                                    AS HL6_CITY,
+        HL6.COUNTRY                                 AS HL6_COUNTRY,
+        HL6.URL                                     AS HL6_URL,
+        HL6.RESULTS_CAMPAIGN_Q1                     AS HL6_RESULTS_CAMPAIGN_Q1,
+        HL6.RESULTS_CAMPAIGN_Q2                     AS HL6_RESULTS_CAMPAIGN_Q2,
+        HL6.RESULTS_CAMPAIGN_Q3                     AS HL6_RESULTS_CAMPAIGN_Q3,
+        HL6.RESULTS_CAMPAIGN_Q4                     AS HL6_RESULTS_CAMPAIGN_Q4,
+        HL6.PLANNED_START_DATE                      AS HL6_PLANNED_START_DATE,
+        HL6.PLANNED_END_DATE                        AS HL6_PLANNED_END_DATE,
+        HL6.STREET                                  AS HL6_STREET,
+        HL6.POSTAL_CODE                             AS HL6_POSTAL_CODE,
+        HL6.PRIORITY_ID                             AS HL6_PRIORITY_ID,
+        HL6.NUMBER_OF_PARTICIPANTS                  AS HL6_NUMBER_OF_PARTICIPANTS,
+        HL6.REGION                                  AS HL6_REGION,
+        HL6.EVENT_OWNER                             AS HL6_EVENT_OWNER,
+        HL6.CO_FUNDED                               AS HL6_CO_FUNDED,
+        HL6.ALLOW_BUDGET_ZERO                       AS HL6_ALLOW_BUDGET_ZERO,
+        HL6.IS_POWER_USER                           AS HL6_IS_POWER_USER,
+        HL6.DELETED_TOKEN                           AS HL6_DELETED_TOKEN,
+        HL6.EMPLOYEE_RESPONSIBLE_USER               AS HL6_EMPLOYEE_RESPONSIBLE_USER,
+        HL6.PERSON_RESPONSIBLE                      AS HL6_PERSON_RESPONSIBLE,
+        HL6.IS_COMPLETE                             AS HL6_IS_COMPLETE,
+        CASE WHEN (HL6.ACRONYM <> '')
+            THEN
+                "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(
+                BYEAR.BUDGET_YEAR, HL1.ACRONYM,
+                hl2.ORGANIZATION_ACRONYM, HL3.ACRONYM,
+                HL4.ACRONYM, HL5.ACRONYM, HL6.ACRONYM)
+            ELSE ''
+        END                                         AS HL6_CRM_ID
 
 FROM HL4
-	LEFT JOIN HL5 ON HL5.HL4_ID = HL4.HL4_ID AND HL5.ENABLED = 1 AND HL5.DELETED = 0
-    LEFT JOIN HL6 ON (HL6.HL5_ID = HL5.HL5_ID AND HL6.ENABLED = 1 AND HL6.DELETED = 0)
-    LEFT JOIN HL3 ON HL4.HL3_ID = HL3.HL3_ID
-    LEFT JOIN HL2 ON HL3.HL2_ID = HL2.HL2_ID
-    LEFT JOIN HL1 ON HL2.HL1_ID = HL1.HL1_ID
-    LEFT JOIN REGION ON HL1.REGION_ID = REGION.REGION_ID
-    LEFT JOIN SUBREGION ON HL2.SUBREGION_ID = SUBREGION.SUBREGION_ID
-    INNER JOIN BUDGET_YEAR BYEAR ON BYEAR.BUDGET_YEAR_ID = HL1.BUDGET_YEAR_ID
-    LEFT JOIN USER HL5_CREATED_USER ON HL5_CREATED_USER.USER_ID = HL5.CREATED_USER_ID
-    LEFT JOIN USER HL5_MODIFIED_USER ON HL5_MODIFIED_USER.USER_ID = HL5.MODIFIED_USER_ID
-    LEFT JOIN DES_TYPE ON HL5.DES_TYPE_ID = DES_TYPE.DES_TYPE_ID
-    LEFT JOIN USER HL6_CREATED_USER ON HL6_CREATED_USER.USER_ID = HL6.CREATED_USER_ID
-    LEFT JOIN USER HL6_MODIFIED_USER ON HL6_MODIFIED_USER.USER_ID = HL6.MODIFIED_USER_ID
+	LEFT JOIN HL5
+	    ON HL5.HL4_ID = HL4.HL4_ID
+	        AND HL5.ENABLED = 1
+	        AND HL5.DELETED = 0
+    LEFT JOIN HL6
+        ON (HL6.HL5_ID = HL5.HL5_ID
+            AND HL6.ENABLED = 1
+            AND HL6.DELETED = 0)
+    LEFT JOIN HL3
+        ON HL4.HL3_ID = HL3.HL3_ID
+    LEFT JOIN HL2
+        ON HL3.HL2_ID = HL2.HL2_ID
+    LEFT JOIN HL1
+        ON HL2.HL1_ID = HL1.HL1_ID
+    LEFT JOIN REGION
+        ON HL1.REGION_ID = REGION.REGION_ID
+    LEFT JOIN SUBREGION
+        ON HL2.SUBREGION_ID = SUBREGION.SUBREGION_ID
+    INNER JOIN BUDGET_YEAR BYEAR
+        ON BYEAR.BUDGET_YEAR_ID = HL1.BUDGET_YEAR_ID
+    LEFT JOIN USER HL5_CREATED_USER
+        ON HL5_CREATED_USER.USER_ID = HL5.CREATED_USER_ID
+    LEFT JOIN USER HL5_MODIFIED_USER
+        ON HL5_MODIFIED_USER.USER_ID = HL5.MODIFIED_USER_ID
+    LEFT JOIN DES_TYPE
+        ON HL5.DES_TYPE_ID = DES_TYPE.DES_TYPE_ID
+    LEFT JOIN USER HL6_CREATED_USER
+        ON HL6_CREATED_USER.USER_ID = HL6.CREATED_USER_ID
+    LEFT JOIN USER HL6_MODIFIED_USER
+        ON HL6_MODIFIED_USER.USER_ID = HL6.MODIFIED_USER_ID
 
-    LEFT JOIN COST_CENTER HL5_COST_CENTER ON HL5_COST_CENTER.COST_CENTER_ID = HL5.COST_CENTER_ID 
-    LEFT JOIN COST_CENTER HL6_COST_CENTER ON HL6_COST_CENTER.COST_CENTER_ID = HL6.COST_CENTER_ID
-    LEFT JOIN BUSINESS_OWNER HL5_BUSINESS_OWNER ON HL5_BUSINESS_OWNER.BUSINESS_OWNER_ID = HL5.BUSINESS_OWNER_ID
-    LEFT JOIN BUSINESS_OWNER HL6_BUSINESS_OWNER ON HL6_BUSINESS_OWNER.BUSINESS_OWNER_ID = HL6.BUSINESS_OWNER_ID
+    LEFT JOIN COST_CENTER HL5_COST_CENTER
+        ON HL5_COST_CENTER.COST_CENTER_ID = HL5.COST_CENTER_ID
+    LEFT JOIN COST_CENTER HL6_COST_CENTER
+        ON HL6_COST_CENTER.COST_CENTER_ID = HL6.COST_CENTER_ID
+    LEFT JOIN BUSINESS_OWNER HL5_BUSINESS_OWNER
+        ON HL5_BUSINESS_OWNER.BUSINESS_OWNER_ID = HL5.BUSINESS_OWNER_ID
+    LEFT JOIN BUSINESS_OWNER HL6_BUSINESS_OWNER
+        ON HL6_BUSINESS_OWNER.BUSINESS_OWNER_ID = HL6.BUSINESS_OWNER_ID
 
-    LEFT JOIN MARKETING_PROGRAM HL5_MARKETING_PROGRAM ON HL5_MARKETING_PROGRAM.MARKETING_PROGRAM_ID = HL5.MARKETING_PROGRAM_ID
-    LEFT JOIN MARKETING_PROGRAM HL6_MARKETING_PROGRAM ON HL6_MARKETING_PROGRAM.MARKETING_PROGRAM_ID = HL6.MARKETING_PROGRAM_ID
-    LEFT JOIN MARKETING_ACTIVITY HL5_MARKETING_ACTIVITY ON HL5_MARKETING_ACTIVITY.MARKETING_ACTIVITY_ID = HL5.MARKETING_ACTIVITY_ID
-    LEFT JOIN MARKETING_ACTIVITY HL6_MARKETING_ACTIVITY ON HL6_MARKETING_ACTIVITY.MARKETING_ACTIVITY_ID = HL6.MARKETING_ACTIVITY_ID
-    LEFT JOIN HL5_STATUS_DETAIL ON HL5_STATUS_DETAIL.HL5_STATUS_DETAIL_ID = HL5.HL5_STATUS_DETAIL_ID
-    LEFT JOIN HL6_STATUS_DETAIL ON HL6_STATUS_DETAIL.HL6_STATUS_DETAIL_ID = HL6.HL6_STATUS_DETAIL_ID
-    LEFT JOIN SALE_ORGANIZATION HL5_SALE_ORGANIZATION ON HL5_SALE_ORGANIZATION.SALES_ORGANIZATION_ID = HL5.SALES_ORGANIZATION_ID
-    LEFT JOIN SALE_ORGANIZATION HL6_SALE_ORGANIZATION ON HL6_SALE_ORGANIZATION.SALES_ORGANIZATION_ID = HL6.SALES_ORGANIZATION_ID
+    LEFT JOIN MARKETING_PROGRAM HL5_MARKETING_PROGRAM
+        ON HL5_MARKETING_PROGRAM.MARKETING_PROGRAM_ID = HL5.MARKETING_PROGRAM_ID
+    LEFT JOIN MARKETING_PROGRAM HL6_MARKETING_PROGRAM
+        ON HL6_MARKETING_PROGRAM.MARKETING_PROGRAM_ID = HL6.MARKETING_PROGRAM_ID
+    LEFT JOIN MARKETING_ACTIVITY HL5_MARKETING_ACTIVITY
+        ON HL5_MARKETING_ACTIVITY.MARKETING_ACTIVITY_ID = HL5.MARKETING_ACTIVITY_ID
+    LEFT JOIN MARKETING_ACTIVITY HL6_MARKETING_ACTIVITY
+        ON HL6_MARKETING_ACTIVITY.MARKETING_ACTIVITY_ID = HL6.MARKETING_ACTIVITY_ID
+    LEFT JOIN HL5_STATUS_DETAIL
+        ON HL5_STATUS_DETAIL.HL5_STATUS_DETAIL_ID = HL5.HL5_STATUS_DETAIL_ID
+    LEFT JOIN HL6_STATUS_DETAIL
+        ON HL6_STATUS_DETAIL.HL6_STATUS_DETAIL_ID = HL6.HL6_STATUS_DETAIL_ID
+    LEFT JOIN SALE_ORGANIZATION HL5_SALE_ORGANIZATION
+        ON HL5_SALE_ORGANIZATION.SALES_ORGANIZATION_ID = HL5.SALES_ORGANIZATION_ID
+    LEFT JOIN SALE_ORGANIZATION HL6_SALE_ORGANIZATION
+        ON HL6_SALE_ORGANIZATION.SALES_ORGANIZATION_ID = HL6.SALES_ORGANIZATION_ID
 
-    LEFT JOIN OBJECTIVE HL5CO ON HL5CO.OBJECTIVE_ID = HL5.CAMPAIGN_OBJECTIVE_ID
-    LEFT JOIN CAMPAIGN_TYPE HL5CT ON HL5CT.CAMPAIGN_TYPE_ID = HL5.CAMPAIGN_TYPE_ID
-    LEFT JOIN CAMPAIGN_SUB_TYPE HL5CS ON HL5CS.CAMPAIGN_SUB_TYPE_ID = HL5.CAMPAIGN_SUBTYPE_ID
-    LEFT JOIN OBJECTIVE HL6CO ON HL6CO.OBJECTIVE_ID = HL6.CAMPAIGN_OBJECTIVE_ID
-    LEFT JOIN CAMPAIGN_TYPE HL6CT ON HL6CT.CAMPAIGN_TYPE_ID = HL6.CAMPAIGN_TYPE_ID
-    LEFT JOIN CAMPAIGN_SUB_TYPE HL6CS ON HL6CS.CAMPAIGN_SUB_TYPE_ID = HL6.CAMPAIGN_SUBTYPE_ID
-    LEFT JOIN :aux_sales_organization_hl6_result TSalesOrganization_hl6 on TSalesOrganization_hl6.hl6_id = hl6.hl6_id
-    LEFT JOIN :aux_sales_organization_hl5_result TSalesOrganization_hl5 on TSalesOrganization_hl5.hl5_id = hl5.hl5_id
-    LEFT JOIN :aux_external_funding_hl5 aux_external_funding_hl5 ON aux_external_funding_hl5.hl5_id = hl5.hl5_id
-    LEFT JOIN :aux_external_funding_hl6 aux_external_funding_hl6 ON aux_external_funding_hl6.hl6_id = hl6.hl6_id
-    WHERE HL4.ENABLED = 1 AND HL4.DELETED = 0
-    AND (HL1.HL1_ID = IN_HL1_ID OR 0 = IN_HL1_ID)
-    AND (HL2.HL2_ID = IN_HL2_ID OR 0 = IN_HL2_ID)
-    AND (HL3.HL3_ID = IN_HL3_ID OR 0 = IN_HL3_ID)
+    LEFT JOIN OBJECTIVE HL5CO
+        ON HL5CO.OBJECTIVE_ID = HL5.CAMPAIGN_OBJECTIVE_ID
+    LEFT JOIN CAMPAIGN_TYPE HL5CT
+        ON HL5CT.CAMPAIGN_TYPE_ID = HL5.CAMPAIGN_TYPE_ID
+    LEFT JOIN CAMPAIGN_SUB_TYPE HL5CS
+        ON HL5CS.CAMPAIGN_SUB_TYPE_ID = HL5.CAMPAIGN_SUBTYPE_ID
+    LEFT JOIN OBJECTIVE HL6CO
+        ON HL6CO.OBJECTIVE_ID = HL6.CAMPAIGN_OBJECTIVE_ID
+    LEFT JOIN CAMPAIGN_TYPE HL6CT
+        ON HL6CT.CAMPAIGN_TYPE_ID = HL6.CAMPAIGN_TYPE_ID
+    LEFT JOIN CAMPAIGN_SUB_TYPE HL6CS
+        ON HL6CS.CAMPAIGN_SUB_TYPE_ID = HL6.CAMPAIGN_SUBTYPE_ID
+    LEFT JOIN :aux_sales_organization_hl6_result TSalesOrganization_hl6
+        ON TSalesOrganization_hl6.hl6_id = hl6.hl6_id
+    LEFT JOIN :aux_sales_organization_hl5_result TSalesOrganization_hl5
+        ON TSalesOrganization_hl5.hl5_id = hl5.hl5_id
+    LEFT JOIN :aux_external_funding_hl5 aux_external_funding_hl5
+        ON aux_external_funding_hl5.hl5_id = hl5.hl5_id
+    LEFT JOIN :aux_external_funding_hl6 aux_external_funding_hl6
+        ON aux_external_funding_hl6.hl6_id = hl6.hl6_id
+    WHERE   HL4.ENABLED = 1
+        AND HL4.DELETED = 0
+        AND (HL1.HL1_ID = IN_HL1_ID OR 0 = IN_HL1_ID)
+        AND (HL2.HL2_ID = IN_HL2_ID OR 0 = IN_HL2_ID)
+        AND (HL3.HL3_ID = IN_HL3_ID OR 0 = IN_HL3_ID)
     ORDER BY HL4.HL4_ID, HL5.HL5_ID, HL6.HL6_ID;
 
 
 --GET ALL CATEGORIES TO EACH HL5
 
-    out_result_hl5_category = (SELECT
-                                  HL5.HL5_ID,
-                                  HCO.AMOUNT AS HL5_AMOUNT,
-                                  AC.NAME AS HL5_CATEGORY_NAME,
-                                  AO.NAME AS HL5_OPTION_NAME
-                                  ,HCO.AMOUNT_KPI AS HL5_AMOUNT_KPI
-                                  FROM HL5
-                                  INNER JOIN HL5_CATEGORY_OPTION HCO ON HCO.HL5_ID = HL5.HL5_ID
-                                  INNER JOIN ALLOCATION_CATEGORY_OPTION_LEVEL ACOL ON ACOL.ALLOCATION_CATEGORY_OPTION_LEVEL_ID = HCO.ALLOCATION_CATEGORY_OPTION_LEVEL_ID
-                                  INNER JOIN ALLOCATION_CATEGORY AC ON AC.ALLOCATION_CATEGORY_ID = ACOL.ALLOCATION_CATEGORY_ID
-                                  INNER JOIN ALLOCATION_OPTION AO ON AO.ALLOCATION_OPTION_ID = ACOL.ALLOCATION_OPTION_ID
-                                  INNER JOIN HL4 ON HL5.HL4_ID = HL4.HL4_ID
-                                  INNER JOIN HL3 ON HL4.HL3_ID = HL3.HL3_ID
-                                  INNER JOIN HL2 ON HL3.HL2_ID = HL2.HL2_ID
-                                  INNER JOIN HL1 ON HL2.HL1_ID = HL1.HL1_ID
-                                  INNER JOIN BUDGET_YEAR BYEAR ON BYEAR.BUDGET_YEAR_ID = HL1.BUDGET_YEAR_ID
-                                  WHERE HL4.ENABLED = 1 AND HL4.DELETED = 0
-                                  AND HL5.ENABLED = 1 AND HL5.DELETED = 0
-                                  AND (HL1.HL1_ID = IN_HL1_ID OR 0 = IN_HL1_ID)
-                                 AND (HL2.HL2_ID = IN_HL2_ID OR 0 = IN_HL2_ID)
-                                 AND (HL3.HL3_ID = IN_HL3_ID OR 0 = IN_HL3_ID)
-                                 AND HCO.AMOUNT <> 0)
-                                 UNION ALL
-                                 (SELECT
-                                  HL5.HL5_ID,
-                                  HCO.AMOUNT AS HL5_AMOUNT,
-                                  AC.NAME AS HL5_CATEGORY_NAME,
-                                  AO.NAME AS HL5_OPTION_NAME
-                                  ,HCO.AMOUNT_KPI AS HL5_AMOUNT_KPI
-                                  FROM HL5
-                                  INNER JOIN HL5_COUNTRY_CATEGORY_OPTION HCO ON HCO.HL5_ID = HL5.HL5_ID
-                                  INNER JOIN ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL ACOL ON ACOL.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID = HCO.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID
-                                  INNER JOIN ALLOCATION_CATEGORY AC ON AC.ALLOCATION_CATEGORY_ID = ACOL.ALLOCATION_CATEGORY_ID
-                                  INNER JOIN ALLOCATION_COUNTRY_CATEGORY_OPTION AO ON AO.ALLOCATION_COUNTRY_CATEGORY_OPTION_ID = ACOL.ALLOCATION_COUNTRY_CATEGORY_OPTION_ID
-                                  INNER JOIN HL4 ON HL5.HL4_ID = HL4.HL4_ID
-                                  INNER JOIN HL3 ON HL4.HL3_ID = HL3.HL3_ID
-                                  INNER JOIN HL2 ON HL3.HL2_ID = HL2.HL2_ID
-                                  INNER JOIN HL1 ON HL2.HL1_ID = HL1.HL1_ID
-                                  INNER JOIN BUDGET_YEAR BYEAR ON BYEAR.BUDGET_YEAR_ID = HL1.BUDGET_YEAR_ID
-                                  WHERE HL4.ENABLED = 1 AND HL4.DELETED = 0
-                                  AND HL5.ENABLED = 1 AND HL5.DELETED = 0
-                                  AND (HL1.HL1_ID = IN_HL1_ID OR 0 = IN_HL1_ID)
-                                 AND (HL2.HL2_ID = IN_HL2_ID OR 0 = IN_HL2_ID)
-                                 AND (HL3.HL3_ID = IN_HL3_ID OR 0 = IN_HL3_ID)
-                                 AND HCO.AMOUNT <> 0);
+    out_result_hl5_category = ( SELECT  HL5.HL5_ID,
+                                        HCO.AMOUNT      AS HL5_AMOUNT,
+                                        AC.NAME         AS HL5_CATEGORY_NAME,
+                                        AO.NAME         AS HL5_OPTION_NAME,
+                                        HCO.AMOUNT_KPI  AS HL5_AMOUNT_KPI
+                                FROM HL5
+                                INNER JOIN HL5_CATEGORY_OPTION HCO
+                                ON HCO.HL5_ID = HL5.HL5_ID
+                                    AND HCO.ENABLED = 1
+                                    AND HCO.DELETED = 0
+                                INNER JOIN ALLOCATION_CATEGORY_OPTION_LEVEL ACOL
+                                ON ACOL.ALLOCATION_CATEGORY_OPTION_LEVEL_ID = HCO.ALLOCATION_CATEGORY_OPTION_LEVEL_ID
+                                    AND ACOL.ENABLED = 1
+                                    AND ACOL.DELETED = 0
+                                INNER JOIN ALLOCATION_CATEGORY AC
+                                ON AC.ALLOCATION_CATEGORY_ID = ACOL.ALLOCATION_CATEGORY_ID
+                                    AND AC.ENABLED = 1
+                                    AND AC.DELETED = 0
+                                INNER JOIN ALLOCATION_OPTION AO
+                                ON AO.ALLOCATION_OPTION_ID = ACOL.ALLOCATION_OPTION_ID
+                                    AND AO.ENABLED = 1
+                                    AND AO.DELETED = 0
+                                INNER JOIN HL4 ON HL5.HL4_ID = HL4.HL4_ID
+                                INNER JOIN HL3 ON HL4.HL3_ID = HL3.HL3_ID
+                                INNER JOIN HL2 ON HL3.HL2_ID = HL2.HL2_ID
+                                INNER JOIN HL1 ON HL2.HL1_ID = HL1.HL1_ID
+                                INNER JOIN BUDGET_YEAR BYEAR ON BYEAR.BUDGET_YEAR_ID = HL1.BUDGET_YEAR_ID
+                                WHERE   HL4.ENABLED = 1
+                                    AND HL4.DELETED = 0
+                                    AND HL5.ENABLED = 1
+                                    AND HL5.DELETED = 0
+                                    AND (HL1.HL1_ID = IN_HL1_ID OR 0 = IN_HL1_ID)
+                                    AND (HL2.HL2_ID = IN_HL2_ID OR 0 = IN_HL2_ID)
+                                    AND (HL3.HL3_ID = IN_HL3_ID OR 0 = IN_HL3_ID)
+                                    AND HCO.AMOUNT <> 0)
+
+                                UNION ALL
+
+                              ( SELECT  HL5.HL5_ID,
+                                        HCO.AMOUNT      AS HL5_AMOUNT,
+                                        AC.NAME         AS HL5_CATEGORY_NAME,
+                                        AO.NAME         AS HL5_OPTION_NAME,
+                                        HCO.AMOUNT_KPI  AS HL5_AMOUNT_KPI
+                                FROM HL5
+                                INNER JOIN HL5_COUNTRY_CATEGORY_OPTION HCO
+                                ON HCO.HL5_ID = HL5.HL5_ID
+                                    AND HCO.ENABLED = 1
+                                    AND HCO.DELETED = 0
+                                INNER JOIN ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL ACOL
+                                ON ACOL.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID = HCO.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID
+                                    AND ACOL.ENABLED = 1
+                                    AND ACOL.DELETED = 0
+                                INNER JOIN ALLOCATION_CATEGORY AC
+                                ON AC.ALLOCATION_CATEGORY_ID = ACOL.ALLOCATION_CATEGORY_ID
+                                    AND AC.ENABLED = 1
+                                    AND AC.DELETED = 0
+                                INNER JOIN ALLOCATION_COUNTRY_CATEGORY_OPTION AO
+                                ON AO.ALLOCATION_COUNTRY_CATEGORY_OPTION_ID = ACOL.ALLOCATION_COUNTRY_CATEGORY_OPTION_ID
+                                    AND AO.ENABLED = 1
+                                    AND AO.DELETED = 0
+                                INNER JOIN HL4 ON HL5.HL4_ID = HL4.HL4_ID
+                                INNER JOIN HL3 ON HL4.HL3_ID = HL3.HL3_ID
+                                INNER JOIN HL2 ON HL3.HL2_ID = HL2.HL2_ID
+                                INNER JOIN HL1 ON HL2.HL1_ID = HL1.HL1_ID
+                                INNER JOIN BUDGET_YEAR BYEAR ON BYEAR.BUDGET_YEAR_ID = HL1.BUDGET_YEAR_ID
+                                WHERE   HL4.ENABLED = 1
+                                    AND HL4.DELETED = 0
+                                    AND HL5.ENABLED = 1
+                                    AND HL5.DELETED = 0
+                                    AND (HL1.HL1_ID = IN_HL1_ID OR 0 = IN_HL1_ID)
+                                    AND (HL2.HL2_ID = IN_HL2_ID OR 0 = IN_HL2_ID)
+                                    AND (HL3.HL3_ID = IN_HL3_ID OR 0 = IN_HL3_ID)
+                                    AND HCO.AMOUNT <> 0);
 
 --GET ALL CATEGORIES TO EACH HL6
 out_result_hl6_category = (SELECT
@@ -492,84 +594,117 @@ out_result_hl6_category = (SELECT
                             AO.NAME AS HL6_OPTION_NAME
                             ,HCO.AMOUNT_KPI AS HL6_AMOUNT_KPI
                             FROM HL6
-                            INNER JOIN HL6_CATEGORY_OPTION HCO ON HCO.HL6_ID = HL6.HL6_ID
-                            INNER JOIN ALLOCATION_CATEGORY_OPTION_LEVEL ACOL ON ACOL.ALLOCATION_CATEGORY_OPTION_LEVEL_ID = HCO.ALLOCATION_CATEGORY_OPTION_LEVEL_ID
-                            INNER JOIN ALLOCATION_CATEGORY AC ON AC.ALLOCATION_CATEGORY_ID = ACOL.ALLOCATION_CATEGORY_ID
-                            INNER JOIN ALLOCATION_OPTION AO ON AO.ALLOCATION_OPTION_ID = ACOL.ALLOCATION_OPTION_ID
+                            INNER JOIN HL6_CATEGORY_OPTION HCO
+                                ON HCO.HL6_ID = HL6.HL6_ID
+                                    AND HCO.ENABLED = 1
+                                    AND HCO.DELETED = 0
+                            INNER JOIN ALLOCATION_CATEGORY_OPTION_LEVEL ACOL
+                                ON ACOL.ALLOCATION_CATEGORY_OPTION_LEVEL_ID = HCO.ALLOCATION_CATEGORY_OPTION_LEVEL_ID
+                                    AND ACOL.ENABLED = 1
+                                    AND ACOL.DELETED = 0
+                            INNER JOIN ALLOCATION_CATEGORY AC
+                                ON AC.ALLOCATION_CATEGORY_ID = ACOL.ALLOCATION_CATEGORY_ID
+                                    AND AC.ENABLED = 1
+                                    AND AC.DELETED = 0
+                            INNER JOIN ALLOCATION_OPTION AO
+                                ON AO.ALLOCATION_OPTION_ID = ACOL.ALLOCATION_OPTION_ID
+                                    AND AO.ENABLED = 1
+                                    AND AO.DELETED = 0
                             INNER JOIN HL5 ON HL6.HL5_ID = HL5.HL5_ID
                             INNER JOIN HL4 ON HL5.HL4_ID = HL4.HL4_ID
                             INNER JOIN HL3 ON HL4.HL3_ID = HL3.HL3_ID
                             INNER JOIN HL2 ON HL3.HL2_ID = HL2.HL2_ID
                             INNER JOIN HL1 ON HL2.HL1_ID = HL1.HL1_ID
                             INNER JOIN BUDGET_YEAR BYEAR ON BYEAR.BUDGET_YEAR_ID = HL1.BUDGET_YEAR_ID
-                            WHERE HL4.ENABLED = 1 AND HL4.DELETED = 0
-                            AND HL5.ENABLED = 1 AND HL5.DELETED = 0
-                            AND (HL1.HL1_ID = IN_HL1_ID OR 0 = IN_HL1_ID)
-                             AND (HL2.HL2_ID = IN_HL2_ID OR 0 = IN_HL2_ID)
-                             AND (HL3.HL3_ID = IN_HL3_ID OR 0 = IN_HL3_ID)
-                                 AND HCO.AMOUNT <> 0)
-                             UNION ALL
+                            WHERE   HL4.ENABLED = 1
+                                AND HL4.DELETED = 0
+                                AND HL5.ENABLED = 1 AND HL5.DELETED = 0
+                                AND (HL1.HL1_ID = IN_HL1_ID OR 0 = IN_HL1_ID)
+                                AND (HL2.HL2_ID = IN_HL2_ID OR 0 = IN_HL2_ID)
+                                AND (HL3.HL3_ID = IN_HL3_ID OR 0 = IN_HL3_ID)
+                                AND HCO.AMOUNT <> 0)
+
+                            UNION ALL
+
                              (SELECT
                               HL6.HL6_ID,
-                              HCO.AMOUNT AS HL6_AMOUNT,
-                              AC.NAME AS HL6_CATEGORY_NAME,
-                              AO.NAME AS HL6_OPTION_NAME
-                              ,HCO.AMOUNT_KPI AS HL6_AMOUNT_KPI
+                              HCO.AMOUNT        AS HL6_AMOUNT,
+                              AC.NAME           AS HL6_CATEGORY_NAME,
+                              AO.NAME           AS HL6_OPTION_NAME,
+                              HCO.AMOUNT_KPI    AS HL6_AMOUNT_KPI
                               FROM HL6
-                              INNER JOIN HL6_COUNTRY_CATEGORY_OPTION HCO ON HCO.HL6_ID = HL6.HL6_ID
-                              INNER JOIN ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL ACOL ON ACOL.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID = HCO.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID
-                              INNER JOIN ALLOCATION_CATEGORY AC ON AC.ALLOCATION_CATEGORY_ID = ACOL.ALLOCATION_CATEGORY_ID
-                              INNER JOIN ALLOCATION_COUNTRY_CATEGORY_OPTION AO ON AO.ALLOCATION_COUNTRY_CATEGORY_OPTION_ID = ACOL.ALLOCATION_COUNTRY_CATEGORY_OPTION_ID
+                              INNER JOIN HL6_COUNTRY_CATEGORY_OPTION HCO
+                                ON HCO.HL6_ID = HL6.HL6_ID
+                                    AND HCO.ENABLED = 1
+                                    AND HCO.DELETED = 0
+                              INNER JOIN ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL ACOL
+                                ON ACOL.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID = HCO.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID
+                                    AND ACOL.ENABLED = 1
+                                    AND ACOL.DELETED = 0
+                              INNER JOIN ALLOCATION_CATEGORY AC
+                                ON AC.ALLOCATION_CATEGORY_ID = ACOL.ALLOCATION_CATEGORY_ID
+                                    AND AC.ENABLED = 1
+                                    AND AC.DELETED = 0
+                              INNER JOIN ALLOCATION_COUNTRY_CATEGORY_OPTION AO
+                                ON AO.ALLOCATION_COUNTRY_CATEGORY_OPTION_ID = ACOL.ALLOCATION_COUNTRY_CATEGORY_OPTION_ID
+                                    AND AO.ENABLED = 1
+                                    AND AO.DELETED = 0
                               INNER JOIN HL5 ON HL6.HL5_ID = HL5.HL5_ID
                               INNER JOIN HL4 ON HL5.HL4_ID = HL4.HL4_ID
                               INNER JOIN HL3 ON HL4.HL3_ID = HL3.HL3_ID
                               INNER JOIN HL2 ON HL3.HL2_ID = HL2.HL2_ID
                               INNER JOIN HL1 ON HL2.HL1_ID = HL1.HL1_ID
                               INNER JOIN BUDGET_YEAR BYEAR ON BYEAR.BUDGET_YEAR_ID = HL1.BUDGET_YEAR_ID
-                              WHERE HL4.ENABLED = 1 AND HL4.DELETED = 0
-                              AND HL6.ENABLED = 1 AND HL6.DELETED = 0
-                              AND (HL1.HL1_ID = IN_HL1_ID OR 0 = IN_HL1_ID)
-                             AND (HL2.HL2_ID = IN_HL2_ID OR 0 = IN_HL2_ID)
-                             AND (HL3.HL3_ID = IN_HL3_ID OR 0 = IN_HL3_ID)
-                             AND HCO.AMOUNT <> 0);
+                              WHERE HL4.ENABLED = 1
+                                AND HL4.DELETED = 0
+                                AND HL6.ENABLED = 1
+                                AND HL6.DELETED = 0
+                                AND (HL1.HL1_ID = IN_HL1_ID OR 0 = IN_HL1_ID)
+                                AND (HL2.HL2_ID = IN_HL2_ID OR 0 = IN_HL2_ID)
+                                AND (HL3.HL3_ID = IN_HL3_ID OR 0 = IN_HL3_ID)
+                                AND HCO.AMOUNT <> 0);
 
 --GET ALL KPI TO EACH HL5
 out_result_hl5_kpi = SELECT
-                         HL5.HL5_ID AS HL5_ID,
-                         HEO.COMMENTS AS HL5_COMMENTS,
-                         HEOD.EURO_VALUE AS HL5_EURO_VALUE,
-                         HEOD.VOLUME_VALUE AS HL5_VOLUME_VALUE,
-                         EOO.NAME AS HL5_OUTCOMES_NAME,
-                         EOU.NAME AS HL5_OUTCOMES_TYPE_NAME
-                         FROM HL5
-                         INNER JOIN HL5_EXPECTED_OUTCOMES HEO ON HEO.HL5_ID = HL5.HL5_ID
-                         INNER JOIN HL5_EXPECTED_OUTCOMES_DETAIL HEOD ON HEOD.HL5_EXPECTED_OUTCOMES_ID = HEO.HL5_EXPECTED_OUTCOMES_ID AND HEOD.ENABLED = 1
-                         --HEOD.OUTCOMES_ID FK to EXPECTED_OUTCOME_LEVEL_ID
-                         INNER JOIN EXPECTED_OUTCOME_LEVEL EOL ON HEOD.OUTCOMES_ID = EOL.EXPECTED_OUTCOME_LEVEL_ID
-                         INNER JOIN EXPECTED_OUTCOME EOU ON EOU.EXPECTED_OUTCOME_ID = EOL.EXPECTED_OUTCOME_ID
-                         INNER JOIN EXPECTED_OUTCOME_OPTION EOO ON EOO.EXPECTED_OUTCOME_OPTION_ID = EOL.EXPECTED_OUTCOME_OPTION_ID
-                         INNER JOIN HL4 ON HL5.HL4_ID = HL4.HL4_ID
-                         INNER JOIN HL3 ON HL4.HL3_ID = HL3.HL3_ID
-                         INNER JOIN HL2 ON HL3.HL2_ID = HL2.HL2_ID
-                         INNER JOIN HL1 ON HL2.HL1_ID = HL1.HL1_ID
-                         INNER JOIN BUDGET_YEAR BYEAR ON BYEAR.BUDGET_YEAR_ID = HL1.BUDGET_YEAR_ID
-                         WHERE HL4.ENABLED = 1 AND HL4.DELETED = 0
-                         AND HL5.ENABLED = 1 AND HL5.DELETED = 0
-                         AND (HL1.HL1_ID = IN_HL1_ID OR 0 = IN_HL1_ID)
-                          AND (HL2.HL2_ID = IN_HL2_ID OR 0 = IN_HL2_ID)
-                          AND (HL3.HL3_ID = IN_HL3_ID OR 0 = IN_HL3_ID);
+                         HL5.HL5_ID         AS HL5_ID,
+                         HEO.COMMENTS       AS HL5_COMMENTS,
+                         HEOD.EURO_VALUE    AS HL5_EURO_VALUE,
+                         HEOD.VOLUME_VALUE  AS HL5_VOLUME_VALUE,
+                         EOO.NAME           AS HL5_OUTCOMES_NAME,
+                         EOU.NAME           AS HL5_OUTCOMES_TYPE_NAME
+                     FROM HL5
+                     INNER JOIN HL5_EXPECTED_OUTCOMES HEO ON HEO.HL5_ID = HL5.HL5_ID
+                     INNER JOIN HL5_EXPECTED_OUTCOMES_DETAIL HEOD
+                        ON HEOD.HL5_EXPECTED_OUTCOMES_ID = HEO.HL5_EXPECTED_OUTCOMES_ID
+                            AND HEOD.ENABLED = 1
+                     INNER JOIN EXPECTED_OUTCOME_LEVEL EOL ON HEOD.OUTCOMES_ID = EOL.EXPECTED_OUTCOME_LEVEL_ID
+                     INNER JOIN EXPECTED_OUTCOME EOU ON EOU.EXPECTED_OUTCOME_ID = EOL.EXPECTED_OUTCOME_ID
+                     INNER JOIN EXPECTED_OUTCOME_OPTION EOO ON EOO.EXPECTED_OUTCOME_OPTION_ID = EOL.EXPECTED_OUTCOME_OPTION_ID
+                     INNER JOIN HL4 ON HL5.HL4_ID = HL4.HL4_ID
+                     INNER JOIN HL3 ON HL4.HL3_ID = HL3.HL3_ID
+                     INNER JOIN HL2 ON HL3.HL2_ID = HL2.HL2_ID
+                     INNER JOIN HL1 ON HL2.HL1_ID = HL1.HL1_ID
+                     INNER JOIN BUDGET_YEAR BYEAR ON BYEAR.BUDGET_YEAR_ID = HL1.BUDGET_YEAR_ID
+                     WHERE  HL4.ENABLED = 1
+                        AND HL4.DELETED = 0
+                        AND HL5.ENABLED = 1
+                        AND HL5.DELETED = 0
+                        AND (HL1.HL1_ID = IN_HL1_ID OR 0 = IN_HL1_ID)
+                        AND (HL2.HL2_ID = IN_HL2_ID OR 0 = IN_HL2_ID)
+                        AND (HL3.HL3_ID = IN_HL3_ID OR 0 = IN_HL3_ID);
 --GET ALL KPI TO EACH HL6
 out_result_hl6_kpi = SELECT
-                         HL6.HL6_ID AS HL6_ID,
-                         HEO.COMMENTS AS HL6_COMMENTS,
-                         HEOD.EURO_VALUE AS HL6_EURO_VALUE,
-                         HEOD.VOLUME_VALUE AS HL6_VOLUME_VALUE,
-                         EOO.NAME AS HL6_OUTCOMES_NAME,
-                         EOU.NAME AS HL6_OUTCOMES_TYPE_NAME
+                         HL6.HL6_ID         AS HL6_ID,
+                         HEO.COMMENTS       AS HL6_COMMENTS,
+                         HEOD.EURO_VALUE    AS HL6_EURO_VALUE,
+                         HEOD.VOLUME_VALUE  AS HL6_VOLUME_VALUE,
+                         EOO.NAME           AS HL6_OUTCOMES_NAME,
+                         EOU.NAME           AS HL6_OUTCOMES_TYPE_NAME
                          FROM HL6
                          INNER JOIN HL6_EXPECTED_OUTCOMES HEO ON HEO.HL6_ID = HL6.HL6_ID
-                         INNER JOIN HL6_EXPECTED_OUTCOMES_DETAIL HEOD ON HEOD.HL6_EXPECTED_OUTCOMES_ID = HEO.HL6_EXPECTED_OUTCOMES_ID AND HEOD.ENABLED = 1
-                         --HEOD.OUTCOMES_ID FK to EXPECTED_OUTCOME_LEVEL_ID
+                         INNER JOIN HL6_EXPECTED_OUTCOMES_DETAIL HEOD
+                            ON HEOD.HL6_EXPECTED_OUTCOMES_ID = HEO.HL6_EXPECTED_OUTCOMES_ID
+                                AND HEOD.ENABLED = 1
                          INNER JOIN EXPECTED_OUTCOME_LEVEL EOL ON HEOD.OUTCOMES_ID = EOL.EXPECTED_OUTCOME_LEVEL_ID
                          INNER JOIN EXPECTED_OUTCOME EOU ON EOU.EXPECTED_OUTCOME_ID = EOL.EXPECTED_OUTCOME_ID
                          INNER JOIN EXPECTED_OUTCOME_OPTION EOO ON EOO.EXPECTED_OUTCOME_OPTION_ID = EOL.EXPECTED_OUTCOME_OPTION_ID
@@ -579,9 +714,11 @@ out_result_hl6_kpi = SELECT
                          INNER JOIN HL2 ON HL3.HL2_ID = HL2.HL2_ID
                          INNER JOIN HL1 ON HL2.HL1_ID = HL1.HL1_ID
                          INNER JOIN BUDGET_YEAR BYEAR ON BYEAR.BUDGET_YEAR_ID = HL1.BUDGET_YEAR_ID
-                         WHERE HL5.ENABLED = 1 AND HL5.DELETED = 0
-                         AND HL6.ENABLED = 1 AND HL6.DELETED = 0
-                         AND (HL1.HL1_ID = IN_HL1_ID OR 0 = IN_HL1_ID)
-                          AND (HL2.HL2_ID = IN_HL2_ID OR 0 = IN_HL2_ID)
-                          AND (HL3.HL3_ID = IN_HL3_ID OR 0 = IN_HL3_ID);
+                         WHERE HL5.ENABLED = 1
+                            AND HL5.DELETED = 0
+                            AND HL6.ENABLED = 1
+                            AND HL6.DELETED = 0
+                            AND (HL1.HL1_ID = IN_HL1_ID OR 0 = IN_HL1_ID)
+                            AND (HL2.HL2_ID = IN_HL2_ID OR 0 = IN_HL2_ID)
+                            AND (HL3.HL3_ID = IN_HL3_ID OR 0 = IN_HL3_ID);
 END;

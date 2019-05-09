@@ -42,12 +42,14 @@ function handleGet(params,userId){
                     result.in_make_category_mandatory = !!flags.MAKE_CATEGORY_MANDATORY;
                     result.in_options_limit = flags.OPTIONS_LIMIT;
                     result.in_available_in_event_request = !!flags.AVAILABLE_IN_EVENT_REQUEST;
+                    result.in_show_in_legacy = !!flags.SHOW_IN_LEGACY;
 				} else {
 					result.in_processing_report = 0;
 					result.in_show_copy_configuration_check_box = false;
                     result.in_make_category_mandatory = false;
                     result.in_options_limit = OPTIONS_LIMIT_DEFAULT;
                     result.in_available_in_event_request = false;
+                    result.in_show_in_legacy = false;
 				}
 			} else {
 				result.results = AllocationOptionLib.getAssignedOptionByCategoryIdByLevelId(categoryId,levelId, true);

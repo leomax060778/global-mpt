@@ -16,6 +16,7 @@ function getAllOutcomes(hl){
             result[outcome.OUTCOMES_TYPE_NAME] = {
                 OUTCOMES_TYPE_NAME: outcome.OUTCOMES_TYPE_NAME,
                 OUTCOMES_TYPE_ID: outcome.OUTCOMES_TYPE_ID,
+                DEFAULT: outcome.DEFAULT,
                 OUTCOMES: [{
                     OUTCOMES_ID: outcome.OUTCOMES_ID
                     , OUTCOMES_NAME: outcome.OUTCOMES_NAME

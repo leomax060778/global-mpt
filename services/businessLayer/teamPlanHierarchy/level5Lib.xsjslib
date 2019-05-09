@@ -211,7 +211,7 @@ function getHl5ByHl4Id(id, userId, includeLegacy) {
     return response;
 }
 
-function getHl5ById(hl5Id, carryOver, isLegacy, fromCloneMethod) {
+function getHl5ById(hl5Id, carryOver, isLegacy, fromCloneMethod, userId) {
     if (!hl5Id) {
         throw ErrorLib.getErrors().BadRequest("The Parameter ID is not found", "", L5_MSG_INITIATIVE_NOT_FOUND);
     }
@@ -221,6 +221,11 @@ function getHl5ById(hl5Id, carryOver, isLegacy, fromCloneMethod) {
     var levelString = 'L5';
     var levelId = null;
     var dynamicFormId = null;
+
+    var budgetYearData = budgetYear.getBudgetYearByLevelParent(5, hl5.HL4_ID, isLegacy, isLegacy? 1:0);
+    var budgetYearId = isLegacy? budgetYearData.BUDGET_YEAR_ID : budgetYearData; //Because it returns the object or the ID only depending on the legacy
+    var requiredDFObject = JSON.parse(JSON.stringify(budgetYear.getRequireDynamicFormByBudgetYearId(budgetYearId)));
+
     if(!isLegacy) {
         if (Number(hl5.HL5_STATUS_DETAIL_ID) === HL5_STATUS.DELETED_IN_CRM) {
             throw ErrorLib.getErrors().BadRequest("", "", L5_MSG_CANNOT_GET_BY_ID);
@@ -268,7 +273,7 @@ function getHl5ById(hl5Id, carryOver, isLegacy, fromCloneMethod) {
             hl5.IS_IN_CRM = !!dataHl5.hl5ExistsInCrm(hl5Id);
             dynamicFormId = hl5.DYNAMIC_FORM_ID;
         } else {
-            hl5.CATEGORIES = level6Lib.getCarryOverHl5CategoryOption(hl5Id, hl5.HL4_ID);
+            hl5.CATEGORIES = level6Lib.getCarryOverHl5CategoryOption(hl5Id, hl5.HL4_ID, userId);
             hl5.BUDGET = 0;
             hl5.HL5_CRM_DESCRIPTION = undefined;
             hl5.ACRONYM = undefined;
@@ -283,7 +288,7 @@ function getHl5ById(hl5Id, carryOver, isLegacy, fromCloneMethod) {
         hl5 = serverToUiParser(hl5);
 
         result.HL5 = hl5;
-        result.DYNAMIC_FORM = blDynamicForm.getFormByParentId(levelId, levelString, dynamicFormId, true, isLegacy);
+        result.DYNAMIC_FORM = (Number(requiredDFObject.REQUIRE_DYNAMIC_FORM) === 1) ? blDynamicForm.getFormByParentId(levelId, levelString, dynamicFormId, true, isLegacy) : blDynamicForm.getCompleteForm(HIERARCHY_LEVEL.HL5);
 
     } else {
         hl5.BUDGET = 0;
@@ -295,7 +300,9 @@ function getHl5ById(hl5Id, carryOver, isLegacy, fromCloneMethod) {
         hl5.ALLOW_BUDGET_ZERO = 0;
         hl5.STATUS = undefined;
 
-        result = hl5;
+        result.HL5 = hl5;
+        result.DYNAMIC_FORM = (Number(requiredDFObject.REQUIRE_DYNAMIC_FORM) === 1) ? blDynamicForm.getFormByParentId(hl5.HL5_LEGACY_ID, 'L6', null, true, isLegacy) : blDynamicForm.getCompleteForm(HIERARCHY_LEVEL.HL6);
+
     }
 
     return result;
@@ -412,8 +419,11 @@ function insertHl5(data, userId) {
     var hl5_id = 0;
     data = uiToServerParser(data);
 
-    //complete data with dynamic form data configuration
-    data = util.completeFromDynamicForm(data.HL4_ID, "L5", data, true);
+    var budgetYearId = budgetYear.getBudgetYearByLevelParent(5, data.HL4_ID);
+    var requiredDFObject = JSON.parse(JSON.stringify(budgetYear.getRequireDynamicFormByBudgetYearId(budgetYearId)));
+
+    //complete data with dynamic form data configuration (if the Budget Year requires it).
+    data = (Number(requiredDFObject.REQUIRE_DYNAMIC_FORM) === 1) ? util.completeFromDynamicForm(data.HL4_ID, "L5", data, true) : data;
 
     if (!hasAdditionalFields(data.CAMPAIGN_TYPE_ID)) {
         data.VENUE = null;
@@ -460,8 +470,8 @@ function insertHl5(data, userId) {
         data.BUDGET_SPEND_Q4 = Number(data.BUDGET_SPEND_Q4);
 
         data.CREATED_USER_ID = userId;
-        var budgetYear = dataValidation.getBudgetYearByIdLevel(data.HL4_ID, 'HL4')[0];
-        data.ENABLE_CRM_CREATION = budgetYear ? Number(budgetYear.ENABLE_CRM_CREATION) : 0;
+        var budgetYearObject = dataValidation.getBudgetYearByIdLevel(data.HL4_ID, 'HL4')[0];
+        data.ENABLE_CRM_CREATION = budgetYearObject ? Number(budgetYearObject.ENABLE_CRM_CREATION) : 0;
         hl5_id = insertDataHl5(acronym, data);
 
         if (hl5_id) {
@@ -796,8 +806,13 @@ function updateHl5(data, userId) {
 
     data = uiToServerParser(data);
 
-    //complete data with dynamic form data configuration
-    data = util.completeFromDynamicForm(data.HL4_ID, "L5", data);
+    var budgetYearId = budgetYear.getBudgetYearByLevelParent(5, data.HL4_ID);
+    var requiredDFObject = JSON.parse(JSON.stringify(budgetYear.getRequireDynamicFormByBudgetYearId(budgetYearId)));
+
+    if (Number(requiredDFObject.REQUIRE_DYNAMIC_FORM) === 1) {
+        //complete data with dynamic form data configuration
+        data = util.completeFromDynamicForm(data.HL4_ID, "L5", data);
+    }
 
     if (!hasAdditionalFields(data.CAMPAIGN_TYPE_ID)) {
         data.VENUE = null;
@@ -867,12 +882,12 @@ function updateHl5(data, userId) {
             data.BUDGET = Number(data.BUDGET) / conversionValue;
             data.IN_BUDGET = checkBudgetStatus(data.HL4_ID, hl5_id, Number(data.BUDGET) / conversionValue);
         }*/
-        var budgetYear = dataValidation.getBudgetYearByIdLevel(data.HL4_ID, 'HL4')[0];
+        var budgetYearObject = dataValidation.getBudgetYearByIdLevel(data.HL4_ID, 'HL4')[0];
         var changedFields = crmFieldsHaveChanged(data, Number(data.IS_COMPLETE), userId, false, objHL5);
         if(!changedFields.crmFieldsHaveChanged || changedFields.onlyBudget){
             data.ENABLE_CRM_CREATION = 1;
         } else {
-            data.ENABLE_CRM_CREATION = data.STATUS_DETAIL_ID == HL5_STATUS.IN_PROGRESS? Number(budgetYear.ENABLE_CRM_CREATION) : 1;
+            data.ENABLE_CRM_CREATION = data.STATUS_DETAIL_ID == HL5_STATUS.IN_PROGRESS? Number(budgetYearObject.ENABLE_CRM_CREATION) : 1;
         }
 
         dataHl5.updateHl5(
@@ -1807,11 +1822,13 @@ function setStatusInCRM(hl5_id, userId) {
 
     if (hl5Ids.length) {
         var hl5InCrm = massSetHl5Status(hl5Ids, userId);
-        mail.massSendInCRMMail(hl5InCrm, LEVEL_STRING.toLowerCase());
+
         hl5Ids.forEach(function (value) {
             insertInCrmVersion(value.hl5_id);
             dataL5Report.updateLevel5ReportForDownload(value.hl5_id);
-        })
+        });
+
+        mail.massSendInCRMMail(hl5InCrm, LEVEL_STRING.toLowerCase());
     }
     return 1;
 }

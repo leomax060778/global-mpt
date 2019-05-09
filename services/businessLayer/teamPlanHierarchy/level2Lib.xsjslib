@@ -234,7 +234,7 @@ function insertHl2(objLevel2, userId) {
     var requiredDFObject = JSON.parse(JSON.stringify(budgetYear.getRequireDynamicFormByBudgetYearId(hl1.BUDGET_YEAR_ID)));
 
     //Complete data with dynamic form (if the Budget Year requires it).
-    objLevel2 = (Number(requiredDFObject.REQUIRE_DYNAMIC_FORM) === 1)? util.completeFromDynamicFormByRole(userId, HIERARCHY_LEVEL["HL2"], objLevel2, hl1.BUDGET_YEAR_ID) : objLevel2;
+    objLevel2 = (Number(requiredDFObject.REQUIRE_DYNAMIC_FORM) === 1)? util.completeNewLevelFromDynamicFormByRole(userId, HIERARCHY_LEVEL["HL2"], objLevel2, hl1.BUDGET_YEAR_ID, objLevel2.HL1_ID) : objLevel2;
 
     validateInsertHl2(objLevel2);
     validateKpi(objLevel2);
@@ -598,7 +598,7 @@ function getLevel2ByUser(userId) {
     return dataHl2.getLevel2ByUser(userId);
 }
 
-function getLevel2ById(hl2Id, carryOver) {
+function getLevel2ById(hl2Id, carryOver, userId) {
     if (!hl2Id)
         throw ErrorLib.getErrors().BadRequest("The Parameter hl2Id is not found", "level2Services/handleGet/getLevel2ById", L1_MSG_PLAN_NOT_FOUND);
 
@@ -623,7 +623,7 @@ function getLevel2ById(hl2Id, carryOver) {
         hl2Result.CONTACT_DATA = contactDataLib.getContactData(hl2Id, 'CENTRAL');
         hl2Result.HL2_BUDGET_REMAINING = Number(hl2Result.HL2_BUDGET_TOTAL) - Number(hl2BudgetAllocated || 0);
         hl2Result.TARGET_KPIS = carryOver ? expectedOutcomesLib.filterKpiByLevel(hl2TargetKpi, 'HL3') : hl2TargetKpi;
-        hl2Result.CATEGORIES = carryOver ? hl3.getCarryOverHl2CategoryOption(hl2Id) : getCategoryOption(hl2Id);
+        hl2Result.CATEGORIES = carryOver ? hl3.getCarryOverHl2CategoryOption(hl2Id, userId) : getCategoryOption(hl2Id);
         hl2Result.SUBREGION = !carryOver && hl2Result.TEAM_TYPE_ID == TEAM_TYPE.REGIONAL ? dataSubRegion.getSubRegionsByRegionId(hl2Result.REGION_ID) : undefined;
 
         if(!carryOver && hl2Result.PLANNING_PURPOSE_ID) {
@@ -1306,9 +1306,9 @@ function checkOverBudget(hl1Id, hl1Budget, hl2Budget, hl2Id) {
     return true;
 }
 
-function getCarryOverHl1CategoryOption(hl1_id) {
+function getCarryOverHl1CategoryOption(hl1_id, userId) {
     var hl1_category = JSON.parse(JSON.stringify(blLevel1.getCategoryOption(hl1_id)));
-    var hl2_category = JSON.parse(JSON.stringify(allocationCategory.getCategoryOptionByHierarchyLevelId(HIERARCHY_LEVEL.HL2)));
+    var hl2_category = JSON.parse(JSON.stringify(allocationCategory.getCategoryOptionCarryOverByHierarchyLevelId(HIERARCHY_LEVEL.HL2, hl1_id, userId)));
 
     return hl2_category.map(function (category) {
         var hl1Cat = extractElementByList(hl1_category, "CATEGORY_ID", category.CATEGORY_ID);

@@ -50,7 +50,7 @@ var NOT_SUPERADMIN_USER = "Only SuperAdmin users have permission to this service
 var TEAM_TYPE = util.getTeamTypeEnum();
 var HIERARCHY_LEVEL = util.getHierarchyLevelEnum();
 
-function getLevel1ById(hl1Id, carryOver) {
+function getLevel1ById(hl1Id, carryOver, userId) {
     if (!hl1Id)
         throw ErrorLib.getErrors().BadRequest("The Parameter hl1Id is not found", "level1Services/handleGet/getLevel1ById", L1_MSG_PLAN_NOT_FOUND);
 
@@ -61,7 +61,7 @@ function getLevel1ById(hl1Id, carryOver) {
     hl1Result.TARGET_KPIS = carryOver ? expectedOutcomesLib.filterKpiByLevel(hl1TargetKpi, 'HL2') : parseKpiForEdition(hl1TargetKpi);
     hl1Result.ASSIGNED_USERS = hl1Users.users_in;
     hl1Result.AVAILABLE_USERS = hl1Users.users_out;
-    hl1Result.CATEGORIES = carryOver ? level2.getCarryOverHl1CategoryOption(hl1Id) : getCategoryOption(hl1Id);
+    hl1Result.CATEGORIES = carryOver ? level2.getCarryOverHl1CategoryOption(hl1Id, userId) : getCategoryOption(hl1Id);
     hl1Result.BUDGET_REMAINING = Number(hl1Result.BUDGET) - Number(hl1BudgetAllocated);
 
     if (carryOver && hl1Result.PLANNING_PURPOSE_ID) {
@@ -318,7 +318,7 @@ function insertHl1(data, userId) {
     var requiredDFObject = JSON.parse(JSON.stringify(businessBudget.getRequireDynamicFormByBudgetYearId(data.BUDGET_YEAR_ID)));
 
     //Complete data with dynamic form (if the Budget Year requires it).
-    data = (Number(requiredDFObject.REQUIRE_DYNAMIC_FORM) === 1)? util.completeFromDynamicFormByRole(userId, HIERARCHY_LEVEL["HL1"], data, data.BUDGET_YEAR_ID): data;
+    data = (Number(requiredDFObject.REQUIRE_DYNAMIC_FORM) === 1)? util.completeNewLevelFromDynamicFormByRole(userId, HIERARCHY_LEVEL["HL1"], data, data.BUDGET_YEAR_ID): data;
 
     validateHl1(data);
     validateHl1User(data.ASSIGNED_USERS);
