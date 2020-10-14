@@ -44,10 +44,26 @@ function getAllL5DEReport(userId) {
 function getAllL5CreateInCrmDEReportForDownload(userId) {
     return dataL5DER.getAllL5CreateInCrmDEReportForDownload(userId);
 }
-function getAllHL5ChangedFields(userId) {
+function getAllHL5ChangedFields(filter, userId) {
     var data = dataL5DER.getAllHL5ChangedFields(userId);
-    return utilReportLib.parseChangedFields("HL5", "HL5_ID", data.out_hl5_changed_fields, data.out_hl5_category_options, data.out_hl5, data.out_hl5_extra_fields);
+    return utilReportLib.parseChangedFields(
+        "HL5",
+        "HL5_ID",
+        data.out_hl5_changed_fields,
+        data.out_hl5_category_options,
+        data.out_hl5,
+        data.out_top_hl5_in_crm_version,
+        filter
+    );
 
+}
+
+function getCountHL5UpdateInCRM(){
+    return dataL5DER.getCountHL5UpdateInCRM();
+}
+
+function getEventDataReport(){
+    return dataL5DER.getEventDataReport();
 }
 
 function countL5ChangedFieldsByHL5Id(hl5Id) {

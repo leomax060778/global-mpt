@@ -1,9 +1,9 @@
 PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL5_CHANGED_FIELDS_BY_HL5_ID" (
 		IN in_hl5_id bigint,
 		OUT out_hl5_changed_fields TABLE (
-		    column_name nvarchar(255)
-		    , display_name nvarchar(255)
-		    , HL5_CRM_BINDING_ID integer
+		    COLUMN_NAME NVARCHAR(255),
+		    DISPLAY_NAME NVARCHAR(255),
+		    HL5_CRM_BINDING_ID INTEGER
         )
 	) 
 	LANGUAGE SQLSCRIPT
@@ -11,10 +11,12 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL5_CHANGED_
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
 	READS SQL DATA AS
 BEGIN
-	out_hl5_changed_fields = SELECT column_name
-	                            , display_name
-	                            , HL5_CRM_BINDING_ID
-	                            from HL5_CRM_BINDING
-							WHERE hl5_id = in_hl5_id AND column_changed = 1
-							AND deleted = 0 and enabled = 1;
+	out_hl5_changed_fields = SELECT COLUMN_NAME,
+	                                DISPLAY_NAME,
+	                                HL5_CRM_BINDING_ID
+	                         FROM HL5_CRM_BINDING
+							 WHERE HL5_ID = in_hl5_id
+							    AND COLUMN_CHANGED = 1
+							    AND DELETED = 0
+							    AND ENABLED = 1;
 END;

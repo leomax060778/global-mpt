@@ -48,6 +48,12 @@ BEGIN
         SELECT REGION_NAME into result FROM "MKTG_PLANNING_TOOL"."REGION" WHERE REGION_ID = default_value;
     ELSEIF coalesce(field_name, '') = 'PLANNING_PURPOSE_ID' AND coalesce(field_key, '') = '2' THEN
         select NAME into result from "MKTG_PLANNING_TOOL"."PLANNING_PURPOSE" WHERE PLANNING_PURPOSE_ID = default_value;
+    ELSEIF coalesce(field_name, '') = 'AFFILIATED_WITH_LARGER_EVENT_ID' THEN
+        select NAME into result from "MKTG_PLANNING_TOOL"."AFFILIATED_WITH_LARGER_EVENT" WHERE AFFILIATED_WITH_LARGER_EVENT_ID = default_value;
+    ELSEIF coalesce(field_name, '') = 'TARGET_AUDIENCE' THEN
+        select NAME into result from "MKTG_PLANNING_TOOL"."TARGET_AUDIENCE" WHERE TARGET_AUDIENCE_ID = default_value;
+    ELSEIF coalesce(field_name, '') = 'REGISTRATION_PROCESS_ID' THEN
+        select NAME into result from "MKTG_PLANNING_TOOL"."REGISTRATION_PROCESS" WHERE REGISTRATION_PROCESS_ID = default_value;
     ELSE
             select '' into result from dummy;
     END IF;

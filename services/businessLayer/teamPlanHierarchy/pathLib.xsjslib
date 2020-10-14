@@ -130,20 +130,27 @@ function getFullPathByLevelParent(level, parentId) {
     return result;
 }
 
+/**
+ * Insert the CRM ID of the Parent Level in CRM_PARENT_PATH Table.
+ * Uses GET_CRM_ID Stored Procedure, and it is only for L4-L5-L6.
+ * @param level (string): can be "hl4", "hl5", "hl6"
+ * @param id (integer): ID of the level that needs the parent path (HL4_ID, HL5_ID, HL6_ID)
+ * @param parentId (integer): ID of the parent level (HL3_ID, HL4_ID, HL5_ID)
+ * @param userId (integer): ID of the User that is performing the action
+ * @param parentLegacyPath (string): PATH of the parent level when it is a legacy record (Eq: CRM-MX19-TST)
+ */
 function insParentPath(level, id, parentId, userId, parentLegacyPath) {
     var parentPath = '';
     if(parentLegacyPath) {
         parentPath = parentLegacyPath;
     } else {
         var path = dataPath.getPathByLevelParent(LEVEL[level], parentId)[0];
-
-        parentPath = "CRM-" + path.L1_ACRONYM + path.BUDGET_YEAR + "-" + path.L3_ACRONYM
-            + (path.L4_ACRONYM ? '-' + path.L4_ACRONYM : '')
-            + (path.L5_ACRONYM || '');
+        parentPath = path.CRM_ID;
     }
 
     dataPath.insParentPath(level, id, parentPath, userId);
-};
+}
+
 function updParentPath(level, hl4Id, parentPath, userId){
     return dataPath.updParentPath(level, hl4Id, parentPath, userId);
 }
@@ -151,13 +158,14 @@ function updParentPath(level, hl4Id, parentPath, userId){
 function getPathByLevelParentForCrm(level, parentId) {
     var path = dataPath.getPathByLevelParent(LEVEL[level], parentId)[0];
 
-    var parentPath = "CRM-" + path.L1_ACRONYM + path.BUDGET_YEAR + "-"
+    var deprecatedParentPath = "CRM-" + path.L1_ACRONYM + path.BUDGET_YEAR + "-"
         + (LEVEL[level] == 2 ? path.L2_ACRONYM : '')
         + (path.L3_ACRONYM || '')
         + (path.L4_ACRONYM ? '-' + path.L4_ACRONYM : '')
         + (path.L5_ACRONYM || '');
+    var parentPath = path.CRM_ID;
 
-    return parentPath;
+    return {deprecatedParentPath: deprecatedParentPath, parentPath: parentPath};
 }
 
 function getPathByLevelHlId(level, HL_id){

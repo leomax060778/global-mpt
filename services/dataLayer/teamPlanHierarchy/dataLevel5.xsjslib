@@ -25,14 +25,15 @@ var GET_HL5_FOR_EMAIL = "GET_HL5_FOR_EMAIL";
 var spGetHl5SalesByHl5Id = "GET_HL5_SALES_BY_ID";
 var spGetHl5AllocatedBudget = "GET_HL5_ALLOCATED_BUDGET";
 var spGetHl5LegacyAllocatedBudget = "GET_HL5_LEGACY_ALLOCATED_BUDGET";
-var spGetHl5Category = "GET_HL5_CATEGORY";
 var spGetHl5CategoryByHl5CategoryId = "GET_HL5_CATEGORY_BY_HL5_CATEGORY_ID";
 var spGET_ALL_MARKETING_PROGRAM = "GET_ALL_MARKETING_PROGRAM";
+var spGET_SYNDICATED_SUB_PROGRAM_ASSOCIATION_BY_HIERARCHY_LEVEL_ID = "GET_SYNDICATED_SUB_PROGRAM_ASSOCIATION_BY_HIERARCHY_LEVEL_ID";
 var spGET_ALL_BUSINESS_OWNER = "GET_ALL_BUSINESS_OWNER";
 var spGET_COST_CENTER_BY_HL4_ID_SALE_ORGANIZATION_ID = "GET_COST_CENTER_BY_HL4_ID_SALE_ORGANIZATION_ID";
 var spGET_MARKETING_ACTIVITY_HL5 = "GET_MARKETING_ACTIVITY_HL5";
 var GET_HL5_BY_USER_ID = 'GET_HL5_BY_USER_ID';
 var GET_HL5_BY_USER_ID_ROLE_FILTER = 'GET_HL5_BY_USER_ID_ROLE_FILTER';
+var spGetTargetAudienceByHl5Id = 'GET_HL5_TARGET_AUDIENCE_BY_HL5_ID';
 
 /****INSERT*********************/
 var spInsHl5Category = "INS_HL5_CATEGORY";
@@ -45,6 +46,7 @@ var spInsHl5Sales = "INS_HL5_SALES";
 var spInsHl5 = "INS_HL5";
 var spInsHl5Versioned = "INS_HL5_IN_CRM_VERSION";
 var spInsHl5RequestCategoryOption = 'INS_HL5_REQUEST_CATEGORY_OPTION';
+var spInsTargetAudience = 'INS_HL5_TARGET_AUDIENCE';
 
 /*****OTHER**********************/
 var spHl5ChangeInOutBudget = "HL5_CHANGE_IN_OUT_BUDGET";
@@ -67,6 +69,7 @@ var spResetHl5CategoryOptionUpdated = "RESET_HL5_CATEGORY_OPTION_UPDATED";
 var GET_HL5_BY_IMPORT_ID = "GET_HL5_BY_IMPORT_ID";
 var DEL_HL5_HARD_BY_ID = "DEL_HL5_HARD_BY_ID";
 var DEL_HL5_CATEGORY_OPTION_HARD = "DEL_HL5_CATEGORY_OPTION_HARD";
+var spHardDeleteTargetAudience = "DEL_HL5_TARGET_AUDIENCE_BY_HL5_ID";
 /******************************************************/
 var spDelHl5Sales = "DEL_HL5_SALES";
 var GET_MULTI_TACTIC_BY_HL5_ID = "GET_MULTI_TACTIC_BY_HL5_ID";
@@ -101,6 +104,14 @@ function getAllMarketingProgram(){
 	};
 	var rdo = db.executeProcedureManual(spGET_ALL_MARKETING_PROGRAM,params);
 	return db.extractArray(rdo.output_result);
+}
+
+function getSyndicatedSubProgramAssociationByHierarchyLevelId(hierarchyLevelId) {
+	var params = {};
+	params.in_hierarchy_level_id = hierarchyLevelId;
+	var rdo = db.executeProcedureManual(spGET_SYNDICATED_SUB_PROGRAM_ASSOCIATION_BY_HIERARCHY_LEVEL_ID,params);
+	
+	return db.extractArray(rdo.out_result);
 }
 
 function getAllBusinessOwner(){
@@ -282,6 +293,14 @@ function getHl5ByUserIdRoleFilter(userId){
     return db.extractArray(rdo.out_result);
 }
 
+function getTargetAudienceByHl5Id(hl5Id){
+	var params = {};
+	params.in_hl5_id = hl5Id;
+
+	var result = db.executeProcedureManual(spGetTargetAudienceByHl5Id,params);
+	return db.extractArray(result.out_result);
+}
+
 function insertHl5Category(hl5Id,categoryId,createdUserId,inProcessingReport,autoCommit){
 	var params = {
 		'in_hl5_id' : hl5Id,
@@ -389,17 +408,65 @@ function insertHl5RequestCategoryOption(data){
     return db.executeScalarManual(spInsHl5RequestCategoryOption,data,'out_result');
 }
 
-function insertHl5(hl5CrmDescription,acronym,distributionChannelId,budget,hl4Id
-	,campaignObjectiveId,campaignTypeId,campaignSubTypeId,marketingProgramId,marketingActivityId
-	,actualStartDate,actualEndDate,showOnDgCalendar,businessOwnerId,employeeResponsibleId,costCenterId, inBudget
-	,budgetSpendQ1,budgetSpendQ2,budgetSpendQ3,budgetSpendQ4,euroConversionId,hl5StatusDetailId,createdUserId,
-				   route_to_market,venue	,city	,country,url, marketingOrganization
-	,planned_start_date,planned_end_date,street,postal_code
-	, region
-	, event_owner
-	, number_of_participants
-	, priority_id,co_funded,allow_budget_zero, is_power_user,emploreeResponsible, person_responsible, is_complete
-	, multiTactic, autoCommit, imported, import_id, inherited_creation, des_type, enable_crm_creation, dynamicFormId
+function insertHl5(hl5CrmDescription,
+				   acronym,
+				   distributionChannelId,
+				   budget,
+				   hl4Id,
+				   campaignObjectiveId,
+				   campaignTypeId,
+				   campaignSubTypeId,
+				   marketingProgramId,
+				   marketingActivityId,
+				   actualStartDate,
+				   actualEndDate,
+				   showOnDgCalendar,
+				   businessOwnerId,
+				   employeeResponsibleId,
+				   costCenterId,
+				   inBudget,
+				   budgetSpendQ1,
+				   budgetSpendQ2,
+				   budgetSpendQ3,
+				   budgetSpendQ4,
+				   euroConversionId,
+				   hl5StatusDetailId,
+				   createdUserId,
+				   route_to_market,
+				   affiliatedWithLargerEventId,
+				   affiliatedEventName,
+				   existingCustomerPercentage,
+				   grossCost,
+				   netCost,
+				   expectedRevenue,
+				   expectedCofounding,
+				   registrationProcessId,
+				   eventSummary,
+				   businessCase,
+				   eventFollowUpActivities,
+				   city,
+				   country,
+				   marketingOrganization,
+				   planned_start_date,
+				   planned_end_date,
+				   event_owner,
+				   number_of_participants,
+				   priority_id,
+				   co_funded,
+				   allow_budget_zero,
+				   is_power_user,
+				   emploreeResponsible,
+				   person_responsible,
+				   is_complete,
+				   multiTactic,
+				   autoCommit,
+				   imported,
+				   import_id,
+				   inherited_creation,
+				   des_type,
+				   enable_crm_creation,
+				   dynamicFormId,
+				   eventAnswerId
 	){
 	var params = {
 		'in_hl5_crm_description' : hl5CrmDescription,
@@ -429,35 +496,43 @@ function insertHl5(hl5CrmDescription,acronym,distributionChannelId,budget,hl4Id
 		'in_euro_conversion_id' : euroConversionId,
 		'in_hl5_status_detail_id' : hl5StatusDetailId,
 		'in_created_user_id' : createdUserId,
+		'in_route_to_market' : route_to_market ? route_to_market : null,
 
-		 'in_route_to_market' : route_to_market ? route_to_market : null,
-		 'in_venue': venue?venue:"",
-		 'in_city': city?city:"",
-		 'in_country': country?country:"",
-		 'in_url': url?url:"",
-		'in_sales_organization' : marketingOrganization?marketingOrganization:null
-		,'in_planned_start_date' : planned_start_date
-		,'in_planned_end_date' : planned_end_date
-		,'in_street' : street ? street : ""
-		,'in_postal_code' : postal_code ? postal_code : ""
-		, 'in_region': region || ''
-		, 'in_event_owner': event_owner || ''
-		, 'in_number_of_participants': number_of_participants || ''
-		, 'in_priority_id': priority_id
-		, 'in_imported': imported ? imported : 0
-		, 'IN_IMPORT_ID' : import_id ? import_id : null
-		, 'in_co_funded': Number(co_funded) || 0
-		, 'in_allow_budget_zero': allow_budget_zero ? allow_budget_zero : 0
-		, 'in_is_power_user': is_power_user && Number(is_power_user) ? is_power_user : 1
-		, 'in_employee_responsible_user': emploreeResponsible || null
-		, 'in_person_responsible' : person_responsible || null
-		, 'in_is_complete': is_complete
-		, 'in_forecast_at_l5': multiTactic ? 1:0
-		, 'in_country_id': country
-		, 'in_inherited_creation' : inherited_creation ? 1 : 0
-		, 'in_des_type_id' : des_type || null
-        , 'in_enable_crm_creation': enable_crm_creation
-        , 'in_dynamic_form_id': dynamicFormId || null
+		'in_affiliated_with_larger_event_id': affiliatedWithLargerEventId ? affiliatedWithLargerEventId : null,
+		'in_affiliated_event_name': affiliatedEventName ? affiliatedEventName : "",
+		'in_existing_customer_percentage': existingCustomerPercentage ? existingCustomerPercentage : null,
+		'in_gross_cost': grossCost ? grossCost : null,
+		'in_net_cost': netCost ? netCost : null,
+		'in_expected_revenue': expectedRevenue ? expectedRevenue : null,
+		'in_expected_cofounding': expectedCofounding ? expectedCofounding : null,
+		'in_registration_process_id': registrationProcessId ? registrationProcessId : null,
+		'in_event_summary': eventSummary ? eventSummary : "",
+		'in_business_case': businessCase ? businessCase : "",
+		'in_event_follow_up_activities': eventFollowUpActivities ? eventFollowUpActivities : "",
+
+		'in_city': city?city:"",
+		'in_country': country?country:"",
+		'in_sales_organization' : marketingOrganization?marketingOrganization:null,
+		'in_planned_start_date' : planned_start_date,
+		'in_planned_end_date' : planned_end_date,
+		'in_event_owner': event_owner || '',
+		'in_number_of_participants': number_of_participants || '',
+		'in_priority_id': priority_id,
+		'in_imported': imported ? imported : 0,
+		'IN_IMPORT_ID' : import_id ? import_id : null,
+		'in_co_funded': Number(co_funded) || 0,
+		'in_allow_budget_zero': allow_budget_zero ? allow_budget_zero : 0,
+		'in_is_power_user': is_power_user && Number(is_power_user) ? is_power_user : 1,
+		'in_employee_responsible_user': emploreeResponsible || null,
+		'in_person_responsible' : person_responsible || null,
+		'in_is_complete': is_complete,
+		'in_forecast_at_l5': multiTactic ? 1:0,
+		'in_country_id': country,
+		'in_inherited_creation' : inherited_creation ? 1 : 0,
+		'in_des_type_id' : des_type || null,
+		'in_enable_crm_creation': enable_crm_creation,
+		'in_dynamic_form_id': dynamicFormId || null,
+		'in_event_answer_id': eventAnswerId || null
 	};
 
 	var rdo;
@@ -469,6 +544,9 @@ function insertHl5(hl5CrmDescription,acronym,distributionChannelId,budget,hl4Id
 	return rdo;
 }
 
+function insertTargetAudience(targetAudienceBulk){
+	return db.executeScalar(spInsTargetAudience, targetAudienceBulk, 'out_result');
+}
 //autoCommit = false then executeScalarManual else executeScalar.
 function updateHl5BudgetStatus(hl5Id, budgetStatus, autoCommit){
 	var params = {
@@ -501,23 +579,11 @@ function changeStatusHl5(hl5Id, statusId,userId, autoCommit){
 }
 
 function massChangeStatusHl5(data) {
-    // var result = {};
-    //var parameters = {"in_hl5_ids": hl5Ids, 'in_status_id': status, 'in_user_id': userId};
     return db.executeScalarManual(HL5_MASS_CHANGE_STATUS, data, 'out_result');
-    // result.out_result_hl5 = list.out_result;
-    // return result;
 }
+
 //autoCommit = false then executeScalarManual else executeScalar.
 function updHl5ChangedFields(data, autoCommit){
-	/*var params = {
-		'in_hl5_crm_binding_id' : hl5CrmBindingId,
-		'in_hl5_id'  : hl5Id,
-		'in_column_name': columnName,
-		'in_changed' : changed,
-		'in_user_id':userId,
-		'in_display_name' : displayName
-	};
-	*/
 	var rdo;
 	if(autoCommit){
 		rdo = db.executeScalar(spUpdHl5ChangedFields,data,'out_result');
@@ -528,17 +594,63 @@ function updHl5ChangedFields(data, autoCommit){
 }
 
 //autoCommit = false then executeScalarManual else executeScalar.
-function updateHl5(hl5Id,hl5CrmDescription,inAcronym,distributionChannelId,budget,hl4Id,
-							 campaignObjectiveId,campaignTypeId,campaignSubTypeId,marketingProgramId,marketingActivityId,
-							 actualStartDate,actualEndDate,showOnDgCalendar,businessOwnerId,employeeResponsibleId,costCenterId,
-							 inBudget,budgetSpendQ1,budgetSpendQ2,budgetSpendQ3,budgetSpendQ4,euroConversionId,
-							 hl5StatusDetailId,createdUserId, route_to_market,venue	,city	,country,url, marketingOrganizationId
-							,planned_start_date,planned_end_date,street,postal_code
-	, region
-	, event_owner
-	, number_of_participants
-	, priority_id,co_funded, allow_budget_zero, is_power_user,employee_responsible_user,person_responsible, is_complete
-				   ,multiTactic, inherited_creation, des_type, enable_crm_creation,autoCommit){
+function updateHl5( hl5Id,
+					hl5CrmDescription,
+					inAcronym,
+					distributionChannelId,
+					budget,
+					hl4Id,
+					campaignObjectiveId,
+					campaignTypeId,
+					campaignSubTypeId,
+					marketingProgramId,
+					marketingActivityId,
+					actualStartDate,
+					actualEndDate,
+					showOnDgCalendar,
+					businessOwnerId,
+					employeeResponsibleId,
+					costCenterId,
+					inBudget,
+					budgetSpendQ1,
+					budgetSpendQ2,
+					budgetSpendQ3,
+					budgetSpendQ4,
+					euroConversionId,
+					hl5StatusDetailId,
+					createdUserId,
+					route_to_market,
+					affiliatedWithLargerEventId,
+					affiliatedEventName,
+					existingCustomerPercentage,
+					grossCost,
+					netCost,
+					expectedRevenue,
+					expectedCofounding,
+					registrationProcessId,
+					eventSummary,
+					businessCase,
+					eventFollowUpActivities,
+					city,
+					country,
+					marketingOrganizationId,
+					planned_start_date,
+					planned_end_date,
+					event_owner,
+					number_of_participants,
+					priority_id,
+					co_funded,
+					allow_budget_zero,
+					is_power_user,
+					employee_responsible_user,
+					person_responsible,
+					is_complete,
+					multiTactic,
+					inherited_creation,
+					des_type,
+					enable_crm_creation,
+					eventAnswerId,
+					autoCommit){
 	var params = {
 		'in_hl5_id' : hl5Id,
 		'in_hl5_crm_description' : hl5CrmDescription,
@@ -568,30 +680,37 @@ function updateHl5(hl5Id,hl5CrmDescription,inAcronym,distributionChannelId,budge
 		'in_hl5_status_detail_id' : hl5StatusDetailId,
 		'in_modified_user_id' : createdUserId,
 		'in_route_to_market' : route_to_market ,
-		'in_venue': venue?venue:"",
+		'in_affiliated_with_larger_event_id': affiliatedWithLargerEventId ? affiliatedWithLargerEventId : null,
+		'in_affiliated_event_name': affiliatedEventName ? affiliatedEventName : "",
+		'in_existing_customer_percentage': existingCustomerPercentage ? existingCustomerPercentage : null,
+		'in_gross_cost': grossCost ? grossCost : null,
+		'in_net_cost': netCost ? netCost : null,
+		'in_expected_revenue': expectedRevenue ? expectedRevenue : null,
+		'in_expected_cofounding': expectedCofounding ? expectedCofounding : null,
+		'in_registration_process_id': registrationProcessId ? registrationProcessId : null,
+		'in_event_summary': eventSummary ? eventSummary : "",
+		'in_business_case': businessCase ? businessCase : "",
+		'in_event_follow_up_activities': eventFollowUpActivities ? eventFollowUpActivities : "",
 		'in_city': city?city:"",
 		'in_country': country?country:"",
-		'in_url': url?url:"",
-		'in_sales_organization_id' : marketingOrganizationId?marketingOrganizationId:null
-		,'in_planned_start_date' : planned_start_date
-		,'in_planned_end_date' : planned_end_date
-		,'in_street' : street ? street : ""
-		,'in_postal_code' : postal_code ? postal_code : ""
-		, 'in_region': region || ''
-		, 'in_event_owner': event_owner || ''
-		, 'in_number_of_participants': number_of_participants || ''
-		, 'in_priority_id': priority_id
-		, 'in_co_funded': co_funded ? co_funded : 0
-		, 'in_allow_budget_zero': allow_budget_zero ? allow_budget_zero : 0
-		, 'in_is_power_user': is_power_user && Number(is_power_user) ? is_power_user : 1
-		 , 'in_employee_responsible_user' : employee_responsible_user
-		, 'in_person_responsible' : person_responsible
-        , 'in_is_complete': is_complete
-		, 'in_forecast_at_l5': multiTactic ? 1:0
-        , 'in_country_id': country
-        , 'in_inherited_creation': inherited_creation ? 1 : 0
-        , 'in_des_type_id' : des_type || null
-		, 'in_enable_crm_creation': enable_crm_creation
+		'in_sales_organization_id' : marketingOrganizationId?marketingOrganizationId:null,
+	 	'in_planned_start_date' : planned_start_date,
+	 	'in_planned_end_date' : planned_end_date,
+	 	'in_event_owner': event_owner || '',
+	 	'in_number_of_participants': number_of_participants || '',
+	 	'in_priority_id': priority_id,
+	 	'in_co_funded': co_funded ? co_funded : 0,
+	 	'in_allow_budget_zero': allow_budget_zero ? allow_budget_zero : 0,
+	 	'in_is_power_user': is_power_user && Number(is_power_user) ? is_power_user : 1,
+		'in_employee_responsible_user' : employee_responsible_user,
+	 	'in_person_responsible' : person_responsible,
+		'in_is_complete': is_complete,
+	 	'in_forecast_at_l5': multiTactic ? 1:0,
+		'in_country_id': country,
+		'in_inherited_creation': inherited_creation ? 1 : 0,
+		'in_des_type_id' : des_type || null,
+	 	'in_enable_crm_creation': enable_crm_creation,
+		'in_event_answer_id': eventAnswerId
 
 	};
 
@@ -605,18 +724,6 @@ function updateHl5(hl5Id,hl5CrmDescription,inAcronym,distributionChannelId,budge
 }
 
 function updateHl5CRMBinding(data){
-
-	/*
-	var parameters = {
-		"in_hl5_crm_binding_id": hl5CrmBindingId,
-		"in_hl5_id": hl5_id,
-		"in_column_name": column_name,
-		"in_changed": changed,
-		"in_user_id": user_id,
-		"in_display_name": display_name
-	};
-	*/
-
 	var rdo = db.executeScalarManual(spUpdHl5ChangedFields, data, 'out_result');
 	return rdo;
 }
@@ -843,4 +950,12 @@ function updateHl5Budget(reqBody, userId){
 	params.in_modified_user_id = userId;
 
 	return db.executeScalarManual(spUPDBudget, params, 'out_result');
+}
+
+function hardDeleteTargetAudienceByHl5Id(hl5Id){
+	var params = {
+		'in_hl5_id' : hl5Id
+	};
+
+	return db.executeScalar(spHardDeleteTargetAudience, params, 'out_result');
 }

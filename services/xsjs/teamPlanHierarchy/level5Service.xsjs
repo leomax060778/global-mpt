@@ -55,11 +55,13 @@ function handleGet(params, userId) {
         result = hl5.getNewSerialAcronym(in_hl4_id);
     }else if(in_hl4_id && !dataType){
         var includeLegacy = httpUtil.getUrlParameters().get("INCLUDE_LEGACY");
-        result = hl5.getHl5ByHl4Id(in_hl4_id, userId, includeLegacy);
+        var action = httpUtil.getUrlParameters().get("ACTION");
+        var routeName = httpUtil.getUrlParameters().get("ROUTE_NAME");
+        result = hl5.getHl5ByHl4Id(in_hl4_id, userId, includeLegacy, action, routeName);
     } else if (in_hl5_id) {
         var isCarryOver = httpUtil.getUrlParameters().get("METHOD") == "CARRY_OVER";
         var isLegacy = httpUtil.getUrlParameters().get("METHOD") == "NEW_LEGACY";
-        result = hl5.getHl5ById(in_hl5_id, isCarryOver, isLegacy, userId);
+        result = hl5.getHl5ById(in_hl5_id, isCarryOver, isLegacy, null, userId);
     } else if (search_section && search_section == section){
         budgetYearId = httpUtil.getUrlParameters().get("BUDGET_YEAR_ID") || null;
         var regionId = httpUtil.getUrlParameters().get("REGION_ID") || null;
@@ -69,6 +71,8 @@ function handleGet(params, userId) {
         result = hl5.getLevel5ForSearch(budgetYearId, regionId, subRegionId, limit, offset, userId);
     } else if (dataType && dataType == "MARKETING_PROGRAM"){
         result = hl5.getAllMarketingProgram();
+    } else if (dataType && dataType == "SYNDICATED_SUB_PROGRAM"){
+        result = hl5.getSyndicatedSubProgramInformation();
     } else if (dataType && dataType == "MARKETING_ACTIVITY"){
         result = hl5.getMarketingActivityHl5(in_hl4_id,currentHl5Id);
     } else if (dataType && dataType == "BUSINESS_OWNER"){

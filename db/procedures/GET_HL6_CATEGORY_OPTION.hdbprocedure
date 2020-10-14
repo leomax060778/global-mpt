@@ -15,6 +15,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL6_CATEGORY
     , CATEGORY_TYPE_ID integer
     , OPTIONS_LIMIT INTEGER
     , amount_kpi decimal(19,2)
+    , IS_UNIQUE_OPTION TINYINT
 	)
 ) 
 	LANGUAGE SQLSCRIPT
@@ -52,6 +53,7 @@ BEGIN
     , AC.CATEGORY_TYPE_ID
     , ACOL.options_limit
     , hl6CO.amount_kpi
+    , ao.IS_UNIQUE_OPTION
 	FROM hl6_category_option hl6CO
 	inner join allocation_category_option_level ACOL on hl6CO.allocation_category_option_level_id = ACOL.allocation_category_option_level_id
 	AND ACOL.enabled = 1 AND ACOL.deleted = 0
@@ -80,6 +82,7 @@ BEGIN
                       	, AC.CATEGORY_TYPE_ID
                       	, ACOL.options_limit
                       	, hl6CO.amount_kpi
+                      	, 0 as IS_UNIQUE_OPTION
                       	FROM HL6_COUNTRY_CATEGORY_OPTION hl6CO
                       	inner join ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL ACOL on hl6CO.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_id = ACOL.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_id
                       	AND ACOL.enabled = 1 AND ACOL.deleted = 0
@@ -103,6 +106,7 @@ BEGIN
                             , CATEGORY_TYPE_ID
                             , OPTIONS_LIMIT
                             , AMOUNT_KPI
+                            , IS_UNIQUE_OPTION
                     FROM :va_hl6_category_option
                      ORDER BY CATEGORY_NAME, OPTION_NAME;
 END;

@@ -196,13 +196,14 @@ function getHl4KpiSummary(hl3Id){
 
 }
 
-function getHl4PathByUserId(userId, isSA, budgetYearId, regionId, subRegionId) {
+function getHl4PathByUserId(userId, isSA, budgetYearId, regionId, subRegionId, searchString) {
     var parameters = {
         in_user_id: userId,
         in_is_super_Admin: isSA ? 1 : 0,
         in_budget_year_id:  budgetYearId,
         in_region_id:  regionId,
-        in_subregion_id:  subRegionId
+        in_subregion_id:  subRegionId,
+        in_search_string: searchString
     };
 
     var list = db.executeProcedureManual(GET_HL4_PATH_BY_USER_ID, parameters);

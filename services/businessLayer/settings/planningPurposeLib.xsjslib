@@ -9,6 +9,7 @@ var dataPlPurpose = mapper.getDataPlanningPurpose();
 var RELATED_DATA_NOT_FOUND = "The related data of the Planning Purpose can not be found.";
 var USER_NOT_FOUND = "The User can not be found.";
 var HL4_NOT_FOUND = "The Program Campaign can not be found";
+var HL_NOT_FOUND = "The Hierarchy Level ID can not be found";
 var OBJECT_NOT_FOUND = "The object Planning Purpose is not found.";
 var PLANNING_NOT_FOUND = "The Planning Purpose is not found.";
 
@@ -43,6 +44,17 @@ function getPlanningPurposeIdByHl4Id(hl4Id, userId){
 	}
 
 	return dataPlPurpose.getPlanningPurposeIdByHl4Id(hl4Id, userId);
+}
+
+function getPlanningPurposeIdByHl5Id(hlId, isLegacy, userId){
+	if(!hlId){
+		throw ErrorLib.getErrors().BadRequest("The Parameter hlId is not found", "planningPurposeService/handleGet/getPlanningPurposeIdByHl5Id", HL_NOT_FOUND);
+	}
+	if(!userId){
+		throw ErrorLib.getErrors().BadRequest("The Parameter userId is not found", "planningPurposeService/handleGet/getPlanningPurposeIdByHl5Id", USER_NOT_FOUND);
+	}
+
+	return dataPlPurpose.getPlanningPurposeIdByHl5Id(hlId, isLegacy, userId);
 }
 
 /****** INSERT ******/

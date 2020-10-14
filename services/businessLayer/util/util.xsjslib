@@ -721,17 +721,37 @@ function completeFromDynamicForm(parentId, level, dataLevelBody, fromInsertMetho
                         for (i = 0; i < arrAllocations.length; i++) {
                             objCategory = {"OPTIONS": []};
                             allocation = arrAllocations[i];
-                            if (allocation.HIDDEN && allocation.ALLOCATION_OPTION_ID) {
-                                objCategory.CATEGORY_ID = allocation.ALLOCATION_CATEGORY_ID;
+                            //If it is hidden, we add it to the list -> to avoid "Incorrect Number of Categories" error
+                            if (allocation.HIDDEN) {
+                                objCategory.CATEGORY_ID = Number(allocation.ALLOCATION_CATEGORY_ID);
                                 objCategory.CATEGORY_TYPE_ID = CATEGORY_TYPE.OPTION;
                                 objCategory.MAKE_CATEGORY_MANDATORY = allocation.MAKE_CATEGORY_MANDATORY;
                                 objCategory.OPTIONS_LIMIT = allocation.OPTIONS_LIMIT;
                                 objCategory.HIDDEN = allocation.HIDDEN;
-                                objCategory.OPTIONS.push({
-                                    "OPTION_ID": allocation.ALLOCATION_OPTION_ID,
-                                    "AMOUNT": allocation.BUDGET_DEFAULT_VALUE,
-                                    "AMOUNT_KPI": allocation.KPI_DEFAULT_VALUE
-                                });
+
+                                //Use all options for the level and set them with 0 -> to avoid "Incorrect Number of Options" error
+                                if(allocation.OPTIONS && Object.keys(allocation.OPTIONS).length){
+                                    Object.keys(allocation.OPTIONS).forEach(function(optKey){
+                                        //If it has default value, the we add it with the corresponding values
+                                        if( allocation.ALLOCATION_OPTION_ID &&
+                                            Number(allocation.ALLOCATION_OPTION_ID) === Number(allocation.OPTIONS[optKey].OPTION_ID)
+                                        ){
+                                            objCategory.OPTIONS.push({
+                                                "OPTION_ID": allocation.ALLOCATION_OPTION_ID,
+                                                "AMOUNT": allocation.BUDGET_DEFAULT_VALUE,
+                                                "AMOUNT_KPI": allocation.KPI_DEFAULT_VALUE
+                                            });
+                                        } else {
+                                            //Add other options with 0
+                                            objCategory.OPTIONS.push({
+                                                "OPTION_ID": allocation.OPTIONS[optKey].OPTION_ID,
+                                                "AMOUNT": 0,
+                                                "AMOUNT_KPI": 0
+                                            });
+                                        }
+                                    });
+                                }
+
                                 dataLevelBody.CATEGORIES.push(objCategory);
                             }
                         }
@@ -786,6 +806,7 @@ function completeFromDynamicForm(parentId, level, dataLevelBody, fromInsertMetho
                 break;
         }
     });
+    
     dataLevelBody.DYNAMIC_FORM_ID = dynamicFormConfiguration.DYNAMIC_FORM_ID;
     return dataLevelBody;
 }
@@ -1076,7 +1097,7 @@ function completeDynamicFormEdition(userId, hierarchyLevelId, payload, currentDa
                     for (var i = 0; i < arrDataTab.length; i++) {
                         if (arrDataTab[i]) {
                             var objectData = arrDataTab[i];
-                            if (objectData.HIDDEN) {
+                            if (objectData.HIDDEN && !!payload.CATEGORIES[i]) {
                                 if (objectData.FIELD_NAME === "ALLOCATION_CATEGORY_OPTION_LEVEL_ID") {
                                     if (payload.CATEGORIES[i].CATEGORY_ID === currentData.CATEGORIES[i].CATEGORY_ID) {
                                         payload.CATEGORIES[i].OPTIONS = currentData.CATEGORIES[i].OPTIONS;

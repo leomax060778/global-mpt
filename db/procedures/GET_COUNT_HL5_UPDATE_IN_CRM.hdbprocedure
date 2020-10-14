@@ -1,0 +1,132 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_COUNT_HL5_UPDATE_IN_CRM" (
+    OUT out_result TABLE (
+        HL_WITH_DATES INTEGER,
+        HL_WITHOUT_DATES INTEGER
+    )
+)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	READS SQL DATA AS
+BEGIN
+
+	--Obtain All HL5 with 'Update In CRM' status
+    var_hl5 =   SELECT HL5_ID
+                FROM HL5
+                WHERE HL5.deleted = 0
+                    AND HL5.enabled = 1
+                    AND HL5.HL5_STATUS_DETAIL_ID
+                        IN (
+							SELECT HL5_STATUS_DETAIL_ID
+                            FROM HL5_STATUS_DETAIL
+                            WHERE DETAIL IN ('Update In CRM')
+							);
+
+	out_hl5_with_category_option_changes = (SELECT  hl5CO.hl5_id,
+                                        option.allocation_option_id AS option_id,
+                                        option.name AS option_name,
+                                        ACOL.allocation_category_option_level_id AS category_option_level_id,
+                                        hl5CO.amount,
+                                        category.name AS category_name,
+                                        ACOL.allocation_category_id,
+                                        category.processing_report_export_key,
+                                        option.crm_key
+                                FROM hl5_category_option hl5CO
+                                    INNER JOIN allocation_category_option_level ACOL
+                                        ON ACOL.allocation_category_option_level_id = hl5CO.allocation_category_option_level_id
+                                    INNER JOIN allocation_option option
+                                        ON ACOL.allocation_option_id = option.allocation_option_id
+                                    INNER JOIN allocation_category category
+                                        ON category.allocation_category_id = ACOL.allocation_category_id
+                                    INNER JOIN :var_hl5 T
+                                        ON T.hl5_id = hl5CO.hl5_id
+                                where hl5CO.deleted = 0
+                                    AND hl5CO.enabled = 1
+                                    AND hl5CO.updated = 1
+                                )
+
+                                UNION ALL
+
+                                (SELECT hl5CO.hl5_id,
+                                        option.ALLOCATION_COUNTRY_CATEGORY_OPTION_ID AS option_id,
+                                        option.name AS option_name,
+                                        ACOL.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID AS category_option_level_id,
+                                        hl5CO.amount,
+                                        category.name AS category_name,
+                                        ACOL.allocation_category_id,
+                                        category.processing_report_export_key,
+                                        option.crm_key
+                                FROM HL5_COUNTRY_CATEGORY_OPTION hl5CO
+                                    INNER JOIN ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL ACOL
+                                        ON ACOL.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID = hl5CO.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID
+                                    INNER JOIN ALLOCATION_COUNTRY_CATEGORY_OPTION option
+                                        ON ACOL.ALLOCATION_COUNTRY_CATEGORY_OPTION_ID = option.ALLOCATION_COUNTRY_CATEGORY_OPTION_ID
+                                    INNER JOIN allocation_category category
+                                        ON category.allocation_category_id = ACOL.allocation_category_id
+                                    INNER JOIN :var_hl5 T
+                                        ON T.hl5_id = hl5CO.hl5_id
+                                where hl5CO.deleted = 0
+                                    AND hl5CO.enabled = 1
+                                    AND hl5CO.updated = 1);
+
+	--Obtain all HL5 With changes in Dates, filtered by the Status above
+	out_hl5_with_dates_changed = SELECT hcb.hl5_id
+								 FROM HL5_CRM_BINDING hcb
+									INNER JOIN :var_hl5 HL5
+										ON HL5.HL5_ID = hcb.HL5_ID
+								 WHERE hcb.column_changed = 1
+									AND (
+										hcb.column_name = 'ACTUAL_START_DATE'
+										OR
+										hcb.column_name = 'ACTUAL_END_DATE'
+										OR
+										hcb.column_name = 'PLANNED_START_DATE'
+										OR
+										hcb.column_name = 'PLANNED_END_DATE'
+									)
+									AND hcb.deleted = 0
+									AND hcb.enabled = 1;
+
+	--Obtain all HL5 with status Update In CRM and changes
+	out_hl5_with_changes = SELECT HL5_CRM_BINDING.hl5_id, column_name, display_name
+                         FROM HL5_CRM_BINDING
+                            INNER JOIN :var_hl5 HL5
+                                ON HL5.HL5_ID = HL5_CRM_BINDING.HL5_ID
+						 WHERE column_changed = 1
+						    AND deleted = 0
+						    AND enabled = 1;
+
+    va_hl5_changed_fields = SELECT DISTINCT hl5_id FROM :out_hl5_with_dates_changed;
+
+    out_result_with_dates = SELECT HL5.HL5_ID
+							FROM HL5
+								INNER JOIN :var_hl5 T
+									ON T.HL5_ID = HL5.hl5_id
+							WHERE HL5.HL5_ID IN (
+								SELECT T1.HL5_ID
+								FROM :va_hl5_changed_fields T1
+								);
+
+    out_result_full =  SELECT HL5.HL5_ID
+								FROM HL5
+									INNER JOIN :var_hl5 T
+										ON T.HL5_ID = HL5.hl5_id
+								WHERE HL5.HL5_ID IN (
+									SELECT T1.HL5_ID
+									FROM :out_hl5_with_changes T1
+
+									UNION
+
+									SELECT T2.hl5_id
+									FROM :out_hl5_with_category_option_changes T2
+								);
+
+	out_result_no_dates = SELECT full_l5.HL5_ID
+	                        FROM :out_result_full full_l5
+	                        WHERE full_l5.HL5_ID NOT IN (SELECT nod.HL5_ID FROM :out_result_with_dates nod);
+
+    out_result = SELECT
+    				(SELECT COUNT (out_l5.HL5_ID) FROM :out_result_full out_l5) AS HL_WITH_DATES,
+    				(SELECT COUNT (out_l5_no.HL5_ID) FROM :out_result_no_dates out_l5_no) AS HL_WITHOUT_DATES
+    			 FROM DUMMY;
+END;

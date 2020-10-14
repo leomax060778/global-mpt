@@ -10,6 +10,7 @@
       <descriptions/>
       <viewAttributes>
         <viewAttribute datatype="INTEGER" id="HIERARCHY_LEVEL_ID"/>
+        <viewAttribute datatype="TINYINT" id="IS_LEGACY"/>
         <viewAttribute datatype="INTEGER" id="HIERARCHY_LEVEL_VALUE"/>
         <viewAttribute datatype="NVARCHAR" id="CRM_ID" length="30"/>
         <viewAttribute datatype="NVARCHAR" id="CAMP_OBJ_TYPE" length="25"/>
@@ -35,1141 +36,1242 @@
         <viewAttribute datatype="TIMESTAMP" id="MODIFIED_DATE"/>
         <viewAttribute datatype="NVARCHAR" id="STATUS" length="25"/>
         <viewAttribute datatype="NVARCHAR" id="DES" length="25"/>
-        <viewAttribute id="REPUTATION_INITIATIVE" datatype="NVARCHAR" length="255"/>
-        <viewAttribute id="REPUTATION_INITIATIVE_AUDIENCE" datatype="NVARCHAR" length="255"/>
+        <viewAttribute datatype="NVARCHAR" id="REPUTATION_INITIATIVE" length="255"/>
+        <viewAttribute datatype="NVARCHAR" id="REPUTATION_INITIATIVE_AUDIENCE" length="255"/>
       </viewAttributes>
       <calculatedViewAttributes/>
-      <definition> 
- /********* Begin Procedure Script ************/ 
- BEGIN 
- 
- va_l1 = SELECT HL1_ID
-			, &quot;MKTG_PLANNING_TOOL&quot;.&quot;mktgplanningtool.db.functions::GET_CRM_ID&quot;(
-				BY.BUDGET_YEAR
-			    , HL1.ACRONYM
-			    , ''
-			    , ''
-			    , ''
-			    , ''
-			    , '') AS CRM_ID
-			, 'MPL' AS CAMP_OBJ_TYPE
-			, (SELECT HIERARCHY_LEVEL_ID FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HIERARCHY_LEVEL&quot; HIERARCHY_LEVEL WHERE DESCRIPTION = 'HL1') AS HIERARCHY_LEVEL_ID
-			, (SELECT HIERARCHY_LEVEL_VALUE FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HIERARCHY_LEVEL&quot; HIERARCHY_LEVEL WHERE DESCRIPTION = 'HL1') AS HIERARCHY_LEVEL_VALUE
-			, HL1.BUDGET
-			, 0 AS BUDGET_Q1
-			, 0 AS BUDGET_Q2
-			, 0 AS BUDGET_Q3
-			, 0 AS BUDGET_Q4
-			, '' AS INTERNAL_FUNDING
-			, '' AS PARTNER_CONTRIBUTION
-			, 'EUR' AS CURRENCY
-			, BY.BUDGET_YEAR
-			, '' AS ON_PREM
-			, '' AS CLOUD
-			, COALESCE(HL1.MODIFIED_DATE_TZ, HL1.CREATED_DATE_TZ) AS MODIFIED_DATE
-			FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL1&quot; HL1
-			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_BUDGET_YEAR&quot; BY ON BY.BUDGET_YEAR_ID = HL1.BUDGET_YEAR_ID
-			WHERE HL1.ENABLED = 1 AND HL1.DELETED = 0;
-			
-va_l1_mnp = SELECT HL1_EO.HL1_ID
-			, HL1_EOD.EURO_VALUE AS MNP_VALUE
-			, HL1_EOD.VOLUME_VALUE AS MNP_VOLUME
-			FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL1_EXPECTED_OUTCOMES&quot; HL1_EO
-			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL1_EXPECTED_OUTCOMES_DETAIL&quot; HL1_EOD 
-				ON HL1_EO.HL1_EXPECTED_OUTCOMES_ID = HL1_EOD.HL1_EXPECTED_OUTCOMES_ID
-			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_LEVEL&quot; EOL 
-				ON HL1_EOD.EXPECTED_OUTCOME_LEVEL_ID = EOL.EXPECTED_OUTCOME_LEVEL_ID
-			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_OPTION&quot; EOO 
-				ON EOL.EXPECTED_OUTCOME_OPTION_ID = EOO.EXPECTED_OUTCOME_OPTION_ID
-			WHERE HL1_EO.ENABLED = 1 
-			AND HL1_EO.DELETED = 0
-			AND HL1_EOD.ENABLED = 1 
-			AND HL1_EOD.DELETED = 0
-			AND EOO.EXPORT_KEY = 'MNP';
-			
-va_l1_mtp = SELECT HL1_EO.HL1_ID
-			, HL1_EOD.EURO_VALUE AS MTP_VALUE
-			, HL1_EOD.VOLUME_VALUE AS MTP_VOLUME
-			FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL1_EXPECTED_OUTCOMES&quot; HL1_EO
-			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL1_EXPECTED_OUTCOMES_DETAIL&quot; HL1_EOD 
-				ON HL1_EO.HL1_EXPECTED_OUTCOMES_ID = HL1_EOD.HL1_EXPECTED_OUTCOMES_ID
-			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_LEVEL&quot; EOL 
-				ON HL1_EOD.EXPECTED_OUTCOME_LEVEL_ID = EOL.EXPECTED_OUTCOME_LEVEL_ID
-			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_OPTION&quot; EOO 
-				ON EOL.EXPECTED_OUTCOME_OPTION_ID = EOO.EXPECTED_OUTCOME_OPTION_ID
-			WHERE HL1_EO.ENABLED = 1 
-			AND HL1_EO.DELETED = 0
-			AND HL1_EOD.ENABLED = 1 
-			AND HL1_EOD.DELETED = 0
-			AND EOO.EXPORT_KEY = 'MTP';
-			
-va_l1_mip = SELECT HL1_EO.HL1_ID
-			, HL1_EOD.EURO_VALUE AS MIP_VALUE
-			, HL1_EOD.VOLUME_VALUE AS MIP_VOLUME
-			FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL1_EXPECTED_OUTCOMES&quot; HL1_EO
-			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL1_EXPECTED_OUTCOMES_DETAIL&quot; HL1_EOD 
-				ON HL1_EO.HL1_EXPECTED_OUTCOMES_ID = HL1_EOD.HL1_EXPECTED_OUTCOMES_ID
-			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_LEVEL&quot; EOL 
-				ON HL1_EOD.EXPECTED_OUTCOME_LEVEL_ID = EOL.EXPECTED_OUTCOME_LEVEL_ID
-			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_OPTION&quot; EOO 
-				ON EOL.EXPECTED_OUTCOME_OPTION_ID = EOO.EXPECTED_OUTCOME_OPTION_ID
-			WHERE HL1_EO.ENABLED = 1 
-			AND HL1_EO.DELETED = 0
-			AND HL1_EOD.ENABLED = 1 
-			AND HL1_EOD.DELETED = 0
-			AND EOO.EXPORT_KEY = 'MIP';
-			
-va_l1_lead_volume = SELECT HL1_EO.HL1_ID
-			, HL1_EOD.EURO_VALUE AS LEAD_VOLUME_VALUE
-			, HL1_EOD.VOLUME_VALUE AS LEAD_VOLUME_VOLUME
-			FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL1_EXPECTED_OUTCOMES&quot; HL1_EO
-			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL1_EXPECTED_OUTCOMES_DETAIL&quot; HL1_EOD 
-				ON HL1_EO.HL1_EXPECTED_OUTCOMES_ID = HL1_EOD.HL1_EXPECTED_OUTCOMES_ID
-			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_LEVEL&quot; EOL 
-				ON HL1_EOD.EXPECTED_OUTCOME_LEVEL_ID = EOL.EXPECTED_OUTCOME_LEVEL_ID
-			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_OPTION&quot; EOO 
-				ON EOL.EXPECTED_OUTCOME_OPTION_ID = EOO.EXPECTED_OUTCOME_OPTION_ID
-			WHERE HL1_EO.ENABLED = 1 
-			AND HL1_EO.DELETED = 0
-			AND HL1_EOD.ENABLED = 1 
-			AND HL1_EOD.DELETED = 0
-			AND EOO.EXPORT_KEY = 'LEAD_VOLUME';
-			
-va_l1_result = SELECT HL1.HL1_ID AS HL_ID
-				, HL1.HIERARCHY_LEVEL_ID
-					, HL1.HIERARCHY_LEVEL_VALUE
-				, HL1.CRM_ID
-				, HL1.CAMP_OBJ_TYPE
-				, HL1.BUDGET
-				, HL1.BUDGET_Q1
-				, HL1.BUDGET_Q2
-				, HL1.BUDGET_Q3
-				, HL1.BUDGET_Q4
-				, HL1.INTERNAL_FUNDING
-				, HL1.PARTNER_CONTRIBUTION
-				, HL1.CURRENCY
-				, COALESCE(MNP.MNP_VALUE, null) AS MNP_VALUE
-				, COALESCE(MNP.MNP_VOLUME, null) AS MNP_VOLUME
-				, COALESCE(MTP.MTP_VALUE, null) AS MTP_VALUE
-				, COALESCE(MTP.MTP_VOLUME, null) AS MTP_VOLUME
-				, COALESCE(MIP.MIP_VALUE, null) AS MIP_VALUE
-				, COALESCE(MIP.MIP_VOLUME, null) AS MIP_VOLUME
-				, COALESCE(LEAD_VOLUME.LEAD_VOLUME_VALUE, null) AS LEAD_VOLUME_VALUE
-				, COALESCE(LEAD_VOLUME.LEAD_VOLUME_VOLUME, null) AS LEAD_VOLUME_VOLUME
-				, HL1.BUDGET_YEAR
-				, HL1.ON_PREM
-				, HL1.CLOUD
-				, HL1.MODIFIED_DATE
-				, '' AS STATUS
-				, '' AS DES
-				, '' AS REPUTATION_INITIATIVE
-				, '' AS REPUTATION_INITIATIVE_AUDIENCE
-				FROM :va_l1 HL1
-				LEFT JOIN :va_l1_mnp MNP ON HL1.HL1_ID = MNP.HL1_ID
-				LEFT JOIN :va_l1_mtp MTP ON HL1.HL1_ID = MTP.HL1_ID
-				LEFT JOIN :va_l1_mip MIP ON HL1.HL1_ID = MIP.HL1_ID
-				LEFT JOIN :va_l1_lead_volume LEAD_VOLUME ON HL1.HL1_ID = LEAD_VOLUME.HL1_ID
-				ORDER BY HL1.CRM_ID;
-				
-va_l2 = SELECT HL2_ID
-			, &quot;MKTG_PLANNING_TOOL&quot;.&quot;mktgplanningtool.db.functions::GET_CRM_ID&quot;(
-				BY.BUDGET_YEAR
-			    , HL1.ACRONYM
-			    , HL2.ORGANIZATION_ACRONYM
-			    , ''
-			    , ''
-			    , ''
-			    , '') AS CRM_ID
-			, 'MPL' AS CAMP_OBJ_TYPE
-			, (SELECT HIERARCHY_LEVEL_ID FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HIERARCHY_LEVEL&quot; HIERARCHY_LEVEL WHERE DESCRIPTION = 'HL2') AS HIERARCHY_LEVEL_ID
-			, (SELECT HIERARCHY_LEVEL_VALUE FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HIERARCHY_LEVEL&quot; HIERARCHY_LEVEL WHERE DESCRIPTION = 'HL2') AS HIERARCHY_LEVEL_VALUE
-			, HL2.HL2_BUDGET_TOTAL AS BUDGET
-			, 0 AS BUDGET_Q1
-			, 0 AS BUDGET_Q2
-			, 0 AS BUDGET_Q3
-			, 0 AS BUDGET_Q4
-			, '' AS INTERNAL_FUNDING
-			, '' AS PARTNER_CONTRIBUTION
-			, 'EUR' AS CURRENCY
-			, BY.BUDGET_YEAR
-			, '' AS ON_PREM
-			, '' AS CLOUD
-			, COALESCE(HL2.MODIFIED_DATE_TZ, HL2.CREATED_DATE_TZ) AS MODIFIED_DATE
-			FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL2&quot; HL2
-			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL1&quot; HL1 ON HL1.HL1_ID = HL2.HL1_ID
-			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_BUDGET_YEAR&quot; BY ON BY.BUDGET_YEAR_ID = HL1.BUDGET_YEAR_ID
-			WHERE HL2.ENABLED = 1 AND HL2.DELETED = 0;
-			
-va_l2_mnp = SELECT HL2_EO.HL2_ID
-			, HL2_EOD.EURO_VALUE AS MNP_VALUE
-			, HL2_EOD.VOLUME_VALUE AS MNP_VOLUME
-			FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL2_EXPECTED_OUTCOMES&quot; HL2_EO
-			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL2_EXPECTED_OUTCOMES_DETAIL&quot; HL2_EOD 
-				ON HL2_EO.HL2_EXPECTED_OUTCOMES_ID = HL2_EOD.HL2_EXPECTED_OUTCOMES_ID
-			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_LEVEL&quot; EOL 
-				ON HL2_EOD.EXPECTED_OUTCOME_LEVEL_ID = EOL.EXPECTED_OUTCOME_LEVEL_ID
-			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_OPTION&quot; EOO 
-				ON EOL.EXPECTED_OUTCOME_OPTION_ID = EOO.EXPECTED_OUTCOME_OPTION_ID
-			WHERE HL2_EO.ENABLED = 2 
-			AND HL2_EO.DELETED = 0
-			AND HL2_EOD.ENABLED = 2 
-			AND HL2_EOD.DELETED = 0
-			AND EOO.EXPORT_KEY = 'MNP';
-			
-va_l2_mtp = SELECT HL2_EO.HL2_ID
-			, HL2_EOD.EURO_VALUE AS MTP_VALUE
-			, HL2_EOD.VOLUME_VALUE AS MTP_VOLUME
-			FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL2_EXPECTED_OUTCOMES&quot; HL2_EO
-			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL2_EXPECTED_OUTCOMES_DETAIL&quot; HL2_EOD 
-				ON HL2_EO.HL2_EXPECTED_OUTCOMES_ID = HL2_EOD.HL2_EXPECTED_OUTCOMES_ID
-			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_LEVEL&quot; EOL 
-				ON HL2_EOD.EXPECTED_OUTCOME_LEVEL_ID = EOL.EXPECTED_OUTCOME_LEVEL_ID
-			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_OPTION&quot; EOO 
-				ON EOL.EXPECTED_OUTCOME_OPTION_ID = EOO.EXPECTED_OUTCOME_OPTION_ID
-			WHERE HL2_EO.ENABLED = 2 
-			AND HL2_EO.DELETED = 0
-			AND HL2_EOD.ENABLED = 2 
-			AND HL2_EOD.DELETED = 0
-			AND EOO.EXPORT_KEY = 'MTP';
-			
-va_l2_mip = SELECT HL2_EO.HL2_ID
-			, HL2_EOD.EURO_VALUE AS MIP_VALUE
-			, HL2_EOD.VOLUME_VALUE AS MIP_VOLUME
-			FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL2_EXPECTED_OUTCOMES&quot; HL2_EO
-			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL2_EXPECTED_OUTCOMES_DETAIL&quot; HL2_EOD 
-				ON HL2_EO.HL2_EXPECTED_OUTCOMES_ID = HL2_EOD.HL2_EXPECTED_OUTCOMES_ID
-			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_LEVEL&quot; EOL 
-				ON HL2_EOD.EXPECTED_OUTCOME_LEVEL_ID = EOL.EXPECTED_OUTCOME_LEVEL_ID
-			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_OPTION&quot; EOO 
-				ON EOL.EXPECTED_OUTCOME_OPTION_ID = EOO.EXPECTED_OUTCOME_OPTION_ID
-			WHERE HL2_EO.ENABLED = 2 
-			AND HL2_EO.DELETED = 0
-			AND HL2_EOD.ENABLED = 2 
-			AND HL2_EOD.DELETED = 0
-			AND EOO.EXPORT_KEY = 'MIP';
-			
-va_l2_lead_volume = SELECT HL2_EO.HL2_ID
-			, HL2_EOD.EURO_VALUE AS LEAD_VOLUME_VALUE
-			, HL2_EOD.VOLUME_VALUE AS LEAD_VOLUME_VOLUME
-			FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL2_EXPECTED_OUTCOMES&quot; HL2_EO
-			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL2_EXPECTED_OUTCOMES_DETAIL&quot; HL2_EOD 
-				ON HL2_EO.HL2_EXPECTED_OUTCOMES_ID = HL2_EOD.HL2_EXPECTED_OUTCOMES_ID
-			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_LEVEL&quot; EOL 
-				ON HL2_EOD.EXPECTED_OUTCOME_LEVEL_ID = EOL.EXPECTED_OUTCOME_LEVEL_ID
-			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_OPTION&quot; EOO 
-				ON EOL.EXPECTED_OUTCOME_OPTION_ID = EOO.EXPECTED_OUTCOME_OPTION_ID
-			WHERE HL2_EO.ENABLED = 2 
-			AND HL2_EO.DELETED = 0
-			AND HL2_EOD.ENABLED = 2 
-			AND HL2_EOD.DELETED = 0
-			AND EOO.EXPORT_KEY = 'LEAD_VOLUME';
-			
-va_l2_result = SELECT HL2.HL2_ID AS HL_ID
-				, HL2.HIERARCHY_LEVEL_ID
-									, HL2.HIERARCHY_LEVEL_VALUE
-				, HL2.CRM_ID
-				, HL2.CAMP_OBJ_TYPE
-				, HL2.BUDGET
-				, HL2.BUDGET_Q1
-				, HL2.BUDGET_Q2
-				, HL2.BUDGET_Q3
-				, HL2.BUDGET_Q4
-				, HL2.INTERNAL_FUNDING
-				, HL2.PARTNER_CONTRIBUTION
-				, HL2.CURRENCY
-				, COALESCE(MNP.MNP_VALUE, null) AS MNP_VALUE
-				, COALESCE(MNP.MNP_VOLUME, null) AS MNP_VOLUME
-				, COALESCE(MTP.MTP_VALUE, null) AS MTP_VALUE
-				, COALESCE(MTP.MTP_VOLUME, null) AS MTP_VOLUME
-				, COALESCE(MIP.MIP_VALUE, null) AS MIP_VALUE
-				, COALESCE(MIP.MIP_VOLUME, null) AS MIP_VOLUME
-				, COALESCE(LEAD_VOLUME.LEAD_VOLUME_VALUE, null) AS LEAD_VOLUME_VALUE
-				, COALESCE(LEAD_VOLUME.LEAD_VOLUME_VOLUME, null) AS LEAD_VOLUME_VOLUME
-				, HL2.BUDGET_YEAR
-				, HL2.ON_PREM
-				, HL2.CLOUD
-				, HL2.MODIFIED_DATE
-				, '' AS STATUS
-				, '' AS DES
-				, '' AS REPUTATION_INITIATIVE
-				, '' AS REPUTATION_INITIATIVE_AUDIENCE
-				FROM :va_l2 HL2
-				LEFT JOIN :va_l2_mnp MNP ON HL2.HL2_ID = MNP.HL2_ID
-				LEFT JOIN :va_l2_mtp MTP ON HL2.HL2_ID = MTP.HL2_ID
-				LEFT JOIN :va_l2_mip MIP ON HL2.HL2_ID = MIP.HL2_ID
-				LEFT JOIN :va_l2_lead_volume LEAD_VOLUME ON HL2.HL2_ID = LEAD_VOLUME.HL2_ID
-				ORDER BY HL2.CRM_ID;
-				
-va_l3 = SELECT HL3_ID
-			, &quot;MKTG_PLANNING_TOOL&quot;.&quot;mktgplanningtool.db.functions::GET_CRM_ID&quot;(
-				BY.BUDGET_YEAR
-			    , HL1.ACRONYM
-			    , HL2.ORGANIZATION_ACRONYM
-			    , HL3.ACRONYM
-			    , ''
-			    , ''
-			    , '') AS CRM_ID
-			, 'MPL' AS CAMP_OBJ_TYPE
-			, (SELECT HIERARCHY_LEVEL_ID FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HIERARCHY_LEVEL&quot; HIERARCHY_LEVEL WHERE DESCRIPTION = 'HL3') AS HIERARCHY_LEVEL_ID
-			, (SELECT HIERARCHY_LEVEL_VALUE FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HIERARCHY_LEVEL&quot; HIERARCHY_LEVEL WHERE DESCRIPTION = 'HL3') AS HIERARCHY_LEVEL_VALUE
-			, HL3.HL3_FNC_BUDGET_TOTAL AS BUDGET
-			, 0 AS BUDGET_Q1
-			, 0 AS BUDGET_Q2
-			, 0 AS BUDGET_Q3
-			, 0 AS BUDGET_Q4
-			, '' AS INTERNAL_FUNDING
-			, '' AS PARTNER_CONTRIBUTION
-			, 'EUR' AS CURRENCY
-			, BY.BUDGET_YEAR
-			, '' AS ON_PREM
-			, '' AS CLOUD
-			, COALESCE(HL3.MODIFIED_DATE_TZ, HL3.CREATED_DATE_TZ) AS MODIFIED_DATE
-			FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL3&quot; HL3
-			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL2&quot; HL2 ON HL2.HL2_ID = HL3.HL2_ID
-			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL1&quot; HL1 ON HL1.HL1_ID = HL2.HL1_ID
-			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_BUDGET_YEAR&quot; BY ON BY.BUDGET_YEAR_ID = HL1.BUDGET_YEAR_ID
-			WHERE HL3.ENABLED = 1 AND HL3.DELETED = 0;
-			
-va_l3_mnp = SELECT HL3_EO.HL3_ID
-			, HL3_EOD.EURO_VALUE AS MNP_VALUE
-			, HL3_EOD.VOLUME_VALUE AS MNP_VOLUME
-			FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL3_EXPECTED_OUTCOMES&quot; HL3_EO
-			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL3_EXPECTED_OUTCOMES_DETAIL&quot; HL3_EOD 
-				ON HL3_EO.HL3_EXPECTED_OUTCOMES_ID = HL3_EOD.HL3_EXPECTED_OUTCOMES_ID
-			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_LEVEL&quot; EOL 
-				ON HL3_EOD.EXPECTED_OUTCOME_LEVEL_ID = EOL.EXPECTED_OUTCOME_LEVEL_ID
-			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_OPTION&quot; EOO 
-				ON EOL.EXPECTED_OUTCOME_OPTION_ID = EOO.EXPECTED_OUTCOME_OPTION_ID
-			WHERE HL3_EO.ENABLED = 1
-			AND HL3_EO.DELETED = 0
-			AND HL3_EOD.ENABLED = 1
-			AND HL3_EOD.DELETED = 0
-			AND EOO.EXPORT_KEY = 'MNP';
-			
-va_l3_mtp = SELECT HL3_EO.HL3_ID
-			, HL3_EOD.EURO_VALUE AS MTP_VALUE
-			, HL3_EOD.VOLUME_VALUE AS MTP_VOLUME
-			FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL3_EXPECTED_OUTCOMES&quot; HL3_EO
-			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL3_EXPECTED_OUTCOMES_DETAIL&quot; HL3_EOD 
-				ON HL3_EO.HL3_EXPECTED_OUTCOMES_ID = HL3_EOD.HL3_EXPECTED_OUTCOMES_ID
-			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_LEVEL&quot; EOL 
-				ON HL3_EOD.EXPECTED_OUTCOME_LEVEL_ID = EOL.EXPECTED_OUTCOME_LEVEL_ID
-			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_OPTION&quot; EOO 
-				ON EOL.EXPECTED_OUTCOME_OPTION_ID = EOO.EXPECTED_OUTCOME_OPTION_ID
-			WHERE HL3_EO.ENABLED = 1
-			AND HL3_EO.DELETED = 0
-			AND HL3_EOD.ENABLED = 1
-			AND HL3_EOD.DELETED = 0
-			AND EOO.EXPORT_KEY = 'MTP';
-			
-va_l3_mip = SELECT HL3_EO.HL3_ID
-			, HL3_EOD.EURO_VALUE AS MIP_VALUE
-			, HL3_EOD.VOLUME_VALUE AS MIP_VOLUME
-			FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL3_EXPECTED_OUTCOMES&quot; HL3_EO
-			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL3_EXPECTED_OUTCOMES_DETAIL&quot; HL3_EOD 
-				ON HL3_EO.HL3_EXPECTED_OUTCOMES_ID = HL3_EOD.HL3_EXPECTED_OUTCOMES_ID
-			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_LEVEL&quot; EOL 
-				ON HL3_EOD.EXPECTED_OUTCOME_LEVEL_ID = EOL.EXPECTED_OUTCOME_LEVEL_ID
-			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_OPTION&quot; EOO 
-				ON EOL.EXPECTED_OUTCOME_OPTION_ID = EOO.EXPECTED_OUTCOME_OPTION_ID
-			WHERE HL3_EO.ENABLED = 1
-			AND HL3_EO.DELETED = 0
-			AND HL3_EOD.ENABLED = 1
-			AND HL3_EOD.DELETED = 0
-			AND EOO.EXPORT_KEY = 'MIP';
-			
-va_l3_lead_volume = SELECT HL3_EO.HL3_ID
-			, HL3_EOD.EURO_VALUE AS LEAD_VOLUME_VALUE
-			, HL3_EOD.VOLUME_VALUE AS LEAD_VOLUME_VOLUME
-			FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL3_EXPECTED_OUTCOMES&quot; HL3_EO
-			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL3_EXPECTED_OUTCOMES_DETAIL&quot; HL3_EOD 
-				ON HL3_EO.HL3_EXPECTED_OUTCOMES_ID = HL3_EOD.HL3_EXPECTED_OUTCOMES_ID
-			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_LEVEL&quot; EOL 
-				ON HL3_EOD.EXPECTED_OUTCOME_LEVEL_ID = EOL.EXPECTED_OUTCOME_LEVEL_ID
-			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_OPTION&quot; EOO 
-				ON EOL.EXPECTED_OUTCOME_OPTION_ID = EOO.EXPECTED_OUTCOME_OPTION_ID
-			WHERE HL3_EO.ENABLED = 1
-			AND HL3_EO.DELETED = 0
-			AND HL3_EOD.ENABLED = 1
-			AND HL3_EOD.DELETED = 0
-			AND EOO.EXPORT_KEY = 'LEAD_VOLUME';
-			
-va_l3_result = SELECT HL3.HL3_ID AS HL_ID
-				, HL3.HIERARCHY_LEVEL_ID
-								, HL3.HIERARCHY_LEVEL_VALUE
-
-				, HL3.CRM_ID
-				, HL3.CAMP_OBJ_TYPE
-				, HL3.BUDGET
-				, HL3.BUDGET_Q1
-				, HL3.BUDGET_Q2
-				, HL3.BUDGET_Q3
-				, HL3.BUDGET_Q4
-				, HL3.INTERNAL_FUNDING
-				, HL3.PARTNER_CONTRIBUTION
-				, HL3.CURRENCY
-				, COALESCE(MNP.MNP_VALUE, null) AS MNP_VALUE
-				, COALESCE(MNP.MNP_VOLUME, null) AS MNP_VOLUME
-				, COALESCE(MTP.MTP_VALUE, null) AS MTP_VALUE
-				, COALESCE(MTP.MTP_VOLUME, null) AS MTP_VOLUME
-				, COALESCE(MIP.MIP_VALUE, null) AS MIP_VALUE
-				, COALESCE(MIP.MIP_VOLUME, null) AS MIP_VOLUME
-				, COALESCE(LEAD_VOLUME.LEAD_VOLUME_VALUE, null) AS LEAD_VOLUME_VALUE
-				, COALESCE(LEAD_VOLUME.LEAD_VOLUME_VOLUME, null) AS LEAD_VOLUME_VOLUME
-				, HL3.BUDGET_YEAR
-				, HL3.ON_PREM
-				, HL3.CLOUD
-				, HL3.MODIFIED_DATE
-				, '' AS STATUS
-				, '' AS DES
-				, '' AS REPUTATION_INITIATIVE
-				, '' AS REPUTATION_INITIATIVE_AUDIENCE
-				FROM :va_l3 HL3
-				LEFT JOIN :va_l3_mnp MNP ON HL3.HL3_ID = MNP.HL3_ID
-				LEFT JOIN :va_l3_mtp MTP ON HL3.HL3_ID = MTP.HL3_ID
-				LEFT JOIN :va_l3_mip MIP ON HL3.HL3_ID = MIP.HL3_ID
-				LEFT JOIN :va_l3_lead_volume LEAD_VOLUME ON HL3.HL3_ID = LEAD_VOLUME.HL3_ID
-				ORDER BY HL3.CRM_ID;
-
-va_l4 = SELECT HL4_ID
-			, &quot;MKTG_PLANNING_TOOL&quot;.&quot;mktgplanningtool.db.functions::GET_CRM_ID&quot;(
-				BY.BUDGET_YEAR
-			    , HL1.ACRONYM
-			    , HL2.ORGANIZATION_ACRONYM
-			    , HL3.ACRONYM
-			    , HL4.ACRONYM
-			    , ''
-			    , '') AS CRM_ID
-			, 'MPL' AS CAMP_OBJ_TYPE
-			, (SELECT HIERARCHY_LEVEL_ID FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HIERARCHY_LEVEL&quot; HIERARCHY_LEVEL WHERE DESCRIPTION = 'HL4') AS HIERARCHY_LEVEL_ID
-			, (SELECT HIERARCHY_LEVEL_VALUE FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HIERARCHY_LEVEL&quot; HIERARCHY_LEVEL WHERE DESCRIPTION = 'HL4') AS HIERARCHY_LEVEL_VALUE
-			, HL4.BUDGET
-			, 0 AS BUDGET_Q1
-			, 0 AS BUDGET_Q2
-			, 0 AS BUDGET_Q3
-			, 0 AS BUDGET_Q4
-			, '' AS INTERNAL_FUNDING
-			, '' AS PARTNER_CONTRIBUTION
-			, 'EUR' AS CURRENCY
-			, BY.BUDGET_YEAR
-			, '' AS ON_PREM
-			, '' AS CLOUD
-			, COALESCE(HL4.MODIFIED_DATE_TZ, HL4.CREATED_DATE_TZ) AS MODIFIED_DATE
-			, SD.DETAIL AS STATUS
-			FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL4&quot; HL4
-			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL3&quot; HL3 ON HL3.HL3_ID = HL4.HL3_ID
-			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL2&quot; HL2 ON HL2.HL2_ID = HL3.HL2_ID
-			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL1&quot; HL1 ON HL1.HL1_ID = HL2.HL1_ID
-			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_BUDGET_YEAR&quot; BY ON BY.BUDGET_YEAR_ID = HL1.BUDGET_YEAR_ID
-			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL4_STATUS_DETAIL&quot; SD ON SD.HL4_STATUS_DETAIL_ID = HL4.HL4_STATUS_DETAIL_ID
-			
-			WHERE HL4.ENABLED = 1 AND HL4.DELETED = 0;
-
-va_l4_mnp = SELECT HL4_EO.HL4_ID
-			, HL4_EOD.EURO_VALUE AS MNP_VALUE
-			, HL4_EOD.AMOUNT_VALUE AS MNP_VOLUME
-			FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL4_EXPECTED_OUTCOMES&quot; HL4_EO
-			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL4_EXPECTED_OUTCOMES_DETAIL&quot; HL4_EOD
-				ON HL4_EO.HL4_EXPECTED_OUTCOMES_ID = HL4_EOD.HL4_EXPECTED_OUTCOMES_ID
-			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_LEVEL&quot; EOL
-				ON HL4_EOD.OUTCOMES_ID = EOL.EXPECTED_OUTCOME_LEVEL_ID
-			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_OPTION&quot; EOO
-				ON EOL.EXPECTED_OUTCOME_OPTION_ID = EOO.EXPECTED_OUTCOME_OPTION_ID
-			WHERE HL4_EO.ENABLED = 1
-			AND HL4_EO.DELETED = 0
-			AND HL4_EOD.ENABLED = 1
-			AND HL4_EOD.DELETED = 0
-			AND EOO.EXPORT_KEY = 'MNP';
-
-va_l4_mtp = SELECT HL4_EO.HL4_ID
-			, HL4_EOD.EURO_VALUE AS MTP_VALUE
-			, HL4_EOD.AMOUNT_VALUE AS MTP_VOLUME
-			FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL4_EXPECTED_OUTCOMES&quot; HL4_EO
-			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL4_EXPECTED_OUTCOMES_DETAIL&quot; HL4_EOD
-				ON HL4_EO.HL4_EXPECTED_OUTCOMES_ID = HL4_EOD.HL4_EXPECTED_OUTCOMES_ID
-			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_LEVEL&quot; EOL
-				ON HL4_EOD.OUTCOMES_ID = EOL.EXPECTED_OUTCOME_LEVEL_ID
-			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_OPTION&quot; EOO
-				ON EOL.EXPECTED_OUTCOME_OPTION_ID = EOO.EXPECTED_OUTCOME_OPTION_ID
-			WHERE HL4_EO.ENABLED = 1
-			AND HL4_EO.DELETED = 0
-			AND HL4_EOD.ENABLED = 1
-			AND HL4_EOD.DELETED = 0
-			AND EOO.EXPORT_KEY = 'MTP';
-
-va_l4_mip = SELECT HL4_EO.HL4_ID
-			, HL4_EOD.EURO_VALUE AS MIP_VALUE
-			, HL4_EOD.AMOUNT_VALUE AS MIP_VOLUME
-			FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL4_EXPECTED_OUTCOMES&quot; HL4_EO
-			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL4_EXPECTED_OUTCOMES_DETAIL&quot; HL4_EOD
-				ON HL4_EO.HL4_EXPECTED_OUTCOMES_ID = HL4_EOD.HL4_EXPECTED_OUTCOMES_ID
-			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_LEVEL&quot; EOL
-				ON HL4_EOD.OUTCOMES_ID = EOL.EXPECTED_OUTCOME_LEVEL_ID
-			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_OPTION&quot; EOO
-				ON EOL.EXPECTED_OUTCOME_OPTION_ID = EOO.EXPECTED_OUTCOME_OPTION_ID
-			WHERE HL4_EO.ENABLED = 1
-			AND HL4_EO.DELETED = 0
-			AND HL4_EOD.ENABLED = 1
-			AND HL4_EOD.DELETED = 0
-			AND EOO.EXPORT_KEY = 'MIP';
-
-va_l4_lead_volume = SELECT HL4_EO.HL4_ID
-			, HL4_EOD.EURO_VALUE AS LEAD_VOLUME_VALUE
-			, HL4_EOD.AMOUNT_VALUE AS LEAD_VOLUME_VOLUME
-			FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL4_EXPECTED_OUTCOMES&quot; HL4_EO
-			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL4_EXPECTED_OUTCOMES_DETAIL&quot; HL4_EOD
-				ON HL4_EO.HL4_EXPECTED_OUTCOMES_ID = HL4_EOD.HL4_EXPECTED_OUTCOMES_ID
-			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_LEVEL&quot; EOL
-				ON HL4_EOD.OUTCOMES_ID = EOL.EXPECTED_OUTCOME_LEVEL_ID
-			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_OPTION&quot; EOO
-				ON EOL.EXPECTED_OUTCOME_OPTION_ID = EOO.EXPECTED_OUTCOME_OPTION_ID
-			WHERE HL4_EO.ENABLED = 1
-			AND HL4_EO.DELETED = 0
-			AND HL4_EOD.ENABLED = 1
-			AND HL4_EOD.DELETED = 0
-			AND EOO.EXPORT_KEY = 'LEAD_VOLUME';
-
-va_l4_result = SELECT HL4.HL4_ID AS HL_ID
-				, HL4.HIERARCHY_LEVEL_ID
-					, HL4.HIERARCHY_LEVEL_VALUE
-				, HL4.CRM_ID
-				, HL4.CAMP_OBJ_TYPE
-				, HL4.BUDGET
-				, HL4.BUDGET_Q1
-				, HL4.BUDGET_Q2
-				, HL4.BUDGET_Q3
-				, HL4.BUDGET_Q4
-				, HL4.INTERNAL_FUNDING
-				, HL4.PARTNER_CONTRIBUTION
-				, HL4.CURRENCY
-				, COALESCE(MNP.MNP_VALUE, null) AS MNP_VALUE
-				, COALESCE(MNP.MNP_VOLUME, null) AS MNP_VOLUME
-				, COALESCE(MTP.MTP_VALUE, null) AS MTP_VALUE
-				, COALESCE(MTP.MTP_VOLUME, null) AS MTP_VOLUME
-				, COALESCE(MIP.MIP_VALUE, null) AS MIP_VALUE
-				, COALESCE(MIP.MIP_VOLUME, null) AS MIP_VOLUME
-				, COALESCE(LEAD_VOLUME.LEAD_VOLUME_VALUE, null) AS LEAD_VOLUME_VALUE
-				, COALESCE(LEAD_VOLUME.LEAD_VOLUME_VOLUME, null) AS LEAD_VOLUME_VOLUME
-				, HL4.BUDGET_YEAR
-				, HL4.ON_PREM
-				, HL4.CLOUD
-				, HL4.MODIFIED_DATE
-				, HL4.STATUS
-				, '' AS DES
-				, '' AS REPUTATION_INITIATIVE
-				, '' AS REPUTATION_INITIATIVE_AUDIENCE
-				FROM :va_l4 HL4
-				LEFT JOIN :va_l4_mnp MNP ON HL4.HL4_ID = MNP.HL4_ID
-				LEFT JOIN :va_l4_mtp MTP ON HL4.HL4_ID = MTP.HL4_ID
-				LEFT JOIN :va_l4_mip MIP ON HL4.HL4_ID = MIP.HL4_ID
-				LEFT JOIN :va_l4_lead_volume LEAD_VOLUME ON HL4.HL4_ID = LEAD_VOLUME.HL4_ID
-				
-				ORDER BY HL4.CRM_ID;
-				
-
-
-va_l5 = (SELECT HL5_ID
-			, &quot;MKTG_PLANNING_TOOL&quot;.&quot;mktgplanningtool.db.functions::GET_CRM_ID&quot;(
-				BY.BUDGET_YEAR
-			    , HL1.ACRONYM
-			    , HL2.ORGANIZATION_ACRONYM
-			    , HL3.ACRONYM
-			    , HL4.ACRONYM
-			    , HL5.ACRONYM
-			    , '') AS CRM_ID
-			, 'CPG' AS CAMP_OBJ_TYPE
-			, HL5.BUDGET
-			, (SELECT HIERARCHY_LEVEL_ID FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HIERARCHY_LEVEL&quot; HIERARCHY_LEVEL WHERE DESCRIPTION = 'HL5') AS HIERARCHY_LEVEL_ID
-			, (SELECT HIERARCHY_LEVEL_VALUE FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HIERARCHY_LEVEL&quot; HIERARCHY_LEVEL WHERE DESCRIPTION = 'HL5') AS HIERARCHY_LEVEL_VALUE
-			, (HL5.BUDGET * HL5.BUDGET_SPEND_Q1 / 100) AS BUDGET_Q1
-			, (HL5.BUDGET * HL5.BUDGET_SPEND_Q2 / 100) AS BUDGET_Q2
-			, (HL5.BUDGET * HL5.BUDGET_SPEND_Q3 / 100) AS BUDGET_Q3
-			, (HL5.BUDGET * HL5.BUDGET_SPEND_Q4 / 100) AS BUDGET_Q4
-			, '' AS INTERNAL_FUNDING
-			, '' AS PARTNER_CONTRIBUTION
-			, 'EUR' AS CURRENCY
-			, BY.BUDGET_YEAR
-			, '' AS ON_PREM
-			, '' AS CLOUD
-			, COALESCE(HL5.MODIFIED_DATE_TZ, HL5.CREATED_DATE_TZ) AS MODIFIED_DATE
-			, SD.DETAIL AS STATUS
-			, DT.NAME AS DES
-			FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL5&quot; HL5
-			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL4&quot; HL4 ON HL4.HL4_ID = HL5.HL4_ID
-			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL3&quot; HL3 ON HL3.HL3_ID = HL4.HL3_ID
-			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL2&quot; HL2 ON HL2.HL2_ID = HL3.HL2_ID
-			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL1&quot; HL1 ON HL1.HL1_ID = HL2.HL1_ID
-			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_BUDGET_YEAR&quot; BY ON BY.BUDGET_YEAR_ID = HL1.BUDGET_YEAR_ID
-			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL5_STATUS_DETAIL&quot; SD ON SD.HL5_STATUS_DETAIL_ID = HL5.HL5_STATUS_DETAIL_ID
-			LEFT JOIN  &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_DES_TYPE&quot; DT ON DT.DES_TYPE_ID = HL5.DES_TYPE_ID AND DT.ENABLED = 1 AND DT.DELETED = 0
-			WHERE HL5.ENABLED = 1 AND HL5.DELETED = 0)
-			UNION ALL
-			(SELECT HL5.HL5_LEGACY_ID
-            , HL5.PATH AS CRM_ID
-            , 'CPG' AS CAMP_OBJ_TYPE
-            , HL5.BUDGET
-            , (SELECT HIERARCHY_LEVEL_ID FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HIERARCHY_LEVEL&quot; HIERARCHY_LEVEL WHERE DESCRIPTION = 'HL5') AS HIERARCHY_LEVEL_ID
-            , (SELECT HIERARCHY_LEVEL_VALUE FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HIERARCHY_LEVEL&quot; HIERARCHY_LEVEL WHERE DESCRIPTION = 'HL5') AS HIERARCHY_LEVEL_VALUE
-            , (HL5.BUDGET * HL5.BUDGET_SPEND_Q1 / 100) AS BUDGET_Q1
-            , (HL5.BUDGET * HL5.BUDGET_SPEND_Q2 / 100) AS BUDGET_Q2
-            , (HL5.BUDGET * HL5.BUDGET_SPEND_Q3 / 100) AS BUDGET_Q3
-            , (HL5.BUDGET * HL5.BUDGET_SPEND_Q4 / 100) AS BUDGET_Q4
-            , '' AS INTERNAL_FUNDING
-            , '' AS PARTNER_CONTRIBUTION
-            , 'EUR' AS CURRENCY
-            , BY.BUDGET_YEAR
-            , '' AS ON_PREM
-            , '' AS CLOUD
-            , COALESCE(HL5.MODIFIED_DATE_TZ, HL5.CREATED_DATE_TZ) AS MODIFIED_DATE
-            , SD.DETAIL AS STATUS
-            , NULL AS DES
-            FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL5_LEGACY&quot; HL5
-            INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL4&quot; HL4 ON HL4.HL4_ID = HL5.HL4_ID
-            INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL3&quot; HL3 ON HL3.HL3_ID = HL4.HL3_ID
-            INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL2&quot; HL2 ON HL2.HL2_ID = HL3.HL2_ID
-            INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL1&quot; HL1 ON HL1.HL1_ID = HL2.HL1_ID
-            INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_BUDGET_YEAR&quot; BY ON BY.BUDGET_YEAR_ID = HL1.BUDGET_YEAR_ID
-            INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL5_STATUS_DETAIL&quot; SD ON SD.HL5_STATUS_DETAIL_ID = HL5.HL5_STATUS_DETAIL_ID
-            WHERE HL5.ENABLED = 1 AND HL5.DELETED = 0);
-
-va_l5_mnp = SELECT HL5_EO.HL5_ID
-			, HL5_EOD.EURO_VALUE AS MNP_VALUE
-			, HL5_EOD.VOLUME_VALUE AS MNP_VOLUME
-			FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL5_EXPECTED_OUTCOMES&quot; HL5_EO
-			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL5_EXPECTED_OUTCOMES_DETAIL&quot; HL5_EOD
-				ON HL5_EO.HL5_EXPECTED_OUTCOMES_ID = HL5_EOD.HL5_EXPECTED_OUTCOMES_ID
-			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_LEVEL&quot; EOL
-				ON HL5_EOD.OUTCOMES_ID = EOL.EXPECTED_OUTCOME_LEVEL_ID
-			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_OPTION&quot; EOO
-				ON EOL.EXPECTED_OUTCOME_OPTION_ID = EOO.EXPECTED_OUTCOME_OPTION_ID
-			WHERE HL5_EO.ENABLED = 1
-			AND HL5_EO.DELETED = 0
-			AND HL5_EOD.ENABLED = 1
-			AND HL5_EOD.DELETED = 0
-			AND EOO.EXPORT_KEY = 'MNP';
-
-va_l5_mtp = SELECT HL5_EO.HL5_ID
-			, HL5_EOD.EURO_VALUE AS MTP_VALUE
-			, HL5_EOD.VOLUME_VALUE AS MTP_VOLUME
-			FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL5_EXPECTED_OUTCOMES&quot; HL5_EO
-			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL5_EXPECTED_OUTCOMES_DETAIL&quot; HL5_EOD
-				ON HL5_EO.HL5_EXPECTED_OUTCOMES_ID = HL5_EOD.HL5_EXPECTED_OUTCOMES_ID
-			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_LEVEL&quot; EOL
-				ON HL5_EOD.OUTCOMES_ID = EOL.EXPECTED_OUTCOME_LEVEL_ID
-			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_OPTION&quot; EOO
-				ON EOL.EXPECTED_OUTCOME_OPTION_ID = EOO.EXPECTED_OUTCOME_OPTION_ID
-			WHERE HL5_EO.ENABLED = 1
-			AND HL5_EO.DELETED = 0
-			AND HL5_EOD.ENABLED = 1
-			AND HL5_EOD.DELETED = 0
-			AND EOO.EXPORT_KEY = 'MTP';
-
-va_l5_mip = SELECT HL5_EO.HL5_ID
-			, HL5_EOD.EURO_VALUE AS MIP_VALUE
-			, HL5_EOD.VOLUME_VALUE AS MIP_VOLUME
-			FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL5_EXPECTED_OUTCOMES&quot; HL5_EO
-			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL5_EXPECTED_OUTCOMES_DETAIL&quot; HL5_EOD
-				ON HL5_EO.HL5_EXPECTED_OUTCOMES_ID = HL5_EOD.HL5_EXPECTED_OUTCOMES_ID
-			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_LEVEL&quot; EOL
-				ON HL5_EOD.OUTCOMES_ID = EOL.EXPECTED_OUTCOME_LEVEL_ID
-			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_OPTION&quot; EOO
-				ON EOL.EXPECTED_OUTCOME_OPTION_ID = EOO.EXPECTED_OUTCOME_OPTION_ID
-			WHERE HL5_EO.ENABLED = 1
-			AND HL5_EO.DELETED = 0
-			AND HL5_EOD.ENABLED = 1
-			AND HL5_EOD.DELETED = 0
-			AND EOO.EXPORT_KEY = 'MIP';
-
-va_l5_lead_volume = SELECT HL5_EO.HL5_ID
-			, HL5_EOD.EURO_VALUE AS LEAD_VOLUME_VALUE
-			, HL5_EOD.VOLUME_VALUE AS LEAD_VOLUME_VOLUME
-			FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL5_EXPECTED_OUTCOMES&quot; HL5_EO
-			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL5_EXPECTED_OUTCOMES_DETAIL&quot; HL5_EOD
-				ON HL5_EO.HL5_EXPECTED_OUTCOMES_ID = HL5_EOD.HL5_EXPECTED_OUTCOMES_ID
-			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_LEVEL&quot; EOL
-				ON HL5_EOD.OUTCOMES_ID = EOL.EXPECTED_OUTCOME_LEVEL_ID
-			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_OPTION&quot; EOO
-				ON EOL.EXPECTED_OUTCOME_OPTION_ID = EOO.EXPECTED_OUTCOME_OPTION_ID
-			WHERE HL5_EO.ENABLED = 1
-			AND HL5_EO.DELETED = 0
-			AND HL5_EOD.ENABLED = 1
-			AND HL5_EOD.DELETED = 0
-			AND EOO.EXPORT_KEY = 'LEAD_VOLUME';
-			
-va_l5_reputation_initiative = SELECT hl5CategoryOption.HL5_ID, 
-                            category.NAME AS CATEGORY_NAME, 
-                            hl5CategoryOption.AMOUNT AS OPTION_AMOUNT, 
-                            options.NAME AS OPTION_NAME
-							FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL5_CATEGORY_OPTION&quot; hl5CategoryOption
-							INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_ALLOCATION_CATEGORY_OPTION_LEVEL&quot; ACOL
-							ON ACOL.ALLOCATION_CATEGORY_OPTION_LEVEL_ID = hl5CategoryOption.ALLOCATION_CATEGORY_OPTION_LEVEL_ID
-							INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_ALLOCATION_OPTION&quot; options ON options.ALLOCATION_OPTION_ID = ACOL.ALLOCATION_OPTION_ID
-							INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_ALLOCATION_CATEGORY&quot; category ON category.ALLOCATION_CATEGORY_ID = ACOL.ALLOCATION_CATEGORY_ID
-							WHERE hl5CategoryOption.ENABLED = 1 
-							AND hl5CategoryOption.DELETED = 0
-							AND hl5CategoryOption.AMOUNT != 0
-							AND category.NAME = 'Reputation Initiative';
-							
-va_l5_reputation_initiative_audience = SELECT hl5CategoryOption.HL5_ID, 
-                            category.NAME AS CATEGORY_NAME, 
-                            hl5CategoryOption.AMOUNT AS OPTION_AMOUNT, 
-                            options.NAME AS OPTION_NAME
-							FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL5_CATEGORY_OPTION&quot; hl5CategoryOption
-							INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_ALLOCATION_CATEGORY_OPTION_LEVEL&quot; ACOL
-							ON ACOL.ALLOCATION_CATEGORY_OPTION_LEVEL_ID = hl5CategoryOption.ALLOCATION_CATEGORY_OPTION_LEVEL_ID
-							INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_ALLOCATION_OPTION&quot; options ON options.ALLOCATION_OPTION_ID = ACOL.ALLOCATION_OPTION_ID
-							INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_ALLOCATION_CATEGORY&quot; category ON category.ALLOCATION_CATEGORY_ID = ACOL.ALLOCATION_CATEGORY_ID
-							WHERE hl5CategoryOption.ENABLED = 1 
-							AND hl5CategoryOption.DELETED = 0 
-							AND hl5CategoryOption.AMOUNT != 0
-							AND category.NAME = 'Reputation Initiative Audience';							
-
-va_l5_result = SELECT HL5.HL5_ID AS HL_ID
-				, HL5.HIERARCHY_LEVEL_ID
-				, HL5.HIERARCHY_LEVEL_VALUE
-				, HL5.CRM_ID
-				, HL5.CAMP_OBJ_TYPE
-				, HL5.BUDGET
-				, HL5.BUDGET_Q1
-				, HL5.BUDGET_Q2
-				, HL5.BUDGET_Q3
-				, HL5.BUDGET_Q4
-				, HL5.INTERNAL_FUNDING
-				, HL5.PARTNER_CONTRIBUTION
-				, HL5.CURRENCY
-				, COALESCE(MNP.MNP_VALUE, null) AS MNP_VALUE
-				, COALESCE(MNP.MNP_VOLUME, null) AS MNP_VOLUME
-				, COALESCE(MTP.MTP_VALUE, null) AS MTP_VALUE
-				, COALESCE(MTP.MTP_VOLUME, null) AS MTP_VOLUME
-				, COALESCE(MIP.MIP_VALUE, null) AS MIP_VALUE
-				, COALESCE(MIP.MIP_VOLUME, null) AS MIP_VOLUME
-				, COALESCE(LEAD_VOLUME.LEAD_VOLUME_VALUE, null) AS LEAD_VOLUME_VALUE
-				, COALESCE(LEAD_VOLUME.LEAD_VOLUME_VOLUME, null) AS LEAD_VOLUME_VOLUME
-				, HL5.BUDGET_YEAR
-				, HL5.ON_PREM
-				, HL5.CLOUD
-				, HL5.MODIFIED_DATE
-				, HL5.STATUS
-				, HL5.DES
-				, REPUTATION_INITIATIVE.OPTION_NAME AS REPUTATION_INITIATIVE
-				, REPUTATION_INITIATIVE_AUDIENCE.OPTION_NAME AS REPUTATION_INITIATIVE_AUDIENCE
-				FROM :va_l5 HL5
-				LEFT JOIN :va_l5_mnp MNP ON HL5.HL5_ID = MNP.HL5_ID
-				LEFT JOIN :va_l5_mtp MTP ON HL5.HL5_ID = MTP.HL5_ID
-				LEFT JOIN :va_l5_mip MIP ON HL5.HL5_ID = MIP.HL5_ID
-				LEFT JOIN :va_l5_lead_volume LEAD_VOLUME ON HL5.HL5_ID = LEAD_VOLUME.HL5_ID
-				LEFT JOIN :va_l5_reputation_initiative REPUTATION_INITIATIVE ON HL5.HL5_ID = REPUTATION_INITIATIVE.HL5_ID
-				LEFT JOIN :va_l5_reputation_initiative_audience REPUTATION_INITIATIVE_AUDIENCE ON HL5.HL5_ID = REPUTATION_INITIATIVE_AUDIENCE.HL5_ID
-				ORDER BY HL5.CRM_ID;
-
-va_l6 = (SELECT HL6_ID
-			, &quot;MKTG_PLANNING_TOOL&quot;.&quot;mktgplanningtool.db.functions::GET_CRM_ID&quot;(
-				BY.BUDGET_YEAR
-			    , HL1.ACRONYM
-			    , HL2.ORGANIZATION_ACRONYM
-			    , HL3.ACRONYM
-			    , HL4.ACRONYM
-			    , HL5.ACRONYM
-			    , HL6.ACRONYM) AS CRM_ID
-			, 'CPG' AS CAMP_OBJ_TYPE
-			, (SELECT HIERARCHY_LEVEL_ID FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HIERARCHY_LEVEL&quot; HIERARCHY_LEVEL WHERE DESCRIPTION = 'HL6') AS HIERARCHY_LEVEL_ID
-			, (SELECT HIERARCHY_LEVEL_VALUE FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HIERARCHY_LEVEL&quot; HIERARCHY_LEVEL WHERE DESCRIPTION = 'HL6') AS HIERARCHY_LEVEL_VALUE
-			, HL6.BUDGET
-			, (HL6.BUDGET * HL6.BUDGET_SPEND_Q1 / 100) AS BUDGET_Q1
-			, (HL6.BUDGET * HL6.BUDGET_SPEND_Q2 / 100) AS BUDGET_Q2
-			, (HL6.BUDGET * HL6.BUDGET_SPEND_Q3 / 100) AS BUDGET_Q3
-			, (HL6.BUDGET * HL6.BUDGET_SPEND_Q4 / 100) AS BUDGET_Q4
-			, '' AS INTERNAL_FUNDING
-			, '' AS PARTNER_CONTRIBUTION
-			, 'EUR' AS CURRENCY
-			, BY.BUDGET_YEAR
-			, '' AS ON_PREM
-			, '' AS CLOUD
-			, COALESCE(HL6.MODIFIED_DATE_TZ, HL6.CREATED_DATE_TZ) AS MODIFIED_DATE
-			, SD.DETAIL AS STATUS
-			FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL6&quot; HL6
-			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL5&quot; HL5 ON HL5.HL5_ID = HL6.HL5_ID
-			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL4&quot; HL4 ON HL4.HL4_ID = HL5.HL4_ID
-			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL3&quot; HL3 ON HL3.HL3_ID = HL4.HL3_ID
-			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL2&quot; HL2 ON HL2.HL2_ID = HL3.HL2_ID
-			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL1&quot; HL1 ON HL1.HL1_ID = HL2.HL1_ID
-			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_BUDGET_YEAR&quot; BY ON BY.BUDGET_YEAR_ID = HL1.BUDGET_YEAR_ID
-			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL6_STATUS_DETAIL&quot; SD ON SD.HL6_STATUS_DETAIL_ID = HL6.HL6_STATUS_DETAIL_ID
-			WHERE HL6.ENABLED = 1 AND HL6.DELETED = 0)
-			UNION ALL
-			(SELECT HL6.HL6_ID
-            , CONCAT(HL5_LEGACY.PATH,HL6.ACRONYM) AS CRM_ID
-            , 'CPG' AS CAMP_OBJ_TYPE
-            , (SELECT HIERARCHY_LEVEL_ID FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HIERARCHY_LEVEL&quot; HIERARCHY_LEVEL WHERE DESCRIPTION = 'HL6') AS HIERARCHY_LEVEL_ID
-            , (SELECT HIERARCHY_LEVEL_VALUE FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HIERARCHY_LEVEL&quot; HIERARCHY_LEVEL WHERE DESCRIPTION = 'HL6') AS HIERARCHY_LEVEL_VALUE
-            , HL6.BUDGET
-            , (HL6.BUDGET * HL6.BUDGET_SPEND_Q1 / 100) AS BUDGET_Q1
-            , (HL6.BUDGET * HL6.BUDGET_SPEND_Q2 / 100) AS BUDGET_Q2
-            , (HL6.BUDGET * HL6.BUDGET_SPEND_Q3 / 100) AS BUDGET_Q3
-            , (HL6.BUDGET * HL6.BUDGET_SPEND_Q4 / 100) AS BUDGET_Q4
-            , '' AS INTERNAL_FUNDING
-            , '' AS PARTNER_CONTRIBUTION
-            , 'EUR' AS CURRENCY
-            , BY.BUDGET_YEAR
-            , '' AS ON_PREM
-            , '' AS CLOUD
-            , COALESCE(HL6.MODIFIED_DATE_TZ, HL6.CREATED_DATE_TZ) AS MODIFIED_DATE
-            , SD.DETAIL AS STATUS
-            FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL6&quot; HL6
-            INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL6_LEGACY&quot; HL6_LEGACY ON HL6.HL6_ID = HL6_LEGACY.HL6_ID
-            INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL5_LEGACY&quot; HL5_LEGACY ON HL5_LEGACY.HL5_LEGACY_ID = HL6_LEGACY.HL5_LEGACY_ID
-            INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL4&quot; HL4 ON HL4.HL4_ID = HL5_LEGACY.HL4_ID
-            INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL3&quot; HL3 ON HL3.HL3_ID = HL4.HL3_ID
-            INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL2&quot; HL2 ON HL2.HL2_ID = HL3.HL2_ID
-            INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL1&quot; HL1 ON HL1.HL1_ID = HL2.HL1_ID
-            INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_BUDGET_YEAR&quot; BY ON BY.BUDGET_YEAR_ID = HL1.BUDGET_YEAR_ID
-            INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL6_STATUS_DETAIL&quot; SD ON SD.HL6_STATUS_DETAIL_ID = HL6.HL6_STATUS_DETAIL_ID
-            WHERE HL6.ENABLED = 1 AND HL6.DELETED = 0);
-
-va_l6_mnp = SELECT HL6_EO.HL6_ID
-			, HL6_EOD.EURO_VALUE AS MNP_VALUE
-			, HL6_EOD.VOLUME_VALUE AS MNP_VOLUME
-			FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL6_EXPECTED_OUTCOMES&quot; HL6_EO
-			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL6_EXPECTED_OUTCOMES_DETAIL&quot; HL6_EOD
-				ON HL6_EO.HL6_EXPECTED_OUTCOMES_ID = HL6_EOD.HL6_EXPECTED_OUTCOMES_ID
-			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_LEVEL&quot; EOL
-				ON HL6_EOD.OUTCOMES_ID = EOL.EXPECTED_OUTCOME_LEVEL_ID
-			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_OPTION&quot; EOO
-				ON EOL.EXPECTED_OUTCOME_OPTION_ID = EOO.EXPECTED_OUTCOME_OPTION_ID
-			WHERE HL6_EO.ENABLED = 1
-			AND HL6_EO.DELETED = 0
-			AND HL6_EOD.ENABLED = 1
-			AND HL6_EOD.DELETED = 0
-			AND EOO.EXPORT_KEY = 'MNP';
-
-va_l6_mtp = SELECT HL6_EO.HL6_ID
-			, HL6_EOD.EURO_VALUE AS MTP_VALUE
-			, HL6_EOD.VOLUME_VALUE AS MTP_VOLUME
-			FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL6_EXPECTED_OUTCOMES&quot; HL6_EO
-			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL6_EXPECTED_OUTCOMES_DETAIL&quot; HL6_EOD
-				ON HL6_EO.HL6_EXPECTED_OUTCOMES_ID = HL6_EOD.HL6_EXPECTED_OUTCOMES_ID
-			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_LEVEL&quot; EOL
-				ON HL6_EOD.OUTCOMES_ID = EOL.EXPECTED_OUTCOME_LEVEL_ID
-			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_OPTION&quot; EOO
-				ON EOL.EXPECTED_OUTCOME_OPTION_ID = EOO.EXPECTED_OUTCOME_OPTION_ID
-			WHERE HL6_EO.ENABLED = 1
-			AND HL6_EO.DELETED = 0
-			AND HL6_EOD.ENABLED = 1
-			AND HL6_EOD.DELETED = 0
-			AND EOO.EXPORT_KEY = 'MTP';
-
-va_l6_mip = SELECT HL6_EO.HL6_ID
-			, HL6_EOD.EURO_VALUE AS MIP_VALUE
-			, HL6_EOD.VOLUME_VALUE AS MIP_VOLUME
-			FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL6_EXPECTED_OUTCOMES&quot; HL6_EO
-			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL6_EXPECTED_OUTCOMES_DETAIL&quot; HL6_EOD
-				ON HL6_EO.HL6_EXPECTED_OUTCOMES_ID = HL6_EOD.HL6_EXPECTED_OUTCOMES_ID
-			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_LEVEL&quot; EOL
-				ON HL6_EOD.OUTCOMES_ID = EOL.EXPECTED_OUTCOME_LEVEL_ID
-			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_OPTION&quot; EOO
-				ON EOL.EXPECTED_OUTCOME_OPTION_ID = EOO.EXPECTED_OUTCOME_OPTION_ID
-			WHERE HL6_EO.ENABLED = 1
-			AND HL6_EO.DELETED = 0
-			AND HL6_EOD.ENABLED = 1
-			AND HL6_EOD.DELETED = 0
-			AND EOO.EXPORT_KEY = 'MIP';
-
-va_l6_lead_volume = SELECT HL6_EO.HL6_ID
-			, HL6_EOD.EURO_VALUE AS LEAD_VOLUME_VALUE
-			, HL6_EOD.VOLUME_VALUE AS LEAD_VOLUME_VOLUME
-			FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL6_EXPECTED_OUTCOMES&quot; HL6_EO
-			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL6_EXPECTED_OUTCOMES_DETAIL&quot; HL6_EOD
-				ON HL6_EO.HL6_EXPECTED_OUTCOMES_ID = HL6_EOD.HL6_EXPECTED_OUTCOMES_ID
-			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_LEVEL&quot; EOL
-				ON HL6_EOD.OUTCOMES_ID = EOL.EXPECTED_OUTCOME_LEVEL_ID
-			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_OPTION&quot; EOO
-				ON EOL.EXPECTED_OUTCOME_OPTION_ID = EOO.EXPECTED_OUTCOME_OPTION_ID
-			WHERE HL6_EO.ENABLED = 1
-			AND HL6_EO.DELETED = 0
-			AND HL6_EOD.ENABLED = 1
-			AND HL6_EOD.DELETED = 0
-			AND EOO.EXPORT_KEY = 'LEAD_VOLUME';
-
-va_l6_reputation_initiative = SELECT hl6CategoryOption.HL6_ID, 
-                            category.NAME AS CATEGORY_NAME, 
-                            hl6CategoryOption.AMOUNT AS OPTION_AMOUNT, 
-                            options.NAME AS OPTION_NAME
-							FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL6_CATEGORY_OPTION&quot; hl6CategoryOption
-							INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_ALLOCATION_CATEGORY_OPTION_LEVEL&quot; ACOL
-							ON ACOL.ALLOCATION_CATEGORY_OPTION_LEVEL_ID = hl6CategoryOption.ALLOCATION_CATEGORY_OPTION_LEVEL_ID
-							INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_ALLOCATION_OPTION&quot; options ON options.ALLOCATION_OPTION_ID = ACOL.ALLOCATION_OPTION_ID
-							INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_ALLOCATION_CATEGORY&quot; category ON category.ALLOCATION_CATEGORY_ID = ACOL.ALLOCATION_CATEGORY_ID
-							WHERE hl6CategoryOption.ENABLED = 1 
-							AND hl6CategoryOption.DELETED = 0
-							AND hl6CategoryOption.AMOUNT != 0
-							AND category.NAME = 'Reputation Initiative';
-							
-va_l6_reputation_initiative_audience = SELECT hl6CategoryOption.HL6_ID, 
-                            category.NAME AS CATEGORY_NAME, 
-                            hl6CategoryOption.AMOUNT AS OPTION_AMOUNT, 
-                            options.NAME AS OPTION_NAME
-							FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL6_CATEGORY_OPTION&quot; hl6CategoryOption
-							INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_ALLOCATION_CATEGORY_OPTION_LEVEL&quot; ACOL
-							ON ACOL.ALLOCATION_CATEGORY_OPTION_LEVEL_ID = hl6CategoryOption.ALLOCATION_CATEGORY_OPTION_LEVEL_ID
-							INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_ALLOCATION_OPTION&quot; options ON options.ALLOCATION_OPTION_ID = ACOL.ALLOCATION_OPTION_ID
-							INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_ALLOCATION_CATEGORY&quot; category ON category.ALLOCATION_CATEGORY_ID = ACOL.ALLOCATION_CATEGORY_ID
-							WHERE hl6CategoryOption.ENABLED = 1 
-							AND hl6CategoryOption.DELETED = 0 
-							AND hl6CategoryOption.AMOUNT != 0
-							AND category.NAME = 'Reputation Initiative Audience';
-
-va_l6_result = SELECT HL6.HL6_ID AS HL_ID
-				, HL6.HIERARCHY_LEVEL_ID
-				, HL6.HIERARCHY_LEVEL_VALUE
-				, HL6.CRM_ID
-				, HL6.CAMP_OBJ_TYPE
-				, HL6.BUDGET
-				, HL6.BUDGET_Q1
-				, HL6.BUDGET_Q2
-				, HL6.BUDGET_Q3
-				, HL6.BUDGET_Q4
-				, HL6.INTERNAL_FUNDING
-				, HL6.PARTNER_CONTRIBUTION
-				, HL6.CURRENCY
-				, COALESCE(MNP.MNP_VALUE, null) AS MNP_VALUE
-				, COALESCE(MNP.MNP_VOLUME, null) AS MNP_VOLUME
-				, COALESCE(MTP.MTP_VALUE, null) AS MTP_VALUE
-				, COALESCE(MTP.MTP_VOLUME, null) AS MTP_VOLUME
-				, COALESCE(MIP.MIP_VALUE, null) AS MIP_VALUE
-				, COALESCE(MIP.MIP_VOLUME, null) AS MIP_VOLUME
-				, COALESCE(LEAD_VOLUME.LEAD_VOLUME_VALUE, null) AS LEAD_VOLUME_VALUE
-				, COALESCE(LEAD_VOLUME.LEAD_VOLUME_VOLUME, null) AS LEAD_VOLUME_VOLUME
-				, HL6.BUDGET_YEAR
-				, HL6.ON_PREM
-				, HL6.CLOUD
-				, HL6.MODIFIED_DATE
-				, HL6.STATUS
-				, '' AS DES
-				, REPUTATION_INITIATIVE.OPTION_NAME AS REPUTATION_INITIATIVE
-				, REPUTATION_INITIATIVE_AUDIENCE.OPTION_NAME AS REPUTATION_INITIATIVE_AUDIENCE
-				FROM :va_l6 HL6
-				LEFT JOIN :va_l6_mnp MNP ON HL6.HL6_ID = MNP.HL6_ID
-				LEFT JOIN :va_l6_mtp MTP ON HL6.HL6_ID = MTP.HL6_ID
-				LEFT JOIN :va_l6_mip MIP ON HL6.HL6_ID = MIP.HL6_ID
-				LEFT JOIN :va_l6_lead_volume LEAD_VOLUME ON HL6.HL6_ID = LEAD_VOLUME.HL6_ID
-				LEFT JOIN :va_l6_reputation_initiative REPUTATION_INITIATIVE ON HL6.HL6_ID = REPUTATION_INITIATIVE.HL6_ID
-				LEFT JOIN :va_l6_reputation_initiative_audience REPUTATION_INITIATIVE_AUDIENCE ON HL6.HL6_ID = REPUTATION_INITIATIVE_AUDIENCE.HL6_ID
-				ORDER BY HL6.CRM_ID;
-
-var_out = SELECT HIERARCHY_LEVEL_ID
-            ,HIERARCHY_LEVEL_VALUE
-            , CRM_ID
-            , CAMP_OBJ_TYPE
-            , BUDGET
-            , BUDGET_Q1
-            , BUDGET_Q2
-            , BUDGET_Q3
-            , BUDGET_Q4
-            , INTERNAL_FUNDING
-            , PARTNER_CONTRIBUTION
-            , CURRENCY
-            , MNP_VALUE
-            , MNP_VOLUME
-            , MTP_VALUE
-            , MTP_VOLUME
-            , MIP_VALUE
-            , MIP_VOLUME
-            , LEAD_VOLUME_VALUE
-            , LEAD_VOLUME_VOLUME
-            , BUDGET_YEAR
-            , ON_PREM
-            , CLOUD
-            , MODIFIED_DATE
-            , STATUS
-            , DES
-            , REPUTATION_INITIATIVE
-			, REPUTATION_INITIATIVE_AUDIENCE
-FROM ((SELECT HL_ID
-				, HIERARCHY_LEVEL_ID
-				, HIERARCHY_LEVEL_VALUE
-				, CRM_ID
-				, CAMP_OBJ_TYPE
-				, BUDGET
-				, BUDGET_Q1
-				, BUDGET_Q2
-				, BUDGET_Q3
-				, BUDGET_Q4
-				, INTERNAL_FUNDING
-				, PARTNER_CONTRIBUTION
-				, CURRENCY
-				, MNP_VALUE
-				, MNP_VOLUME
-				, MTP_VALUE
-				, MTP_VOLUME
-				, MIP_VALUE
-				, MIP_VOLUME
-				, LEAD_VOLUME_VALUE
-				, LEAD_VOLUME_VOLUME
-				, BUDGET_YEAR
-				, ON_PREM
-				, CLOUD
-				, MODIFIED_DATE
-				, STATUS
-				, DES
-				, REPUTATION_INITIATIVE
-			    , REPUTATION_INITIATIVE_AUDIENCE
-from :va_l1_result HL1)
-UNION
-(SELECT HL_ID
-				, HIERARCHY_LEVEL_ID
-					, HIERARCHY_LEVEL_VALUE
-				, CRM_ID
-				, CAMP_OBJ_TYPE
-				, BUDGET
-				, BUDGET_Q1
-				, BUDGET_Q2
-				, BUDGET_Q3
-				, BUDGET_Q4
-				, INTERNAL_FUNDING
-				, PARTNER_CONTRIBUTION
-				, CURRENCY
-				, MNP_VALUE
-				, MNP_VOLUME
-				, MTP_VALUE
-				, MTP_VOLUME
-				, MIP_VALUE
-				, MIP_VOLUME
-				, LEAD_VOLUME_VALUE
-				, LEAD_VOLUME_VOLUME
-				, BUDGET_YEAR
-				, ON_PREM
-				, CLOUD
-				, MODIFIED_DATE
-				, STATUS
-				, DES
-				, REPUTATION_INITIATIVE
-			    , REPUTATION_INITIATIVE_AUDIENCE
-from :va_l2_result HL2)
-UNION
-(SELECT HL_ID
-				, HIERARCHY_LEVEL_ID
-					, HIERARCHY_LEVEL_VALUE
-				, CRM_ID
-				, CAMP_OBJ_TYPE
-				, BUDGET
-				, BUDGET_Q1
-				, BUDGET_Q2
-				, BUDGET_Q3
-				, BUDGET_Q4
-				, INTERNAL_FUNDING
-				, PARTNER_CONTRIBUTION
-				, CURRENCY
-				, MNP_VALUE
-				, MNP_VOLUME
-				, MTP_VALUE
-				, MTP_VOLUME
-				, MIP_VALUE
-				, MIP_VOLUME
-				, LEAD_VOLUME_VALUE
-				, LEAD_VOLUME_VOLUME
-				, BUDGET_YEAR
-				, ON_PREM
-				, CLOUD
-				, MODIFIED_DATE
-				, STATUS
-				, DES
-				, REPUTATION_INITIATIVE
-			    , REPUTATION_INITIATIVE_AUDIENCE
-from :va_l3_result HL3)
-UNION
-(SELECT HL_ID
-				, HIERARCHY_LEVEL_ID
-				, HIERARCHY_LEVEL_VALUE
-				, CRM_ID
-				, CAMP_OBJ_TYPE
-				, BUDGET
-				, BUDGET_Q1
-				, BUDGET_Q2
-				, BUDGET_Q3
-				, BUDGET_Q4
-				, INTERNAL_FUNDING
-				, PARTNER_CONTRIBUTION
-				, CURRENCY
-				, MNP_VALUE
-				, MNP_VOLUME
-				, MTP_VALUE
-				, MTP_VOLUME
-				, MIP_VALUE
-				, MIP_VOLUME
-				, LEAD_VOLUME_VALUE
-				, LEAD_VOLUME_VOLUME
-				, BUDGET_YEAR
-				, ON_PREM
-				, CLOUD
-				, MODIFIED_DATE
-				, STATUS
-				, DES
-				, REPUTATION_INITIATIVE
-			    , REPUTATION_INITIATIVE_AUDIENCE
-from :va_l4_result HL4)
-UNION
-(SELECT HL_ID
-				, HIERARCHY_LEVEL_ID
-				, HIERARCHY_LEVEL_VALUE
-				, CRM_ID
-				, CAMP_OBJ_TYPE
-				, BUDGET
-				, BUDGET_Q1
-				, BUDGET_Q2
-				, BUDGET_Q3
-				, BUDGET_Q4
-				, INTERNAL_FUNDING
-				, PARTNER_CONTRIBUTION
-				, CURRENCY
-				, MNP_VALUE
-				, MNP_VOLUME
-				, MTP_VALUE
-				, MTP_VOLUME
-				, MIP_VALUE
-				, MIP_VOLUME
-				, LEAD_VOLUME_VALUE
-				, LEAD_VOLUME_VOLUME
-				, BUDGET_YEAR
-				, ON_PREM
-				, CLOUD
-				, MODIFIED_DATE
-				, STATUS
-				, DES
-				, REPUTATION_INITIATIVE
-			    , REPUTATION_INITIATIVE_AUDIENCE
-from :va_l5_result HL5) 
-UNION
-(SELECT HL_ID
-				, HIERARCHY_LEVEL_ID
-				, HIERARCHY_LEVEL_VALUE
-				, CRM_ID
-				, CAMP_OBJ_TYPE
-				, BUDGET
-				, BUDGET_Q1
-				, BUDGET_Q2
-				, BUDGET_Q3
-				, BUDGET_Q4
-				, INTERNAL_FUNDING
-				, PARTNER_CONTRIBUTION
-				, CURRENCY
-				, MNP_VALUE
-				, MNP_VOLUME
-				, MTP_VALUE
-				, MTP_VOLUME
-				, MIP_VALUE
-				, MIP_VOLUME
-				, LEAD_VOLUME_VALUE
-				, LEAD_VOLUME_VOLUME
-				, BUDGET_YEAR
-				, ON_PREM
-				, CLOUD
-				, MODIFIED_DATE
-				, STATUS
-				, DES
-				, REPUTATION_INITIATIVE
-			    , REPUTATION_INITIATIVE_AUDIENCE
-from :va_l6_result HL6));
-
+      <definition>&#xD;
+ /********* Begin Procedure Script ************/&#xD;
+ BEGIN&#xD;
+&#xD;
+ va_l1 = SELECT HL1_ID&#xD;
+			, &quot;MKTG_PLANNING_TOOL&quot;.&quot;mktgplanningtool.db.functions::GET_CRM_ID&quot;(&#xD;
+				BY.BUDGET_YEAR&#xD;
+			    , HL1.ACRONYM&#xD;
+			    , ''&#xD;
+			    , ''&#xD;
+			    , ''&#xD;
+			    , ''&#xD;
+			    , '') AS CRM_ID&#xD;
+			, 'MPL' AS CAMP_OBJ_TYPE&#xD;
+			, (SELECT HIERARCHY_LEVEL_ID FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HIERARCHY_LEVEL&quot; HIERARCHY_LEVEL WHERE DESCRIPTION = 'HL1') AS HIERARCHY_LEVEL_ID&#xD;
+			, (SELECT HIERARCHY_LEVEL_VALUE FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HIERARCHY_LEVEL&quot; HIERARCHY_LEVEL WHERE DESCRIPTION = 'HL1') AS HIERARCHY_LEVEL_VALUE&#xD;
+			, HL1.BUDGET&#xD;
+			, 0 AS BUDGET_Q1&#xD;
+			, 0 AS BUDGET_Q2&#xD;
+			, 0 AS BUDGET_Q3&#xD;
+			, 0 AS BUDGET_Q4&#xD;
+			, '' AS INTERNAL_FUNDING&#xD;
+			, '' AS PARTNER_CONTRIBUTION&#xD;
+			, 'EUR' AS CURRENCY&#xD;
+			, BY.BUDGET_YEAR&#xD;
+			, '' AS ON_PREM&#xD;
+			, '' AS CLOUD&#xD;
+			, COALESCE(HL1.MODIFIED_DATE_TZ, HL1.CREATED_DATE_TZ) AS MODIFIED_DATE&#xD;
+			FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL1&quot; HL1&#xD;
+			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_BUDGET_YEAR&quot; BY ON BY.BUDGET_YEAR_ID = HL1.BUDGET_YEAR_ID&#xD;
+			WHERE HL1.ENABLED = 1 AND HL1.DELETED = 0;&#xD;
+&#xD;
+va_l1_mnp = SELECT HL1_EO.HL1_ID&#xD;
+			, HL1_EOD.EURO_VALUE AS MNP_VALUE&#xD;
+			, HL1_EOD.VOLUME_VALUE AS MNP_VOLUME&#xD;
+			FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL1_EXPECTED_OUTCOMES&quot; HL1_EO&#xD;
+			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL1_EXPECTED_OUTCOMES_DETAIL&quot; HL1_EOD&#xD;
+				ON HL1_EO.HL1_EXPECTED_OUTCOMES_ID = HL1_EOD.HL1_EXPECTED_OUTCOMES_ID&#xD;
+			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_LEVEL&quot; EOL&#xD;
+				ON HL1_EOD.EXPECTED_OUTCOME_LEVEL_ID = EOL.EXPECTED_OUTCOME_LEVEL_ID&#xD;
+			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_OPTION&quot; EOO&#xD;
+				ON EOL.EXPECTED_OUTCOME_OPTION_ID = EOO.EXPECTED_OUTCOME_OPTION_ID&#xD;
+			WHERE HL1_EO.ENABLED = 1&#xD;
+			AND HL1_EO.DELETED = 0&#xD;
+			AND HL1_EOD.ENABLED = 1&#xD;
+			AND HL1_EOD.DELETED = 0&#xD;
+			AND EOO.EXPORT_KEY = 'MNP';&#xD;
+&#xD;
+va_l1_mtp = SELECT HL1_EO.HL1_ID&#xD;
+			, HL1_EOD.EURO_VALUE AS MTP_VALUE&#xD;
+			, HL1_EOD.VOLUME_VALUE AS MTP_VOLUME&#xD;
+			FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL1_EXPECTED_OUTCOMES&quot; HL1_EO&#xD;
+			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL1_EXPECTED_OUTCOMES_DETAIL&quot; HL1_EOD&#xD;
+				ON HL1_EO.HL1_EXPECTED_OUTCOMES_ID = HL1_EOD.HL1_EXPECTED_OUTCOMES_ID&#xD;
+			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_LEVEL&quot; EOL&#xD;
+				ON HL1_EOD.EXPECTED_OUTCOME_LEVEL_ID = EOL.EXPECTED_OUTCOME_LEVEL_ID&#xD;
+			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_OPTION&quot; EOO&#xD;
+				ON EOL.EXPECTED_OUTCOME_OPTION_ID = EOO.EXPECTED_OUTCOME_OPTION_ID&#xD;
+			WHERE HL1_EO.ENABLED = 1&#xD;
+			AND HL1_EO.DELETED = 0&#xD;
+			AND HL1_EOD.ENABLED = 1&#xD;
+			AND HL1_EOD.DELETED = 0&#xD;
+			AND EOO.EXPORT_KEY = 'MTP';&#xD;
+&#xD;
+va_l1_mip = SELECT HL1_EO.HL1_ID&#xD;
+			, HL1_EOD.EURO_VALUE AS MIP_VALUE&#xD;
+			, HL1_EOD.VOLUME_VALUE AS MIP_VOLUME&#xD;
+			FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL1_EXPECTED_OUTCOMES&quot; HL1_EO&#xD;
+			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL1_EXPECTED_OUTCOMES_DETAIL&quot; HL1_EOD&#xD;
+				ON HL1_EO.HL1_EXPECTED_OUTCOMES_ID = HL1_EOD.HL1_EXPECTED_OUTCOMES_ID&#xD;
+			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_LEVEL&quot; EOL&#xD;
+				ON HL1_EOD.EXPECTED_OUTCOME_LEVEL_ID = EOL.EXPECTED_OUTCOME_LEVEL_ID&#xD;
+			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_OPTION&quot; EOO&#xD;
+				ON EOL.EXPECTED_OUTCOME_OPTION_ID = EOO.EXPECTED_OUTCOME_OPTION_ID&#xD;
+			WHERE HL1_EO.ENABLED = 1&#xD;
+			AND HL1_EO.DELETED = 0&#xD;
+			AND HL1_EOD.ENABLED = 1&#xD;
+			AND HL1_EOD.DELETED = 0&#xD;
+			AND EOO.EXPORT_KEY = 'MIP';&#xD;
+&#xD;
+va_l1_lead_volume = SELECT HL1_EO.HL1_ID&#xD;
+			, HL1_EOD.EURO_VALUE AS LEAD_VOLUME_VALUE&#xD;
+			, HL1_EOD.VOLUME_VALUE AS LEAD_VOLUME_VOLUME&#xD;
+			FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL1_EXPECTED_OUTCOMES&quot; HL1_EO&#xD;
+			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL1_EXPECTED_OUTCOMES_DETAIL&quot; HL1_EOD&#xD;
+				ON HL1_EO.HL1_EXPECTED_OUTCOMES_ID = HL1_EOD.HL1_EXPECTED_OUTCOMES_ID&#xD;
+			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_LEVEL&quot; EOL&#xD;
+				ON HL1_EOD.EXPECTED_OUTCOME_LEVEL_ID = EOL.EXPECTED_OUTCOME_LEVEL_ID&#xD;
+			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_OPTION&quot; EOO&#xD;
+				ON EOL.EXPECTED_OUTCOME_OPTION_ID = EOO.EXPECTED_OUTCOME_OPTION_ID&#xD;
+			WHERE HL1_EO.ENABLED = 1&#xD;
+			AND HL1_EO.DELETED = 0&#xD;
+			AND HL1_EOD.ENABLED = 1&#xD;
+			AND HL1_EOD.DELETED = 0&#xD;
+			AND EOO.EXPORT_KEY = 'LEAD_VOLUME';&#xD;
+&#xD;
+va_l1_result = SELECT   HL1.HL1_ID AS HL_ID,&#xD;
+                        0 AS IS_LEGACY,&#xD;
+                        HL1.HIERARCHY_LEVEL_ID,&#xD;
+                        HL1.HIERARCHY_LEVEL_VALUE,&#xD;
+                        HL1.CRM_ID,&#xD;
+                        HL1.CAMP_OBJ_TYPE,&#xD;
+                        HL1.BUDGET,&#xD;
+                        HL1.BUDGET_Q1,&#xD;
+                        HL1.BUDGET_Q2,&#xD;
+                        HL1.BUDGET_Q3,&#xD;
+                        HL1.BUDGET_Q4,&#xD;
+                        HL1.INTERNAL_FUNDING,&#xD;
+                        HL1.PARTNER_CONTRIBUTION,&#xD;
+                        HL1.CURRENCY,&#xD;
+                        COALESCE(MNP.MNP_VALUE, null) AS MNP_VALUE,&#xD;
+                        COALESCE(MNP.MNP_VOLUME, null) AS MNP_VOLUME,&#xD;
+                        COALESCE(MTP.MTP_VALUE, null) AS MTP_VALUE,&#xD;
+                        COALESCE(MTP.MTP_VOLUME, null) AS MTP_VOLUME,&#xD;
+                        COALESCE(MIP.MIP_VALUE, null) AS MIP_VALUE,&#xD;
+                        COALESCE(MIP.MIP_VOLUME, null) AS MIP_VOLUME,&#xD;
+                        COALESCE(LEAD_VOLUME.LEAD_VOLUME_VALUE, null) AS LEAD_VOLUME_VALUE,&#xD;
+                        COALESCE(LEAD_VOLUME.LEAD_VOLUME_VOLUME, null) AS LEAD_VOLUME_VOLUME,&#xD;
+                        HL1.BUDGET_YEAR,&#xD;
+                        HL1.ON_PREM,&#xD;
+                        HL1.CLOUD,&#xD;
+                        HL1.MODIFIED_DATE,&#xD;
+                        '' AS STATUS,&#xD;
+                        '' AS DES,&#xD;
+                        '' AS REPUTATION_INITIATIVE,&#xD;
+                        '' AS REPUTATION_INITIATIVE_AUDIENCE&#xD;
+				FROM :va_l1 HL1&#xD;
+				LEFT JOIN :va_l1_mnp MNP ON HL1.HL1_ID = MNP.HL1_ID&#xD;
+				LEFT JOIN :va_l1_mtp MTP ON HL1.HL1_ID = MTP.HL1_ID&#xD;
+				LEFT JOIN :va_l1_mip MIP ON HL1.HL1_ID = MIP.HL1_ID&#xD;
+				LEFT JOIN :va_l1_lead_volume LEAD_VOLUME ON HL1.HL1_ID = LEAD_VOLUME.HL1_ID&#xD;
+				ORDER BY HL1.CRM_ID;&#xD;
+&#xD;
+va_l2 = SELECT HL2_ID&#xD;
+			, &quot;MKTG_PLANNING_TOOL&quot;.&quot;mktgplanningtool.db.functions::GET_CRM_ID&quot;(&#xD;
+				BY.BUDGET_YEAR&#xD;
+			    , HL1.ACRONYM&#xD;
+			    , HL2.ORGANIZATION_ACRONYM&#xD;
+			    , ''&#xD;
+			    , ''&#xD;
+			    , ''&#xD;
+			    , '') AS CRM_ID&#xD;
+			, 'MPL' AS CAMP_OBJ_TYPE&#xD;
+			, (SELECT HIERARCHY_LEVEL_ID FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HIERARCHY_LEVEL&quot; HIERARCHY_LEVEL WHERE DESCRIPTION = 'HL2') AS HIERARCHY_LEVEL_ID&#xD;
+			, (SELECT HIERARCHY_LEVEL_VALUE FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HIERARCHY_LEVEL&quot; HIERARCHY_LEVEL WHERE DESCRIPTION = 'HL2') AS HIERARCHY_LEVEL_VALUE&#xD;
+			, HL2.HL2_BUDGET_TOTAL AS BUDGET&#xD;
+			, 0 AS BUDGET_Q1&#xD;
+			, 0 AS BUDGET_Q2&#xD;
+			, 0 AS BUDGET_Q3&#xD;
+			, 0 AS BUDGET_Q4&#xD;
+			, '' AS INTERNAL_FUNDING&#xD;
+			, '' AS PARTNER_CONTRIBUTION&#xD;
+			, 'EUR' AS CURRENCY&#xD;
+			, BY.BUDGET_YEAR&#xD;
+			, '' AS ON_PREM&#xD;
+			, '' AS CLOUD&#xD;
+			, COALESCE(HL2.MODIFIED_DATE_TZ, HL2.CREATED_DATE_TZ) AS MODIFIED_DATE&#xD;
+			FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL2&quot; HL2&#xD;
+			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL1&quot; HL1 ON HL1.HL1_ID = HL2.HL1_ID&#xD;
+			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_BUDGET_YEAR&quot; BY ON BY.BUDGET_YEAR_ID = HL1.BUDGET_YEAR_ID&#xD;
+			WHERE HL2.ENABLED = 1 AND HL2.DELETED = 0;&#xD;
+&#xD;
+va_l2_mnp = SELECT HL2_EO.HL2_ID&#xD;
+			, HL2_EOD.EURO_VALUE AS MNP_VALUE&#xD;
+			, HL2_EOD.VOLUME_VALUE AS MNP_VOLUME&#xD;
+			FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL2_EXPECTED_OUTCOMES&quot; HL2_EO&#xD;
+			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL2_EXPECTED_OUTCOMES_DETAIL&quot; HL2_EOD&#xD;
+				ON HL2_EO.HL2_EXPECTED_OUTCOMES_ID = HL2_EOD.HL2_EXPECTED_OUTCOMES_ID&#xD;
+			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_LEVEL&quot; EOL&#xD;
+				ON HL2_EOD.EXPECTED_OUTCOME_LEVEL_ID = EOL.EXPECTED_OUTCOME_LEVEL_ID&#xD;
+			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_OPTION&quot; EOO&#xD;
+				ON EOL.EXPECTED_OUTCOME_OPTION_ID = EOO.EXPECTED_OUTCOME_OPTION_ID&#xD;
+			WHERE HL2_EO.ENABLED = 2&#xD;
+			AND HL2_EO.DELETED = 0&#xD;
+			AND HL2_EOD.ENABLED = 2&#xD;
+			AND HL2_EOD.DELETED = 0&#xD;
+			AND EOO.EXPORT_KEY = 'MNP';&#xD;
+&#xD;
+va_l2_mtp = SELECT HL2_EO.HL2_ID&#xD;
+			, HL2_EOD.EURO_VALUE AS MTP_VALUE&#xD;
+			, HL2_EOD.VOLUME_VALUE AS MTP_VOLUME&#xD;
+			FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL2_EXPECTED_OUTCOMES&quot; HL2_EO&#xD;
+			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL2_EXPECTED_OUTCOMES_DETAIL&quot; HL2_EOD&#xD;
+				ON HL2_EO.HL2_EXPECTED_OUTCOMES_ID = HL2_EOD.HL2_EXPECTED_OUTCOMES_ID&#xD;
+			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_LEVEL&quot; EOL&#xD;
+				ON HL2_EOD.EXPECTED_OUTCOME_LEVEL_ID = EOL.EXPECTED_OUTCOME_LEVEL_ID&#xD;
+			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_OPTION&quot; EOO&#xD;
+				ON EOL.EXPECTED_OUTCOME_OPTION_ID = EOO.EXPECTED_OUTCOME_OPTION_ID&#xD;
+			WHERE HL2_EO.ENABLED = 2&#xD;
+			AND HL2_EO.DELETED = 0&#xD;
+			AND HL2_EOD.ENABLED = 2&#xD;
+			AND HL2_EOD.DELETED = 0&#xD;
+			AND EOO.EXPORT_KEY = 'MTP';&#xD;
+&#xD;
+va_l2_mip = SELECT HL2_EO.HL2_ID&#xD;
+			, HL2_EOD.EURO_VALUE AS MIP_VALUE&#xD;
+			, HL2_EOD.VOLUME_VALUE AS MIP_VOLUME&#xD;
+			FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL2_EXPECTED_OUTCOMES&quot; HL2_EO&#xD;
+			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL2_EXPECTED_OUTCOMES_DETAIL&quot; HL2_EOD&#xD;
+				ON HL2_EO.HL2_EXPECTED_OUTCOMES_ID = HL2_EOD.HL2_EXPECTED_OUTCOMES_ID&#xD;
+			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_LEVEL&quot; EOL&#xD;
+				ON HL2_EOD.EXPECTED_OUTCOME_LEVEL_ID = EOL.EXPECTED_OUTCOME_LEVEL_ID&#xD;
+			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_OPTION&quot; EOO&#xD;
+				ON EOL.EXPECTED_OUTCOME_OPTION_ID = EOO.EXPECTED_OUTCOME_OPTION_ID&#xD;
+			WHERE HL2_EO.ENABLED = 2&#xD;
+			AND HL2_EO.DELETED = 0&#xD;
+			AND HL2_EOD.ENABLED = 2&#xD;
+			AND HL2_EOD.DELETED = 0&#xD;
+			AND EOO.EXPORT_KEY = 'MIP';&#xD;
+&#xD;
+va_l2_lead_volume = SELECT HL2_EO.HL2_ID&#xD;
+			, HL2_EOD.EURO_VALUE AS LEAD_VOLUME_VALUE&#xD;
+			, HL2_EOD.VOLUME_VALUE AS LEAD_VOLUME_VOLUME&#xD;
+			FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL2_EXPECTED_OUTCOMES&quot; HL2_EO&#xD;
+			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL2_EXPECTED_OUTCOMES_DETAIL&quot; HL2_EOD&#xD;
+				ON HL2_EO.HL2_EXPECTED_OUTCOMES_ID = HL2_EOD.HL2_EXPECTED_OUTCOMES_ID&#xD;
+			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_LEVEL&quot; EOL&#xD;
+				ON HL2_EOD.EXPECTED_OUTCOME_LEVEL_ID = EOL.EXPECTED_OUTCOME_LEVEL_ID&#xD;
+			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_OPTION&quot; EOO&#xD;
+				ON EOL.EXPECTED_OUTCOME_OPTION_ID = EOO.EXPECTED_OUTCOME_OPTION_ID&#xD;
+			WHERE HL2_EO.ENABLED = 2&#xD;
+			AND HL2_EO.DELETED = 0&#xD;
+			AND HL2_EOD.ENABLED = 2&#xD;
+			AND HL2_EOD.DELETED = 0&#xD;
+			AND EOO.EXPORT_KEY = 'LEAD_VOLUME';&#xD;
+&#xD;
+va_l2_result = SELECT   HL2.HL2_ID AS HL_ID,&#xD;
+                        0 AS IS_LEGACY,&#xD;
+                        HL2.HIERARCHY_LEVEL_ID,&#xD;
+                        HL2.HIERARCHY_LEVEL_VALUE,&#xD;
+                        HL2.CRM_ID,&#xD;
+                        HL2.CAMP_OBJ_TYPE,&#xD;
+                        HL2.BUDGET,&#xD;
+                        HL2.BUDGET_Q1,&#xD;
+                        HL2.BUDGET_Q2,&#xD;
+                        HL2.BUDGET_Q3,&#xD;
+                        HL2.BUDGET_Q4,&#xD;
+                        HL2.INTERNAL_FUNDING,&#xD;
+                        HL2.PARTNER_CONTRIBUTION,&#xD;
+                        HL2.CURRENCY,&#xD;
+                        COALESCE(MNP.MNP_VALUE, null) AS MNP_VALUE,&#xD;
+                        COALESCE(MNP.MNP_VOLUME, null) AS MNP_VOLUME,&#xD;
+                        COALESCE(MTP.MTP_VALUE, null) AS MTP_VALUE,&#xD;
+                        COALESCE(MTP.MTP_VOLUME, null) AS MTP_VOLUME,&#xD;
+                        COALESCE(MIP.MIP_VALUE, null) AS MIP_VALUE,&#xD;
+                        COALESCE(MIP.MIP_VOLUME, null) AS MIP_VOLUME,&#xD;
+                        COALESCE(LEAD_VOLUME.LEAD_VOLUME_VALUE, null) AS LEAD_VOLUME_VALUE,&#xD;
+                        COALESCE(LEAD_VOLUME.LEAD_VOLUME_VOLUME, null) AS LEAD_VOLUME_VOLUME,&#xD;
+                        HL2.BUDGET_YEAR,&#xD;
+                        HL2.ON_PREM,&#xD;
+                        HL2.CLOUD,&#xD;
+                        HL2.MODIFIED_DATE,&#xD;
+                        '' AS STATUS,&#xD;
+                        '' AS DES,&#xD;
+                        '' AS REPUTATION_INITIATIVE,&#xD;
+                        '' AS REPUTATION_INITIATIVE_AUDIENCE&#xD;
+				FROM :va_l2 HL2&#xD;
+				LEFT JOIN :va_l2_mnp MNP ON HL2.HL2_ID = MNP.HL2_ID&#xD;
+				LEFT JOIN :va_l2_mtp MTP ON HL2.HL2_ID = MTP.HL2_ID&#xD;
+				LEFT JOIN :va_l2_mip MIP ON HL2.HL2_ID = MIP.HL2_ID&#xD;
+				LEFT JOIN :va_l2_lead_volume LEAD_VOLUME ON HL2.HL2_ID = LEAD_VOLUME.HL2_ID&#xD;
+				ORDER BY HL2.CRM_ID;&#xD;
+&#xD;
+va_l3 = SELECT HL3_ID&#xD;
+			, &quot;MKTG_PLANNING_TOOL&quot;.&quot;mktgplanningtool.db.functions::GET_CRM_ID&quot;(&#xD;
+				BY.BUDGET_YEAR&#xD;
+			    , HL1.ACRONYM&#xD;
+			    , HL2.ORGANIZATION_ACRONYM&#xD;
+			    , HL3.ACRONYM&#xD;
+			    , ''&#xD;
+			    , ''&#xD;
+			    , '') AS CRM_ID&#xD;
+			, 'MPL' AS CAMP_OBJ_TYPE&#xD;
+			, (SELECT HIERARCHY_LEVEL_ID FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HIERARCHY_LEVEL&quot; HIERARCHY_LEVEL WHERE DESCRIPTION = 'HL3') AS HIERARCHY_LEVEL_ID&#xD;
+			, (SELECT HIERARCHY_LEVEL_VALUE FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HIERARCHY_LEVEL&quot; HIERARCHY_LEVEL WHERE DESCRIPTION = 'HL3') AS HIERARCHY_LEVEL_VALUE&#xD;
+			, HL3.HL3_FNC_BUDGET_TOTAL AS BUDGET&#xD;
+			, 0 AS BUDGET_Q1&#xD;
+			, 0 AS BUDGET_Q2&#xD;
+			, 0 AS BUDGET_Q3&#xD;
+			, 0 AS BUDGET_Q4&#xD;
+			, '' AS INTERNAL_FUNDING&#xD;
+			, '' AS PARTNER_CONTRIBUTION&#xD;
+			, 'EUR' AS CURRENCY&#xD;
+			, BY.BUDGET_YEAR&#xD;
+			, '' AS ON_PREM&#xD;
+			, '' AS CLOUD&#xD;
+			, COALESCE(HL3.MODIFIED_DATE_TZ, HL3.CREATED_DATE_TZ) AS MODIFIED_DATE&#xD;
+			FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL3&quot; HL3&#xD;
+			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL2&quot; HL2 ON HL2.HL2_ID = HL3.HL2_ID&#xD;
+			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL1&quot; HL1 ON HL1.HL1_ID = HL2.HL1_ID&#xD;
+			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_BUDGET_YEAR&quot; BY ON BY.BUDGET_YEAR_ID = HL1.BUDGET_YEAR_ID&#xD;
+			WHERE HL3.ENABLED = 1 AND HL3.DELETED = 0;&#xD;
+&#xD;
+va_l3_mnp = SELECT HL3_EO.HL3_ID&#xD;
+			, HL3_EOD.EURO_VALUE AS MNP_VALUE&#xD;
+			, HL3_EOD.VOLUME_VALUE AS MNP_VOLUME&#xD;
+			FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL3_EXPECTED_OUTCOMES&quot; HL3_EO&#xD;
+			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL3_EXPECTED_OUTCOMES_DETAIL&quot; HL3_EOD&#xD;
+				ON HL3_EO.HL3_EXPECTED_OUTCOMES_ID = HL3_EOD.HL3_EXPECTED_OUTCOMES_ID&#xD;
+			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_LEVEL&quot; EOL&#xD;
+				ON HL3_EOD.EXPECTED_OUTCOME_LEVEL_ID = EOL.EXPECTED_OUTCOME_LEVEL_ID&#xD;
+			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_OPTION&quot; EOO&#xD;
+				ON EOL.EXPECTED_OUTCOME_OPTION_ID = EOO.EXPECTED_OUTCOME_OPTION_ID&#xD;
+			WHERE HL3_EO.ENABLED = 1&#xD;
+			AND HL3_EO.DELETED = 0&#xD;
+			AND HL3_EOD.ENABLED = 1&#xD;
+			AND HL3_EOD.DELETED = 0&#xD;
+			AND EOO.EXPORT_KEY = 'MNP';&#xD;
+&#xD;
+va_l3_mtp = SELECT HL3_EO.HL3_ID&#xD;
+			, HL3_EOD.EURO_VALUE AS MTP_VALUE&#xD;
+			, HL3_EOD.VOLUME_VALUE AS MTP_VOLUME&#xD;
+			FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL3_EXPECTED_OUTCOMES&quot; HL3_EO&#xD;
+			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL3_EXPECTED_OUTCOMES_DETAIL&quot; HL3_EOD&#xD;
+				ON HL3_EO.HL3_EXPECTED_OUTCOMES_ID = HL3_EOD.HL3_EXPECTED_OUTCOMES_ID&#xD;
+			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_LEVEL&quot; EOL&#xD;
+				ON HL3_EOD.EXPECTED_OUTCOME_LEVEL_ID = EOL.EXPECTED_OUTCOME_LEVEL_ID&#xD;
+			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_OPTION&quot; EOO&#xD;
+				ON EOL.EXPECTED_OUTCOME_OPTION_ID = EOO.EXPECTED_OUTCOME_OPTION_ID&#xD;
+			WHERE HL3_EO.ENABLED = 1&#xD;
+			AND HL3_EO.DELETED = 0&#xD;
+			AND HL3_EOD.ENABLED = 1&#xD;
+			AND HL3_EOD.DELETED = 0&#xD;
+			AND EOO.EXPORT_KEY = 'MTP';&#xD;
+&#xD;
+va_l3_mip = SELECT HL3_EO.HL3_ID&#xD;
+			, HL3_EOD.EURO_VALUE AS MIP_VALUE&#xD;
+			, HL3_EOD.VOLUME_VALUE AS MIP_VOLUME&#xD;
+			FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL3_EXPECTED_OUTCOMES&quot; HL3_EO&#xD;
+			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL3_EXPECTED_OUTCOMES_DETAIL&quot; HL3_EOD&#xD;
+				ON HL3_EO.HL3_EXPECTED_OUTCOMES_ID = HL3_EOD.HL3_EXPECTED_OUTCOMES_ID&#xD;
+			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_LEVEL&quot; EOL&#xD;
+				ON HL3_EOD.EXPECTED_OUTCOME_LEVEL_ID = EOL.EXPECTED_OUTCOME_LEVEL_ID&#xD;
+			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_OPTION&quot; EOO&#xD;
+				ON EOL.EXPECTED_OUTCOME_OPTION_ID = EOO.EXPECTED_OUTCOME_OPTION_ID&#xD;
+			WHERE HL3_EO.ENABLED = 1&#xD;
+			AND HL3_EO.DELETED = 0&#xD;
+			AND HL3_EOD.ENABLED = 1&#xD;
+			AND HL3_EOD.DELETED = 0&#xD;
+			AND EOO.EXPORT_KEY = 'MIP';&#xD;
+&#xD;
+va_l3_lead_volume = SELECT HL3_EO.HL3_ID&#xD;
+			, HL3_EOD.EURO_VALUE AS LEAD_VOLUME_VALUE&#xD;
+			, HL3_EOD.VOLUME_VALUE AS LEAD_VOLUME_VOLUME&#xD;
+			FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL3_EXPECTED_OUTCOMES&quot; HL3_EO&#xD;
+			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL3_EXPECTED_OUTCOMES_DETAIL&quot; HL3_EOD&#xD;
+				ON HL3_EO.HL3_EXPECTED_OUTCOMES_ID = HL3_EOD.HL3_EXPECTED_OUTCOMES_ID&#xD;
+			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_LEVEL&quot; EOL&#xD;
+				ON HL3_EOD.EXPECTED_OUTCOME_LEVEL_ID = EOL.EXPECTED_OUTCOME_LEVEL_ID&#xD;
+			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_OPTION&quot; EOO&#xD;
+				ON EOL.EXPECTED_OUTCOME_OPTION_ID = EOO.EXPECTED_OUTCOME_OPTION_ID&#xD;
+			WHERE HL3_EO.ENABLED = 1&#xD;
+			AND HL3_EO.DELETED = 0&#xD;
+			AND HL3_EOD.ENABLED = 1&#xD;
+			AND HL3_EOD.DELETED = 0&#xD;
+			AND EOO.EXPORT_KEY = 'LEAD_VOLUME';&#xD;
+&#xD;
+va_l3_result = SELECT   HL3.HL3_ID AS HL_ID,&#xD;
+                        0 AS IS_LEGACY,&#xD;
+                        HL3.HIERARCHY_LEVEL_ID,&#xD;
+                        HL3.HIERARCHY_LEVEL_VALUE,&#xD;
+                        HL3.CRM_ID,&#xD;
+                        HL3.CAMP_OBJ_TYPE,&#xD;
+                        HL3.BUDGET,&#xD;
+                        HL3.BUDGET_Q1,&#xD;
+                        HL3.BUDGET_Q2,&#xD;
+                        HL3.BUDGET_Q3,&#xD;
+                        HL3.BUDGET_Q4,&#xD;
+                        HL3.INTERNAL_FUNDING,&#xD;
+                        HL3.PARTNER_CONTRIBUTION,&#xD;
+                        HL3.CURRENCY,&#xD;
+                        COALESCE(MNP.MNP_VALUE, null) AS MNP_VALUE,&#xD;
+                        COALESCE(MNP.MNP_VOLUME, null) AS MNP_VOLUME,&#xD;
+                        COALESCE(MTP.MTP_VALUE, null) AS MTP_VALUE,&#xD;
+                        COALESCE(MTP.MTP_VOLUME, null) AS MTP_VOLUME,&#xD;
+                        COALESCE(MIP.MIP_VALUE, null) AS MIP_VALUE,&#xD;
+                        COALESCE(MIP.MIP_VOLUME, null) AS MIP_VOLUME,&#xD;
+                        COALESCE(LEAD_VOLUME.LEAD_VOLUME_VALUE, null) AS LEAD_VOLUME_VALUE,&#xD;
+                        COALESCE(LEAD_VOLUME.LEAD_VOLUME_VOLUME, null) AS LEAD_VOLUME_VOLUME,&#xD;
+                        HL3.BUDGET_YEAR,&#xD;
+                        HL3.ON_PREM,&#xD;
+                        HL3.CLOUD,&#xD;
+                        HL3.MODIFIED_DATE,&#xD;
+                        '' AS STATUS,&#xD;
+                        '' AS DES,&#xD;
+                        '' AS REPUTATION_INITIATIVE,&#xD;
+                        '' AS REPUTATION_INITIATIVE_AUDIENCE&#xD;
+				FROM :va_l3 HL3&#xD;
+                    LEFT JOIN :va_l3_mnp MNP ON HL3.HL3_ID = MNP.HL3_ID&#xD;
+                    LEFT JOIN :va_l3_mtp MTP ON HL3.HL3_ID = MTP.HL3_ID&#xD;
+                    LEFT JOIN :va_l3_mip MIP ON HL3.HL3_ID = MIP.HL3_ID&#xD;
+                    LEFT JOIN :va_l3_lead_volume LEAD_VOLUME ON HL3.HL3_ID = LEAD_VOLUME.HL3_ID&#xD;
+				ORDER BY HL3.CRM_ID;&#xD;
+&#xD;
+va_l4 = SELECT HL4_ID&#xD;
+			, &quot;MKTG_PLANNING_TOOL&quot;.&quot;mktgplanningtool.db.functions::GET_CRM_ID&quot;(&#xD;
+				BY.BUDGET_YEAR&#xD;
+			    , HL1.ACRONYM&#xD;
+			    , HL2.ORGANIZATION_ACRONYM&#xD;
+			    , HL3.ACRONYM&#xD;
+			    , HL4.ACRONYM&#xD;
+			    , ''&#xD;
+			    , '') AS CRM_ID&#xD;
+			, 'MPL' AS CAMP_OBJ_TYPE&#xD;
+			, (SELECT HIERARCHY_LEVEL_ID FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HIERARCHY_LEVEL&quot; HIERARCHY_LEVEL WHERE DESCRIPTION = 'HL4') AS HIERARCHY_LEVEL_ID&#xD;
+			, (SELECT HIERARCHY_LEVEL_VALUE FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HIERARCHY_LEVEL&quot; HIERARCHY_LEVEL WHERE DESCRIPTION = 'HL4') AS HIERARCHY_LEVEL_VALUE&#xD;
+			, HL4.BUDGET&#xD;
+			, 0 AS BUDGET_Q1&#xD;
+			, 0 AS BUDGET_Q2&#xD;
+			, 0 AS BUDGET_Q3&#xD;
+			, 0 AS BUDGET_Q4&#xD;
+			, '' AS INTERNAL_FUNDING&#xD;
+			, '' AS PARTNER_CONTRIBUTION&#xD;
+			, 'EUR' AS CURRENCY&#xD;
+			, BY.BUDGET_YEAR&#xD;
+			, '' AS ON_PREM&#xD;
+			, '' AS CLOUD&#xD;
+			, COALESCE(HL4.MODIFIED_DATE_TZ, HL4.CREATED_DATE_TZ) AS MODIFIED_DATE&#xD;
+			, SD.DETAIL AS STATUS&#xD;
+			FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL4&quot; HL4&#xD;
+			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL3&quot; HL3 ON HL3.HL3_ID = HL4.HL3_ID&#xD;
+			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL2&quot; HL2 ON HL2.HL2_ID = HL3.HL2_ID&#xD;
+			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL1&quot; HL1 ON HL1.HL1_ID = HL2.HL1_ID&#xD;
+			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_BUDGET_YEAR&quot; BY ON BY.BUDGET_YEAR_ID = HL1.BUDGET_YEAR_ID&#xD;
+			INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL4_STATUS_DETAIL&quot; SD ON SD.HL4_STATUS_DETAIL_ID = HL4.HL4_STATUS_DETAIL_ID&#xD;
+&#xD;
+			WHERE HL4.ENABLED = 1 AND HL4.DELETED = 0;&#xD;
+&#xD;
+va_l4_mnp = SELECT HL4_EO.HL4_ID&#xD;
+			, HL4_EOD.EURO_VALUE AS MNP_VALUE&#xD;
+			, HL4_EOD.AMOUNT_VALUE AS MNP_VOLUME&#xD;
+			FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL4_EXPECTED_OUTCOMES&quot; HL4_EO&#xD;
+			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL4_EXPECTED_OUTCOMES_DETAIL&quot; HL4_EOD&#xD;
+				ON HL4_EO.HL4_EXPECTED_OUTCOMES_ID = HL4_EOD.HL4_EXPECTED_OUTCOMES_ID&#xD;
+			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_LEVEL&quot; EOL&#xD;
+				ON HL4_EOD.OUTCOMES_ID = EOL.EXPECTED_OUTCOME_LEVEL_ID&#xD;
+			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_OPTION&quot; EOO&#xD;
+				ON EOL.EXPECTED_OUTCOME_OPTION_ID = EOO.EXPECTED_OUTCOME_OPTION_ID&#xD;
+			WHERE HL4_EO.ENABLED = 1&#xD;
+			AND HL4_EO.DELETED = 0&#xD;
+			AND HL4_EOD.ENABLED = 1&#xD;
+			AND HL4_EOD.DELETED = 0&#xD;
+			AND EOO.EXPORT_KEY = 'MNP';&#xD;
+&#xD;
+va_l4_mtp = SELECT HL4_EO.HL4_ID&#xD;
+			, HL4_EOD.EURO_VALUE AS MTP_VALUE&#xD;
+			, HL4_EOD.AMOUNT_VALUE AS MTP_VOLUME&#xD;
+			FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL4_EXPECTED_OUTCOMES&quot; HL4_EO&#xD;
+			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL4_EXPECTED_OUTCOMES_DETAIL&quot; HL4_EOD&#xD;
+				ON HL4_EO.HL4_EXPECTED_OUTCOMES_ID = HL4_EOD.HL4_EXPECTED_OUTCOMES_ID&#xD;
+			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_LEVEL&quot; EOL&#xD;
+				ON HL4_EOD.OUTCOMES_ID = EOL.EXPECTED_OUTCOME_LEVEL_ID&#xD;
+			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_OPTION&quot; EOO&#xD;
+				ON EOL.EXPECTED_OUTCOME_OPTION_ID = EOO.EXPECTED_OUTCOME_OPTION_ID&#xD;
+			WHERE HL4_EO.ENABLED = 1&#xD;
+			AND HL4_EO.DELETED = 0&#xD;
+			AND HL4_EOD.ENABLED = 1&#xD;
+			AND HL4_EOD.DELETED = 0&#xD;
+			AND EOO.EXPORT_KEY = 'MTP';&#xD;
+&#xD;
+va_l4_mip = SELECT HL4_EO.HL4_ID&#xD;
+			, HL4_EOD.EURO_VALUE AS MIP_VALUE&#xD;
+			, HL4_EOD.AMOUNT_VALUE AS MIP_VOLUME&#xD;
+			FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL4_EXPECTED_OUTCOMES&quot; HL4_EO&#xD;
+			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL4_EXPECTED_OUTCOMES_DETAIL&quot; HL4_EOD&#xD;
+				ON HL4_EO.HL4_EXPECTED_OUTCOMES_ID = HL4_EOD.HL4_EXPECTED_OUTCOMES_ID&#xD;
+			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_LEVEL&quot; EOL&#xD;
+				ON HL4_EOD.OUTCOMES_ID = EOL.EXPECTED_OUTCOME_LEVEL_ID&#xD;
+			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_OPTION&quot; EOO&#xD;
+				ON EOL.EXPECTED_OUTCOME_OPTION_ID = EOO.EXPECTED_OUTCOME_OPTION_ID&#xD;
+			WHERE HL4_EO.ENABLED = 1&#xD;
+			AND HL4_EO.DELETED = 0&#xD;
+			AND HL4_EOD.ENABLED = 1&#xD;
+			AND HL4_EOD.DELETED = 0&#xD;
+			AND EOO.EXPORT_KEY = 'MIP';&#xD;
+&#xD;
+va_l4_lead_volume = SELECT HL4_EO.HL4_ID&#xD;
+			, HL4_EOD.EURO_VALUE AS LEAD_VOLUME_VALUE&#xD;
+			, HL4_EOD.AMOUNT_VALUE AS LEAD_VOLUME_VOLUME&#xD;
+			FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL4_EXPECTED_OUTCOMES&quot; HL4_EO&#xD;
+			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL4_EXPECTED_OUTCOMES_DETAIL&quot; HL4_EOD&#xD;
+				ON HL4_EO.HL4_EXPECTED_OUTCOMES_ID = HL4_EOD.HL4_EXPECTED_OUTCOMES_ID&#xD;
+			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_LEVEL&quot; EOL&#xD;
+				ON HL4_EOD.OUTCOMES_ID = EOL.EXPECTED_OUTCOME_LEVEL_ID&#xD;
+			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_OPTION&quot; EOO&#xD;
+				ON EOL.EXPECTED_OUTCOME_OPTION_ID = EOO.EXPECTED_OUTCOME_OPTION_ID&#xD;
+			WHERE HL4_EO.ENABLED = 1&#xD;
+			AND HL4_EO.DELETED = 0&#xD;
+			AND HL4_EOD.ENABLED = 1&#xD;
+			AND HL4_EOD.DELETED = 0&#xD;
+			AND EOO.EXPORT_KEY = 'LEAD_VOLUME';&#xD;
+&#xD;
+va_l4_result = SELECT   HL4.HL4_ID AS HL_ID,&#xD;
+                        0 AS IS_LEGACY,&#xD;
+                        HL4.HIERARCHY_LEVEL_ID,&#xD;
+                        HL4.HIERARCHY_LEVEL_VALUE,&#xD;
+                        HL4.CRM_ID,&#xD;
+                        HL4.CAMP_OBJ_TYPE,&#xD;
+                        HL4.BUDGET,&#xD;
+                        HL4.BUDGET_Q1,&#xD;
+                        HL4.BUDGET_Q2,&#xD;
+                        HL4.BUDGET_Q3,&#xD;
+                        HL4.BUDGET_Q4,&#xD;
+                        HL4.INTERNAL_FUNDING,&#xD;
+                        HL4.PARTNER_CONTRIBUTION,&#xD;
+                        HL4.CURRENCY,&#xD;
+                        COALESCE(MNP.MNP_VALUE, null) AS MNP_VALUE,&#xD;
+                        COALESCE(MNP.MNP_VOLUME, null) AS MNP_VOLUME,&#xD;
+                        COALESCE(MTP.MTP_VALUE, null) AS MTP_VALUE,&#xD;
+                        COALESCE(MTP.MTP_VOLUME, null) AS MTP_VOLUME,&#xD;
+                        COALESCE(MIP.MIP_VALUE, null) AS MIP_VALUE,&#xD;
+                        COALESCE(MIP.MIP_VOLUME, null) AS MIP_VOLUME,&#xD;
+                        COALESCE(LEAD_VOLUME.LEAD_VOLUME_VALUE, null) AS LEAD_VOLUME_VALUE,&#xD;
+                        COALESCE(LEAD_VOLUME.LEAD_VOLUME_VOLUME, null) AS LEAD_VOLUME_VOLUME,&#xD;
+                        HL4.BUDGET_YEAR,&#xD;
+                        HL4.ON_PREM,&#xD;
+                        HL4.CLOUD,&#xD;
+                        HL4.MODIFIED_DATE,&#xD;
+                        HL4.STATUS,&#xD;
+                        '' AS DES,&#xD;
+                        '' AS REPUTATION_INITIATIVE,&#xD;
+                        '' AS REPUTATION_INITIATIVE_AUDIENCE&#xD;
+				FROM :va_l4 HL4&#xD;
+                    LEFT JOIN :va_l4_mnp MNP ON HL4.HL4_ID = MNP.HL4_ID&#xD;
+                    LEFT JOIN :va_l4_mtp MTP ON HL4.HL4_ID = MTP.HL4_ID&#xD;
+                    LEFT JOIN :va_l4_mip MIP ON HL4.HL4_ID = MIP.HL4_ID&#xD;
+                    LEFT JOIN :va_l4_lead_volume LEAD_VOLUME ON HL4.HL4_ID = LEAD_VOLUME.HL4_ID&#xD;
+&#xD;
+				ORDER BY HL4.CRM_ID;&#xD;
+&#xD;
+&#xD;
+&#xD;
+va_l5 = (SELECT HL5_ID,&#xD;
+                null as HL5_LEGACY_ID,&#xD;
+                0 AS IS_LEGACY,&#xD;
+                &quot;MKTG_PLANNING_TOOL&quot;.&quot;mktgplanningtool.db.functions::GET_CRM_ID&quot;(&#xD;
+                BY.BUDGET_YEAR,&#xD;
+                HL1.ACRONYM,&#xD;
+                HL2.ORGANIZATION_ACRONYM,&#xD;
+                HL3.ACRONYM,&#xD;
+                HL4.ACRONYM,&#xD;
+                HL5.ACRONYM,&#xD;
+                '') AS CRM_ID,&#xD;
+                'CPG' AS CAMP_OBJ_TYPE,&#xD;
+                HL5.BUDGET,&#xD;
+                (SELECT HIERARCHY_LEVEL_ID FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HIERARCHY_LEVEL&quot; HIERARCHY_LEVEL WHERE DESCRIPTION = 'HL5') AS HIERARCHY_LEVEL_ID,&#xD;
+                (SELECT HIERARCHY_LEVEL_VALUE FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HIERARCHY_LEVEL&quot; HIERARCHY_LEVEL WHERE DESCRIPTION = 'HL5') AS HIERARCHY_LEVEL_VALUE,&#xD;
+                (HL5.BUDGET * HL5.BUDGET_SPEND_Q1 / 100) AS BUDGET_Q1,&#xD;
+                (HL5.BUDGET * HL5.BUDGET_SPEND_Q2 / 100) AS BUDGET_Q2,&#xD;
+                (HL5.BUDGET * HL5.BUDGET_SPEND_Q3 / 100) AS BUDGET_Q3,&#xD;
+                (HL5.BUDGET * HL5.BUDGET_SPEND_Q4 / 100) AS BUDGET_Q4,&#xD;
+                '' AS INTERNAL_FUNDING,&#xD;
+                '' AS PARTNER_CONTRIBUTION,&#xD;
+                'EUR' AS CURRENCY,&#xD;
+                BY.BUDGET_YEAR,&#xD;
+                '' AS ON_PREM,&#xD;
+                '' AS CLOUD,&#xD;
+                COALESCE(HL5.MODIFIED_DATE_TZ, HL5.CREATED_DATE_TZ) AS MODIFIED_DATE,&#xD;
+                SD.DETAIL AS STATUS,&#xD;
+                DT.NAME AS DES&#xD;
+			FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL5&quot; HL5&#xD;
+                INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL4&quot; HL4 ON HL4.HL4_ID = HL5.HL4_ID&#xD;
+                INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL3&quot; HL3 ON HL3.HL3_ID = HL4.HL3_ID&#xD;
+                INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL2&quot; HL2 ON HL2.HL2_ID = HL3.HL2_ID&#xD;
+                INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL1&quot; HL1 ON HL1.HL1_ID = HL2.HL1_ID&#xD;
+                INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_BUDGET_YEAR&quot; BY ON BY.BUDGET_YEAR_ID = HL1.BUDGET_YEAR_ID&#xD;
+                INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL5_STATUS_DETAIL&quot; SD ON SD.HL5_STATUS_DETAIL_ID = HL5.HL5_STATUS_DETAIL_ID&#xD;
+                LEFT JOIN  &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_DES_TYPE&quot; DT ON DT.DES_TYPE_ID = HL5.DES_TYPE_ID AND DT.ENABLED = 1 AND DT.DELETED = 0&#xD;
+			WHERE HL5.ENABLED = 1 AND HL5.DELETED = 0)&#xD;
+&#xD;
+			UNION ALL&#xD;
+&#xD;
+			(SELECT null as HL5_ID,&#xD;
+			        HL5_LEG.HL5_LEGACY_ID,&#xD;
+			        1 AS IS_LEGACY,&#xD;
+			        HL5_LEG.PATH AS CRM_ID,&#xD;
+			        'CPG' AS CAMP_OBJ_TYPE,&#xD;
+			        HL5_LEG.BUDGET,&#xD;
+			        (SELECT HIERARCHY_LEVEL_ID FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HIERARCHY_LEVEL&quot; HIERARCHY_LEVEL WHERE DESCRIPTION = 'HL5') AS HIERARCHY_LEVEL_ID,&#xD;
+			        (SELECT HIERARCHY_LEVEL_VALUE FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HIERARCHY_LEVEL&quot; HIERARCHY_LEVEL WHERE DESCRIPTION = 'HL5') AS HIERARCHY_LEVEL_VALUE,&#xD;
+			        (HL5_LEG.BUDGET * HL5_LEG.BUDGET_SPEND_Q1 / 100) AS BUDGET_Q1,&#xD;
+			        (HL5_LEG.BUDGET * HL5_LEG.BUDGET_SPEND_Q2 / 100) AS BUDGET_Q2,&#xD;
+			        (HL5_LEG.BUDGET * HL5_LEG.BUDGET_SPEND_Q3 / 100) AS BUDGET_Q3,&#xD;
+			        (HL5_LEG.BUDGET * HL5_LEG.BUDGET_SPEND_Q4 / 100) AS BUDGET_Q4,&#xD;
+			        '' AS INTERNAL_FUNDING,&#xD;
+			        '' AS PARTNER_CONTRIBUTION,&#xD;
+			        'EUR' AS CURRENCY,&#xD;
+			        BY.BUDGET_YEAR,&#xD;
+			        '' AS ON_PREM,&#xD;
+			        '' AS CLOUD,&#xD;
+			        COALESCE(HL5_LEG.MODIFIED_DATE_TZ, HL5_LEG.CREATED_DATE_TZ) AS MODIFIED_DATE,&#xD;
+			        SD.DETAIL AS STATUS,&#xD;
+			        DT.NAME AS DES&#xD;
+            FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL5_LEGACY&quot; HL5_LEG&#xD;
+                INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL4&quot; HL4 ON HL4.HL4_ID = HL5_LEG.HL4_ID&#xD;
+                INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL3&quot; HL3 ON HL3.HL3_ID = HL4.HL3_ID&#xD;
+                INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL2&quot; HL2 ON HL2.HL2_ID = HL3.HL2_ID&#xD;
+                INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL1&quot; HL1 ON HL1.HL1_ID = HL2.HL1_ID&#xD;
+                INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_BUDGET_YEAR&quot; BY ON BY.BUDGET_YEAR_ID = HL1.BUDGET_YEAR_ID&#xD;
+                INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL5_STATUS_DETAIL&quot; SD ON SD.HL5_STATUS_DETAIL_ID = HL5_LEG.HL5_STATUS_DETAIL_ID&#xD;
+                LEFT JOIN  &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_DES_TYPE&quot; DT ON DT.DES_TYPE_ID = HL5_LEG.DES_TYPE_ID AND DT.ENABLED = 1 AND DT.DELETED = 0&#xD;
+            WHERE HL5_LEG.ENABLED = 1 AND HL5_LEG.DELETED = 0);&#xD;
+&#xD;
+va_l5_mnp = SELECT HL5_EO.HL5_ID&#xD;
+			, HL5_EOD.EURO_VALUE AS MNP_VALUE&#xD;
+			, HL5_EOD.VOLUME_VALUE AS MNP_VOLUME&#xD;
+			FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL5_EXPECTED_OUTCOMES&quot; HL5_EO&#xD;
+			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL5_EXPECTED_OUTCOMES_DETAIL&quot; HL5_EOD&#xD;
+				ON HL5_EO.HL5_EXPECTED_OUTCOMES_ID = HL5_EOD.HL5_EXPECTED_OUTCOMES_ID&#xD;
+			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_LEVEL&quot; EOL&#xD;
+				ON HL5_EOD.OUTCOMES_ID = EOL.EXPECTED_OUTCOME_LEVEL_ID&#xD;
+			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_OPTION&quot; EOO&#xD;
+				ON EOL.EXPECTED_OUTCOME_OPTION_ID = EOO.EXPECTED_OUTCOME_OPTION_ID&#xD;
+			WHERE HL5_EO.ENABLED = 1&#xD;
+			AND HL5_EO.DELETED = 0&#xD;
+			AND HL5_EOD.ENABLED = 1&#xD;
+			AND HL5_EOD.DELETED = 0&#xD;
+			AND EOO.EXPORT_KEY = 'MNP';&#xD;
+&#xD;
+va_l5_mtp = SELECT HL5_EO.HL5_ID&#xD;
+			, HL5_EOD.EURO_VALUE AS MTP_VALUE&#xD;
+			, HL5_EOD.VOLUME_VALUE AS MTP_VOLUME&#xD;
+			FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL5_EXPECTED_OUTCOMES&quot; HL5_EO&#xD;
+			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL5_EXPECTED_OUTCOMES_DETAIL&quot; HL5_EOD&#xD;
+				ON HL5_EO.HL5_EXPECTED_OUTCOMES_ID = HL5_EOD.HL5_EXPECTED_OUTCOMES_ID&#xD;
+			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_LEVEL&quot; EOL&#xD;
+				ON HL5_EOD.OUTCOMES_ID = EOL.EXPECTED_OUTCOME_LEVEL_ID&#xD;
+			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_OPTION&quot; EOO&#xD;
+				ON EOL.EXPECTED_OUTCOME_OPTION_ID = EOO.EXPECTED_OUTCOME_OPTION_ID&#xD;
+			WHERE HL5_EO.ENABLED = 1&#xD;
+			AND HL5_EO.DELETED = 0&#xD;
+			AND HL5_EOD.ENABLED = 1&#xD;
+			AND HL5_EOD.DELETED = 0&#xD;
+			AND EOO.EXPORT_KEY = 'MTP';&#xD;
+&#xD;
+va_l5_mip = SELECT HL5_EO.HL5_ID&#xD;
+			, HL5_EOD.EURO_VALUE AS MIP_VALUE&#xD;
+			, HL5_EOD.VOLUME_VALUE AS MIP_VOLUME&#xD;
+			FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL5_EXPECTED_OUTCOMES&quot; HL5_EO&#xD;
+			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL5_EXPECTED_OUTCOMES_DETAIL&quot; HL5_EOD&#xD;
+				ON HL5_EO.HL5_EXPECTED_OUTCOMES_ID = HL5_EOD.HL5_EXPECTED_OUTCOMES_ID&#xD;
+			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_LEVEL&quot; EOL&#xD;
+				ON HL5_EOD.OUTCOMES_ID = EOL.EXPECTED_OUTCOME_LEVEL_ID&#xD;
+			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_OPTION&quot; EOO&#xD;
+				ON EOL.EXPECTED_OUTCOME_OPTION_ID = EOO.EXPECTED_OUTCOME_OPTION_ID&#xD;
+			WHERE HL5_EO.ENABLED = 1&#xD;
+			AND HL5_EO.DELETED = 0&#xD;
+			AND HL5_EOD.ENABLED = 1&#xD;
+			AND HL5_EOD.DELETED = 0&#xD;
+			AND EOO.EXPORT_KEY = 'MIP';&#xD;
+&#xD;
+va_l5_lead_volume = SELECT HL5_EO.HL5_ID&#xD;
+			, HL5_EOD.EURO_VALUE AS LEAD_VOLUME_VALUE&#xD;
+			, HL5_EOD.VOLUME_VALUE AS LEAD_VOLUME_VOLUME&#xD;
+			FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL5_EXPECTED_OUTCOMES&quot; HL5_EO&#xD;
+			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL5_EXPECTED_OUTCOMES_DETAIL&quot; HL5_EOD&#xD;
+				ON HL5_EO.HL5_EXPECTED_OUTCOMES_ID = HL5_EOD.HL5_EXPECTED_OUTCOMES_ID&#xD;
+			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_LEVEL&quot; EOL&#xD;
+				ON HL5_EOD.OUTCOMES_ID = EOL.EXPECTED_OUTCOME_LEVEL_ID&#xD;
+			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_OPTION&quot; EOO&#xD;
+				ON EOL.EXPECTED_OUTCOME_OPTION_ID = EOO.EXPECTED_OUTCOME_OPTION_ID&#xD;
+			WHERE HL5_EO.ENABLED = 1&#xD;
+			AND HL5_EO.DELETED = 0&#xD;
+			AND HL5_EOD.ENABLED = 1&#xD;
+			AND HL5_EOD.DELETED = 0&#xD;
+			AND EOO.EXPORT_KEY = 'LEAD_VOLUME';&#xD;
+&#xD;
+va_l5_reputation_initiative = SELECT hl5CategoryOption.HL5_ID,&#xD;
+                            category.NAME AS CATEGORY_NAME,&#xD;
+                            hl5CategoryOption.AMOUNT AS OPTION_AMOUNT,&#xD;
+                            options.NAME AS OPTION_NAME&#xD;
+							FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL5_CATEGORY_OPTION&quot; hl5CategoryOption&#xD;
+							INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_ALLOCATION_CATEGORY_OPTION_LEVEL&quot; ACOL&#xD;
+							ON ACOL.ALLOCATION_CATEGORY_OPTION_LEVEL_ID = hl5CategoryOption.ALLOCATION_CATEGORY_OPTION_LEVEL_ID&#xD;
+							INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_ALLOCATION_OPTION&quot; options ON options.ALLOCATION_OPTION_ID = ACOL.ALLOCATION_OPTION_ID&#xD;
+							INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_ALLOCATION_CATEGORY&quot; category ON category.ALLOCATION_CATEGORY_ID = ACOL.ALLOCATION_CATEGORY_ID&#xD;
+							WHERE hl5CategoryOption.ENABLED = 1&#xD;
+							AND hl5CategoryOption.DELETED = 0&#xD;
+							AND hl5CategoryOption.AMOUNT != 0&#xD;
+							AND category.NAME = 'Reputation Initiative';&#xD;
+&#xD;
+va_l5_reputation_initiative_audience = SELECT hl5CategoryOption.HL5_ID,&#xD;
+                            category.NAME AS CATEGORY_NAME,&#xD;
+                            hl5CategoryOption.AMOUNT AS OPTION_AMOUNT,&#xD;
+                            options.NAME AS OPTION_NAME&#xD;
+							FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL5_CATEGORY_OPTION&quot; hl5CategoryOption&#xD;
+							INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_ALLOCATION_CATEGORY_OPTION_LEVEL&quot; ACOL&#xD;
+							ON ACOL.ALLOCATION_CATEGORY_OPTION_LEVEL_ID = hl5CategoryOption.ALLOCATION_CATEGORY_OPTION_LEVEL_ID&#xD;
+							INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_ALLOCATION_OPTION&quot; options ON options.ALLOCATION_OPTION_ID = ACOL.ALLOCATION_OPTION_ID&#xD;
+							INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_ALLOCATION_CATEGORY&quot; category ON category.ALLOCATION_CATEGORY_ID = ACOL.ALLOCATION_CATEGORY_ID&#xD;
+							WHERE hl5CategoryOption.ENABLED = 1&#xD;
+							AND hl5CategoryOption.DELETED = 0&#xD;
+							AND hl5CategoryOption.AMOUNT != 0&#xD;
+							AND category.NAME = 'Reputation Initiative Audience';&#xD;
+&#xD;
+--ATTRIBUTES for L5 Legacy Records&#xD;
+va_l5_reputation_initiative_legacy =    SELECT hl5CategoryOptionLegacy.HL5_LEGACY_ID,&#xD;
+                                            category.NAME AS CATEGORY_NAME,&#xD;
+                                            hl5CategoryOptionLegacy.AMOUNT AS OPTION_AMOUNT,&#xD;
+                                            options.NAME AS OPTION_NAME&#xD;
+                                        FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL5_CATEGORY_OPTION_LEGACY&quot; hl5CategoryOptionLegacy&#xD;
+                                            INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_ALLOCATION_CATEGORY_OPTION_LEVEL&quot; ACOL&#xD;
+                                                ON ACOL.ALLOCATION_CATEGORY_OPTION_LEVEL_ID = hl5CategoryOptionLegacy.ALLOCATION_CATEGORY_OPTION_LEVEL_ID&#xD;
+                                            INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_ALLOCATION_OPTION&quot; options&#xD;
+                                                ON options.ALLOCATION_OPTION_ID = ACOL.ALLOCATION_OPTION_ID&#xD;
+                                            INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_ALLOCATION_CATEGORY&quot; category&#xD;
+                                                ON category.ALLOCATION_CATEGORY_ID = ACOL.ALLOCATION_CATEGORY_ID&#xD;
+                                        WHERE   hl5CategoryOptionLegacy.ENABLED = 1&#xD;
+                                            AND hl5CategoryOptionLegacy.DELETED = 0&#xD;
+                                            AND hl5CategoryOptionLegacy.AMOUNT != 0&#xD;
+                                            AND category.NAME = 'Reputation Initiative';&#xD;
+&#xD;
+va_l5_reputation_initiative_audience_legacy = SELECT hl5CategoryOptionLegacy.HL5_LEGACY_ID,&#xD;
+                                                     category.NAME AS CATEGORY_NAME,&#xD;
+                                                     hl5CategoryOptionLegacy.AMOUNT AS OPTION_AMOUNT,&#xD;
+                                                     options.NAME AS OPTION_NAME&#xD;
+                                                FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL5_CATEGORY_OPTION_LEGACY&quot; hl5CategoryOptionLegacy&#xD;
+                                                    INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_ALLOCATION_CATEGORY_OPTION_LEVEL&quot; ACOL&#xD;
+                                                        ON ACOL.ALLOCATION_CATEGORY_OPTION_LEVEL_ID = hl5CategoryOptionLegacy.ALLOCATION_CATEGORY_OPTION_LEVEL_ID&#xD;
+                                                    INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_ALLOCATION_OPTION&quot; options&#xD;
+                                                        ON options.ALLOCATION_OPTION_ID = ACOL.ALLOCATION_OPTION_ID&#xD;
+                                                    INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_ALLOCATION_CATEGORY&quot; category&#xD;
+                                                        ON category.ALLOCATION_CATEGORY_ID = ACOL.ALLOCATION_CATEGORY_ID&#xD;
+                                                WHERE   hl5CategoryOptionLegacy.ENABLED = 1&#xD;
+                                                    AND hl5CategoryOptionLegacy.DELETED = 0&#xD;
+                                                    AND hl5CategoryOptionLegacy.AMOUNT != 0&#xD;
+                                                    AND category.NAME = 'Reputation Initiative Audience';&#xD;
+&#xD;
+va_l5_result = (SELECT  HL5.HL5_ID AS HL_ID,&#xD;
+                        HL5.IS_LEGACY,&#xD;
+                        HL5.HIERARCHY_LEVEL_ID,&#xD;
+                        HL5.HIERARCHY_LEVEL_VALUE,&#xD;
+                        HL5.CRM_ID,&#xD;
+                        HL5.CAMP_OBJ_TYPE,&#xD;
+                        HL5.BUDGET,&#xD;
+                        HL5.BUDGET_Q1,&#xD;
+                        HL5.BUDGET_Q2,&#xD;
+                        HL5.BUDGET_Q3,&#xD;
+                        HL5.BUDGET_Q4,&#xD;
+                        HL5.INTERNAL_FUNDING,&#xD;
+                        HL5.PARTNER_CONTRIBUTION,&#xD;
+                        HL5.CURRENCY,&#xD;
+                        COALESCE(MNP.MNP_VALUE, null) AS MNP_VALUE,&#xD;
+                        COALESCE(MNP.MNP_VOLUME, null) AS MNP_VOLUME,&#xD;
+                        COALESCE(MTP.MTP_VALUE, null) AS MTP_VALUE,&#xD;
+                        COALESCE(MTP.MTP_VOLUME, null) AS MTP_VOLUME,&#xD;
+                        COALESCE(MIP.MIP_VALUE, null) AS MIP_VALUE,&#xD;
+                        COALESCE(MIP.MIP_VOLUME, null) AS MIP_VOLUME,&#xD;
+                        COALESCE(LEAD_VOLUME.LEAD_VOLUME_VALUE, null) AS LEAD_VOLUME_VALUE,&#xD;
+                        COALESCE(LEAD_VOLUME.LEAD_VOLUME_VOLUME, null) AS LEAD_VOLUME_VOLUME,&#xD;
+                        HL5.BUDGET_YEAR,&#xD;
+                        HL5.ON_PREM,&#xD;
+                        HL5.CLOUD,&#xD;
+                        HL5.MODIFIED_DATE,&#xD;
+                        HL5.STATUS,&#xD;
+                        HL5.DES,&#xD;
+                        REPUTATION_INITIATIVE.OPTION_NAME AS REPUTATION_INITIATIVE,&#xD;
+                        REPUTATION_INITIATIVE_AUDIENCE.OPTION_NAME AS REPUTATION_INITIATIVE_AUDIENCE&#xD;
+				FROM :va_l5 HL5&#xD;
+                    LEFT JOIN :va_l5_mnp MNP ON HL5.HL5_ID = MNP.HL5_ID&#xD;
+                    LEFT JOIN :va_l5_mtp MTP ON HL5.HL5_ID = MTP.HL5_ID&#xD;
+                    LEFT JOIN :va_l5_mip MIP ON HL5.HL5_ID = MIP.HL5_ID&#xD;
+                    LEFT JOIN :va_l5_lead_volume LEAD_VOLUME ON HL5.HL5_ID = LEAD_VOLUME.HL5_ID&#xD;
+                    LEFT JOIN :va_l5_reputation_initiative REPUTATION_INITIATIVE ON HL5.HL5_ID = REPUTATION_INITIATIVE.HL5_ID&#xD;
+                    LEFT JOIN :va_l5_reputation_initiative_audience REPUTATION_INITIATIVE_AUDIENCE ON HL5.HL5_ID = REPUTATION_INITIATIVE_AUDIENCE.HL5_ID&#xD;
+                WHERE HL5.IS_LEGACY = 0&#xD;
+				ORDER BY HL5.CRM_ID)&#xD;
+				-- End Regular L5&#xD;
+&#xD;
+				UNION&#xD;
+&#xD;
+				-- Include Legacy L5&#xD;
+				(SELECT     HL5_LEGACY.HL5_LEGACY_ID AS HL_ID,&#xD;
+                            HL5_LEGACY.IS_LEGACY,&#xD;
+                            HL5_LEGACY.HIERARCHY_LEVEL_ID,&#xD;
+                            HL5_LEGACY.HIERARCHY_LEVEL_VALUE,&#xD;
+                            HL5_LEGACY.CRM_ID,&#xD;
+                            HL5_LEGACY.CAMP_OBJ_TYPE,&#xD;
+                            HL5_LEGACY.BUDGET,&#xD;
+                            HL5_LEGACY.BUDGET_Q1,&#xD;
+                            HL5_LEGACY.BUDGET_Q2,&#xD;
+                            HL5_LEGACY.BUDGET_Q3,&#xD;
+                            HL5_LEGACY.BUDGET_Q4,&#xD;
+                            HL5_LEGACY.INTERNAL_FUNDING,&#xD;
+                            HL5_LEGACY.PARTNER_CONTRIBUTION,&#xD;
+                            HL5_LEGACY.CURRENCY,&#xD;
+                            COALESCE(MNP.MNP_VALUE, null) AS MNP_VALUE,&#xD;
+                            COALESCE(MNP.MNP_VOLUME, null) AS MNP_VOLUME,&#xD;
+                            COALESCE(MTP.MTP_VALUE, null) AS MTP_VALUE,&#xD;
+                            COALESCE(MTP.MTP_VOLUME, null) AS MTP_VOLUME,&#xD;
+                            COALESCE(MIP.MIP_VALUE, null) AS MIP_VALUE,&#xD;
+                            COALESCE(MIP.MIP_VOLUME, null) AS MIP_VOLUME,&#xD;
+                            COALESCE(LEAD_VOLUME.LEAD_VOLUME_VALUE, null) AS LEAD_VOLUME_VALUE,&#xD;
+                            COALESCE(LEAD_VOLUME.LEAD_VOLUME_VOLUME, null) AS LEAD_VOLUME_VOLUME,&#xD;
+                            HL5_LEGACY.BUDGET_YEAR,&#xD;
+                            HL5_LEGACY.ON_PREM,&#xD;
+                            HL5_LEGACY.CLOUD,&#xD;
+                            HL5_LEGACY.MODIFIED_DATE,&#xD;
+                            HL5_LEGACY.STATUS,&#xD;
+                            HL5_LEGACY.DES,&#xD;
+                            REPUTATION_INITIATIVE.OPTION_NAME AS REPUTATION_INITIATIVE,&#xD;
+                            REPUTATION_INITIATIVE_AUDIENCE.OPTION_NAME AS REPUTATION_INITIATIVE_AUDIENCE&#xD;
+                    FROM :va_l5 HL5_LEGACY&#xD;
+                        LEFT JOIN :va_l5_mnp MNP ON HL5_LEGACY.HL5_ID = MNP.HL5_ID&#xD;
+                        LEFT JOIN :va_l5_mtp MTP ON HL5_LEGACY.HL5_ID = MTP.HL5_ID&#xD;
+                        LEFT JOIN :va_l5_mip MIP ON HL5_LEGACY.HL5_ID = MIP.HL5_ID&#xD;
+                        LEFT JOIN :va_l5_lead_volume LEAD_VOLUME ON HL5_LEGACY.HL5_ID = LEAD_VOLUME.HL5_ID&#xD;
+                        LEFT JOIN :va_l5_reputation_initiative_legacy REPUTATION_INITIATIVE ON HL5_LEGACY.HL5_LEGACY_ID = REPUTATION_INITIATIVE.HL5_LEGACY_ID&#xD;
+                        LEFT JOIN :va_l5_reputation_initiative_audience_legacy REPUTATION_INITIATIVE_AUDIENCE ON HL5_LEGACY.HL5_LEGACY_ID = REPUTATION_INITIATIVE_AUDIENCE.HL5_LEGACY_ID&#xD;
+                    WHERE HL5_LEGACY.IS_LEGACY = 1&#xD;
+                    ORDER BY HL5_LEGACY.CRM_ID);&#xD;
+&#xD;
+va_l6 = (SELECT HL6_ID,&#xD;
+                0 AS IS_LEGACY,&#xD;
+                &quot;MKTG_PLANNING_TOOL&quot;.&quot;mktgplanningtool.db.functions::GET_CRM_ID&quot;(&#xD;
+                    BY.BUDGET_YEAR&#xD;
+                    , HL1.ACRONYM&#xD;
+                    , HL2.ORGANIZATION_ACRONYM&#xD;
+                    , HL3.ACRONYM&#xD;
+                    , HL4.ACRONYM&#xD;
+                    , HL5.ACRONYM&#xD;
+                    , HL6.ACRONYM) AS CRM_ID,&#xD;
+                'CPG' AS CAMP_OBJ_TYPE,&#xD;
+                (SELECT HIERARCHY_LEVEL_ID FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HIERARCHY_LEVEL&quot; HIERARCHY_LEVEL WHERE DESCRIPTION = 'HL6') AS HIERARCHY_LEVEL_ID,&#xD;
+                (SELECT HIERARCHY_LEVEL_VALUE FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HIERARCHY_LEVEL&quot; HIERARCHY_LEVEL WHERE DESCRIPTION = 'HL6') AS HIERARCHY_LEVEL_VALUE,&#xD;
+                HL6.BUDGET,&#xD;
+                (HL6.BUDGET * HL6.BUDGET_SPEND_Q1 / 100) AS BUDGET_Q1,&#xD;
+                (HL6.BUDGET * HL6.BUDGET_SPEND_Q2 / 100) AS BUDGET_Q2,&#xD;
+                (HL6.BUDGET * HL6.BUDGET_SPEND_Q3 / 100) AS BUDGET_Q3,&#xD;
+                (HL6.BUDGET * HL6.BUDGET_SPEND_Q4 / 100) AS BUDGET_Q4,&#xD;
+                '' AS INTERNAL_FUNDING,&#xD;
+                '' AS PARTNER_CONTRIBUTION,&#xD;
+                'EUR' AS CURRENCY,&#xD;
+                BY.BUDGET_YEAR,&#xD;
+                '' AS ON_PREM,&#xD;
+                '' AS CLOUD,&#xD;
+                COALESCE(HL6.MODIFIED_DATE_TZ, HL6.CREATED_DATE_TZ) AS MODIFIED_DATE,&#xD;
+                SD.DETAIL AS STATUS&#xD;
+			FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL6&quot; HL6&#xD;
+                INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL5&quot; HL5 ON HL5.HL5_ID = HL6.HL5_ID&#xD;
+                INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL4&quot; HL4 ON HL4.HL4_ID = HL5.HL4_ID&#xD;
+                INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL3&quot; HL3 ON HL3.HL3_ID = HL4.HL3_ID&#xD;
+                INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL2&quot; HL2 ON HL2.HL2_ID = HL3.HL2_ID&#xD;
+                INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL1&quot; HL1 ON HL1.HL1_ID = HL2.HL1_ID&#xD;
+                INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_BUDGET_YEAR&quot; BY ON BY.BUDGET_YEAR_ID = HL1.BUDGET_YEAR_ID&#xD;
+                INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL6_STATUS_DETAIL&quot; SD ON SD.HL6_STATUS_DETAIL_ID = HL6.HL6_STATUS_DETAIL_ID&#xD;
+			WHERE HL6.ENABLED = 1 AND HL6.DELETED = 0)&#xD;
+&#xD;
+			UNION ALL&#xD;
+&#xD;
+			(SELECT HL6.HL6_ID,&#xD;
+			        1 AS IS_LEGACY,&#xD;
+			        CONCAT(HL5_LEGACY.PATH,HL6.ACRONYM) AS CRM_ID,&#xD;
+			        'CPG' AS CAMP_OBJ_TYPE,&#xD;
+			        (SELECT HIERARCHY_LEVEL_ID FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HIERARCHY_LEVEL&quot; HIERARCHY_LEVEL WHERE DESCRIPTION = 'HL6') AS HIERARCHY_LEVEL_ID,&#xD;
+			        (SELECT HIERARCHY_LEVEL_VALUE FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HIERARCHY_LEVEL&quot; HIERARCHY_LEVEL WHERE DESCRIPTION = 'HL6') AS HIERARCHY_LEVEL_VALUE,&#xD;
+			        HL6.BUDGET,&#xD;
+			        (HL6.BUDGET * HL6.BUDGET_SPEND_Q1 / 100) AS BUDGET_Q1,&#xD;
+			        (HL6.BUDGET * HL6.BUDGET_SPEND_Q2 / 100) AS BUDGET_Q2,&#xD;
+			        (HL6.BUDGET * HL6.BUDGET_SPEND_Q3 / 100) AS BUDGET_Q3,&#xD;
+			        (HL6.BUDGET * HL6.BUDGET_SPEND_Q4 / 100) AS BUDGET_Q4,&#xD;
+			        '' AS INTERNAL_FUNDING,&#xD;
+			        '' AS PARTNER_CONTRIBUTION,&#xD;
+			        'EUR' AS CURRENCY,&#xD;
+			        BY.BUDGET_YEAR,&#xD;
+			        '' AS ON_PREM,&#xD;
+			        '' AS CLOUD,&#xD;
+			        COALESCE(HL6.MODIFIED_DATE_TZ, HL6.CREATED_DATE_TZ) AS MODIFIED_DATE,&#xD;
+			        SD.DETAIL AS STATUS&#xD;
+            FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL6&quot; HL6&#xD;
+                INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL6_LEGACY&quot; HL6_LEGACY ON HL6.HL6_ID = HL6_LEGACY.HL6_ID&#xD;
+                INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL5_LEGACY&quot; HL5_LEGACY ON HL5_LEGACY.HL5_LEGACY_ID = HL6_LEGACY.HL5_LEGACY_ID&#xD;
+                INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL4&quot; HL4 ON HL4.HL4_ID = HL5_LEGACY.HL4_ID&#xD;
+                INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL3&quot; HL3 ON HL3.HL3_ID = HL4.HL3_ID&#xD;
+                INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL2&quot; HL2 ON HL2.HL2_ID = HL3.HL2_ID&#xD;
+                INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL1&quot; HL1 ON HL1.HL1_ID = HL2.HL1_ID&#xD;
+                INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_BUDGET_YEAR&quot; BY ON BY.BUDGET_YEAR_ID = HL1.BUDGET_YEAR_ID&#xD;
+                INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL6_STATUS_DETAIL&quot; SD ON SD.HL6_STATUS_DETAIL_ID = HL6.HL6_STATUS_DETAIL_ID&#xD;
+            WHERE HL6.ENABLED = 1 AND HL6.DELETED = 0);&#xD;
+&#xD;
+va_l6_mnp = SELECT HL6_EO.HL6_ID&#xD;
+			, HL6_EOD.EURO_VALUE AS MNP_VALUE&#xD;
+			, HL6_EOD.VOLUME_VALUE AS MNP_VOLUME&#xD;
+			FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL6_EXPECTED_OUTCOMES&quot; HL6_EO&#xD;
+			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL6_EXPECTED_OUTCOMES_DETAIL&quot; HL6_EOD&#xD;
+				ON HL6_EO.HL6_EXPECTED_OUTCOMES_ID = HL6_EOD.HL6_EXPECTED_OUTCOMES_ID&#xD;
+			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_LEVEL&quot; EOL&#xD;
+				ON HL6_EOD.OUTCOMES_ID = EOL.EXPECTED_OUTCOME_LEVEL_ID&#xD;
+			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_OPTION&quot; EOO&#xD;
+				ON EOL.EXPECTED_OUTCOME_OPTION_ID = EOO.EXPECTED_OUTCOME_OPTION_ID&#xD;
+			WHERE HL6_EO.ENABLED = 1&#xD;
+			AND HL6_EO.DELETED = 0&#xD;
+			AND HL6_EOD.ENABLED = 1&#xD;
+			AND HL6_EOD.DELETED = 0&#xD;
+			AND EOO.EXPORT_KEY = 'MNP';&#xD;
+&#xD;
+va_l6_mtp = SELECT HL6_EO.HL6_ID&#xD;
+			, HL6_EOD.EURO_VALUE AS MTP_VALUE&#xD;
+			, HL6_EOD.VOLUME_VALUE AS MTP_VOLUME&#xD;
+			FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL6_EXPECTED_OUTCOMES&quot; HL6_EO&#xD;
+			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL6_EXPECTED_OUTCOMES_DETAIL&quot; HL6_EOD&#xD;
+				ON HL6_EO.HL6_EXPECTED_OUTCOMES_ID = HL6_EOD.HL6_EXPECTED_OUTCOMES_ID&#xD;
+			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_LEVEL&quot; EOL&#xD;
+				ON HL6_EOD.OUTCOMES_ID = EOL.EXPECTED_OUTCOME_LEVEL_ID&#xD;
+			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_OPTION&quot; EOO&#xD;
+				ON EOL.EXPECTED_OUTCOME_OPTION_ID = EOO.EXPECTED_OUTCOME_OPTION_ID&#xD;
+			WHERE HL6_EO.ENABLED = 1&#xD;
+			AND HL6_EO.DELETED = 0&#xD;
+			AND HL6_EOD.ENABLED = 1&#xD;
+			AND HL6_EOD.DELETED = 0&#xD;
+			AND EOO.EXPORT_KEY = 'MTP';&#xD;
+&#xD;
+va_l6_mip = SELECT HL6_EO.HL6_ID&#xD;
+			, HL6_EOD.EURO_VALUE AS MIP_VALUE&#xD;
+			, HL6_EOD.VOLUME_VALUE AS MIP_VOLUME&#xD;
+			FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL6_EXPECTED_OUTCOMES&quot; HL6_EO&#xD;
+			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL6_EXPECTED_OUTCOMES_DETAIL&quot; HL6_EOD&#xD;
+				ON HL6_EO.HL6_EXPECTED_OUTCOMES_ID = HL6_EOD.HL6_EXPECTED_OUTCOMES_ID&#xD;
+			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_LEVEL&quot; EOL&#xD;
+				ON HL6_EOD.OUTCOMES_ID = EOL.EXPECTED_OUTCOME_LEVEL_ID&#xD;
+			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_OPTION&quot; EOO&#xD;
+				ON EOL.EXPECTED_OUTCOME_OPTION_ID = EOO.EXPECTED_OUTCOME_OPTION_ID&#xD;
+			WHERE HL6_EO.ENABLED = 1&#xD;
+			AND HL6_EO.DELETED = 0&#xD;
+			AND HL6_EOD.ENABLED = 1&#xD;
+			AND HL6_EOD.DELETED = 0&#xD;
+			AND EOO.EXPORT_KEY = 'MIP';&#xD;
+&#xD;
+va_l6_lead_volume = SELECT HL6_EO.HL6_ID&#xD;
+			, HL6_EOD.EURO_VALUE AS LEAD_VOLUME_VALUE&#xD;
+			, HL6_EOD.VOLUME_VALUE AS LEAD_VOLUME_VOLUME&#xD;
+			FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL6_EXPECTED_OUTCOMES&quot; HL6_EO&#xD;
+			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL6_EXPECTED_OUTCOMES_DETAIL&quot; HL6_EOD&#xD;
+				ON HL6_EO.HL6_EXPECTED_OUTCOMES_ID = HL6_EOD.HL6_EXPECTED_OUTCOMES_ID&#xD;
+			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_LEVEL&quot; EOL&#xD;
+				ON HL6_EOD.OUTCOMES_ID = EOL.EXPECTED_OUTCOME_LEVEL_ID&#xD;
+			LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_EXPECTED_OUTCOME_OPTION&quot; EOO&#xD;
+				ON EOL.EXPECTED_OUTCOME_OPTION_ID = EOO.EXPECTED_OUTCOME_OPTION_ID&#xD;
+			WHERE HL6_EO.ENABLED = 1&#xD;
+			AND HL6_EO.DELETED = 0&#xD;
+			AND HL6_EOD.ENABLED = 1&#xD;
+			AND HL6_EOD.DELETED = 0&#xD;
+			AND EOO.EXPORT_KEY = 'LEAD_VOLUME';&#xD;
+&#xD;
+va_l6_reputation_initiative = SELECT hl6CategoryOption.HL6_ID,&#xD;
+                            category.NAME AS CATEGORY_NAME,&#xD;
+                            hl6CategoryOption.AMOUNT AS OPTION_AMOUNT,&#xD;
+                            options.NAME AS OPTION_NAME&#xD;
+							FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL6_CATEGORY_OPTION&quot; hl6CategoryOption&#xD;
+							INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_ALLOCATION_CATEGORY_OPTION_LEVEL&quot; ACOL&#xD;
+							ON ACOL.ALLOCATION_CATEGORY_OPTION_LEVEL_ID = hl6CategoryOption.ALLOCATION_CATEGORY_OPTION_LEVEL_ID&#xD;
+							INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_ALLOCATION_OPTION&quot; options ON options.ALLOCATION_OPTION_ID = ACOL.ALLOCATION_OPTION_ID&#xD;
+							INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_ALLOCATION_CATEGORY&quot; category ON category.ALLOCATION_CATEGORY_ID = ACOL.ALLOCATION_CATEGORY_ID&#xD;
+							WHERE hl6CategoryOption.ENABLED = 1&#xD;
+							AND hl6CategoryOption.DELETED = 0&#xD;
+							AND hl6CategoryOption.AMOUNT != 0&#xD;
+							AND category.NAME = 'Reputation Initiative';&#xD;
+&#xD;
+va_l6_reputation_initiative_audience = SELECT hl6CategoryOption.HL6_ID,&#xD;
+                            category.NAME AS CATEGORY_NAME,&#xD;
+                            hl6CategoryOption.AMOUNT AS OPTION_AMOUNT,&#xD;
+                            options.NAME AS OPTION_NAME&#xD;
+							FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_HL6_CATEGORY_OPTION&quot; hl6CategoryOption&#xD;
+							INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_ALLOCATION_CATEGORY_OPTION_LEVEL&quot; ACOL&#xD;
+							ON ACOL.ALLOCATION_CATEGORY_OPTION_LEVEL_ID = hl6CategoryOption.ALLOCATION_CATEGORY_OPTION_LEVEL_ID&#xD;
+							INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_ALLOCATION_OPTION&quot; options ON options.ALLOCATION_OPTION_ID = ACOL.ALLOCATION_OPTION_ID&#xD;
+							INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_ALLOCATION_CATEGORY&quot; category ON category.ALLOCATION_CATEGORY_ID = ACOL.ALLOCATION_CATEGORY_ID&#xD;
+							WHERE hl6CategoryOption.ENABLED = 1&#xD;
+							AND hl6CategoryOption.DELETED = 0&#xD;
+							AND hl6CategoryOption.AMOUNT != 0&#xD;
+							AND category.NAME = 'Reputation Initiative Audience';&#xD;
+&#xD;
+va_l6_result = SELECT   HL6.HL6_ID AS HL_ID,&#xD;
+                        HL6.IS_LEGACY,&#xD;
+                        HL6.HIERARCHY_LEVEL_ID,&#xD;
+                        HL6.HIERARCHY_LEVEL_VALUE,&#xD;
+                        HL6.CRM_ID,&#xD;
+                        HL6.CAMP_OBJ_TYPE,&#xD;
+                        HL6.BUDGET,&#xD;
+                        HL6.BUDGET_Q1,&#xD;
+                        HL6.BUDGET_Q2,&#xD;
+                        HL6.BUDGET_Q3,&#xD;
+                        HL6.BUDGET_Q4,&#xD;
+                        HL6.INTERNAL_FUNDING,&#xD;
+                        HL6.PARTNER_CONTRIBUTION,&#xD;
+                        HL6.CURRENCY,&#xD;
+                        COALESCE(MNP.MNP_VALUE, null) AS MNP_VALUE,&#xD;
+                        COALESCE(MNP.MNP_VOLUME, null) AS MNP_VOLUME,&#xD;
+                        COALESCE(MTP.MTP_VALUE, null) AS MTP_VALUE,&#xD;
+                        COALESCE(MTP.MTP_VOLUME, null) AS MTP_VOLUME,&#xD;
+                        COALESCE(MIP.MIP_VALUE, null) AS MIP_VALUE,&#xD;
+                        COALESCE(MIP.MIP_VOLUME, null) AS MIP_VOLUME,&#xD;
+                        COALESCE(LEAD_VOLUME.LEAD_VOLUME_VALUE, null) AS LEAD_VOLUME_VALUE,&#xD;
+                        COALESCE(LEAD_VOLUME.LEAD_VOLUME_VOLUME, null) AS LEAD_VOLUME_VOLUME,&#xD;
+                        HL6.BUDGET_YEAR,&#xD;
+                        HL6.ON_PREM,&#xD;
+                        HL6.CLOUD,&#xD;
+                        HL6.MODIFIED_DATE,&#xD;
+                        HL6.STATUS,&#xD;
+                        '' AS DES,&#xD;
+                        REPUTATION_INITIATIVE.OPTION_NAME AS REPUTATION_INITIATIVE,&#xD;
+                        REPUTATION_INITIATIVE_AUDIENCE.OPTION_NAME AS REPUTATION_INITIATIVE_AUDIENCE&#xD;
+				FROM :va_l6 HL6&#xD;
+				LEFT JOIN :va_l6_mnp MNP ON HL6.HL6_ID = MNP.HL6_ID&#xD;
+				LEFT JOIN :va_l6_mtp MTP ON HL6.HL6_ID = MTP.HL6_ID&#xD;
+				LEFT JOIN :va_l6_mip MIP ON HL6.HL6_ID = MIP.HL6_ID&#xD;
+				LEFT JOIN :va_l6_lead_volume LEAD_VOLUME ON HL6.HL6_ID = LEAD_VOLUME.HL6_ID&#xD;
+				LEFT JOIN :va_l6_reputation_initiative REPUTATION_INITIATIVE ON HL6.HL6_ID = REPUTATION_INITIATIVE.HL6_ID&#xD;
+				LEFT JOIN :va_l6_reputation_initiative_audience REPUTATION_INITIATIVE_AUDIENCE ON HL6.HL6_ID = REPUTATION_INITIATIVE_AUDIENCE.HL6_ID&#xD;
+				ORDER BY HL6.CRM_ID;&#xD;
+&#xD;
+var_out = SELECT HIERARCHY_LEVEL_ID,&#xD;
+                 IS_LEGACY,&#xD;
+                 HIERARCHY_LEVEL_VALUE,&#xD;
+                 CRM_ID,&#xD;
+                 CAMP_OBJ_TYPE,&#xD;
+                 BUDGET,&#xD;
+                 BUDGET_Q1,&#xD;
+                 BUDGET_Q2,&#xD;
+                 BUDGET_Q3,&#xD;
+                 BUDGET_Q4,&#xD;
+                 INTERNAL_FUNDING,&#xD;
+                 PARTNER_CONTRIBUTION,&#xD;
+                 CURRENCY,&#xD;
+                 MNP_VALUE,&#xD;
+                 MNP_VOLUME,&#xD;
+                 MTP_VALUE,&#xD;
+                 MTP_VOLUME,&#xD;
+                 MIP_VALUE,&#xD;
+                 MIP_VOLUME,&#xD;
+                 LEAD_VOLUME_VALUE,&#xD;
+                 LEAD_VOLUME_VOLUME,&#xD;
+                 BUDGET_YEAR,&#xD;
+                 ON_PREM,&#xD;
+                 CLOUD,&#xD;
+                 MODIFIED_DATE,&#xD;
+                 STATUS,&#xD;
+                 DES,&#xD;
+                 REPUTATION_INITIATIVE,&#xD;
+                 REPUTATION_INITIATIVE_AUDIENCE&#xD;
+FROM ((SELECT   HL_ID,&#xD;
+                IS_LEGACY,&#xD;
+                HIERARCHY_LEVEL_ID,&#xD;
+                HIERARCHY_LEVEL_VALUE,&#xD;
+                CRM_ID,&#xD;
+                CAMP_OBJ_TYPE,&#xD;
+                BUDGET,&#xD;
+                BUDGET_Q1,&#xD;
+                BUDGET_Q2,&#xD;
+                BUDGET_Q3,&#xD;
+                BUDGET_Q4,&#xD;
+                INTERNAL_FUNDING,&#xD;
+                PARTNER_CONTRIBUTION,&#xD;
+                CURRENCY,&#xD;
+                MNP_VALUE,&#xD;
+                MNP_VOLUME,&#xD;
+                MTP_VALUE,&#xD;
+                MTP_VOLUME,&#xD;
+                MIP_VALUE,&#xD;
+                MIP_VOLUME,&#xD;
+                LEAD_VOLUME_VALUE,&#xD;
+                LEAD_VOLUME_VOLUME,&#xD;
+                BUDGET_YEAR,&#xD;
+                ON_PREM,&#xD;
+                CLOUD,&#xD;
+                MODIFIED_DATE,&#xD;
+                STATUS,&#xD;
+                DES,&#xD;
+                REPUTATION_INITIATIVE,&#xD;
+                REPUTATION_INITIATIVE_AUDIENCE&#xD;
+    from :va_l1_result HL1)&#xD;
+    UNION&#xD;
+    (SELECT HL_ID,&#xD;
+            IS_LEGACY,&#xD;
+            HIERARCHY_LEVEL_ID,&#xD;
+            HIERARCHY_LEVEL_VALUE,&#xD;
+            CRM_ID,&#xD;
+            CAMP_OBJ_TYPE,&#xD;
+            BUDGET,&#xD;
+            BUDGET_Q1,&#xD;
+            BUDGET_Q2,&#xD;
+            BUDGET_Q3,&#xD;
+            BUDGET_Q4,&#xD;
+            INTERNAL_FUNDING,&#xD;
+            PARTNER_CONTRIBUTION,&#xD;
+            CURRENCY,&#xD;
+            MNP_VALUE,&#xD;
+            MNP_VOLUME,&#xD;
+            MTP_VALUE,&#xD;
+            MTP_VOLUME,&#xD;
+            MIP_VALUE,&#xD;
+            MIP_VOLUME,&#xD;
+            LEAD_VOLUME_VALUE,&#xD;
+            LEAD_VOLUME_VOLUME,&#xD;
+            BUDGET_YEAR,&#xD;
+            ON_PREM,&#xD;
+            CLOUD,&#xD;
+            MODIFIED_DATE,&#xD;
+            STATUS,&#xD;
+            DES,&#xD;
+            REPUTATION_INITIATIVE,&#xD;
+            REPUTATION_INITIATIVE_AUDIENCE&#xD;
+    from :va_l2_result HL2)&#xD;
+    UNION&#xD;
+    (SELECT HL_ID,&#xD;
+            IS_LEGACY,&#xD;
+            HIERARCHY_LEVEL_ID,&#xD;
+            HIERARCHY_LEVEL_VALUE,&#xD;
+            CRM_ID,&#xD;
+            CAMP_OBJ_TYPE,&#xD;
+            BUDGET,&#xD;
+            BUDGET_Q1,&#xD;
+            BUDGET_Q2,&#xD;
+            BUDGET_Q3,&#xD;
+            BUDGET_Q4,&#xD;
+            INTERNAL_FUNDING,&#xD;
+            PARTNER_CONTRIBUTION,&#xD;
+            CURRENCY,&#xD;
+            MNP_VALUE,&#xD;
+            MNP_VOLUME,&#xD;
+            MTP_VALUE,&#xD;
+            MTP_VOLUME,&#xD;
+            MIP_VALUE,&#xD;
+            MIP_VOLUME,&#xD;
+            LEAD_VOLUME_VALUE,&#xD;
+            LEAD_VOLUME_VOLUME,&#xD;
+            BUDGET_YEAR,&#xD;
+            ON_PREM,&#xD;
+            CLOUD,&#xD;
+            MODIFIED_DATE,&#xD;
+            STATUS,&#xD;
+            DES,&#xD;
+            REPUTATION_INITIATIVE,&#xD;
+            REPUTATION_INITIATIVE_AUDIENCE&#xD;
+    from :va_l3_result HL3)&#xD;
+    UNION&#xD;
+    (SELECT HL_ID,&#xD;
+            IS_LEGACY,&#xD;
+            HIERARCHY_LEVEL_ID,&#xD;
+            HIERARCHY_LEVEL_VALUE,&#xD;
+            CRM_ID,&#xD;
+            CAMP_OBJ_TYPE,&#xD;
+            BUDGET,&#xD;
+            BUDGET_Q1,&#xD;
+            BUDGET_Q2,&#xD;
+            BUDGET_Q3,&#xD;
+            BUDGET_Q4,&#xD;
+            INTERNAL_FUNDING,&#xD;
+            PARTNER_CONTRIBUTION,&#xD;
+            CURRENCY,&#xD;
+            MNP_VALUE,&#xD;
+            MNP_VOLUME,&#xD;
+            MTP_VALUE,&#xD;
+            MTP_VOLUME,&#xD;
+            MIP_VALUE,&#xD;
+            MIP_VOLUME,&#xD;
+            LEAD_VOLUME_VALUE,&#xD;
+            LEAD_VOLUME_VOLUME,&#xD;
+            BUDGET_YEAR,&#xD;
+            ON_PREM,&#xD;
+            CLOUD,&#xD;
+            MODIFIED_DATE,&#xD;
+            STATUS,&#xD;
+            DES,&#xD;
+            REPUTATION_INITIATIVE,&#xD;
+            REPUTATION_INITIATIVE_AUDIENCE&#xD;
+    from :va_l4_result HL4)&#xD;
+    UNION&#xD;
+    (SELECT HL_ID,&#xD;
+            IS_LEGACY,&#xD;
+            HIERARCHY_LEVEL_ID,&#xD;
+            HIERARCHY_LEVEL_VALUE,&#xD;
+            CRM_ID,&#xD;
+            CAMP_OBJ_TYPE,&#xD;
+            BUDGET,&#xD;
+            BUDGET_Q1,&#xD;
+            BUDGET_Q2,&#xD;
+            BUDGET_Q3,&#xD;
+            BUDGET_Q4,&#xD;
+            INTERNAL_FUNDING,&#xD;
+            PARTNER_CONTRIBUTION,&#xD;
+            CURRENCY,&#xD;
+            MNP_VALUE,&#xD;
+            MNP_VOLUME,&#xD;
+            MTP_VALUE,&#xD;
+            MTP_VOLUME,&#xD;
+            MIP_VALUE,&#xD;
+            MIP_VOLUME,&#xD;
+            LEAD_VOLUME_VALUE,&#xD;
+            LEAD_VOLUME_VOLUME,&#xD;
+            BUDGET_YEAR,&#xD;
+            ON_PREM,&#xD;
+            CLOUD,&#xD;
+            MODIFIED_DATE,&#xD;
+            STATUS,&#xD;
+            DES,&#xD;
+            REPUTATION_INITIATIVE,&#xD;
+            REPUTATION_INITIATIVE_AUDIENCE&#xD;
+    from :va_l5_result HL5)&#xD;
+    UNION&#xD;
+    (SELECT HL_ID,&#xD;
+            IS_LEGACY,&#xD;
+            HIERARCHY_LEVEL_ID,&#xD;
+            HIERARCHY_LEVEL_VALUE,&#xD;
+            CRM_ID,&#xD;
+            CAMP_OBJ_TYPE,&#xD;
+            BUDGET,&#xD;
+            BUDGET_Q1,&#xD;
+            BUDGET_Q2,&#xD;
+            BUDGET_Q3,&#xD;
+            BUDGET_Q4,&#xD;
+            INTERNAL_FUNDING,&#xD;
+            PARTNER_CONTRIBUTION,&#xD;
+            CURRENCY,&#xD;
+            MNP_VALUE,&#xD;
+            MNP_VOLUME,&#xD;
+            MTP_VALUE,&#xD;
+            MTP_VOLUME,&#xD;
+            MIP_VALUE,&#xD;
+            MIP_VOLUME,&#xD;
+            LEAD_VOLUME_VALUE,&#xD;
+            LEAD_VOLUME_VOLUME,&#xD;
+            BUDGET_YEAR,&#xD;
+            ON_PREM,&#xD;
+            CLOUD,&#xD;
+            MODIFIED_DATE,&#xD;
+            STATUS,&#xD;
+            DES,&#xD;
+            REPUTATION_INITIATIVE,&#xD;
+            REPUTATION_INITIATIVE_AUDIENCE&#xD;
+    from :va_l6_result HL6));&#xD;
+&#xD;
 END /********* End Procedure Script ************/</definition>
     </calculationView>
   </calculationViews>
@@ -1180,113 +1282,112 @@ END /********* End Procedure Script ************/</definition>
         <descriptions defaultDescription="HL2_ID"/>
         <keyMapping columnObjectName="Script_View" columnName="HIERARCHY_LEVEL_ID"/>
       </attribute>
-      <attribute id="HIERARCHY_LEVEL_VALUE" order="2">
+      <attribute id="HIERARCHY_LEVEL_VALUE" order="3">
         <descriptions defaultDescription="HIERARCHY_LEVEL_VALUE"/>
         <keyMapping columnObjectName="Script_View" columnName="HIERARCHY_LEVEL_VALUE"/>
       </attribute>
-      <attribute id="CRM_ID" order="3">
+      <attribute id="CRM_ID" order="4">
         <descriptions defaultDescription="USER_ID"/>
         <keyMapping columnObjectName="Script_View" columnName="CRM_ID"/>
       </attribute>
-      <attribute id="CAMP_OBJ_TYPE" order="4">
+      <attribute id="CAMP_OBJ_TYPE" order="5">
         <descriptions defaultDescription="USER_ID"/>
         <keyMapping columnObjectName="Script_View" columnName="CAMP_OBJ_TYPE"/>
       </attribute>
-      <attribute id="BUDGET" order="5">
+      <attribute id="BUDGET" order="6">
         <descriptions/>
         <keyMapping columnObjectName="Script_View" columnName="BUDGET"/>
       </attribute>
-      <attribute id="BUDGET_Q1" order="6">
+      <attribute id="BUDGET_Q1" order="7">
         <descriptions/>
         <keyMapping columnObjectName="Script_View" columnName="BUDGET_Q1"/>
       </attribute>
-      <attribute id="BUDGET_Q2" order="7">
+      <attribute id="BUDGET_Q2" order="8">
         <descriptions/>
         <keyMapping columnObjectName="Script_View" columnName="BUDGET_Q2"/>
       </attribute>
-      <attribute id="BUDGET_Q3" order="8">
+      <attribute id="BUDGET_Q3" order="9">
         <descriptions/>
         <keyMapping columnObjectName="Script_View" columnName="BUDGET_Q3"/>
       </attribute>
-      <attribute id="BUDGET_Q4" order="9">
+      <attribute id="BUDGET_Q4" order="10">
         <descriptions/>
         <keyMapping columnObjectName="Script_View" columnName="BUDGET_Q4"/>
       </attribute>
-      <attribute id="INTERNAL_FUNDING" order="10">
+      <attribute id="INTERNAL_FUNDING" order="11">
         <descriptions/>
         <keyMapping columnObjectName="Script_View" columnName="INTERNAL_FUNDING"/>
       </attribute>
-      <attribute id="PARTNER_CONTRIBUTION" order="11">
+      <attribute id="PARTNER_CONTRIBUTION" order="12">
         <descriptions/>
         <keyMapping columnObjectName="Script_View" columnName="PARTNER_CONTRIBUTION"/>
       </attribute>
-      <attribute id="CURRENCY" order="12">
+      <attribute id="CURRENCY" order="13">
         <descriptions/>
         <keyMapping columnObjectName="Script_View" columnName="CURRENCY"/>
       </attribute>
-      <attribute id="MNP_VALUE" order="13">
+      <attribute id="MNP_VALUE" order="14">
         <descriptions/>
         <keyMapping columnObjectName="Script_View" columnName="MNP_VALUE"/>
       </attribute>
-      <attribute id="MNP_VOLUME" order="14">
+      <attribute id="MNP_VOLUME" order="15">
         <descriptions/>
         <keyMapping columnObjectName="Script_View" columnName="MNP_VOLUME"/>
       </attribute>
-      <attribute id="MTP_VALUE" order="15">
+      <attribute id="MTP_VALUE" order="16">
         <descriptions/>
         <keyMapping columnObjectName="Script_View" columnName="MTP_VALUE"/>
       </attribute>
-      <attribute id="MTP_VOLUME" order="16">
+      <attribute id="MTP_VOLUME" order="17">
         <descriptions/>
         <keyMapping columnObjectName="Script_View" columnName="MTP_VOLUME"/>
       </attribute>
-      <attribute id="MIP_VALUE" order="17">
+      <attribute id="MIP_VALUE" order="18">
         <descriptions/>
         <keyMapping columnObjectName="Script_View" columnName="MIP_VALUE"/>
       </attribute>
-      <attribute id="MIP_VOLUME" order="18">
+      <attribute id="MIP_VOLUME" order="19">
         <descriptions/>
         <keyMapping columnObjectName="Script_View" columnName="MIP_VOLUME"/>
       </attribute>
-      <attribute id="LEAD_VOLUME_VALUE" order="19">
+      <attribute id="LEAD_VOLUME_VALUE" order="20">
         <descriptions/>
         <keyMapping columnObjectName="Script_View" columnName="LEAD_VOLUME_VALUE"/>
       </attribute>
-      <attribute id="LEAD_VOLUME_VOLUME" order="20">
+      <attribute id="LEAD_VOLUME_VOLUME" order="21">
         <descriptions/>
         <keyMapping columnObjectName="Script_View" columnName="LEAD_VOLUME_VOLUME"/>
       </attribute>
-      <attribute id="BUDGET_YEAR" order="21">
+      <attribute id="BUDGET_YEAR" order="22">
         <descriptions/>
         <keyMapping columnObjectName="Script_View" columnName="BUDGET_YEAR"/>
       </attribute>
-      <attribute id="ON_PREM" order="22">
+      <attribute id="ON_PREM" order="23">
         <descriptions/>
         <keyMapping columnObjectName="Script_View" columnName="ON_PREM"/>
       </attribute>
-      <attribute id="CLOUD" order="23">
+      <attribute id="CLOUD" order="24">
         <descriptions/>
         <keyMapping columnObjectName="Script_View" columnName="CLOUD"/>
       </attribute>
-      <attribute id="MODIFIED_DATE" order="24">
+      <attribute id="MODIFIED_DATE" order="25">
         <descriptions/>
         <keyMapping columnObjectName="Script_View" columnName="MODIFIED_DATE"/>
       </attribute>
-      <attribute id="STATUS" order="25">
+      <attribute id="STATUS" order="26">
         <descriptions defaultDescription="STATUS"/>
         <keyMapping columnObjectName="Script_View" columnName="STATUS"/>
       </attribute>
-      <attribute id="DES" order="26">
+      <attribute id="DES" order="27">
         <descriptions defaultDescription="DES"/>
         <keyMapping columnObjectName="Script_View" columnName="DES"/>
       </attribute>
-    
-      <attribute id="REPUTATION_INITIATIVE" order="27">
-    
+      <attribute id="REPUTATION_INITIATIVE" order="28">
+        <descriptions defaultDescription="REPUTATION_INITIATIVE"/>
         <keyMapping columnObjectName="Script_View" columnName="REPUTATION_INITIATIVE"/>
-    
       </attribute>
-      <attribute id="REPUTATION_INITIATIVE_AUDIENCE" order="28">
+      <attribute id="REPUTATION_INITIATIVE_AUDIENCE" order="29">
+        <descriptions defaultDescription="REPUTATION_INITIATIVE_AUDIENCE"/>
         <keyMapping columnObjectName="Script_View" columnName="REPUTATION_INITIATIVE_AUDIENCE"/>
       </attribute>
     </attributes>
@@ -1298,7 +1399,12 @@ END /********* End Procedure Script ************/</definition>
         <shapes/>
       </layout>
     </privateDataFoundation>
-    <baseMeasures/>
+    <baseMeasures>
+      <measure id="IS_LEGACY" order="2" aggregationType="sum" measureType="simple">
+        <descriptions defaultDescription="IS_LEGACY"/>
+        <measureMapping columnObjectName="Script_View" columnName="IS_LEGACY"/>
+      </measure>
+    </baseMeasures>
     <calculatedMeasures/>
     <restrictedMeasures/>
     <localDimensions/>

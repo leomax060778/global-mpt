@@ -1,0 +1,168 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_REP_HL4_COMPLETE" (
+    IN in_filter VARCHAR(5000),
+    IN in_user_id BIGINT,
+    IN in_isSA TINYINT,
+    OUT out_result TABLE (
+        HL4_ID BIGINT,
+        HL4_CRM_ID NVARCHAR(25),
+        HL4_ACRONYM NVARCHAR(255),
+        HL4_DESCRIPTION NVARCHAR(255),
+        HL4_STATUS_DETAIL NVARCHAR(255),
+        HL4_BUDGET DECIMAL(19,10),
+        HL4_COST_CENTER NVARCHAR(20),
+        HL4_SHOPPING_CART_APPROVER NVARCHAR(20),
+        HL4_CREATED_DATE TIMESTAMP,
+        HL4_CREATED_USER_NAME NVARCHAR(255),
+        HL4_MODIFIED_DATE TIMESTAMP,
+        HL4_MODIFIED_USER_NAME NVARCHAR(255),
+
+        HL3_ID BIGINT,
+        HL3_CRM_ID NVARCHAR(25),
+        HL3_ACRONYM NVARCHAR(255),
+        HL3_DESCRIPTION NVARCHAR(255),
+        HL3_STATUS_DETAIL NVARCHAR(10),
+        HL3_BUDGET DECIMAL(19,10),
+        HL3_COST_CENTER NVARCHAR(20),
+        HL3_SHOPPING_CART_APPROVER NVARCHAR(20),
+        HL3_CREATED_DATE TIMESTAMP,
+        HL3_CREATED_USER_NAME NVARCHAR(255),
+        HL3_MODIFIED_DATE TIMESTAMP,
+        HL3_MODIFIED_USER_NAME NVARCHAR(255),
+
+        HL2_ID BIGINT,
+        HL2_CRM_ID NVARCHAR(25),
+        HL2_ACRONYM NVARCHAR(255),
+        HL2_DESCRIPTION NVARCHAR(255),
+        HL2_STATUS_DETAIL NVARCHAR(10),
+        HL2_BUDGET DECIMAL(19,10),
+        HL2_COST_CENTER NVARCHAR(10),
+        HL2_SHOPPING_CART_APPROVER NVARCHAR(10),
+        HL2_CREATED_DATE TIMESTAMP,
+        HL2_CREATED_USER_NAME NVARCHAR(255),
+        HL2_MODIFIED_DATE TIMESTAMP,
+        HL2_MODIFIED_USER_NAME NVARCHAR(255),
+
+        HL1_ID BIGINT,
+        HL1_CRM_ID NVARCHAR(25),
+        HL1_ACRONYM NVARCHAR(255),
+        HL1_DESCRIPTION NVARCHAR(255),
+        HL1_STATUS_DETAIL NVARCHAR(10),
+        HL1_BUDGET DECIMAL(19,10),
+        HL1_COST_CENTER NVARCHAR(10),
+        HL1_SHOPPING_CART_APPROVER NVARCHAR(10),
+        HL1_CREATED_DATE TIMESTAMP,
+        HL1_CREATED_USER_NAME NVARCHAR(255),
+        HL1_MODIFIED_DATE TIMESTAMP,
+        HL1_MODIFIED_USER_NAME NVARCHAR(255),
+
+        REGION_ID BIGINT,
+        REGION_NAME NVARCHAR(255),
+        BUDGET_YEAR_ID BIGINT,
+        BUDGET_YEAR INTEGER
+	),
+	OUT out_result_rg_name TABLE (
+	    REGION_NAME nvarchar(255)
+	),
+	OUT out_attributes TABLE (
+	    HL4_ID BIGINT,
+        CATEGORY_ID BIGINT,
+        CATEGORY_NAME NVARCHAR(255),
+        OPTION_ID BIGINT,
+        OPTION_NAME NVARCHAR(255),
+        OPTION_PERCENTAGE DECIMAL(19,10),
+        CRM_KEY NVARCHAR(25)
+	)
+) 
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER 
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	READS SQL DATA AS
+BEGIN
+
+	va_user_filter = SELECT DISTINCT report.HL4_ID,
+	                                 "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(report.BUDGET_YEAR, report.HL1_ACRONYM, report.HL2_ACRONYM, report.HL3_ACRONYM, report.HL4_ACRONYM, '', '') AS HL4_CRM_ID,
+                                     report.HL4_ACRONYM,
+                                     report.HL4_DESCRIPTION,
+                                     report.HL4_STATUS_DETAIL,
+                                     report.HL4_BUDGET,
+                                     report.HL4_COST_CENTER,
+                                     report.HL4_SHOPPING_CART_APPROVER,
+                                     report.HL4_CREATED_DATE,
+                                     report.HL4_CREATED_USER_NAME,
+                                     report.HL4_MODIFIED_DATE,
+                                     report.HL4_MODIFIED_USER_NAME,
+
+                                     report.HL3_ID,
+                                     "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(report.BUDGET_YEAR, report.HL1_ACRONYM, report.HL2_ACRONYM, report.HL3_ACRONYM, '', '', '') AS HL3_CRM_ID,
+                                     report.HL3_ACRONYM,
+                                     report.HL3_DESCRIPTION,
+                                     report.HL3_STATUS_DETAIL,
+                                     report.HL3_BUDGET,
+                                     report.HL3_COST_CENTER,
+                                     report.HL3_SHOPPING_CART_APPROVER,
+                                     report.HL3_CREATED_DATE,
+                                     report.HL3_CREATED_USER_NAME,
+                                     report.HL3_MODIFIED_DATE,
+                                     report.HL3_MODIFIED_USER_NAME,
+
+                                     report.HL2_ID,
+                                     "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(report.BUDGET_YEAR, report.HL1_ACRONYM, report.HL2_ACRONYM, '', '', '', '') AS HL2_CRM_ID,
+                                     report.HL2_ACRONYM,
+                                     report.HL2_DESCRIPTION,
+                                     report.HL2_STATUS_DETAIL,
+                                     report.HL2_BUDGET,
+                                     report.HL2_COST_CENTER,
+                                     report.HL2_SHOPPING_CART_APPROVER,
+                                     report.HL2_CREATED_DATE,
+                                     report.HL2_CREATED_USER_NAME,
+                                     report.HL2_MODIFIED_DATE,
+                                     report.HL2_MODIFIED_USER_NAME,
+
+                                     report.HL1_ID,
+                                     "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(report.BUDGET_YEAR, report.HL1_ACRONYM, '', '', '', '', '') AS HL1_CRM_ID,
+                                     report.HL1_ACRONYM,
+                                     report.HL1_DESCRIPTION,
+                                     report.HL1_STATUS_DETAIL,
+                                     report.HL1_BUDGET,
+                                     report.HL1_COST_CENTER,
+                                     report.HL1_SHOPPING_CART_APPROVER,
+                                     report.HL1_CREATED_DATE,
+                                     report.HL1_CREATED_USER_NAME,
+                                     report.HL1_MODIFIED_DATE,
+                                     report.HL1_MODIFIED_USER_NAME,
+
+                                     report.REGION_ID,
+                                     report.REGION_NAME,
+                                     report.BUDGET_YEAR_ID,
+                                     report.BUDGET_YEAR
+						FROM "_SYS_BIC"."mktgplanningtool.db.data.views/CV_BUDGET_DISTRIBUTION_REPORT" report
+						WHERE report.HL2_ID IN (
+						                            SELECT hl2User.HL2_ID
+						                            FROM "_SYS_BIC"."mktgplanningtool.db.data.views/AT_HL2_USER" hl2User
+						                            WHERE (in_isSA = 1 OR hl2User.USER_ID = in_user_id));
+
+	out_result = APPLY_FILTER(:va_user_filter, :in_filter);
+	
+    out_result_rg_name = select REGION_NAME from "MKTG_PLANNING_TOOL"."REGION";
+
+    out_attributes = SELECT hcp.HL4_ID,
+                            cat.ALLOCATION_CATEGORY_ID AS CATEGORY_ID,
+                            cat.NAME AS CATEGORY_NAME,
+                            opt.ALLOCATION_OPTION_ID AS OPTION_ID,
+                            opt.NAME AS OPTION_NAME,
+                            hcp.AMOUNT AS OPTION_PERCENTAGE,
+                            opt.CRM_KEY
+                     FROM HL4_CATEGORY_OPTION hcp
+                        RIGHT JOIN ALLOCATION_CATEGORY_OPTION_LEVEL acol
+                            ON hcp.ALLOCATION_CATEGORY_OPTION_LEVEL_ID = acol.ALLOCATION_CATEGORY_OPTION_LEVEL_ID
+                        LEFT JOIN ALLOCATION_CATEGORY cat
+                           ON cat.ALLOCATION_CATEGORY_ID = acol.ALLOCATION_CATEGORY_ID
+                        LEFT JOIN ALLOCATION_OPTION opt
+                           ON opt.ALLOCATION_OPTION_ID = acol.ALLOCATION_OPTION_ID
+                     WHERE  hcp.ENABLED = 1
+                        AND hcp.DELETED = 0
+                        AND hcp.AMOUNT != 0
+                        AND hcp.HL4_ID IN (SELECT rep.HL4_ID FROM :out_result rep)
+                     ORDER  BY hcp.HL4_ID DESC;
+END;
+

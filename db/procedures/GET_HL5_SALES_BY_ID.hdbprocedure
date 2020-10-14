@@ -39,7 +39,7 @@ sub_out_result =
     	    hl5_sales.organization_type,
     	    hl5_sales.description,
     	    hl5_sales.currency_id,
-    	    hl2.organization_acronym as organization_name
+    	    hl2.organization_name as organization_name
     	from hl5_sales
         inner join hl2 on hl2.hl2_id = hl5_sales.organization_id
     	where hl5_id = in_hl5_id

@@ -1,0 +1,374 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Calculation:scenario xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:Calculation="http://www.sap.com/ndb/BiModelCalculation.ecore" schemaVersion="2.3" id="CV_BUDGET_DISTRIBUTION_REPORT" applyPrivilegeType="ANALYTIC_PRIVILEGE" checkAnalyticPrivileges="true" defaultClient="$$client$$" defaultLanguage="$$language$$" hierarchiesSQLEnabled="false" translationRelevant="true" visibility="reportingEnabled" calculationScenarioType="SCRIPT_BASED" dataCategory="CUBE" enforceSqlExecution="false" executionSemantic="UNDEFINED" scriptParametersCaseSensitive="true">
+  <descriptions defaultDescription="CV_BUDGET_DISTRIBUTION_REPORT"/>
+  <localVariables/>
+  <variableMappings/>
+  <informationModelLayout relativeWidthScenario="27"/>
+  <dataSources/>
+  <calculationViews>
+    <calculationView xsi:type="Calculation:SqlScriptView" id="Script_View">
+      <descriptions/>
+      <viewAttributes>
+        <viewAttribute datatype="BIGINT" id="HL4_ID"/>
+        <viewAttribute datatype="NVARCHAR" id="HL4_ACRONYM" length="255"/>
+        <viewAttribute datatype="NVARCHAR" id="HL4_DESCRIPTION" length="255"/>
+        <viewAttribute datatype="NVARCHAR" id="HL4_STATUS_DETAIL" length="255"/>
+        <viewAttribute datatype="DECIMAL" id="HL4_BUDGET" length="19" scale="10"/>
+        <viewAttribute datatype="NVARCHAR" id="HL4_COST_CENTER" length="20"/>
+        <viewAttribute datatype="NVARCHAR" id="HL4_SHOPPING_CART_APPROVER" length="20"/>
+        <viewAttribute datatype="TIMESTAMP" id="HL4_CREATED_DATE"/>
+        <viewAttribute datatype="NVARCHAR" id="HL4_CREATED_USER_NAME" length="255"/>
+        <viewAttribute datatype="TIMESTAMP" id="HL4_MODIFIED_DATE"/>
+        <viewAttribute datatype="NVARCHAR" id="HL4_MODIFIED_USER_NAME" length="255"/>
+        <viewAttribute datatype="BIGINT" id="HL3_ID"/>
+        <viewAttribute datatype="NVARCHAR" id="HL3_ACRONYM" length="255"/>
+        <viewAttribute datatype="NVARCHAR" id="HL3_DESCRIPTION" length="255"/>
+        <viewAttribute datatype="NVARCHAR" id="HL3_STATUS_DETAIL" length="10"/>
+        <viewAttribute datatype="DECIMAL" id="HL3_BUDGET" length="19" scale="10"/>
+        <viewAttribute datatype="NVARCHAR" id="HL3_COST_CENTER" length="20"/>
+        <viewAttribute datatype="NVARCHAR" id="HL3_SHOPPING_CART_APPROVER" length="20"/>
+        <viewAttribute datatype="TIMESTAMP" id="HL3_CREATED_DATE"/>
+        <viewAttribute datatype="NVARCHAR" id="HL3_CREATED_USER_NAME" length="255"/>
+        <viewAttribute datatype="TIMESTAMP" id="HL3_MODIFIED_DATE"/>
+        <viewAttribute datatype="NVARCHAR" id="HL3_MODIFIED_USER_NAME" length="255"/>
+        <viewAttribute datatype="BIGINT" id="HL2_ID"/>
+        <viewAttribute datatype="NVARCHAR" id="HL2_ACRONYM" length="255"/>
+        <viewAttribute datatype="NVARCHAR" id="HL2_DESCRIPTION" length="255"/>
+        <viewAttribute datatype="NVARCHAR" id="HL2_STATUS_DETAIL" length="10"/>
+        <viewAttribute datatype="DECIMAL" id="HL2_BUDGET" length="19" scale="10"/>
+        <viewAttribute datatype="NVARCHAR" id="HL2_COST_CENTER" length="10"/>
+        <viewAttribute datatype="NVARCHAR" id="HL2_SHOPPING_CART_APPROVER" length="10"/>
+        <viewAttribute datatype="TIMESTAMP" id="HL2_CREATED_DATE"/>
+        <viewAttribute datatype="NVARCHAR" id="HL2_CREATED_USER_NAME" length="255"/>
+        <viewAttribute datatype="TIMESTAMP" id="HL2_MODIFIED_DATE"/>
+        <viewAttribute datatype="NVARCHAR" id="HL2_MODIFIED_USER_NAME" length="255"/>
+        <viewAttribute datatype="BIGINT" id="HL1_ID"/>
+        <viewAttribute datatype="NVARCHAR" id="HL1_ACRONYM" length="255"/>
+        <viewAttribute datatype="NVARCHAR" id="HL1_DESCRIPTION" length="255"/>
+        <viewAttribute datatype="NVARCHAR" id="HL1_STATUS_DETAIL" length="10"/>
+        <viewAttribute datatype="DECIMAL" id="HL1_BUDGET" length="19" scale="10"/>
+        <viewAttribute datatype="NVARCHAR" id="HL1_COST_CENTER" length="10"/>
+        <viewAttribute datatype="NVARCHAR" id="HL1_SHOPPING_CART_APPROVER" length="10"/>
+        <viewAttribute datatype="TIMESTAMP" id="HL1_CREATED_DATE"/>
+        <viewAttribute datatype="NVARCHAR" id="HL1_CREATED_USER_NAME" length="255"/>
+        <viewAttribute datatype="TIMESTAMP" id="HL1_MODIFIED_DATE"/>
+        <viewAttribute datatype="NVARCHAR" id="HL1_MODIFIED_USER_NAME" length="255"/>
+        <viewAttribute datatype="BIGINT" id="REGION_ID"/>
+        <viewAttribute datatype="NVARCHAR" id="REGION_NAME" length="255"/>
+        <viewAttribute datatype="BIGINT" id="BUDGET_YEAR_ID"/>
+        <viewAttribute datatype="INTEGER" id="BUDGET_YEAR"/>
+      </viewAttributes>
+      <calculatedViewAttributes/>
+      <definition>/********* Begin Procedure Script ************/
+ BEGIN
+    var_out = SELECT bdis.HL4_ID,
+                     bdis.HL4_ACRONYM,
+                     bdis.HL4_DESCRIPTION,
+                     bdis.HL4_STATUS_DETAIL,
+                     bdis.HL4_BUDGET,
+                     CONCAT(ccl4.NAME, CONCAT(' (', CONCAT(bdis.HL4_COST_CENTER, ')'))) AS HL4_COST_CENTER,
+                     bdis.HL4_SHOPPING_CART_APPROVER,
+                     bdis.HL4_CREATED_DATE,
+                     CONCAT(cr_usl4.FIRST_NAME, CONCAT(' ', CONCAT(cr_usl4.LAST_NAME, CONCAT(' (', CONCAT(cr_usl4.USER_NAME, ')'))))) AS HL4_CREATED_USER_NAME,
+                     bdis.HL4_MODIFIED_DATE,
+                     CONCAT(mo_usl4.FIRST_NAME, CONCAT(' ', CONCAT(mo_usl4.LAST_NAME, CONCAT(' (', CONCAT(mo_usl4.USER_NAME, ')'))))) AS HL4_MODIFIED_USER_NAME,
+
+                     bdis.HL3_ID,
+                     bdis.HL3_ACRONYM,
+                     bdis.HL3_DESCRIPTION,
+                     '' AS HL3_STATUS_DETAIL,
+                     bdis.HL3_BUDGET,
+                     CONCAT(ccl3.NAME, CONCAT(' (', CONCAT(bdis.HL3_COST_CENTER, ')'))) AS HL3_COST_CENTER,
+                     bdis.HL3_SHOPPING_CART_APPROVER,
+                     bdis.HL3_CREATED_DATE,
+                     CONCAT(cr_usl3.FIRST_NAME, CONCAT(' ', CONCAT(cr_usl3.LAST_NAME, CONCAT(' (', CONCAT(cr_usl3.USER_NAME, ')'))))) AS HL3_CREATED_USER_NAME,
+                     bdis.HL3_MODIFIED_DATE,
+                     CONCAT(mo_usl3.FIRST_NAME, CONCAT(' ', CONCAT(mo_usl3.LAST_NAME, CONCAT(' (', CONCAT(mo_usl3.USER_NAME, ')'))))) AS HL3_MODIFIED_USER_NAME,
+
+                     bdis.HL2_ID,
+                     bdis.HL2_ACRONYM,
+                     bdis.HL2_DESCRIPTION,
+                     '' AS HL2_STATUS_DETAIL,
+                     bdis.HL2_BUDGET,
+                     '' AS HL2_COST_CENTER,
+                     '' AS HL2_SHOPPING_CART_APPROVER,
+                     bdis.HL2_CREATED_DATE,
+                     CONCAT(cr_usl2.FIRST_NAME, CONCAT(' ', CONCAT(cr_usl2.LAST_NAME, CONCAT(' (', CONCAT(cr_usl2.USER_NAME, ')'))))) AS HL2_CREATED_USER_NAME,
+                     bdis.HL2_MODIFIED_DATE,
+                     CONCAT(mo_usl2.FIRST_NAME, CONCAT(' ', CONCAT(mo_usl2.LAST_NAME, CONCAT(' (', CONCAT(mo_usl2.USER_NAME, ')'))))) AS HL2_MODIFIED_USER_NAME,
+
+                     bdis.HL1_ID,
+                     bdis.HL1_ACRONYM,
+                     bdis.HL1_DESCRIPTION,
+                     '' AS HL1_STATUS_DETAIL,
+                     bdis.HL1_BUDGET,
+                     '' AS HL1_COST_CENTER,
+                     '' AS HL1_SHOPPING_CART_APPROVER,
+                     bdis.HL1_CREATED_DATE,
+                     CONCAT(cr_usl1.FIRST_NAME, CONCAT(' ', CONCAT(cr_usl1.LAST_NAME, CONCAT(' (', CONCAT(cr_usl1.USER_NAME, ')'))))) AS HL1_CREATED_USER_NAME,
+                     bdis.HL1_MODIFIED_DATE,
+                     CONCAT(mo_usl1.FIRST_NAME, CONCAT(' ', CONCAT(mo_usl1.LAST_NAME, CONCAT(' (', CONCAT(mo_usl1.USER_NAME, ')'))))) AS HL1_MODIFIED_USER_NAME,
+                     
+                     bdis.REGION_ID,
+                     bdis.REGION_NAME,
+                     bdis.BUDGET_YEAR_ID,
+                     bdis.BUDGET_YEAR
+                FROM &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_BUDGET_DISTRIBUTION_REPORT&quot; bdis
+                -- Created and Modified user information for all levels
+                INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_USER&quot; cr_usl1
+                    ON cr_usl1.USER_ID = bdis.HL1_CREATED_USER_ID
+                LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_USER&quot; mo_usl1
+                    ON mo_usl1.USER_ID = bdis.HL1_MODIFIED_USER_ID
+                INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_USER&quot; cr_usl2
+                    ON cr_usl2.USER_ID = bdis.HL2_CREATED_USER_ID
+                LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_USER&quot; mo_usl2
+                    ON mo_usl2.USER_ID = bdis.HL2_MODIFIED_USER_ID
+                INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_USER&quot; cr_usl3
+                    ON cr_usl3.USER_ID = bdis.HL3_CREATED_USER_ID
+                LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_USER&quot; mo_usl3
+                    ON mo_usl3.USER_ID = bdis.HL3_MODIFIED_USER_ID
+                INNER JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_USER&quot; cr_usl4
+                    ON cr_usl4.USER_ID = bdis.HL4_CREATED_USER_ID
+                LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_USER&quot; mo_usl4
+                    ON mo_usl4.USER_ID = bdis.HL4_MODIFIED_USER_ID
+                -- /Created and Modified user information for all levels
+				-- Cost Center Information
+				LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_COST_CENTER&quot; ccl3
+				    ON ccl3.COST_CENTER_CODE = bdis.HL3_COST_CENTER
+				    	AND ccl3.ENABLED = 1
+				    	AND ccl3.DELETED = 0
+				LEFT JOIN &quot;_SYS_BIC&quot;.&quot;mktgplanningtool.db.data.views/AT_COST_CENTER&quot; ccl4
+				    ON ccl4.COST_CENTER_CODE = bdis.HL4_COST_CENTER
+				    	AND ccl4.ENABLED = 1
+				    	AND ccl4.DELETED = 0
+                -- /Cost Center Information
+                WHERE bdis.HL4_ENABLED = 1
+                    AND bdis.HL4_DELETED = 0
+                    AND bdis.HL3_ENABLED = 1
+                    AND bdis.HL3_DELETED = 0
+                    AND bdis.HL2_ENABLED = 1
+                    AND bdis.HL2_DELETED = 0
+                    AND bdis.HL1_ENABLED = 1
+                    AND bdis.HL1_DELETED = 0;
+
+END /********* End Procedure Script ************/</definition>
+    </calculationView>
+  </calculationViews>
+  <logicalModel id="Script_View">
+    <descriptions/>
+    <attributes>
+      <attribute id="HL4_ACRONYM" order="2">
+        <descriptions defaultDescription="ORGANIZATION_ACRONYM"/>
+        <keyMapping columnObjectName="Script_View" columnName="HL4_ACRONYM"/>
+      </attribute>
+      <attribute id="HL4_DESCRIPTION" order="3">
+        <descriptions defaultDescription="BUDGET_YEAR"/>
+        <keyMapping columnObjectName="Script_View" columnName="HL4_DESCRIPTION"/>
+      </attribute>
+      <attribute id="HL4_CREATED_DATE" order="8">
+        <descriptions defaultDescription="HL4_CREATED_DATE"/>
+        <keyMapping columnObjectName="Script_View" columnName="HL4_CREATED_DATE"/>
+      </attribute>
+      <attribute id="HL4_MODIFIED_DATE" order="10">
+        <descriptions defaultDescription="HL4_MODIFIED_DATE"/>
+        <keyMapping columnObjectName="Script_View" columnName="HL4_MODIFIED_DATE"/>
+      </attribute>
+      <attribute id="HL4_MODIFIED_USER_NAME" order="11">
+        <descriptions defaultDescription="BUDGET_REGION_NAME"/>
+        <keyMapping columnObjectName="Script_View" columnName="HL4_MODIFIED_USER_NAME"/>
+      </attribute>
+      <attribute id="HL3_ACRONYM" order="13">
+        <descriptions defaultDescription="HL3_ACRONYM"/>
+        <keyMapping columnObjectName="Script_View" columnName="HL3_ACRONYM"/>
+      </attribute>
+      <attribute id="HL3_DESCRIPTION" order="14">
+        <descriptions defaultDescription="HL3_DESCRIPTION"/>
+        <keyMapping columnObjectName="Script_View" columnName="HL3_DESCRIPTION"/>
+      </attribute>
+      <attribute id="HL3_STATUS_DETAIL" order="15">
+        <descriptions defaultDescription="HL3_STATUS_DETAIL"/>
+        <keyMapping columnObjectName="Script_View" columnName="HL3_STATUS_DETAIL"/>
+      </attribute>
+      <attribute id="HL3_COST_CENTER" order="17">
+        <descriptions defaultDescription="HL3_COST_CENTER"/>
+        <keyMapping columnObjectName="Script_View" columnName="HL3_COST_CENTER"/>
+      </attribute>
+      <attribute id="HL3_SHOPPING_CART_APPROVER" order="18">
+        <descriptions defaultDescription="HL3_SHOPPING_CART_APPROVER"/>
+        <keyMapping columnObjectName="Script_View" columnName="HL3_SHOPPING_CART_APPROVER"/>
+      </attribute>
+      <attribute id="HL3_CREATED_DATE" order="19">
+        <descriptions defaultDescription="HL3_CREATED_DATE"/>
+        <keyMapping columnObjectName="Script_View" columnName="HL3_CREATED_DATE"/>
+      </attribute>
+      <attribute id="HL3_CREATED_USER_NAME" order="20">
+        <descriptions defaultDescription="HL3_CREATED_USER_NAME"/>
+        <keyMapping columnObjectName="Script_View" columnName="HL3_CREATED_USER_NAME"/>
+      </attribute>
+      <attribute id="HL3_MODIFIED_DATE" order="21">
+        <descriptions defaultDescription="HL3_MODIFIED_DATE"/>
+        <keyMapping columnObjectName="Script_View" columnName="HL3_MODIFIED_DATE"/>
+      </attribute>
+      <attribute id="HL3_MODIFIED_USER_NAME" order="22">
+        <descriptions defaultDescription="HL3_MODIFIED_USER_NAME"/>
+        <keyMapping columnObjectName="Script_View" columnName="HL3_MODIFIED_USER_NAME"/>
+      </attribute>
+      <attribute id="HL2_ACRONYM" order="24">
+        <descriptions defaultDescription="HL2_ACRONYM"/>
+        <keyMapping columnObjectName="Script_View" columnName="HL2_ACRONYM"/>
+      </attribute>
+      <attribute id="HL2_DESCRIPTION" order="25">
+        <descriptions defaultDescription="HL2_DESCRIPTION"/>
+        <keyMapping columnObjectName="Script_View" columnName="HL2_DESCRIPTION"/>
+      </attribute>
+      <attribute id="HL2_STATUS_DETAIL" order="26">
+        <descriptions defaultDescription="HL2_STATUS_DETAIL"/>
+        <keyMapping columnObjectName="Script_View" columnName="HL2_STATUS_DETAIL"/>
+      </attribute>
+      <attribute id="HL2_COST_CENTER" order="28">
+        <descriptions defaultDescription="HL2_COST_CENTER"/>
+        <keyMapping columnObjectName="Script_View" columnName="HL2_COST_CENTER"/>
+      </attribute>
+      <attribute id="HL2_SHOPPING_CART_APPROVER" order="29">
+        <descriptions defaultDescription="HL2_SHOPPING_CART_APPROVER"/>
+        <keyMapping columnObjectName="Script_View" columnName="HL2_SHOPPING_CART_APPROVER"/>
+      </attribute>
+      <attribute id="HL2_CREATED_DATE" order="30">
+        <descriptions defaultDescription="HL2_CREATED_DATE"/>
+        <keyMapping columnObjectName="Script_View" columnName="HL2_CREATED_DATE"/>
+      </attribute>
+      <attribute id="HL2_CREATED_USER_NAME" order="31">
+        <descriptions defaultDescription="HL2_CREATED_USER_NAME"/>
+        <keyMapping columnObjectName="Script_View" columnName="HL2_CREATED_USER_NAME"/>
+      </attribute>
+      <attribute id="HL2_MODIFIED_DATE" order="32">
+        <descriptions defaultDescription="HL2_MODIFIED_DATE"/>
+        <keyMapping columnObjectName="Script_View" columnName="HL2_MODIFIED_DATE"/>
+      </attribute>
+      <attribute id="HL2_MODIFIED_USER_NAME" order="33">
+        <descriptions defaultDescription="HL2_MODIFIED_USER_NAME"/>
+        <keyMapping columnObjectName="Script_View" columnName="HL2_MODIFIED_USER_NAME"/>
+      </attribute>
+      <attribute id="HL1_ACRONYM" order="35">
+        <descriptions defaultDescription="HL1_ACRONYM"/>
+        <keyMapping columnObjectName="Script_View" columnName="HL1_ACRONYM"/>
+      </attribute>
+      <attribute id="HL1_DESCRIPTION" order="36">
+        <descriptions defaultDescription="HL1_DESCRIPTION"/>
+        <keyMapping columnObjectName="Script_View" columnName="HL1_DESCRIPTION"/>
+      </attribute>
+      <attribute id="HL1_STATUS_DETAIL" order="37">
+        <descriptions defaultDescription="HL1_STATUS_DETAIL"/>
+        <keyMapping columnObjectName="Script_View" columnName="HL1_STATUS_DETAIL"/>
+      </attribute>
+      <attribute id="HL1_COST_CENTER" order="39">
+        <descriptions defaultDescription="HL1_COST_CENTER"/>
+        <keyMapping columnObjectName="Script_View" columnName="HL1_COST_CENTER"/>
+      </attribute>
+      <attribute id="HL1_SHOPPING_CART_APPROVER" order="40">
+        <descriptions defaultDescription="HL1_SHOPPING_CART_APPROVER"/>
+        <keyMapping columnObjectName="Script_View" columnName="HL1_SHOPPING_CART_APPROVER"/>
+      </attribute>
+      <attribute id="HL1_CREATED_DATE" order="41">
+        <descriptions defaultDescription="HL1_CREATED_DATE"/>
+        <keyMapping columnObjectName="Script_View" columnName="HL1_CREATED_DATE"/>
+      </attribute>
+      <attribute id="HL1_CREATED_USER_NAME" order="42">
+        <descriptions defaultDescription="HL1_CREATED_USER_NAME"/>
+        <keyMapping columnObjectName="Script_View" columnName="HL1_CREATED_USER_NAME"/>
+      </attribute>
+      <attribute id="HL1_MODIFIED_DATE" order="43">
+        <descriptions defaultDescription="HL1_MODIFIED_DATE"/>
+        <keyMapping columnObjectName="Script_View" columnName="HL1_MODIFIED_DATE"/>
+      </attribute>
+      <attribute id="HL1_MODIFIED_USER_NAME" order="44">
+        <descriptions defaultDescription="HL1_MODIFIED_USER_NAME"/>
+        <keyMapping columnObjectName="Script_View" columnName="HL1_MODIFIED_USER_NAME"/>
+      </attribute>
+      <attribute id="REGION_NAME" order="46">
+        <descriptions defaultDescription="REGION_NAME"/>
+        <keyMapping columnObjectName="Script_View" columnName="REGION_NAME"/>
+      </attribute>
+    </attributes>
+    <calculatedAttributes/>
+    <privateDataFoundation>
+      <tableProxies/>
+      <joins/>
+      <layout>
+        <shapes/>
+      </layout>
+    </privateDataFoundation>
+    <baseMeasures>
+      <measure id="HL4_ID" order="1" aggregationType="sum" measureType="simple">
+        <descriptions defaultDescription="BUDGET_YEAR_ID"/>
+        <measureMapping columnObjectName="Script_View" columnName="HL4_ID"/>
+      </measure>
+      <measure id="HL4_STATUS_DETAIL" order="4" aggregationType="sum" measureType="simple">
+        <descriptions defaultDescription="PLAN_ID"/>
+        <measureMapping columnObjectName="Script_View" columnName="HL4_STATUS_DETAIL"/>
+      </measure>
+      <measure id="HL4_BUDGET" order="5" aggregationType="sum" measureType="simple">
+        <descriptions defaultDescription="HL2_BUDGET_TOTAL"/>
+        <measureMapping columnObjectName="Script_View" columnName="HL4_BUDGET"/>
+      </measure>
+      <measure id="HL4_COST_CENTER" order="6" aggregationType="sum" measureType="simple">
+        <descriptions defaultDescription="REMAINING"/>
+        <measureMapping columnObjectName="Script_View" columnName="HL4_COST_CENTER"/>
+      </measure>
+      <measure id="HL4_SHOPPING_CART_APPROVER" order="7" aggregationType="sum" measureType="simple">
+        <descriptions defaultDescription="ALLOCATED"/>
+        <measureMapping columnObjectName="Script_View" columnName="HL4_SHOPPING_CART_APPROVER"/>
+      </measure>
+      <measure id="HL4_CREATED_USER_NAME" order="9" aggregationType="sum" measureType="simple">
+        <descriptions defaultDescription="PERCENTAGE"/>
+        <measureMapping columnObjectName="Script_View" columnName="HL4_CREATED_USER_NAME"/>
+      </measure>
+      <measure id="HL3_ID" order="12" aggregationType="sum" measureType="simple">
+        <descriptions defaultDescription="REGION_ID"/>
+        <measureMapping columnObjectName="Script_View" columnName="HL3_ID"/>
+      </measure>
+      <measure id="HL3_BUDGET" order="16" aggregationType="sum" measureType="simple">
+        <descriptions defaultDescription="HL3_BUDGET"/>
+        <measureMapping columnObjectName="Script_View" columnName="HL3_BUDGET"/>
+      </measure>
+      <measure id="HL2_ID" order="23" aggregationType="sum" measureType="simple">
+        <descriptions defaultDescription="HL2_ID"/>
+        <measureMapping columnObjectName="Script_View" columnName="HL2_ID"/>
+      </measure>
+      <measure id="HL2_BUDGET" order="27" aggregationType="sum" measureType="simple">
+        <descriptions defaultDescription="HL2_BUDGET"/>
+        <measureMapping columnObjectName="Script_View" columnName="HL2_BUDGET"/>
+      </measure>
+      <measure id="HL1_ID" order="34" aggregationType="sum" measureType="simple">
+        <descriptions defaultDescription="HL1_ID"/>
+        <measureMapping columnObjectName="Script_View" columnName="HL1_ID"/>
+      </measure>
+      <measure id="HL1_BUDGET" order="38" aggregationType="sum" measureType="simple">
+        <descriptions defaultDescription="HL1_BUDGET"/>
+        <measureMapping columnObjectName="Script_View" columnName="HL1_BUDGET"/>
+      </measure>
+      <measure id="REGION_ID" order="45" aggregationType="sum" measureType="simple">
+        <descriptions defaultDescription="REGION_ID"/>
+        <measureMapping columnObjectName="Script_View" columnName="REGION_ID"/>
+      </measure>
+      <measure id="BUDGET_YEAR_ID" order="47" aggregationType="sum" measureType="simple">
+        <descriptions defaultDescription="BUDGET_YEAR_ID"/>
+        <measureMapping columnObjectName="Script_View" columnName="BUDGET_YEAR_ID"/>
+      </measure>
+      <measure id="BUDGET_YEAR" order="48" aggregationType="sum" measureType="simple">
+        <descriptions defaultDescription="BUDGET_YEAR"/>
+        <measureMapping columnObjectName="Script_View" columnName="BUDGET_YEAR"/>
+      </measure>
+    </baseMeasures>
+    <calculatedMeasures/>
+    <restrictedMeasures/>
+    <localDimensions/>
+  </logicalModel>
+  <layout>
+    <shapes>
+      <shape modelObjectName="Output" modelObjectNameSpace="MeasureGroup">
+        <upperLeftCorner x="40" y="85"/>
+      </shape>
+    </shapes>
+  </layout>
+</Calculation:scenario>

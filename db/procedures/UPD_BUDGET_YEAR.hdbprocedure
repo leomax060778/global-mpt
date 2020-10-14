@@ -10,24 +10,26 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::UPD_BUDGET_YEAR"
 	IN in_modified_user_id BIGINT,
 	IN in_budget_year integer,
 	IN in_require_dynamic_form tinyint,
+	IN in_syndicated_sub_program_required tinyint,
 	OUT out_result integer
 	) 
 	LANGUAGE SQLSCRIPT
 	SQL SECURITY INVOKER AS
 BEGIN
 	UPDATE "MKTG_PLANNING_TOOL"."BUDGET_YEAR" SET
-	    "MKTG_PLANNING_TOOL"."BUDGET_YEAR"."BUDGET_YEAR" = in_budget_year,
-	    "MKTG_PLANNING_TOOL"."BUDGET_YEAR"."REQUIRE_DYNAMIC_FORM" = in_require_dynamic_form,
-		"MKTG_PLANNING_TOOL"."BUDGET_YEAR"."START_DATE" = in_start_date,
-        "MKTG_PLANNING_TOOL"."BUDGET_YEAR"."END_DATE" = in_end_date,
-        "MKTG_PLANNING_TOOL"."BUDGET_YEAR"."VERSIONED_START_DATE" = in_versioned_start_date,
-        "MKTG_PLANNING_TOOL"."BUDGET_YEAR"."VERSIONED_END_DATE" = in_versioned_end_date,
-        "MKTG_PLANNING_TOOL"."BUDGET_YEAR"."DEFAULT_YEAR" = in_default_year,
-        "MKTG_PLANNING_TOOL"."BUDGET_YEAR"."DESCRIPTION" = in_description,
-        "MKTG_PLANNING_TOOL"."BUDGET_YEAR"."ENABLE_CRM_CREATION" = in_enable_crm_creation,
-        "MKTG_PLANNING_TOOL"."BUDGET_YEAR"."MODIFIED_USER_ID" = in_modified_user_id,
-        "MKTG_PLANNING_TOOL"."BUDGET_YEAR"."MODIFIED_DATE_TZ" = CURRENT_TIMESTAMP
-	WHERE "MKTG_PLANNING_TOOL"."BUDGET_YEAR"."BUDGET_YEAR_ID" = in_budget_year_id;
+	    BUDGET_YEAR = in_budget_year,
+	    REQUIRE_DYNAMIC_FORM = in_require_dynamic_form,
+		START_DATE = in_start_date,
+        END_DATE = in_end_date,
+        VERSIONED_START_DATE = in_versioned_start_date,
+        VERSIONED_END_DATE = in_versioned_end_date,
+        DEFAULT_YEAR = in_default_year,
+        DESCRIPTION = in_description,
+        ENABLE_CRM_CREATION = in_enable_crm_creation,
+        SYNDICATED_SUB_PROGRAM_REQUIRED = in_syndicated_sub_program_required,
+        MODIFIED_USER_ID = in_modified_user_id,
+        MODIFIED_DATE_TZ = CURRENT_TIMESTAMP
+	WHERE BUDGET_YEAR_ID = in_budget_year_id;
 
     SELECT ::ROWCOUNT INTO out_result FROM DUMMY;
 END;

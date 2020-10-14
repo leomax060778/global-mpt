@@ -51,9 +51,16 @@ function getAllL6CreateInCrmDEReportForDownload(userId) {
     return dataL6DER.getAllL6CreateInCrmDEReportForDownload(userId);
 }
 
-function getAllHL6ChangedFields(userId) {
+function getAllHL6ChangedFields(filter, userId) {
     var data = dataL6DER.getAllHL6ChangedFields(userId);
-    return utilReportLib.parseChangedFields("HL6", "HL6_ID", data.out_hl6_changed_fields, data.out_hl6_category_options, data.out_hl6, data.out_hl6_extra_fields);
+    return utilReportLib.parseChangedFields(
+        "HL6",
+        "HL6_ID",
+        data.out_hl6_changed_fields,
+        data.out_hl6_category_options,
+        data.out_hl6,
+        data.out_top_hl6_in_crm_version,
+        filter);
 }
 
 function getL6CrmBindingFieldsByHl6Id(hl6Id) {
@@ -207,6 +214,15 @@ function getL6ChangedFieldsByHl6Id(hl6Id, userId) {
     }
 
     return data;
+}
+
+
+function getCountHL6UpdateInCRM(){
+    return dataL6DER.getCountHL6UpdateInCRM();
+}
+
+function getEventDataReport(){
+    return dataL6DER.getEventDataReport();
 }
 
 function deleteL6ChangedFieldsByHl6Id(hl6Id) {

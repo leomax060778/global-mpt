@@ -11,9 +11,11 @@ var GET_PROCESSING_REPORT_FOR_DOWNLOAD = "GET_PROCESSING_REPORT_FOR_DOWNLOAD";
 var GET_ALL_HL6_CHANGED_FIELDS = "GET_ALL_HL6_CHANGED_FIELDS";
 var spDelL6ChangedFieldsByHl6Id = "DEL_HL6_CRM_BINDING";
 var GET_HL6_FOR_PROCESSING_REPORT = "GET_HL6_FOR_PROCESSING_REPORT";
+var GET_COUNT_HL6_UPDATE_IN_CRM = "GET_COUNT_HL6_UPDATE_IN_CRM";
 var UPD_PROCESSING_REPORT_EXPORT_DATA = "UPD_PROCESSING_REPORT_EXPORT_DATA";
 var spMassDelL6ChangedFieldsByHl6Id = "DEL_MASS_HL6_CRM_BINDING";
 var GET_REPORT_DELETION_REQUEST = "GET_REPORT_DELETION_REQUEST";
+var GET_HL6_EVENTS_PROCESSING_REPORT_FOR_DOWNLOAD = "GET_HL6_EVENTS_PROCESSING_REPORT_FOR_DOWNLOAD";
 
 /*********** END LIST OF PROCEDURES ***************/
 
@@ -31,8 +33,19 @@ function getAllHL6ChangedFields() {
         out_hl6_changed_fields: db.extractArray(data.out_hl6_changed_fields),
         out_hl6: db.extractArray(data.out_hl6),
         out_hl6_category_options: db.extractArray(data.out_hl6_category_options),
-        out_hl6_extra_fields: db.extractArray(data.out_hl6_extra_fields)
+        out_top_hl6_in_crm_version: db.extractArray(data.out_top_hl6_in_crm_version)
     };
+}
+
+function getCountHL6UpdateInCRM(){
+    var data = db.executeProcedureManual(GET_COUNT_HL6_UPDATE_IN_CRM, {});
+    var result = db.extractArray(data.out_result);
+
+    if(result && result.length){
+        return result[0];
+    }
+
+    return null;
 }
 
 function updateLevel6ReportForDownload(HL6_ID) {
@@ -57,6 +70,12 @@ function getL6ChangedFieldsByHl6Id(id){
 		return db.extractArray(rdo.out_hl6_changed_fields);
 	}	
 	return null;
+}
+
+function getEventDataReport(){
+    var data = db.executeProcedureManual(GET_HL6_EVENTS_PROCESSING_REPORT_FOR_DOWNLOAD, {});
+
+    return db.extractArray(data.out_result);
 }
 
 function deleteL6ChangedFieldsByHl6Id(id){

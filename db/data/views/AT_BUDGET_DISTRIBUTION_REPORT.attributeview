@@ -1,0 +1,339 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Dimension:dimension xmlns:Dimension="http://www.sap.com/ndb/BiModelDimension.ecore" schemaVersion="1.2" id="AT_BUDGET_DISTRIBUTION_REPORT" applyPrivilegeType="ANALYTIC_PRIVILEGE" checkAnalyticPrivileges="true" defaultClient="$$client$$" defaultLanguage="$$language$$" hierarchiesSQLEnabled="false" translationRelevant="true" visibility="internal" dimensionType="Standard">
+  <descriptions defaultDescription="AT_BUDGET_DISTRIBUTION_REPORT"/>
+  <informationModelLayout relativeWidthScenario="27"/>
+  <attributes>
+    <attribute id="HL4_ID" key="true" order="1" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="HL4_ID"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL4" columnName="HL4_ID"/>
+    </attribute>
+    <attribute id="HL4_ACRONYM" order="2" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="HL4_ACRONYM"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL4" columnName="ACRONYM"/>
+    </attribute>
+    <attribute id="HL3_ID" order="3" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="HL3_ID"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL3" columnName="HL3_ID"/>
+    </attribute>
+    <attribute id="HL3_DESCRIPTION" order="4" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="HL3_DESCRIPTION"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL3" columnName="HL3_DESCRIPTION"/>
+    </attribute>
+    <attribute id="HL2_ID" order="5" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="HL2_ID"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL2" columnName="HL2_ID"/>
+    </attribute>
+    <attribute id="HL2_DESCRIPTION" order="6" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="HL2_DESCRIPTION"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL2" columnName="ORGANIZATION_NAME"/>
+    </attribute>
+    <attribute id="HL2_ACRONYM" order="7" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="HL2_ACRONYM"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL2" columnName="ORGANIZATION_ACRONYM"/>
+    </attribute>
+    <attribute id="HL1_ID" order="8" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="HL1_ID"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL1" columnName="HL1_ID"/>
+    </attribute>
+    <attribute id="HL1_ACRONYM" order="9" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="HL1_ACRONYM"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL1" columnName="ACRONYM"/>
+    </attribute>
+    <attribute id="HL1_DESCRIPTION" order="10" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="HL1_DESCRIPTION"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL1" columnName="DESCRIPTION"/>
+    </attribute>
+    <attribute id="BUDGET_YEAR_ID" order="11" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="BUDGET_YEAR_ID"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="BUDGET_YEAR" columnName="BUDGET_YEAR_ID"/>
+    </attribute>
+    <attribute id="BUDGET_YEAR" order="12" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="BUDGET_YEAR"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="BUDGET_YEAR" columnName="BUDGET_YEAR"/>
+    </attribute>
+    <attribute id="HL4_SHOPPING_CART_APPROVER" order="13" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="HL4_SHOPPING_CART_APPROVER"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL4" columnName="SHOPPING_CART_APPROVER"/>
+    </attribute>
+    <attribute id="HL4_COST_CENTER" order="14" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="HL4_COST_CENTER"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL4" columnName="COST_CENTER"/>
+    </attribute>
+    <attribute id="HL3_SHOPPING_CART_APPROVER" order="15" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="HL3_SHOPPING_CART_APPROVER"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL3" columnName="SHOPPING_CART_APPROVER"/>
+    </attribute>
+    <attribute id="HL3_COST_CENTER" order="16" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="HL3_COST_CENTER"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL3" columnName="COST_CENTER"/>
+    </attribute>
+    <attribute id="REGION_ID" order="17" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="REGION_ID"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="REGION" columnName="REGION_ID"/>
+    </attribute>
+    <attribute id="REGION_NAME" order="18" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="REGION_NAME"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="REGION" columnName="REGION_NAME"/>
+    </attribute>
+    <attribute id="REGION_ISO" order="19" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="REGION_ISO"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="REGION" columnName="REGION_ISO"/>
+    </attribute>
+    <attribute id="HL4_DESCRIPTION" order="20" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="HL4_DESCRIPTION"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL4" columnName="HL4_CRM_DESCRIPTION"/>
+    </attribute>
+    <attribute id="HL4_STATUS_DETAIL_ID" order="21" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="HL4_STATUS_DETAIL_ID"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL4" columnName="HL4_STATUS_DETAIL_ID"/>
+    </attribute>
+    <attribute id="HL4_ENABLED" order="22" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="HL4_ENABLED"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL4" columnName="ENABLED"/>
+    </attribute>
+    <attribute id="HL4_DELETED" order="23" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="HL4_DELETED"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL4" columnName="DELETED"/>
+    </attribute>
+    <attribute id="HL4_BUDGET" order="24" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="HL4_BUDGET"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL4" columnName="BUDGET"/>
+    </attribute>
+    <attribute id="HL3_ENABLED" order="25" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="HL3_ENABLED"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL3" columnName="ENABLED"/>
+    </attribute>
+    <attribute id="HL3_DELETED" order="26" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="HL3_DELETED"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL3" columnName="DELETED"/>
+    </attribute>
+    <attribute id="HL3_STATUS_DETAIL_ID" order="27" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="HL3_STATUS_DETAIL_ID"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL3" columnName="HL3_STATUS_DETAIL_ID"/>
+    </attribute>
+    <attribute id="HL3_ACRONYM" order="28" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="HL3_ACRONYM"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL3" columnName="ACRONYM"/>
+    </attribute>
+    <attribute id="HL3_BUDGET" order="29" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="HL3_BUDGET"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL3" columnName="HL3_FNC_BUDGET_TOTAL"/>
+    </attribute>
+    <attribute id="HL2_ENABLED" order="30" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="HL2_ENABLED"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL2" columnName="ENABLED"/>
+    </attribute>
+    <attribute id="HL2_DELETED" order="31" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="HL2_DELETED"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL2" columnName="DELETED"/>
+    </attribute>
+    <attribute id="HL2_BUDGET" order="32" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="HL2_BUDGET"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL2" columnName="HL2_BUDGET_TOTAL"/>
+    </attribute>
+    <attribute id="HL1_BUDGET" order="33" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="HL1_BUDGET"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL1" columnName="BUDGET"/>
+    </attribute>
+    <attribute id="HL1_ENABLED" order="34" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="HL1_ENABLED"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL1" columnName="ENABLED"/>
+    </attribute>
+    <attribute id="HL1_DELETED" order="35" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="HL1_DELETED"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL1" columnName="DELETED"/>
+    </attribute>
+    <attribute id="HL4_CREATED_DATE" order="36" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="HL4_CREATED_DATE"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL4" columnName="CREATED_DATE_TZ"/>
+    </attribute>
+    <attribute id="HL3_CREATED_DATE" order="37" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="HL3_CREATED_DATE"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL3" columnName="CREATED_DATE_TZ"/>
+    </attribute>
+    <attribute id="HL2_CREATED_DATE" order="38" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="HL2_CREATED_DATE"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL2" columnName="CREATED_DATE_TZ"/>
+    </attribute>
+    <attribute id="HL1_CREATED_DATE" order="39" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="HL1_CREATED_DATE"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL1" columnName="CREATED_DATE_TZ"/>
+    </attribute>
+    <attribute id="HL4_CREATED_USER_ID" order="40" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="HL4_CREATED_USER_ID"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL4" columnName="CREATED_USER_ID"/>
+    </attribute>
+    <attribute id="HL1_CREATED_USER_ID" order="41" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="HL1_CREATED_USER_ID"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL1" columnName="CREATED_USER_ID"/>
+    </attribute>
+    <attribute id="HL2_CREATED_USER_ID" order="42" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="HL2_CREATED_USER_ID"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL2" columnName="CREATED_USER_ID"/>
+    </attribute>
+    <attribute id="HL3_CREATED_USER_ID" order="43" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="HL3_CREATED_USER_ID"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL3" columnName="CREATED_USER_ID"/>
+    </attribute>
+    <attribute id="HL4_MODIFIED_DATE" order="44" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="HL4_MODIFIED_DATE"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL4" columnName="MODIFIED_DATE_TZ"/>
+    </attribute>
+    <attribute id="HL4_MODIFIED_USER_ID" order="45" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="HL4_MODIFIED_USER_ID"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL4" columnName="MODIFIED_USER_ID"/>
+    </attribute>
+    <attribute id="HL1_MODIFIED_DATE" order="46" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="HL1_MODIFIED_DATE"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL1" columnName="MODIFIED_DATE_TZ"/>
+    </attribute>
+    <attribute id="HL1_MODIFIED_USER_ID" order="47" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="HL1_MODIFIED_USER_ID"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL1" columnName="MODIFIED_USER_ID"/>
+    </attribute>
+    <attribute id="HL2_MODIFIED_DATE" order="48" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="HL2_MODIFIED_DATE"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL2" columnName="MODIFIED_DATE_TZ"/>
+    </attribute>
+    <attribute id="HL2_MODIFIED_USER_ID" order="49" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="HL2_MODIFIED_USER_ID"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL2" columnName="MODIFIED_USER_ID"/>
+    </attribute>
+    <attribute id="HL3_MODIFIED_DATE" order="50" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="HL3_MODIFIED_DATE"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL3" columnName="MODIFIED_DATE_TZ"/>
+    </attribute>
+    <attribute id="HL3_MODIFIED_USER_ID" order="51" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="HL3_MODIFIED_USER_ID"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL3" columnName="MODIFIED_USER_ID"/>
+    </attribute>
+    <attribute id="HL4_STATUS_DETAIL" order="52" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="HL4_STATUS_DETAIL"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL4_STATUS_DETAIL" columnName="DETAIL"/>
+    </attribute>
+  </attributes>
+  <calculatedAttributes/>
+  <privateDataFoundation>
+    <tableProxies>
+      <tableProxy>
+        <table schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL1"/>
+      </tableProxy>
+      <tableProxy>
+        <table schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL2"/>
+      </tableProxy>
+      <tableProxy>
+        <table schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL3"/>
+      </tableProxy>
+      <tableProxy>
+        <table schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL4"/>
+      </tableProxy>
+      <tableProxy>
+        <table schemaName="MKTG_PLANNING_TOOL" columnObjectName="BUDGET_YEAR"/>
+      </tableProxy>
+      <tableProxy>
+        <table schemaName="MKTG_PLANNING_TOOL" columnObjectName="REGION"/>
+      </tableProxy>
+      <tableProxy>
+        <table schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL4_STATUS_DETAIL"/>
+      </tableProxy>
+    </tableProxies>
+    <joins>
+      <join>
+        <leftTable schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL2"/>
+        <rightTable schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL1"/>
+        <leftColumns>
+          <columnName>HL1_ID</columnName>
+        </leftColumns>
+        <rightColumns>
+          <columnName>HL1_ID</columnName>
+        </rightColumns>
+        <properties joinOperator="Equal" joinType="referential"/>
+      </join>
+      <join>
+        <leftTable schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL3"/>
+        <rightTable schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL2"/>
+        <leftColumns>
+          <columnName>HL2_ID</columnName>
+        </leftColumns>
+        <rightColumns>
+          <columnName>HL2_ID</columnName>
+        </rightColumns>
+        <properties joinOperator="Equal" joinType="referential"/>
+      </join>
+      <join>
+        <leftTable schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL4"/>
+        <rightTable schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL3"/>
+        <leftColumns>
+          <columnName>HL3_ID</columnName>
+        </leftColumns>
+        <rightColumns>
+          <columnName>HL3_ID</columnName>
+        </rightColumns>
+        <properties joinOperator="Equal" joinType="referential"/>
+      </join>
+      <join>
+        <leftTable schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL1"/>
+        <rightTable schemaName="MKTG_PLANNING_TOOL" columnObjectName="REGION"/>
+        <leftColumns>
+          <columnName>REGION_ID</columnName>
+        </leftColumns>
+        <rightColumns>
+          <columnName>REGION_ID</columnName>
+        </rightColumns>
+        <properties joinOperator="Equal" joinType="referential"/>
+      </join>
+      <join>
+        <leftTable schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL1"/>
+        <rightTable schemaName="MKTG_PLANNING_TOOL" columnObjectName="BUDGET_YEAR"/>
+        <leftColumns>
+          <columnName>BUDGET_YEAR_ID</columnName>
+        </leftColumns>
+        <rightColumns>
+          <columnName>BUDGET_YEAR_ID</columnName>
+        </rightColumns>
+        <properties joinOperator="Equal" joinType="referential"/>
+      </join>
+      <join>
+        <leftTable schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL4"/>
+        <rightTable schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL4_STATUS_DETAIL"/>
+        <leftColumns>
+          <columnName>HL4_STATUS_DETAIL_ID</columnName>
+        </leftColumns>
+        <rightColumns>
+          <columnName>HL4_STATUS_DETAIL_ID</columnName>
+        </rightColumns>
+        <properties joinOperator="Equal" joinType="referential"/>
+      </join>
+    </joins>
+    <layout>
+      <shapes>
+        <shape modelObjectName="HL1" modelObjectNameSpace="MKTG_PLANNING_TOOL" modelObjectType="catalog">
+          <upperLeftCorner x="325" y="27"/>
+        </shape>
+        <shape modelObjectName="HL2" modelObjectNameSpace="MKTG_PLANNING_TOOL" modelObjectType="catalog">
+          <upperLeftCorner x="664" y="25"/>
+        </shape>
+        <shape modelObjectName="HL3" modelObjectNameSpace="MKTG_PLANNING_TOOL" modelObjectType="catalog">
+          <upperLeftCorner x="1035" y="21"/>
+        </shape>
+        <shape modelObjectName="HL4" modelObjectNameSpace="MKTG_PLANNING_TOOL" modelObjectType="catalog">
+          <upperLeftCorner x="1356" y="20"/>
+        </shape>
+        <shape modelObjectName="BUDGET_YEAR" modelObjectNameSpace="MKTG_PLANNING_TOOL" modelObjectType="catalog">
+          <upperLeftCorner x="656" y="572"/>
+        </shape>
+        <shape modelObjectName="REGION" modelObjectNameSpace="MKTG_PLANNING_TOOL" modelObjectType="catalog">
+          <upperLeftCorner x="34" y="98"/>
+        </shape>
+        <shape modelObjectName="HL4_STATUS_DETAIL" modelObjectNameSpace="MKTG_PLANNING_TOOL" modelObjectType="catalog">
+          <upperLeftCorner x="1680" y="117"/>
+        </shape>
+        <shape modelObjectName="DataFoundation" modelObjectNameSpace="DataFoundation" modelObjectType="repository">
+          <upperLeftCorner x="40" y="85"/>
+          <rectangleSize height="0" width="0"/>
+        </shape>
+      </shapes>
+    </layout>
+  </privateDataFoundation>
+  <hierarchies/>
+</Dimension:dimension>

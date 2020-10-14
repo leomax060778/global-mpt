@@ -32,6 +32,15 @@ function existAllocationOption(optionId) {
     return Object.keys(dataOption.getAllocationOptionById(optionId)).length;
 }
 
+function insertSyndicatedSubProgramAssociation(data, userId) {
+    validateSyndicatedSubProgramAssociationData(data, userId, "INSERT");
+    return dataCategoryOptionLevel.insertSyndicatedSubProgramAssociation(data, userId);
+}
+
+function deleteSyndicatedSubProgramAssociation(id, userId){
+    return dataCategoryOptionLevel.deleteSyndicatedSubProgramAssociation(id, userId);
+}
+
 function updateCategoryOptionLevel(data, userId) {
     var message;
     if (!data || !data.IN_CATEGORY_ID || !data.IN_LEVEL.length) {
@@ -178,6 +187,10 @@ function updateCategoryOptionLevel(data, userId) {
     return (data.IN_LEVEL.length * data.IN_OPTION_LIST.length);
 }
 
+function updateSyndicatedSubProgramAssociation(data, userId) {
+    validateSyndicatedSubProgramAssociationData(data, userId, "UPDATE");
+    return dataCategoryOptionLevel.updateSyndicatedSubProgramAssociation(data, userId);
+}
 
 function getHlCategoryOptionByLevelHlId(level, hlId, fromCloneMethod) {
     var categoryOptionList = [];
@@ -212,7 +225,8 @@ function getHlCategoryOptionByLevelHlId(level, hlId, fromCloneMethod) {
             CATEGORY_OPTION_ID: categoryOption.CATEGORY_OPTION_ID,
             UPDATED: categoryOption.UPDATED,
             AMOUNT_VALUE :  Number(categoryOption.AMOUNT_VALUE),
-            SELECTED : !!Number(categoryOption.AMOUNT_VALUE)
+            SELECTED : !!Number(categoryOption.AMOUNT_VALUE),
+            IS_UNIQUE_OPTION: categoryOption.IS_UNIQUE_OPTION
         });
     });
     return util.objectToArray(result);
@@ -246,4 +260,48 @@ function getHlCategoryOptionVersionedByLevelHlId(level, hlId) {
         });
     });
     return util.objectToArray(result);
+}
+
+function getSyndicatedSubProgramAssociationByCategoryIdHierarchyLevelId(categoryId, hierarchyLevelId) {
+    if(!categoryId){
+        throw ErrorLib.getErrors().BadRequest("","","Missing parameter categoryId");
+    }
+    if(!hierarchyLevelId){
+        throw ErrorLib.getErrors().BadRequest("","","Missing parameter hierarchyLevelId");
+    }
+
+    return dataCategoryOptionLevel.getSyndicatedSubProgramAssociationByCategoryIdHierarchyLevelId(categoryId, hierarchyLevelId);
+}
+
+function getObjectiveAllocationAssociationByHierarchyLevelId(hierarchyLevelId) {
+    if(!hierarchyLevelId){
+        throw ErrorLib.getErrors().BadRequest("","","Missing parameter hierarchyLevelId");
+    }
+
+    return dataCategoryOptionLevel.getObjectiveAllocationAssociationByHierarchyLevelId(hierarchyLevelId);
+}
+
+function validateSyndicatedSubProgramAssociationData(data, userId, method) {
+    if (!userId) {
+        throw ErrorLib.getErrors().BadRequest("","","Missing parameter userId");
+    }
+    if(!data){
+        throw ErrorLib.getErrors().BadRequest("","","Missing information");
+    } else {
+        if(method === "UPDATE" && !data.ALLOCATION_CATEGORY_OPTION_LEVEL_SYNDICATED_SUB_PROGRAM_ID) {
+            throw ErrorLib.getErrors().BadRequest("","","Missing AllocationCategoryOptionLevelSyndicatedSubProgramId");
+        }
+        if(method === "INSERT" && !data.HIERARCHY_LEVEL_ID){
+            throw ErrorLib.getErrors().BadRequest("","","The Hierarchy Level ID is required");
+        }
+        if(!data.ALLOCATION_CATEGORY_ID){
+            throw ErrorLib.getErrors().BadRequest("","","The Allocation Category ID is required");
+        }
+        if(!data.ALLOCATION_OPTION_ID){
+            throw ErrorLib.getErrors().BadRequest("","","The Allocation Option ID is required");
+        }
+        if(!data.MARKETING_PROGRAM_ID){
+            throw ErrorLib.getErrors().BadRequest("","","The Syndicated Sub-Program ID is required");
+        }
+    }
 }

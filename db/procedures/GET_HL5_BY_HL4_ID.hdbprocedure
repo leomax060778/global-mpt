@@ -4,6 +4,7 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL5_BY_HL4_I
         OUT out_result TABLE(
               HL5_ID BIGINT,
               HL5_LEGACY_ID BIGINT,
+              HL4_ID BIGINT,
               CRM_ID NVARCHAR(25),
               STATUS_DETAIL NVARCHAR(255),
               STATUS_ID INTEGER,
@@ -32,6 +33,7 @@ BEGIN
 va_intermidate = SELECT
                          hl5.hl5_ID AS HL5_ID,
                          NULL AS HL5_LEGACY_ID,
+                         hl5.HL4_ID,
                          "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(BGY.BUDGET_YEAR, HL1.ACRONYM, hl2.ORGANIZATION_ACRONYM, HL3.ACRONYM, hl4.ACRONYM, hl5.ACRONYM, '') AS CRM_ID,
                          hl5_status_detail.DETAIL AS STATUS_DETAIL,
                          CONCAT(CONCAT(userTable.FIRST_NAME, ' '),userTable.LAST_NAME) AS CREATED_BY,
@@ -69,6 +71,7 @@ va_intermidate = SELECT
 aux_out_result = SELECT
                         va_hl5.HL5_ID,
                         va_hl5.HL5_LEGACY_ID,
+                        va_hl5.HL4_ID,
                         va_hl5.CRM_ID,
                         va_hl5.STATUS_DETAIL,
                         va_hl5.HL5_STATUS_DETAIL_ID,
@@ -96,6 +99,7 @@ aux_out_result = SELECT
                     GROUP BY
                         va_hl5.HL5_ID,
                         va_hl5.HL5_LEGACY_ID,
+                        va_hl5.HL4_ID,
                         va_hl5.CRM_ID,
                         va_hl5.STATUS_DETAIL,
                         va_hl5.HL5_STATUS_DETAIL_ID,
@@ -115,6 +119,7 @@ aux_out_result = SELECT
                                    SELECT
                                         null as HL5_ID,
                                         hl5.HL5_LEGACY_ID,
+                                        hl5.HL4_ID,
                                         PATH AS CRM_ID,
                                         hl5_status_detail.DETAIL AS STATUS_DETAIL,
                                         CONCAT(CONCAT(userTable.FIRST_NAME, ' '),userTable.LAST_NAME) AS CREATED_BY,
@@ -139,6 +144,7 @@ aux_out_result = SELECT
            va_legacy_with_children = SELECT
 			                                   va_hl5.HL5_ID,
 			                                   va_hl5.HL5_LEGACY_ID,
+			                                   va_hl5.HL4_ID,
 			                                   va_hl5.CRM_ID,
 			                                   va_hl5.STATUS_DETAIL,
 			                                   va_hl5.HL5_STATUS_DETAIL_ID,
@@ -168,6 +174,7 @@ aux_out_result = SELECT
 			                            GROUP BY
 			                                va_hl5.HL5_ID,
 			                                va_HL5.HL5_LEGACY_ID,
+			                                va_HL5.HL4_ID,
 			                                va_hl5.CRM_ID,
 			                                va_hl5.STATUS_DETAIL,
 			                                va_hl5.HL5_STATUS_DETAIL_ID,
@@ -183,6 +190,7 @@ aux_out_result = SELECT
            aux_out_result =
                            (SELECT  HL5_ID,
                                     HL5_LEGACY_ID,
+                                    HL4_ID,
                                     CRM_ID,
                                     STATUS_DETAIL,
                                     HL5_STATUS_DETAIL_ID,
@@ -207,6 +215,7 @@ aux_out_result = SELECT
 
                            (SELECT  HL5_ID,
                                     HL5_LEGACY_ID,
+                                    HL4_ID,
                                     CRM_ID,
                                     STATUS_DETAIL,
                                     HL5_STATUS_DETAIL_ID,
@@ -233,6 +242,7 @@ aux_out_result = SELECT
                            SELECT
                                   va_hl5.HL5_ID,
                                   va_hl5.HL5_LEGACY_ID,
+                                  va_HL5.HL4_ID,
                                   va_hl5.CRM_ID,
                                   va_hl5.STATUS_DETAIL,
                                   va_hl5.HL5_STATUS_DETAIL_ID,
@@ -262,6 +272,7 @@ out_result =
             SELECT
                  T.HL5_ID,
                  T.HL5_LEGACY_ID,
+                 T.HL4_ID,
                  T.CRM_ID,
                  T.STATUS_DETAIL,
                  T.HL5_STATUS_DETAIL_ID AS STATUS_ID,
@@ -283,6 +294,7 @@ out_result =
             GROUP BY
                 T.HL5_ID,
                 T.HL5_LEGACY_ID,
+                T.HL4_ID,
                 T.CRM_ID,
                 T.STATUS_DETAIL,
                 T.HL5_STATUS_DETAIL_ID,

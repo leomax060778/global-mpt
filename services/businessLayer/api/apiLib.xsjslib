@@ -20,7 +20,7 @@ var hierarchyLevel = {
     "HL6": 3
 };
 
-function getL6ById(l6_id) {
+function getL6ById(l6_id) { 
     if (!l6_id) {
         throw ErrorLib.getErrors().BadRequest("The Parameter l6_id is not found", "", l6_id);
     }
@@ -44,6 +44,7 @@ function getReportExportData(filter, method) {
 
     var defaultFields = [
         'HIERARCHY_LEVEL_ID'
+        , 'IS_LEGACY'
         , 'CRM_ID'
         , 'CAMP_OBJ_TYPE'
         , 'BUDGET'
@@ -74,6 +75,7 @@ function getReportExportData(filter, method) {
 
     var commonFields = [
         'HIERARCHY_LEVEL_ID'
+        , 'IS_LEGACY'
         , 'CRM_ID'
         , 'CAMP_OBJ_TYPE'
         , 'CURRENCY'
@@ -158,6 +160,7 @@ function getReportExportData(filter, method) {
 
         filterParameter.IN_FILTER_CRITERIA += "&" + "HIERARCHY_LEVEL=" + filter.IN_HIERARCHY_LEVEL + "&" + "DELTA_TIME_LAST_UPDATE=" + filter.IN_DELTA_TIME_LAST_UPDATE;
         var levelFilter = filter.IN_HIERARCHY_LEVEL.split(",");
+
         var aux = levelFilter.reduce(function (res, elem) {
             if (hierarchyLevel[elem]) {
                 res[hierarchyLevel[elem]] = {HIERARCHY_LEVEL_ID: hierarchyLevel[elem]};
@@ -184,52 +187,93 @@ function getReportExportData(filter, method) {
     }
 
     api.insertLogReportExportData(filterParameter);
+
     var spResult = api.getReportExportData({
-        IN_IS_FULL_DOWNLOAD: filter.IN_IS_FULL_DOWNLOAD
-        , IN_DELTA_TIME_LAST_UPDATE: filter.IN_DELTA_TIME_LAST_UPDATE
-        , IN_HIERARCHY_LEVEL: filter.IN_HIERARCHY_LEVEL
-        , IN_STATUS: validStatus[filter.IN_STATUS] || null
+        IN_IS_FULL_DOWNLOAD: filter.IN_IS_FULL_DOWNLOAD,
+        IN_DELTA_TIME_LAST_UPDATE: filter.IN_DELTA_TIME_LAST_UPDATE,
+        IN_HIERARCHY_LEVEL: filter.IN_HIERARCHY_LEVEL,
+        IN_STATUS: validStatus[filter.IN_STATUS] || null,
+        IN_LIMIT: filter.LIMIT,
+        IN_OFFSET: !!filter.LIMIT ? Number(filter.OFFSET) * Number(filter.LIMIT) : 0
     });
 
     var outputFields = filter.SCOPE.toUpperCase() == 'ALL' ? defaultFields
         : filter.SCOPE.toUpperCase() == 'BUDGET'
             ? commonFields.concat(budgetFields)
             : commonFields.concat(kpiFields);
-    if (spResult && spResult.length) {
-        for (var i = 0; i < spResult.length; i++) {
+
+    if (spResult && spResult.DATA && spResult.DATA.length) {
+    	
+        for (var i = 0; i < spResult.DATA.length; i++) {
             var elem = {};
-            outputFields.forEach(function (field) {
-                switch (field) {
-                    case 'BUDGET':
-                    case 'BUDGET_Q1':
-                    case 'BUDGET_Q2':
-                    case 'BUDGET_Q3':
-                    case 'BUDGET_Q4':
-                    case 'MNP_VALUE':
-                    case 'MTP_VALUE':
-                    case 'MIP_VALUE':
-                    case 'LEAD_VOLUME_VALUE':
-                    case 'MNP_VOLUME':
-                    case 'MTP_VOLUME':
-                    case 'MIP_VOLUME':
-                    case 'LEAD_VOLUME_VOLUME':
-                        elem[field] = Number(spResult[i][field]) || (Number(spResult[i][field]) == 0 ? 0 : null);
-                        break;
-                    default:
-                        elem[field] = spResult[i][field] || null;
-                        break;
-                }
-            });
+            var currentResultElement = spResult.DATA[i];
+
+            if(!!Number(currentResultElement['IS_LEGACY']) && Number(currentResultElement['HIERARCHY_LEVEL_ID']) === 5){
+                outputFields.forEach(function (field) {
+                    switch (field) {
+                        case 'BUDGET':
+                            elem[field] = Number(currentResultElement[field]) || (Number(currentResultElement[field]) === 0 ? 0 : null);
+                            break;
+                        case 'BUDGET_Q1':
+                        case 'BUDGET_Q2':
+                        case 'BUDGET_Q3':
+                        case 'BUDGET_Q4':
+                        case 'CAMP_OBJ_TYPE':
+                        case 'MNP_VALUE':
+                        case 'MTP_VALUE':
+                        case 'MIP_VALUE':
+                        case 'LEAD_VOLUME_VALUE':
+                        case 'MNP_VOLUME':
+                        case 'MTP_VOLUME':
+                        case 'MIP_VOLUME':
+                        case 'LEAD_VOLUME_VOLUME':
+                            elem[field] = null;
+                            break;
+                        case 'IS_LEGACY':
+                            elem[field] = !!Number(currentResultElement[field]);
+                            break;
+                        default:
+                            elem[field] = currentResultElement[field] || null;
+                            break;
+                    }
+                });
+            }else{
+                outputFields.forEach(function (field) {
+                    switch (field) {
+                        case 'BUDGET':
+                        case 'BUDGET_Q1':
+                        case 'BUDGET_Q2':
+                        case 'BUDGET_Q3':
+                        case 'BUDGET_Q4':
+                        case 'MNP_VALUE':
+                        case 'MTP_VALUE':
+                        case 'MIP_VALUE':
+                        case 'LEAD_VOLUME_VALUE':
+                        case 'MNP_VOLUME':
+                        case 'MTP_VOLUME':
+                        case 'MIP_VOLUME':
+                        case 'LEAD_VOLUME_VOLUME':
+                            elem[field] = Number(currentResultElement[field]) || (Number(currentResultElement[field]) == 0 ? 0 : null);
+                            break;
+                        case 'IS_LEGACY':
+                            elem[field] = !!Number(currentResultElement[field]);
+                            break;
+                        default:
+                            elem[field] = currentResultElement[field] || null;
+                            break;
+                    }
+                });
+            }
+
             result.push(elem);
         }
 
     }
 
-    if (filter.FORMAT === "CSV") {
-        result = parseToCSV(result, filter, method, defaultFields, commonFields, budgetFields, kpiFields);
-    }
-
-    return result;
+    return (filter.FORMAT === "CSV") ?
+        parseToCSV(result, filter, method, defaultFields, commonFields, budgetFields, kpiFields)
+        :
+        { TOTAL_ROWS: spResult.TOTAL_ROWS, DATA: result };
 }
 
 function getReportExportDataRegion(filter, method) {
@@ -243,6 +287,7 @@ function getReportExportDataRegion(filter, method) {
 
     var commonFields = [
         'HIERARCHY_LEVEL_ID'
+        , 'IS_LEGACY'
         , 'CRM_ID'
     ];
 
@@ -299,39 +344,52 @@ function getReportExportDataRegion(filter, method) {
     }
 
     api.insertLogReportExportData(filterParameter);
+
     var spResult = api.getReportExportDataRegion({
-        IN_IS_FULL_DOWNLOAD: filter.IN_IS_FULL_DOWNLOAD
-        , IN_DELTA_TIME_LAST_UPDATE: filter.IN_DELTA_TIME_LAST_UPDATE
-        , IN_HIERARCHY_LEVEL: filter.IN_HIERARCHY_LEVEL
+        IN_IS_FULL_DOWNLOAD: filter.IN_IS_FULL_DOWNLOAD,
+        IN_DELTA_TIME_LAST_UPDATE: filter.IN_DELTA_TIME_LAST_UPDATE,
+        IN_HIERARCHY_LEVEL: filter.IN_HIERARCHY_LEVEL,
+        IN_LIMIT: filter.LIMIT,
+        IN_OFFSET: !!filter.LIMIT ? Number(filter.OFFSET) * Number(filter.LIMIT) : 0
     });
 
     var outputFields = commonFields.concat(budgetFields);
 
-    for (var i = 0; i < spResult.length; i++) {
+    for (var i = 0; i < spResult.DATA.length; i++) {
         var elem = {};
-        outputFields.forEach(function (field) {
-            switch (field){
-                case 'BUDGET':
-                case 'BUDGET_Q1':
-                case 'BUDGET_Q2':
-                case 'BUDGET_Q3':
-                case 'BUDGET_Q4':
-                case 'PERCENTAGE_ALLOCATION':
-                    elem[field] = Number(spResult[i][field]) || (Number(spResult[i][field]) == 0 ? 0 : null);
-                    break;
-                default:
-                    elem[field] = spResult[i][field] || null;
-                    break;
-            }
-        });
+        var currentResultElement = spResult.DATA[i];
+
+        if(!!Number(currentResultElement['IS_LEGACY']) && Number(currentResultElement['HIERARCHY_LEVEL_ID']) === 5){
+            outputFields.forEach(function (field) {
+                switch (field){
+                    case 'IS_LEGACY':
+                        elem[field] = !!Number(currentResultElement[field]);
+                        break;
+                    default:
+                        elem[field] = currentResultElement[field] || null;
+                        break;
+                }
+            });
+        }else{
+            outputFields.forEach(function (field) {
+                switch (field){
+                    case 'IS_LEGACY':
+                        elem[field] = !!Number(currentResultElement[field]);
+                        break;
+                    default:
+                        elem[field] = currentResultElement[field] || null;
+                        break;
+                }
+            });
+        }
+        
         result.push(elem);
     }
 
-    if (filter.FORMAT === "CSV") {
-        result = parseToCSV(result, filter, method, null, commonFields, budgetFields, null);
-    }
-
-    return result;
+    return (filter.FORMAT === "CSV") ?
+        parseToCSV(result, filter, method, null, commonFields, budgetFields, null)
+        :
+        {TOTAL_ROWS: spResult.TOTAL_ROWS, DATA: result};
 }
 
 function parseToCSV(rdo, filter, method, defaultHeaders, commonHeaders, budgetHeaders, kpiHeaders) {

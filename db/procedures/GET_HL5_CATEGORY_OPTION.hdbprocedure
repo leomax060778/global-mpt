@@ -1,20 +1,21 @@
 PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL5_CATEGORY_OPTION" (
 	IN in_hl_id BIGINT,
 	OUT out_result TABLE (
-	 category_id integer
-	, hl5_id integer
-	, category_name nvarchar(60)
-	, option_id integer
-    , option_name nvarchar(60)
-    , category_option_id integer
-    , category_option_level_id integer
-    , amount decimal(19,2)
-    , SINGLE_OPTION_ONLY TINYINT
-    , MAKE_CATEGORY_MANDATORY TINYINT
-    , UPDATED TINYINT
-    , CATEGORY_TYPE_ID integer
-    , OPTIONS_LIMIT integer
-    , amount_kpi decimal(19,2)
+	 CATEGORY_ID INTEGER,
+	 HL5_ID INTEGER,
+	 CATEGORY_NAME NVARCHAR(60),
+	 OPTION_ID INTEGER,
+	 OPTION_NAME NVARCHAR(60),
+	 CATEGORY_OPTION_ID INTEGER,
+	 CATEGORY_OPTION_LEVEL_ID INTEGER,
+	 AMOUNT DECIMAL(19,2),
+	 SINGLE_OPTION_ONLY TINYINT,
+	 MAKE_CATEGORY_MANDATORY TINYINT,
+	 UPDATED TINYINT,
+	 CATEGORY_TYPE_ID INTEGER,
+	 OPTIONS_LIMIT INTEGER,
+	 AMOUNT_KPI DECIMAL(19,2),
+	 IS_UNIQUE_OPTION TINYINT
 	)
 ) 
 	LANGUAGE SQLSCRIPT
@@ -23,90 +24,106 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL5_CATEGORY
 	READS SQL DATA AS
 BEGIN
 
+    va_allocation_from_dynamic_form = SELECT DISTINCT
+                                          dynaloc.ALLOCATION_CATEGORY_ID
+                                      FROM ALLOCATION_CATEGORY_OPTION_LEVEL acol
+                                      INNER JOIN ALLOCATION_CATEGORY ac
+                                          ON acol.allocation_category_id = ac.allocation_category_id
+                                      INNER JOIN ALLOCATION_OPTION ao
+                                          ON acol.allocation_option_id = ao.allocation_option_id
+                                      INNER JOIN DYNAMIC_FORM_ALLOCATION dynaloc
+                                          ON acol.ALLOCATION_CATEGORY_ID = dynaloc.ALLOCATION_CATEGORY_ID
+                                              AND dynaloc.HIDDEN = 1 --Difference
+                                      INNER JOIN DYNAMIC_FORM dynf
+                                          ON dynf.DYNAMIC_FORM_ID = dynaloc.DYNAMIC_FORM_ID
+                                      INNER JOIN HL5 hl5
+                                          ON hl5.DYNAMIC_FORM_ID = dynf.DYNAMIC_FORM_ID
+                                      INNER JOIN HL5_CATEGORY_OPTION hl5co
+                                          ON hl5co.ENABLED = 1
+                                              AND hl5co.DELETED = 0
+                                              AND hl5co.HL5_ID = hl5.HL5_ID
+                                      WHERE hl5co.HL5_ID = in_hl_id;
 
-va_allocation_from_dynamic_form =
-    select distinct
-        dynamic_form_allocation.allocation_category_id
-        ,dynamic_form_allocation.allocation_option_id
-    from allocation_category_option_level acol
-    inner join allocation_category ac on acol.allocation_category_id = ac.allocation_category_id
-    inner join allocation_option ao on acol.allocation_option_id = ao.allocation_option_id
-    inner join dynamic_form_allocation on acol.allocation_category_id = dynamic_form_allocation.allocation_category_id
-        and acol.allocation_option_id = dynamic_form_allocation.allocation_option_id and dynamic_form_allocation.hidden = 1 --Difference
-    inner join dynamic_form on dynamic_form.dynamic_form_id = dynamic_form_allocation.dynamic_form_id
-    inner join hl5 on hl5.dynamic_form_id = dynamic_form.dynamic_form_id
-    inner join hl5_category_option hl5co on hl5co.enabled = 1 and hl5co.deleted = 0 and hl5co.hl5_id = hl5.hl5_id
-    where hl5co.hl5_id = in_hl_id;
+    va_hl5_category_option = (SELECT ac.ALLOCATION_CATEGORY_ID AS CATEGORY_ID,
+                                     hl5CO.HL5_ID,
+                                     ac.NAME AS CATEGORY_NAME,
+                                     ao.ALLOCATION_OPTION_ID AS OPTION_ID,
+                                     ao.NAME AS OPTION_NAME,
+                                     hl5CO.HL5_CATEGORY_OPTION_ID AS CATEGORY_OPTION_ID,
+                                     hl5CO.ALLOCATION_CATEGORY_OPTION_LEVEL_ID AS CATEGORY_OPTION_LEVEL_ID,
+                                     hl5CO.AMOUNT,
+                                     ac.SINGLE_OPTION_ONLY,
+                                     acol.MAKE_CATEGORY_MANDATORY,
+                                     hl5CO.UPDATED,
+                                     AC.CATEGORY_TYPE_ID,
+                                     acol.OPTIONS_LIMIT,
+                                     hl5CO.AMOUNT_KPI,
+                                     ao.IS_UNIQUE_OPTION
+                             FROM HL5_CATEGORY_OPTION hl5CO
+                             INNER JOIN ALLOCATION_CATEGORY_OPTION_LEVEL acol
+                                 ON hl5CO.ALLOCATION_CATEGORY_OPTION_LEVEL_ID = acol.ALLOCATION_CATEGORY_OPTION_LEVEL_ID
+                                     AND acol.ENABLED = 1
+                                     AND acol.DELETED = 0
+                             INNER JOIN ALLOCATION_OPTION ao
+                                 ON acol.ALLOCATION_OPTION_ID = ao.ALLOCATION_OPTION_ID
+                             INNER JOIN ALLOCATION_CATEGORY ac
+                                 ON acol.ALLOCATION_CATEGORY_ID = ac.ALLOCATION_CATEGORY_ID
+                             LEFT JOIN :va_allocation_from_dynamic_form T2
+                                 ON ac.ALLOCATION_CATEGORY_ID = T2.ALLOCATION_CATEGORY_ID
+                             WHERE hl5CO.HL5_ID = in_hl_id
+                               AND hl5CO.ENABLED = 1
+                               AND hl5CO.DELETED = 0
+                               AND acol.ALLOCATION_CATEGORY_ID NOT IN (SELECT ALLOCATION_CATEGORY_ID
+                                                                          FROM :va_allocation_from_dynamic_form)
+                             )
+
+                             UNION ALL
+
+                             (SELECT ac.ALLOCATION_CATEGORY_ID AS CATEGORY_ID,
+                                     hl5CO.HL5_ID,
+                                     ac.NAME AS CATEGORY_NAME,
+                                     ao.ALLOCATION_COUNTRY_CATEGORY_OPTION_ID AS OPTION_ID,
+                                     ao.NAME AS OPTION_NAME,
+                                     hl5CO.HL5_COUNTRY_CATEGORY_OPTION_ID AS CATEGORY_OPTION_ID,
+                                     hl5CO.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID AS CATEGORY_OPTION_LEVEL_ID,
+                                     hl5CO.AMOUNT,
+                                     ac.SINGLE_OPTION_ONLY,
+                                     acol.MAKE_CATEGORY_MANDATORY,
+                                     hl5CO.UPDATED,
+                                     ac.CATEGORY_TYPE_ID,
+                                     acol.OPTIONS_LIMIT,
+                                     hl5CO.AMOUNT_KPI,
+                                     0 as IS_UNIQUE_OPTION
+                             FROM HL5_COUNTRY_CATEGORY_OPTION hl5CO
+                             INNER JOIN ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL acol
+                                 ON hl5CO.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID = acol.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_ID
+                                     AND acol.ENABLED = 1
+                                     AND acol.DELETED = 0
+                             INNER JOIN ALLOCATION_COUNTRY_CATEGORY_OPTION ao
+                                 ON acol.ALLOCATION_COUNTRY_CATEGORY_OPTION_ID = ao.ALLOCATION_COUNTRY_CATEGORY_OPTION_ID
+                             INNER JOIN ALLOCATION_CATEGORY ac
+                                 ON acol.ALLOCATION_CATEGORY_ID = ac.ALLOCATION_CATEGORY_ID
+                             WHERE hl5CO.HL5_ID = in_hl_id
+                               AND hl5CO.ENABLED = 1
+                               AND hl5CO.DELETED = 0);
 
 
-	va_hl5_category_option =
-	(SELECT
-	 ac.allocation_category_id as category_id
-	, hl5CO.hl5_id
-	, ac.name as category_name
-	, ao.allocation_option_id as option_id
-    , ao.name as option_name
-    , hl5CO.hl5_category_option_id as category_option_id
-	, hl5CO.allocation_category_option_level_id as category_option_level_id
-	, hl5CO.amount
-	, ac.SINGLE_OPTION_ONLY
-	, ACOL.MAKE_CATEGORY_MANDATORY
-	, hl5CO.UPDATED
-	, AC.CATEGORY_TYPE_ID
-	, ACOL.OPTIONS_LIMIT
-	, hl5CO.amount_kpi
-	FROM hl5_category_option hl5CO
-	inner join allocation_category_option_level ACOL on hl5CO.allocation_category_option_level_id = ACOL.allocation_category_option_level_id
-	AND ACOL.enabled = 1 AND ACOL.deleted = 0
-	inner join allocation_option ao on acol.allocation_option_id = ao.allocation_option_id
-	inner join allocation_category ac on ACOL.allocation_category_id = ac.allocation_category_id
-	LEFT JOIN :va_allocation_from_dynamic_form T2 ON ac.allocation_category_id = T2.allocation_category_id AND ao.allocation_option_id = T2.allocation_option_id
-	WHERE hl5_id = in_hl_id
-	  AND hl5CO.enabled = 1
-	  AND hl5CO.deleted = 0
-	  and ACOL.allocation_category_id not in (select allocation_category_id from :va_allocation_from_dynamic_form)
-	    and ACOL.allocation_option_id not in (select allocation_option_id from :va_allocation_from_dynamic_form)
-	    )
-        UNION ALL
-	  (SELECT
-      	 ac.allocation_category_id as category_id
-      	, hl5CO.hl5_id
-      	, ac.name as category_name
-      	,ao.ALLOCATION_COUNTRY_CATEGORY_OPTION_ID as option_id
-          	, ao.name as option_name
-          	,hl5CO.HL5_COUNTRY_CATEGORY_OPTION_id as category_option_id
-      	, hl5CO.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_id as category_option_level_id
-      	, hl5CO.amount
-      	, ac.SINGLE_OPTION_ONLY
-      	, ACOL.MAKE_CATEGORY_MANDATORY
-      	, hl5CO.UPDATED
-      	, AC.CATEGORY_TYPE_ID
-      	, ACOL.OPTIONS_LIMIT
-      	, hl5CO.amount_kpi
-      	FROM HL5_COUNTRY_CATEGORY_OPTION hl5CO
-      	inner join ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL ACOL on hl5CO.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_id = ACOL.ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_id
-      	AND ACOL.enabled = 1 AND ACOL.deleted = 0
-      	inner join ALLOCATION_COUNTRY_CATEGORY_OPTION ao on acol.ALLOCATION_COUNTRY_CATEGORY_OPTION_ID = ao.ALLOCATION_COUNTRY_CATEGORY_OPTION_ID
-      	inner join allocation_category ac on ACOL.allocation_category_id = ac.allocation_category_id
-      	WHERE hl5_id = in_hl_id
-      	  AND hl5CO.enabled = 1
-      	  AND hl5CO.deleted = 0);
-
-	 out_result =
-	        SELECT CATEGORY_ID
-                   , HL5_ID
-                   , CATEGORY_NAME
-                   , OPTION_ID
-                   , OPTION_NAME
-                   , CATEGORY_OPTION_ID
-                   , CATEGORY_OPTION_LEVEL_ID
-                   , AMOUNT
-                   , SINGLE_OPTION_ONLY
-                   , MAKE_CATEGORY_MANDATORY
-                   , UPDATED
-                   , CATEGORY_TYPE_ID
-                   , OPTIONS_LIMIT
-                   , amount_kpi
-            FROM :va_hl5_category_option
-             ORDER BY CATEGORY_NAME, OPTION_NAME;
+    out_result = SELECT CATEGORY_ID,
+                        HL5_ID,
+                        CATEGORY_NAME,
+                        OPTION_ID,
+                        OPTION_NAME,
+                        CATEGORY_OPTION_ID,
+                        CATEGORY_OPTION_LEVEL_ID,
+                        AMOUNT,
+                        SINGLE_OPTION_ONLY,
+                        MAKE_CATEGORY_MANDATORY,
+                        UPDATED,
+                        CATEGORY_TYPE_ID,
+                        OPTIONS_LIMIT,
+                        AMOUNT_KPI,
+                        IS_UNIQUE_OPTION
+                 FROM :va_hl5_category_option
+                 ORDER BY CATEGORY_NAME,
+                          OPTION_NAME;
 END;

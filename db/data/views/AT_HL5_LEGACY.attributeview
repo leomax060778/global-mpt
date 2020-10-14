@@ -219,6 +219,10 @@
       <descriptions defaultDescription="CO_FUNDED"/>
       <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL5_LEGACY" columnName="CO_FUNDED"/>
     </attribute>
+    <attribute id="DES_TYPE_ID" order="55" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="DES_TYPE_ID"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL5_LEGACY" columnName="DES_TYPE_ID"/>
+    </attribute>
   </attributes>
   <calculatedAttributes/>
   <privateDataFoundation>

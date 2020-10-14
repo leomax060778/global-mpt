@@ -21,8 +21,6 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL6_BY_USER_
             , IMPORTED tinyint
             , IMPORT_ID INTEGER
             , CRM_DESCRIPTION NVARCHAR(255)
-            , BUDGET_SPEND_REQUEST_STATUS_ID INTEGER
-            , BUDGET_SPEND_REQUEST_STATUS nvarchar(255)
             , HL6_PATH NVARCHAR(255)
         )
 )
@@ -47,21 +45,18 @@ va_intermidate = SELECT DISTINCT
         ,hl6.IMPORTED as IMPORTED
         ,hl6.IMPORT_ID as IMPORT_ID
         ,hl6.HL6_CRM_DESCRIPTION AS CRM_DESCRIPTION
-        ,BSRS.BUDGET_SPEND_REQUEST_STATUS_ID
-        ,BSRS.DISPLAY_NAME as BUDGET_SPEND_REQUEST_STATUS
 
     FROM HL6 Hl6
-    INNER JOIN HL5 hl5 ON hl5.hl5_id=hl6.hl5_id AND hl5.enabled=1 AND hl5.deleted=0
-   INNER JOIN HL4 hl4 ON hl4.hl4_id=hl5.hl4_id AND hl4.enabled=1 AND hl4.deleted=0
-   INNER JOIN HL3 hl3 ON hl3.hl3_id=hl4.hl3_id AND hl3.enabled=1 AND hl3.deleted=0
-   INNER JOIN HL3_USER hl3_user ON hl3.hl3_id=hl3_user.hl3_id
-    INNER JOIN CURRENCY euro_conversions ON hl6.euro_conversion_id = euro_conversions.euro_conversion_id  AND euro_conversions.enabled=1 AND euro_conversions.deleted=0
-    INNER JOIN hl6_status_detail hl6_status_detail ON hl6_status_detail.hl6_status_detail_id = hl6.hl6_status_detail_id
-    INNER JOIN "MKTG_PLANNING_TOOL"."USER" userTable ON userTable.USER_ID = hl6.created_user_id
-    LEFT JOIN BUDGET_SPEND_REQUEST BSR ON BSR.HL_ID = HL6.HL6_ID AND BSR.HIERARCHY_LEVEL_ID = 2 AND BSR.BUDGET_SPEND_REQUEST_TYPE_ID = 1
-    LEFT JOIN BUDGET_SPEND_REQUEST_STATUS BSRS ON BSRS.BUDGET_SPEND_REQUEST_STATUS_ID = BSR.BUDGET_SPEND_REQUEST_STATUS_ID
-    WHERE hl6.enabled=1 AND hl6.deleted=0
-	AND HL6.HL5_ID = in_hl5_id
+        INNER JOIN HL5 hl5 ON hl5.hl5_id=hl6.hl5_id AND hl5.enabled=1 AND hl5.deleted=0
+        INNER JOIN HL4 hl4 ON hl4.hl4_id=hl5.hl4_id AND hl4.enabled=1 AND hl4.deleted=0
+        INNER JOIN HL3 hl3 ON hl3.hl3_id=hl4.hl3_id AND hl3.enabled=1 AND hl3.deleted=0
+        INNER JOIN HL3_USER hl3_user ON hl3.hl3_id=hl3_user.hl3_id
+        INNER JOIN CURRENCY euro_conversions ON hl6.euro_conversion_id = euro_conversions.euro_conversion_id  AND euro_conversions.enabled=1 AND euro_conversions.deleted=0
+        INNER JOIN hl6_status_detail hl6_status_detail ON hl6_status_detail.hl6_status_detail_id = hl6.hl6_status_detail_id
+        INNER JOIN "MKTG_PLANNING_TOOL"."USER" userTable ON userTable.USER_ID = hl6.created_user_id
+    WHERE hl6.enabled=1
+        AND hl6.deleted=0
+	    AND HL6.HL5_ID = in_hl5_id
 	ORDER BY hl6.acronym ASC;
 
 	va_hl5 = select distinct hl5_id
@@ -104,9 +99,7 @@ out_result = SELECT
 		,va_hl6.IMPORTED
         ,va_hl6.IMPORT_ID
         ,va_hl6.CRM_DESCRIPTION
-        , va_hl6.BUDGET_SPEND_REQUEST_STATUS_ID
-        , va_hl6.BUDGET_SPEND_REQUEST_STATUS
-        , "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(va_hl5.BUDGET_YEAR, va_hl5.HL1_ACRONYM, va_hl5.HL2_ACRONYM, va_hl5.HL3_ACRONYM, va_hl5.HL4_ACRONYM, va_hl5.HL5_ACRONYM, va_hl6.HL6_ACRONYM) AS HL6_PATH
+        ,"MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(va_hl5.BUDGET_YEAR, va_hl5.HL1_ACRONYM, va_hl5.HL2_ACRONYM, va_hl5.HL3_ACRONYM, va_hl5.HL4_ACRONYM, va_hl5.HL5_ACRONYM, va_hl6.HL6_ACRONYM) AS HL6_PATH
     FROM :va_hl5 va_hl5
     left JOIN :va_intermidate va_hl6 on va_hl5.hl5_id = va_hl6.hl5_id;
 		

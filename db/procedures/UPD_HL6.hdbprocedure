@@ -1,116 +1,129 @@
 PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::UPD_HL6" 
 (
-	in in_hl6_id bigint
-	,in in_hl6_acronym nvarchar(3)
-	,in in_hl6_crm_description nvarchar(100)
-	,in in_hl6_budget decimal(19, 6)
-	,in in_route_to_market_id bigint
-	,in in_campaign_objective_id bigint
-	,in in_campaign_type_id bigint
-	,in in_campaign_subtype_id bigint
-	,in in_marketing_program_id bigint
-	,in in_marketing_activity_id bigint
-	,in in_actual_start_date NVARCHAR(32)
-	,in in_actual_end_date NVARCHAR(32)
-	,in in_show_on_dg_calendar tinyint
-	,in in_business_owner_id bigint
-	,in in_employee_responsible_id bigint
-	,in in_cost_center_id bigint	
-	,in in_in_budget tinyint
-	,in in_budget_spend_q1 decimal(19, 2)
-	,in in_budget_spend_q2 decimal(19, 2)
-	,in in_budget_spend_q3 decimal(19, 2)
-	,in in_budget_spend_q4 decimal(19, 2)
-	,in in_euro_conversion_id bigint
-	,in in_hl6_status_detail_id bigint
-	,in in_modified_user_id bigint
-	,in in_sales_organization_id bigint
-	,in in_distribution_channel_id bigint
-	,in in_venue NVARCHAR(255)
-    ,in in_city NVARCHAR(255)
-    ,in in_country NVARCHAR(255)
-    ,in in_url NVARCHAR(255)
-    ,in in_results_campaign_q1 decimal(19, 2)
-    ,in in_results_campaign_q2 decimal(19, 2)
-    ,in in_results_campaign_q3 decimal(19, 2)
-    ,in in_results_campaign_q4 decimal(19, 2)
-    ,in in_planned_start_date NVARCHAR(32)
-    ,in in_planned_end_date NVARCHAR(32)
-    ,in in_street nvarchar(255)
-    ,in in_postal_code nvarchar(20)
-    ,in in_region nvarchar(255)
-    ,in in_event_owner nvarchar(255)
-    ,in in_number_of_participants nvarchar(255)
-    ,in in_priority_id bigint
-    ,IN in_co_funded tinyint
-    ,IN in_allow_budget_zero tinyint
-    ,IN in_is_power_user tinyint
-    , IN in_employee_responsible_user nvarchar(7)
-    , IN in_person_responsible nvarchar(7)
-    , IN in_is_complete TINYINT
-    , IN in_country_id bigint
-    , IN in_inherited_creation tinyint
-    , IN in_enable_crm_creation tinyint
-	,OUT out_result decimal(19, 6)
+	IN in_hl6_id bigint,
+	IN in_hl6_acronym nvarchar(3),
+	IN in_hl6_crm_description nvarchar(100),
+	IN in_hl6_budget decimal(19, 6),
+	IN in_route_to_market_id bigint,
+	IN in_campaign_objective_id bigint,
+	IN in_campaign_type_id bigint,
+	IN in_campaign_subtype_id bigint,
+	IN in_marketing_program_id bigint,
+	IN in_marketing_activity_id bigint,
+	IN in_actual_start_date NVARCHAR(32),
+	IN in_actual_end_date NVARCHAR(32),
+	IN in_show_on_dg_calendar tinyint,
+	IN in_business_owner_id bigint,
+	IN in_employee_responsible_id bigint,
+	IN in_cost_center_id bigint,
+	IN in_in_budget tinyint,
+	IN in_budget_spend_q1 decimal(19, 2),
+	IN in_budget_spend_q2 decimal(19, 2),
+	IN in_budget_spend_q3 decimal(19, 2),
+	IN in_budget_spend_q4 decimal(19, 2),
+	IN in_euro_conversion_id bigint,
+	IN in_hl6_status_detail_id bigint,
+	IN in_modified_user_id bigint,
+	IN in_sales_organization_id bigint,
+	IN in_distribution_channel_id bigint,
+	IN in_affiliated_with_larger_event_id bigint,
+	IN in_affiliated_event_name nvarchar(255),
+	IN in_existing_customer_percentage decimal(19,2),
+	IN in_gross_cost decimal(19,6),
+	IN in_net_cost decimal(19,6),
+	IN in_expected_revenue decimal(19,6),
+	IN in_expected_cofounding decimal(19,6),
+	IN in_registration_process_id bigint,
+	IN in_event_summary nvarchar(1000),
+	IN in_business_case nvarchar(1000),
+	IN in_event_follow_up_activities nvarchar(255),
+	IN in_city NVARCHAR(255),
+	IN in_country NVARCHAR(255),
+	IN in_results_campaign_q1 decimal(19, 2),
+	IN in_results_campaign_q2 decimal(19, 2),
+	IN in_results_campaign_q3 decimal(19, 2),
+	IN in_results_campaign_q4 decimal(19, 2),
+	IN in_planned_start_date NVARCHAR(32),
+	IN in_planned_end_date NVARCHAR(32),
+	IN in_event_owner nvarchar(255),
+	IN in_number_of_participants nvarchar(255),
+	IN in_priority_id bigint,
+	IN in_co_funded tinyint,
+	IN in_allow_budget_zero tinyint,
+	IN in_is_power_user tinyint,
+	IN in_employee_responsible_user nvarchar(7),
+	IN in_person_responsible nvarchar(7),
+	IN in_is_complete TINYINT,
+	IN in_country_id bigint,
+	IN in_inherited_creation tinyint,
+	IN in_enable_crm_creation tinyint,
+	IN in_event_answer_id integer,
+    OUT out_result decimal(19, 6)
 	) 
 	LANGUAGE SQLSCRIPT
 	SQL SECURITY INVOKER 
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL" AS
 BEGIN
 	UPDATE HL6
-	SET
-	 budget =  in_hl6_budget
-	  ,hl6_crm_description = in_hl6_crm_description
-    , acronym = in_hl6_acronym
-	, route_to_market_id = in_route_to_market_id
-	, campaign_objective_id = in_campaign_objective_id
-	, campaign_type_id = in_campaign_type_id
-	, campaign_subtype_id = in_campaign_subtype_id
-	, marketing_program_id = in_marketing_program_id
-	, marketing_activity_id = in_marketing_activity_id
-	, actual_start_date = TO_TIMESTAMP(in_actual_start_date, 'MM/DD/YYYY')
-	, actual_end_date = TO_TIMESTAMP(in_actual_end_date, 'MM/DD/YYYY')
-	, show_on_dg_calendar = in_show_on_dg_calendar 
-	, business_owner_id = in_business_owner_id
-	, employee_responsible_id = in_employee_responsible_id
-	, cost_center_id = in_cost_center_id
-	, in_budget = in_in_budget
-	, budget_spend_q1 = in_budget_spend_q1
-	, budget_spend_q2 = in_budget_spend_q2
-	, budget_spend_q3 = in_budget_spend_q3
-	, budget_spend_q4 = in_budget_spend_q4
-	, euro_conversion_id = in_euro_conversion_id
-	, hl6_status_detail_id = in_hl6_status_detail_id
-	, modified_user_id = in_modified_user_id
-	, sales_organization_id = in_sales_organization_id
-	, modified_date_tz = CURRENT_TIMESTAMP
-	, distribution_channel_id = in_distribution_channel_id
-	, venue = in_venue  
-	, city = in_city
-	, country = in_country
-	, url = in_url
-	,results_campaign_q1 = in_results_campaign_q1
-    ,results_campaign_q2 = in_results_campaign_q2
-    ,results_campaign_q3 = in_results_campaign_q3
-    ,results_campaign_q4 = in_results_campaign_q4
-    ,planned_start_date = TO_TIMESTAMP(in_planned_start_date, 'MM/DD/YYYY')
-    ,planned_end_date = TO_TIMESTAMP(in_planned_end_date, 'MM/DD/YYYY')
-    ,street = in_street
-    ,postal_code = in_postal_code
-    , region = in_region
-    , event_owner = in_event_owner
-    , number_of_participants = in_number_of_participants
-    , priority_id = in_priority_id
-    , co_funded = in_co_funded
-    , allow_budget_zero = in_allow_budget_zero
-    , is_power_user = in_is_power_user
-    , EMPLOYEE_RESPONSIBLE_USER = in_employee_responsible_user
-    , PERSON_RESPONSIBLE = in_person_responsible
-    , IS_COMPLETE = in_is_complete
-    , country_id = in_country_id
-    , inherited_creation = in_inherited_creation
-    , enable_crm_creation = in_enable_crm_creation
-	where hl6_id = in_hl6_id;
+	SET budget =  in_hl6_budget,
+        hl6_crm_description = in_hl6_crm_description,
+        acronym = in_hl6_acronym,
+        route_to_market_id = in_route_to_market_id,
+        campaign_objective_id = in_campaign_objective_id,
+        campaign_type_id = in_campaign_type_id,
+        campaign_subtype_id = in_campaign_subtype_id,
+        marketing_program_id = in_marketing_program_id,
+        marketing_activity_id = in_marketing_activity_id,
+        actual_start_date = TO_TIMESTAMP(in_actual_start_date, 'MM/DD/YYYY'),
+        actual_end_date = TO_TIMESTAMP(in_actual_end_date, 'MM/DD/YYYY'),
+        show_on_dg_calendar = in_show_on_dg_calendar ,
+        business_owner_id = in_business_owner_id,
+        employee_responsible_id = in_employee_responsible_id,
+        cost_center_id = in_cost_center_id,
+        in_budget = in_in_budget,
+        budget_spend_q1 = in_budget_spend_q1,
+        budget_spend_q2 = in_budget_spend_q2,
+        budget_spend_q3 = in_budget_spend_q3,
+        budget_spend_q4 = in_budget_spend_q4,
+        euro_conversion_id = in_euro_conversion_id,
+        hl6_status_detail_id = in_hl6_status_detail_id,
+        modified_user_id = in_modified_user_id,
+        sales_organization_id = in_sales_organization_id,
+        modified_date_tz = CURRENT_TIMESTAMP,
+        distribution_channel_id = in_distribution_channel_id,
+        affiliated_with_larger_event_id = in_affiliated_with_larger_event_id,
+        affiliated_event_name = in_affiliated_event_name,
+        existing_customer_percentage = in_existing_customer_percentage,
+        gross_cost = in_gross_cost,
+        net_cost = in_net_cost,
+        expected_revenue = in_expected_revenue,
+        expected_cofounding = in_expected_cofounding,
+        registration_process_id = in_registration_process_id,
+        event_summary = in_event_summary,
+        business_case = in_business_case,
+        event_follow_up_activities = in_event_follow_up_activities,
+        city = in_city,
+        country = in_country,
+        results_campaign_q1 = in_results_campaign_q1,
+        results_campaign_q2 = in_results_campaign_q2,
+        results_campaign_q3 = in_results_campaign_q3,
+        results_campaign_q4 = in_results_campaign_q4,
+        planned_start_date = TO_TIMESTAMP(in_planned_start_date, 'MM/DD/YYYY'),
+        planned_end_date = TO_TIMESTAMP(in_planned_end_date, 'MM/DD/YYYY'),
+        event_owner = in_event_owner,
+        number_of_participants = in_number_of_participants,
+        priority_id = in_priority_id,
+        co_funded = in_co_funded,
+        allow_budget_zero = in_allow_budget_zero,
+        is_power_user = in_is_power_user,
+        EMPLOYEE_RESPONSIBLE_USER = in_employee_responsible_user,
+        PERSON_RESPONSIBLE = in_person_responsible,
+        IS_COMPLETE = in_is_complete,
+        country_id = in_country_id,
+        inherited_creation = in_inherited_creation,
+        enable_crm_creation = in_enable_crm_creation,
+        event_answer_id = in_event_answer_id
+        where hl6_id = in_hl6_id;
 	
 	SELECT ::ROWCOUNT INTO out_result FROM DUMMY;
 	

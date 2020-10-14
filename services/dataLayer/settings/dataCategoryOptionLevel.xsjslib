@@ -11,12 +11,17 @@ var GET_ALLOCATION_CATEGORY_OPTION_LEVEL_BY_LEVEL = "GET_ALLOCATION_CATEGORY_OPT
 var GET_ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_BY_LEVEL = "GET_ALLOCATION_COUNTRY_CATEGORY_OPTION_LEVEL_BY_LEVEL";
 var GET_ALLOCATION_CATEGORY_OPTION_LEVEL_COUNT_BY_CATEGORY = "GET_ALLOCATION_CATEGORY_OPTION_LEVEL_COUNT_BY_CATEGORY";
 var GET_ALLOCATION_CATEGORY_OPTION_LEVEL_TO_DELETE = "GET_ALLOCATION_CATEGORY_OPTION_LEVEL_TO_DELETE";
+var GET_SYNDICATED_SUB_PROGRAM_ASSOCIATION_BY_CATEGORY_ID_HIERARCHY_LEVEL_ID = "GET_SYNDICATED_SUB_PROGRAM_ASSOCIATION_BY_CATEGORY_ID_HIERARCHY_LEVEL_ID";
+var GET_OBJECTIVE_ALLOCATION_ASSOCIATION_BY_HIERARCHY_LEVEL_ID = "GET_OBJECTIVE_ALLOCATION_ASSOCIATION_BY_HIERARCHY_LEVEL_ID";
 var INS_ALLOCATION_CATEGORY_OPTION_LEVEL = "INS_ALLOCATION_CATEGORY_OPTION_LEVEL";
+var INS_SYNDICATED_SUB_PROGRAM_ASSOCIATION = "INS_SYNDICATED_SUB_PROGRAM_ASSOCIATION";
 var UPD_ALLOCATION_CAT_OPT_LEV_PROCESSING_REPORT = "UPD_ALLOCATION_CAT_OPT_LEV_PROCESSING_REPORT";
 var UPD_ALLOCATION_CATEGORY_OPTION_LEVEL = "UPD_ALLOCATION_CATEGORY_OPTION_LEVEL";
 var UPD_ALLOCATION_OPTION_FLAGS = "UPD_ALLOCATION_OPTION_FLAGS";
+var UPD_SYNDICATED_SUB_PROGRAM_ASSOCIATION = "UPD_SYNDICATED_SUB_PROGRAM_ASSOCIATION";
 var DEL_ALLOCATION_RELATIONSHIP = "DEL_ALLOCATION_RELATIONSHIP";
 var DEL_ALLOCATION_RELATIONSHIP_BY_CATEGORY_ID = "DEL_ALLOCATION_RELATIONSHIP_BY_CATEGORY_ID";
+var DEL_ALLOCATION_CATEGORY_OPTION_LEVEL_SYNDICATED_SUB_PROGRAM = "DEL_ALLOCATION_CATEGORY_OPTION_LEVEL_SYNDICATED_SUB_PROGRAM";
 /*********************************************************************************************************/
 var hierarchyLevel = {
 	"hl1": 6,
@@ -308,6 +313,23 @@ function getAllocationCategoryOptionLevelToDelete(allocationCategoryId, levelId,
     return db.extractArray(rdo.out_result);
 }
 
+function getSyndicatedSubProgramAssociationByCategoryIdHierarchyLevelId(categoryId, hierarchyLevelId) {
+	var parameters = {
+		in_allocation_category_id: categoryId,
+		in_hierarchy_level_id: hierarchyLevelId
+	};
+	var rdo = db.executeProcedureManual(GET_SYNDICATED_SUB_PROGRAM_ASSOCIATION_BY_CATEGORY_ID_HIERARCHY_LEVEL_ID,parameters);
+	return db.extractArray(rdo.out_result);
+}
+
+function getObjectiveAllocationAssociationByHierarchyLevelId(hierarchyLevelId) {
+	var parameters = {
+		in_hierarchy_level_id: hierarchyLevelId
+	};
+	var rdo = db.executeProcedureManual(GET_OBJECTIVE_ALLOCATION_ASSOCIATION_BY_HIERARCHY_LEVEL_ID,parameters);
+	return db.extractArray(rdo.out_result);
+}
+
 function insertCategoryOption(data, level){
 	var storedProcedure = "INS_"+ level.toUpperCase() +"_ALLOCATION_CATEGORY_OPTION";
 	var rdo = db.executeScalarManual(storedProcedure, data, 'out_result_id');
@@ -318,6 +340,17 @@ function insertCountryCategoryOption(data, level){
     var storedProcedure = "INS_"+ level.toUpperCase() +"_ALLOCATION_COUNTRY_CATEGORY_OPTION";
     var rdo = db.executeScalarManual(storedProcedure, data, 'out_result_id');
     return rdo;
+}
+
+function insertSyndicatedSubProgramAssociation(data, userId){
+	var params = {};
+	params.in_allocation_category_id = data.ALLOCATION_CATEGORY_ID;
+	params.in_allocation_option_id = data.ALLOCATION_OPTION_ID;
+	params.in_marketing_program_id = data.MARKETING_PROGRAM_ID;
+	params.in_hierarchy_level_id = data.HIERARCHY_LEVEL_ID;
+	params.in_created_user_id = userId;
+
+	return db.executeScalarManual(INS_SYNDICATED_SUB_PROGRAM_ASSOCIATION, params, 'out_result');
 }
 
 function updateCategoryOption(data, level){
@@ -332,6 +365,17 @@ function updateCountryCategoryOption(data, level){
 	return rdo;
 }
 
+function updateSyndicatedSubProgramAssociation(data, userId){
+	var params = {};
+	params.in_allocation_category_option_level_syndicated_sub_program_id = data.ALLOCATION_CATEGORY_OPTION_LEVEL_SYNDICATED_SUB_PROGRAM_ID;
+	params.in_allocation_category_id = data.ALLOCATION_CATEGORY_ID;
+	params.in_allocation_option_id = data.ALLOCATION_OPTION_ID;
+	params.in_marketing_program_id = data.MARKETING_PROGRAM_ID;
+	params.in_modified_user_id = userId;
+
+	return db.executeScalarManual(UPD_SYNDICATED_SUB_PROGRAM_ASSOCIATION, params, 'out_result');
+}
+
 function deleteCategoryOption(id, userId, level){
 	var parameters = {
 		'in_id': id,
@@ -340,6 +384,15 @@ function deleteCategoryOption(id, userId, level){
 	var storedProcedure = "DEL_"+ level.toUpperCase() +"_ALLOCATION_CATEGORY_OPTION";
 	var rdo = db.executeScalarManual(storedProcedure, parameters, 'out_result');
 	return rdo;
+}
+
+function deleteSyndicatedSubProgramAssociation(id, userId){
+	var parameters = {
+		'in_allocation_category_option_level_syndicated_sub_program_id': id,
+		'in_modified_user_id': userId
+	};
+
+	return db.executeScalarManual(DEL_ALLOCATION_CATEGORY_OPTION_LEVEL_SYNDICATED_SUB_PROGRAM, parameters, 'out_result');
 }
 
 function deleteCountryCategoryOption(id, userId, level){

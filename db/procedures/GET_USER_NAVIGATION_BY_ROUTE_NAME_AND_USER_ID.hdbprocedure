@@ -1,0 +1,25 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_USER_NAVIGATION_BY_ROUTE_NAME_AND_USER_ID" (
+	IN IN_USER_ID BIGINT,
+	IN IN_ROUTE_NAME NVARCHAR(50),
+	OUT out_result TABLE(
+        BUDGET_YEAR_ID INTEGER,
+        REGION_ID INTEGER,
+        SEARCH_STRING NVARCHAR(255),
+        SELECTED_ITEM_ID INTEGER
+	)
+)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	READS SQL DATA AS
+BEGIN
+    out_result = SELECT	BUDGET_YEAR_ID,
+                        REGION_ID,
+                        SEARCH_STRING,
+                        SELECTED_ITEM_ID
+                 FROM USER_NAVIGATION
+                 WHERE ENABLED = 1
+                     AND DELETED = 0
+                     AND USER_ID = IN_USER_ID
+                     AND ROUTE_NAME = IN_ROUTE_NAME;
+END;

@@ -49,7 +49,18 @@ function getLockFlagByHlIdLevel(hlId, level) {
     return db.executeScalarManual(GET_LOCK_FLAG_BY_HL_ID_LEVEL, {'in_hl_id': hlId, 'in_level': level}, 'out_result');
 }
 
-function insertBudgetYear(budgetYear, startDate, endDate, defaultYear, description, versionedStartDate, versionedEndDate, requireDynamicForm, userId, autoCommit) {
+function insertBudgetYear(
+    budgetYear,
+    startDate,
+    endDate,
+    defaultYear,
+    description,
+    versionedStartDate,
+    versionedEndDate,
+    requireDynamicForm,
+    syndicatedSubProgramRequired,
+    userId,
+    autoCommit) {
     var params = {
         'in_budget_year': budgetYear,
         'in_start_date': startDate,
@@ -59,6 +70,7 @@ function insertBudgetYear(budgetYear, startDate, endDate, defaultYear, descripti
         'in_default_year': defaultYear,
         'in_description': description,
         'in_require_dynamic_form': requireDynamicForm,
+        'in_syndicated_sub_program_required': syndicatedSubProgramRequired ? 1 : 0,
         'in_created_user_id': userId
     };
     var rdo;
@@ -70,7 +82,7 @@ function insertBudgetYear(budgetYear, startDate, endDate, defaultYear, descripti
     return rdo;
 }
 
-function updateBudgetYear(budgetYearId, budgetYear, startDate, endDate, defaultYear, description, enableCrmCreation, versionedStartDate, versionedEndDate, requireDynamicForm, userId) {
+function updateBudgetYear(budgetYearId, budgetYear, startDate, endDate, defaultYear, description, enableCrmCreation, versionedStartDate, versionedEndDate, requireDynamicForm, syndicatedSubProgramRequired, userId) {
 
     var params = {
         "in_budget_year_id": budgetYearId,
@@ -83,7 +95,8 @@ function updateBudgetYear(budgetYearId, budgetYear, startDate, endDate, defaultY
         "in_enable_crm_creation": enableCrmCreation,
         "in_modified_user_id": userId,
         "in_budget_year": budgetYear,
-        'in_require_dynamic_form': requireDynamicForm
+        'in_require_dynamic_form': requireDynamicForm,
+        'in_syndicated_sub_program_required': syndicatedSubProgramRequired ? 1 : 0
     };
 
     return db.executeScalarManual(spUdpBudgetYear, params, 'out_result');

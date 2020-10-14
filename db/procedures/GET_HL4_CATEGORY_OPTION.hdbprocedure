@@ -13,7 +13,8 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL4_CATEGORY
 	 MAKE_CATEGORY_MANDATORY TINYINT,
 	 UPDATED TINYINT,
 	 CATEGORY_TYPE_ID INTEGER,
-	 OPTIONS_LIMIT INTEGER
+	 OPTIONS_LIMIT INTEGER,
+	 IS_UNIQUE_OPTION TINYINT
 	)
 ) 
 	LANGUAGE SQLSCRIPT
@@ -35,7 +36,8 @@ BEGIN
                      acol.MAKE_CATEGORY_MANDATORY,
                      hl4co.UPDATED,
                      AC.CATEGORY_TYPE_ID,
-                     acol.OPTIONS_LIMIT
+                     acol.OPTIONS_LIMIT,
+                     ao.IS_UNIQUE_OPTION
                 FROM HL4_CATEGORY_OPTION hl4co
                     INNER JOIN allocation_category_option_level acol ON hl4co.ALLOCATION_CATEGORY_OPTION_LEVEL_ID = acol.ALLOCATION_CATEGORY_OPTION_LEVEL_ID
                         AND acol.ENABLED = 1 AND acol.DELETED = 0

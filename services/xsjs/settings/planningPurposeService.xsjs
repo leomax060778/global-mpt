@@ -28,6 +28,9 @@ function handleGet(parameters, userSessionID) {
         case 'GET_PLANNING_PURPOSE_ID_BY_HL4_ID':
             result = plPurposeLib.getPlanningPurposeIdByHl4Id(params.HL4_ID, userSessionID);
             break;
+        case 'GET_PLANNING_PURPOSE_ID_BY_HL5_ID':
+            result = plPurposeLib.getPlanningPurposeIdByHl5Id(params.HL_ID, params.IS_LEGACY, userSessionID);
+            break;
         default:
             throw ErrorLib.getErrors().BadRequest("","","invalid parameter value (should be GET_ALL_PLANNING_PURPOSE, GET_ALL_PLANNING_PURPOSE_RELATION or GET_PLANNING_PURPOSE_RELATED_DATA");
     }

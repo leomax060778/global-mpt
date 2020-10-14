@@ -1,0 +1,23 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL5_TARGET_AUDIENCE_BY_HL5_ID" (
+	IN in_hl5_id BIGINT,
+	OUT out_result TABLE(
+	    HL5_TARGET_AUDIENCE_ID INTEGER,
+	    HL5_ID INTEGER,
+	    TARGET_AUDIENCE_ID INTEGER
+	)
+) 
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER 
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	READS SQL DATA AS
+BEGIN
+
+	out_result = SELECT HL5_TARGET_AUDIENCE_ID,
+                        HL5_ID,
+                        TARGET_AUDIENCE_ID
+                 FROM HL5_TARGET_AUDIENCE
+                    WHERE HL5_ID = in_hl5_id
+                        AND ENABLED = 1
+                        AND DELETED = 0;
+
+END;

@@ -6,6 +6,7 @@ var db = mapper.getdbHelper();
 
 var spGetById = "GET_HL5_LEGACY_BY_ID";
 var spGetCategoryOption = "GET_HL5_LEGACY_CATEGORY_OPTION";
+var spGetHl5LegacyBudgetByHl5LegacyId = "GET_HL5_LEGACY_BUDGET_BY_ID";
 
 var spUpdateHl5Legacy = "UPD_HL5_LEGACY";
 var spUpdateHl5LegacyBudget = "UPD_HL5_LEGACY_BUDGET";
@@ -13,8 +14,10 @@ var spUpdateCategoryOption = "UPD_HL5_LEGACY_ALLOCATION_CATEGORY_OPTION";
 
 var spInsertExpectedOutcomes = "INS_HL5_LEGACY_EXPECTED_OUTCOMES";
 var spInsertCategoryOption = "INS_HL5_LEGACY_ALLOCATION_CATEGORY_OPTION";
+var spInsHl5LegacyBudget = "INS_HL5_LEGACY_BUDGET";
 
 var spDeleteExpectedOutcomes = "DEL_HL5_LEGACY_EXPECTED_OUTCOMES";
+var spHardDeleteHl5LegacyBudget = "DEL_HL5_LEGACY_BUDGET_HARD";
 
 /** *********** GET *************** **/
 
@@ -34,6 +37,16 @@ function getHl5LegacyCategoryOption(hl5LegacyId){
     var result = db.executeProcedureManual(spGetCategoryOption, parameters);
 
     return db.extractArray(result.out_result);
+}
+
+function getHl5LegacyBudgetDistributionByHl5LegacyId(hl5LegacyId){
+    var params = {};
+    params.in_hl5_legacy_id = hl5LegacyId;
+
+    var result = db.executeProcedureManual(spGetHl5LegacyBudgetByHl5LegacyId, params);
+    var arrayList = db.extractArray(result.out_result);
+
+    return arrayList.length ? arrayList : null;
 }
 
 /** *********** UPDATE *************** **/
@@ -81,6 +94,10 @@ function insertAllocationCategoryOption(data){
     return rdo;
 }
 
+function insertBudgetDistribution(data){
+    return db.executeScalarManual(spInsHl5LegacyBudget, data, 'out_result');
+}
+
 /** *********** DELETE *************** **/
 
 function deleteKPIComments(hl5LegacyId, userId){
@@ -89,4 +106,11 @@ function deleteKPIComments(hl5LegacyId, userId){
     params.in_modified_user_id = userId;
 
     return db.executeScalarManual(spDeleteExpectedOutcomes, params, 'out_result');
+}
+
+function hardDeleteHl5LegacyBudget(hl5LegacyId){
+    var params = {};
+    params.in_hl5_legacy_id = hl5LegacyId;
+
+    return db.executeScalarManual(spHardDeleteHl5LegacyBudget,params,'out_result');
 }

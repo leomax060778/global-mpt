@@ -16,7 +16,6 @@ var GET_VALIDATE_REGION_AND_MARKET_UNIT = "GET_VALIDATE_REGION_AND_MARKET_UNIT";
 var GET_REGION_SUBREGION = "GET_REGION_SUBREGION";
 
 function getAllRegions(){
-	var parameters = {};	
 	var result = db.executeProcedureManual(GET_ALL_REGION, {});	
 	var list = result['out_result'];
 	var spResult = [];

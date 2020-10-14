@@ -1,0 +1,26 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_HL6_TARGET_AUDIENCE"
+(
+	IN target_audience TABLE(
+	    in_hl6_id BIGINT,
+        in_target_audience_id BIGINT,
+        in_created_user_id BIGINT
+	),
+	OUT out_result BIGINT
+	)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER 
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL" AS
+BEGIN
+
+	INSERT INTO HL6_TARGET_AUDIENCE	(
+	    hl6_id,
+        target_audience_id,
+	    created_user_id
+	)
+	(SELECT in_hl6_id,
+            in_target_audience_id,
+            in_created_user_id
+     FROM :target_audience);
+	
+	SELECT TOP 1 CURRENT_IDENTITY_VALUE() INTO out_result FROM "MKTG_PLANNING_TOOL"."HL6_TARGET_AUDIENCE";
+END;

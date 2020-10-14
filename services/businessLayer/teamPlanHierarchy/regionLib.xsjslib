@@ -26,6 +26,9 @@ function getAllRegions(fromExecutionLevel, partial) {
 
     return regionlist;
 }
+function getAllRegionsForFilters() {
+	return dataRegion.getAllRegions();
+}
 
 function getRegionSubregion(){
 	var regions = getAllRegions();

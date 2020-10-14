@@ -24,6 +24,7 @@ var planningPurposeOptionLib = mapper.getPlanningPurposeOptionLib();
 
 var L1_MSG_LEVEL_1_EXISTS = "Another Plan with the same acronym and budget year already exists";
 var L1_MSG_NO_PRIVILEGE = "Not enough privilege to do this action.";
+var L1_CARRY_OVER_TYPE_NOT_FOUND = "The Carry Over type can not be found.";
 var L1_MSG_PLAN_NOT_FOUND = "The Plan can not be found.";
 var L1_MSG_PLAN_CANT_DELETE = "The selected Plan can not be deleted because has childs.";
 var L1_MSG_USER_NOT_FOUND = "The User can not be found.";
@@ -37,6 +38,7 @@ var L1_CAMPAIGN_FORECASTING_KPIS_NOT_VALID = "Campaign Forecasting / KPIS is not
 var BUDGET_YEAR_NOT_FOUND = "The Budget Year can not be found.";
 var REGION_NOT_FOUND = "The Region can not be found.";
 var USER_NOT_FOUND = "The User can not be found.";
+var PLANNIFICATION_LEVELS_NOT_FOUND = "The Plannification Levels can not be found.";
 var L1_CATEGORY_NOT_EMPTY = "Category cannot be empty.";
 var L1_CATEGORY_INCORRECT_NUMBER = "Incorrect number of categories.";
 var L1_CATEGORY_NOT_VALID = "Category is not valid.";
@@ -72,6 +74,68 @@ function getLevel1ById(hl1Id, carryOver, userId) {
     return hl1Result;
 }
 
+function getLevel1CarryOverInformation(type, hl1Id, userId){
+    switch (type) {
+        case "BASIC":
+            return getHl1BasicCarryOver(hl1Id);
+            break;
+        case "KPI":
+            return getTargetKpiCarryOver(hl1Id);
+            break;
+        case "USER_ASSOCIATION":
+            return getUserAssociationCarryOver(hl1Id);
+            break;
+        case "CATEGORY_OPTION":
+            return getCategoryOptionCarryOver(hl1Id, userId);
+            break;
+        default:
+            throw ErrorLib.getErrors().BadRequest("The parameter type is not found", "level1Services/handleGet/getLevel1CarryOverInformation", L1_CARRY_OVER_TYPE_NOT_FOUND);
+            break;
+    }
+}
+
+function getHl1BasicCarryOver(hl1Id){
+    if (!hl1Id){
+        throw ErrorLib.getErrors().BadRequest("The Parameter hl1Id is not found", "level1Services/handleGet/getLevel1ById", L1_MSG_PLAN_NOT_FOUND);
+    }
+
+    var hl1Result = JSON.parse(JSON.stringify(dataHl1.getLevel1ById(hl1Id)));
+    var hl1BudgetAllocated = dataHl1.getHl1AllocatedBudget(hl1Result.HL1_ID, 0);
+    hl1Result.BUDGET_REMAINING = Number(hl1Result.BUDGET) - Number(hl1BudgetAllocated);
+
+    if (hl1Result.PLANNING_PURPOSE_ID) {
+        var planningPurpose = planningPurposeOptionLib.getPlanningPurposeRelationship(hl1Result.PLANNING_PURPOSE_ID);
+        hl1Result.PLANNING_PURPOSE_OPTIONS = planningPurpose.ASSIGNED_PLANNING_PURPOSE_OPTIONS;
+    }
+
+    return hl1Result;
+}
+
+function getTargetKpiCarryOver(hl1Id){
+    var hl1Result = {};
+    var hl1TargetKpi = expectedOutcomesLib.getExpectedOutcomesByHL1Id(hl1Id);
+    hl1Result.TARGET_KPIS = expectedOutcomesLib.filterKpiByLevel(hl1TargetKpi, 'HL2');
+
+    return hl1Result;
+}
+
+function getUserAssociationCarryOver(hl1Id){
+    var hl1Result = {};
+    var hl1Users = userbl.getUserByHl1Id(hl1Id);
+
+    hl1Result.ASSIGNED_USERS = hl1Users.users_in;
+    hl1Result.AVAILABLE_USERS = hl1Users.users_out;
+
+    return hl1Result;
+}
+
+function getCategoryOptionCarryOver(hl1Id, userId){
+    var hl1Result = {};
+    hl1Result.CATEGORIES = level2.getCarryOverHl1CategoryOption(hl1Id, userId);
+
+    return hl1Result;
+}
+
 function getHl1ByBudgetYearRegion(budgetYearId, regionId, userId) {
     if (!budgetYearId) {
         throw ErrorLib.getErrors().BadRequest("The Parameter budgetYearId is not found", "level1Services/handleGet/getHl1ByBudgetYearRegion", BUDGET_YEAR_NOT_FOUND);
@@ -94,12 +158,12 @@ function getLevel1ByUser(userId) {
     return dataHl1.getLevel1ByUser(isSA, userId);
 }
 
-function getLevel1ByFilters(budgetYearId, regionId, subRegionId, userId) {
+function getLevel1ByFilters(budgetYearId, regionId, subRegionId, limit, offset, searchString, userId) {
     var isSA = false;
     if (config.getApplySuperAdminToAllInitiatives()) {
         isSA = userbl.isSuperAdmin(userId);
     }
-    var result = JSON.parse(JSON.stringify(dataHl1.getLevel1ByFilters(budgetYearId, regionId, subRegionId, userId, isSA)));
+    var result = JSON.parse(JSON.stringify(dataHl1.getLevel1ByFilters(budgetYearId, regionId, subRegionId, limit, offset, searchString, userId, isSA)));
     var list = JSON.parse(JSON.stringify(result.out_result));
     var rdo = {};
     list.forEach(function (item) {
@@ -187,23 +251,20 @@ function getLevel1ByFilters(budgetYearId, regionId, subRegionId, userId) {
         }
     });
     result.out_result = util.planningLevelGridParser(rdo);
-    result.out_lob_allocation_view = getLobAllocationSummary(budgetYearId, regionId, subRegionId, userId, isSA);
     return result;
 }
 
-function getLobAllocationSummary(budgetYearId, regionId, subRegionId, userId, isSA) {
+function getLobAllocationSummary(budgetYearId, regionId, subRegionId, limit, offset, searchString, userId) {
+    var isSA = false;
+    if (config.getApplySuperAdminToAllInitiatives()) {
+        isSA = userbl.isSuperAdmin(userId);
+    }
+
     var result = {out_result: {}};
 
+    var list = JSON.parse(JSON.stringify(dataHl1.getLevel1LobAllocationSummary(budgetYearId, regionId, subRegionId, limit, offset, searchString, userId, isSA)));
 
-    /*var isSA = false;
-     var result = {};
-     if (config.getApplySuperAdminToAllInitiatives()) {
-     isSA = userbl.isSuperAdmin(userId);
-     }*/
-
-    var list = JSON.parse(JSON.stringify(dataHl1.getLevel1LobAllocationSummary(budgetYearId, regionId, subRegionId, userId, isSA)));
-    // result.out_result = {};
-    list.forEach(function (row) {
+    list.out_result.forEach(function (row) {
         result.out_result[row.ACRONYM] = result.out_result[row.ACRONYM] || {
                 ACRONYM: row.ACRONYM,
                 BUDGET_YEAR: row.BUDGET_YEAR,
@@ -230,17 +291,20 @@ function getLobAllocationSummary(budgetYearId, regionId, subRegionId, userId, is
         return result.out_result[k];
     });
 
-    return result;
+    return {
+        out_result: result,
+        out_total_rows: list.out_total_rows
+    };
 }
 
-function getLevel1Kpi(budgetYearId, regionId, userId) {
+function getLevel1Kpi(budgetYearId, regionId, limit, offset, searchString, userId) {
     var isSA = false;
     var result = {};
     if (config.getApplySuperAdminToAllInitiatives()) {
         isSA = userbl.isSuperAdmin(userId);
     }
-
-    var listFromData = dataHl1.getHl1KpiSummary(budgetYearId, regionId, userId, isSA);
+    var rawData = dataHl1.getHl1KpiSummary(budgetYearId, regionId, limit, offset, searchString, userId, isSA);
+    var listFromData = rawData.out_result;
 
     var mapKpi = {};
 
@@ -273,6 +337,7 @@ function getLevel1Kpi(budgetYearId, regionId, userId) {
     result.out_result = Object.keys(mapKpi).map(function (e) {
         return mapKpi[e]
     });
+    result.out_total_rows = rawData.out_total_rows
     return result;
 }
 
@@ -603,6 +668,66 @@ function updateCategoryoption(data, userId) {
     return true;
 }
 
+function updatePlannificationLevelBudgets(data, userId){
+    if(!userId){
+        throw ErrorLib.getErrors().BadRequest("The Parameter userId is not found", "level1Services/handlePut/updatePlannificationLevelBudgets", USER_NOT_FOUND);
+    }
+    if(!data || !data.length){
+        throw ErrorLib.getErrors().BadRequest("Unable to find the Plannification Levels to update", "level1Services/handlePut/updatePlannificationLevelBudgets", PLANNIFICATION_LEVELS_NOT_FOUND);
+    }
+
+    var updateBulks = {
+        HL1: [],
+        HL2: [],
+        HL3: [],
+        HL4: []
+    };
+
+    data.forEach(function(row){
+        switch(row.HIERARCHY_LEVEL_ID){
+            case HIERARCHY_LEVEL.HL1:
+                updateBulks.HL1.push({
+                    BUDGET: row.BUDGET,
+                    HL_ID: row.HL_ID
+                });
+                break;
+            case HIERARCHY_LEVEL.HL2:
+                updateBulks.HL2.push({
+                    BUDGET: row.BUDGET,
+                    HL_ID: row.HL_ID
+                });
+                break;
+            case HIERARCHY_LEVEL.HL3:
+                updateBulks.HL3.push({
+                    BUDGET: row.BUDGET,
+                    HL_ID: row.HL_ID
+                });
+                break;
+            case HIERARCHY_LEVEL.HL4:
+                updateBulks.HL4.push({
+                    BUDGET: row.BUDGET,
+                    HL_ID: row.HL_ID
+                });
+                break;
+        }
+    });
+
+    if(updateBulks.HL1.length){
+        dataHl1.updatePlannificationLevelBudgets(updateBulks.HL1, "HL1", userId);
+    }
+    if(updateBulks.HL2.length){
+        dataHl1.updatePlannificationLevelBudgets(updateBulks.HL2, "HL2", userId);
+    }
+    if(updateBulks.HL3.length){
+        dataHl1.updatePlannificationLevelBudgets(updateBulks.HL3, "HL3", userId);
+    }
+    if(updateBulks.HL4.length){
+        dataHl1.updatePlannificationLevelBudgets(updateBulks.HL4, "HL4", userId);
+    }
+
+    return true;
+}
+
 function deleteHl1(hl1Id, userId) {
     //verify if userId is SUPERADMIN, then can delete
     var rol = userRoleLib.getUserRoleByUserId(userId);
@@ -890,6 +1015,38 @@ function checkPermission(userSessionID, method, hl1Id) {
             return user.USER_ID == userSessionID
         });
         if (!users) {
+            throw ErrorLib.getErrors().CustomError("", "level1/handlePermission", "User hasn´t permission for this resource.");
+        }
+    }
+}
+
+function checkPermissionMultiple(userSessionID, reqBody) {
+    if (!util.isSuperAdmin(userSessionID)) {
+        var hl1List = dataHl1.getLevel1ByUser(0, userSessionID).out_result;
+        var hl1ListToValidate = reqBody.filter(function(elem){
+            return elem.HIERARCHY_LEVEL_ID === HIERARCHY_LEVEL.HL1;
+        });
+
+        var allAllowed = true;
+
+        if(hl1ListToValidate.length){
+            hl1ListToValidate.forEach(function(hl1){
+                var allowed = false;
+
+                for(var i = 0; i < hl1List.length; i++){
+                    if(Number(hl1List[i].HL1_ID) === Number(hl1.HL_ID)){
+                        allowed = true;
+                        break;
+                    }
+                }
+
+                if(!allowed){
+                    allAllowed = false;
+                }
+            });
+        }
+
+        if (!allAllowed) {
             throw ErrorLib.getErrors().CustomError("", "level1/handlePermission", "User hasn´t permission for this resource.");
         }
     }

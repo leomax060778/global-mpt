@@ -33,6 +33,7 @@ function handleGet(params, userId) {
     var param_section = httpUtil.getUrlParameters().get("section");
     var hl5_categories = httpUtil.getUrlParameters().get("HL5_CATEGORIES");
     var hl5_expectedOutcomes = httpUtil.getUrlParameters().get("HL5_EXPECTED_OUTCOMES");
+    var dataType = httpUtil.getUrlParameters().get("DATA");
     var result = {};
 
     if(httpUtil.getUrlParameters().get("METHOD") == "CHECK_ENABLED_CRM_CREATION"){
@@ -65,6 +66,8 @@ function handleGet(params, userId) {
         result = hl6.getLevel6ForSearch(userId, budget_year_id, region_id, subregion_id, limit, offset);
     } else if(in_hl5_id && param_section && param_section == getHl6ByUserId){
         result = hl6.getHl6ByHl5IdUserId(in_hl5_id, userId);
+    } else if (dataType && dataType === "SYNDICATED_SUB_PROGRAM"){
+        result = hl6.getSyndicatedSubProgramInformation();
     } else{
         throw ErrorLib.getErrors().BadRequest("","level6Services/handleGet","invalid parameter name (can be: HL5_ID, HL6_ID or section)");
     }

@@ -309,6 +309,7 @@ function parseCategoryOptions(arrayCategoryOptions){
                     OPTIONS: [{
                         OPTION_ID: categoryOption.OPTION_ID,
                         OPTION_NAME: categoryOption.OPTION_NAME,
+                        IS_UNIQUE_OPTION: categoryOption.IS_UNIQUE_OPTION,
                         CATEGORY_ID: categoryOption.CATEGORY_ID,
                         CATEGORY_OPTION_LEVEL_ID: categoryOption.ALLOCATION_CATEGORY_OPTION_LEVEL_ID || null,
                         MAKE_CATEGORY_MANDATORY: categoryOption.MAKE_CATEGORY_MANDATORY,
@@ -330,6 +331,7 @@ function parseCategoryOptions(arrayCategoryOptions){
                 result[categoryOption.CATEGORY_NAME].OPTIONS.push({
                     OPTION_ID: categoryOption.OPTION_ID,
                     OPTION_NAME: categoryOption.OPTION_NAME,
+                    IS_UNIQUE_OPTION: categoryOption.IS_UNIQUE_OPTION,
                     CATEGORY_ID: categoryOption.CATEGORY_ID,
                     CATEGORY_OPTION_LEVEL_ID: categoryOption.ALLOCATION_CATEGORY_OPTION_LEVEL_ID || null,
                     MAKE_CATEGORY_MANDATORY: categoryOption.MAKE_CATEGORY_MANDATORY,

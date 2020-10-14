@@ -13,6 +13,12 @@ var L5_MSG_USER_ID_NOT_FOUND = "The User ID can not be found";
 var L5_IS_INVALID = "The HL5 is not related with the HL4";
 var HIERARCHY_LEVEL_MAP = utilLib.getHierarchyLevelEnum();
 
+var ORGANIZATION_TYPE = {
+    REGIONAL: 1,
+    CENTRAL: 2,
+    OTHER: 3
+};
+
 /** *********** GET *************** **/
 
 function getHl5LegacyById(hl5LegacyId, hl4Id, userId){
@@ -30,6 +36,7 @@ function getHl5LegacyById(hl5LegacyId, hl4Id, userId){
         result.BUDGET_EUROS = (Number(result.BUDGET)).toFixed(2);
         result.BUDGET = (Number(result.BUDGET) * Number(result.CURRENCY_VALUE)).toFixed(2);
         result.CATEGORIES = getHl5LegacyCategoryOption(hl5LegacyId);
+        result.BUDGET_DISTRIBUTION = getHl5LegacyBudgetDistributionByHl5LegacyId(hl5LegacyId);
         result.DES_TYPE_COLLECTION = desTypeLib.getDesType();
     }
 
@@ -45,37 +52,12 @@ function getHl5LegacyCategoryOption(hl5LegacyId){
     return parseCategories(dataL5Legacy.getHl5LegacyCategoryOption(hl5LegacyId));
 }
 
-function parseCategories(arrayCategories){
-    var result = {};
-    
-    arrayCategories.forEach(function (categoryOption) {
-        if (!result[categoryOption.CATEGORY_NAME]) {
-            result[categoryOption.CATEGORY_NAME] = {
-                CATEGORY_ID: categoryOption.CATEGORY_ID,
-                CATEGORY_NAME: categoryOption.CATEGORY_NAME,
-                MAKE_CATEGORY_MANDATORY: categoryOption.MAKE_CATEGORY_MANDATORY || 0,
-                SINGLE_OPTION_ONLY: categoryOption.SINGLE_OPTION_ONLY || 0,
-                CATEGORY_TYPE_ID: categoryOption.CATEGORY_TYPE_ID,
-                OPTIONS_LIMIT: categoryOption.OPTIONS_LIMIT || OPTIONS_LIMIT_DEFAULT,
-                OPTIONS: []
-            }
-        }
-        
-        result[categoryOption.CATEGORY_NAME].OPTIONS.push({
-            HL5_LEGACY_ID: categoryOption.HL5_LEGACY_ID,
-            OPTION_ID: categoryOption.OPTION_ID,
-            OPTION_NAME: categoryOption.OPTION_NAME,
-            CATEGORY_ID: categoryOption.CATEGORY_ID,
-            SINGLE_OPTION_ONLY: categoryOption.SINGLE_OPTION_ONLY || 0,
-            CATEGORY_OPTION_LEVEL_ID: categoryOption.CATEGORY_OPTION_LEVEL_ID,
-            AMOUNT: categoryOption.AMOUNT,
-            CATEGORY_OPTION_ID: categoryOption.CATEGORY_OPTION_ID,
-            AMOUNT_VALUE :  Number(categoryOption.AMOUNT_VALUE),
-            SELECTED : !!Number(categoryOption.AMOUNT_VALUE)
-        });
-    });
-    
-    return utilLib.objectToArray(result);
+function getHl5LegacyBudgetDistributionByHl5LegacyId(hl5LegacyId){
+    if(!hl5LegacyId){
+        throw ErrorLib.getErrors().BadRequest("the parameter hl5LegacyId can not be found.", "level5LegacyService/handleGet/getHl5LegacyBudgetDistributionByHl5LegacyId", L5_MSG_ID_NOT_FOUND);
+    }
+
+    return dataL5Legacy.getHl5LegacyBudgetDistributionByHl5LegacyId(hl5LegacyId);
 }
 
 /** *********** UPDATE *************** **/
@@ -89,8 +71,32 @@ function updateHl5Legacy(reqBody, userId){
 	updateKPIComments(reqBody, userId);
 	/** Update Attributes **/
 	updateCategoryOption(reqBody, userId);
+	/** Update Budget Distribution **/
+	updateBudgetDistribution(reqBody, userId);
 
     return result;
+}
+
+function updateBudgetDistribution(data, userId) {
+    if (data.BUDGET_DISTRIBUTION) {
+        dataL5Legacy.hardDeleteHl5LegacyBudget(data.HL5_LEGACY_ID, userId);
+
+        if(!data.ALLOW_BUDGET_ZERO){
+            var arrBudgetDistribution = [];
+            data.BUDGET_DISTRIBUTION.forEach(function (budget) {
+                arrBudgetDistribution.push({
+                    in_hl5_legacy_id: data.HL5_LEGACY_ID,
+                    in_organization_id: budget.ORGANIZATION_ID,
+                    in_percentage: budget.PERCENTAGE,
+                    in_organization_type: budget.ORGANIZATION_TYPE,
+                    in_created_user_id: userId
+                });
+            });
+            if (arrBudgetDistribution.length > 0) {
+                dataL5Legacy.insertBudgetDistribution(arrBudgetDistribution);
+            }
+        }
+    }
 }
 
 function updateKPIComments(reqBody, userId){
@@ -133,6 +139,53 @@ function updateCategoryOption(reqBody, userId){
     }
 }
 
+/** *********** VALIDATIONS *************** **/
+
+function validateUpdateHl5Legacy(reqBody, userId){
+    if(!userId){
+        throw ErrorLib.getErrors().BadRequest("The Parameter User ID is not found", "level5LegacyService/handlePut/updateHl5Legacy", L5_MSG_USER_ID_NOT_FOUND);
+    }
+
+    if(!reqBody.HL5_LEGACY_ID){
+        throw ErrorLib.getErrors().BadRequest("The Parameter HL5 Legacy ID is not found", "level5LegacyService/handlePut/updateHl5Legacy", L5_MSG_ID_NOT_FOUND);
+    }
+}
+
+/** *********** UTILS *************** **/
+
+function parseCategories(arrayCategories){
+    var result = {};
+
+    arrayCategories.forEach(function (categoryOption) {
+        if (!result[categoryOption.CATEGORY_NAME]) {
+            result[categoryOption.CATEGORY_NAME] = {
+                CATEGORY_ID: categoryOption.CATEGORY_ID,
+                CATEGORY_NAME: categoryOption.CATEGORY_NAME,
+                MAKE_CATEGORY_MANDATORY: categoryOption.MAKE_CATEGORY_MANDATORY || 0,
+                SINGLE_OPTION_ONLY: categoryOption.SINGLE_OPTION_ONLY || 0,
+                CATEGORY_TYPE_ID: categoryOption.CATEGORY_TYPE_ID,
+                OPTIONS_LIMIT: categoryOption.OPTIONS_LIMIT || OPTIONS_LIMIT_DEFAULT,
+                OPTIONS: []
+            }
+        }
+
+        result[categoryOption.CATEGORY_NAME].OPTIONS.push({
+            HL5_LEGACY_ID: categoryOption.HL5_LEGACY_ID,
+            OPTION_ID: categoryOption.OPTION_ID,
+            OPTION_NAME: categoryOption.OPTION_NAME,
+            CATEGORY_ID: categoryOption.CATEGORY_ID,
+            SINGLE_OPTION_ONLY: categoryOption.SINGLE_OPTION_ONLY || 0,
+            CATEGORY_OPTION_LEVEL_ID: categoryOption.CATEGORY_OPTION_LEVEL_ID,
+            AMOUNT: categoryOption.AMOUNT,
+            CATEGORY_OPTION_ID: categoryOption.CATEGORY_OPTION_ID,
+            AMOUNT_VALUE :  Number(categoryOption.AMOUNT_VALUE),
+            SELECTED : !!Number(categoryOption.AMOUNT_VALUE)
+        });
+    });
+
+    return utilLib.objectToArray(result);
+}
+
 function completeDesTypeParents(reqBody){
     var parentInformation = null;
 
@@ -143,7 +196,7 @@ function completeDesTypeParents(reqBody){
             reqBody.CAMPAIGN_TYPE_ID = parentInformation.CAMPAIGN_TYPE_ID;
             reqBody.CAMPAIGN_SUBTYPE_ID = parentInformation.CAMPAIGN_SUB_TYPE_ID;
         } else{
-        	reqBody.CAMPAIGN_OBJECTIVE_ID = null;
+            reqBody.CAMPAIGN_OBJECTIVE_ID = null;
             reqBody.CAMPAIGN_TYPE_ID = null;
             reqBody.CAMPAIGN_SUBTYPE_ID = null;
         }
@@ -151,17 +204,5 @@ function completeDesTypeParents(reqBody){
         reqBody.CAMPAIGN_OBJECTIVE_ID = null;
         reqBody.CAMPAIGN_TYPE_ID = null;
         reqBody.CAMPAIGN_SUBTYPE_ID = null;
-    }
-}
-
-/** *********** VALIDATIONS *************** **/
-
-function validateUpdateHl5Legacy(reqBody, userId){
-    if(!userId){
-        throw ErrorLib.getErrors().BadRequest("The Parameter User ID is not found", "level5LegacyService/handlePut/updateHl5Legacy", L5_MSG_USER_ID_NOT_FOUND);
-    }
-
-    if(!reqBody.HL5_LEGACY_ID){
-        throw ErrorLib.getErrors().BadRequest("The Parameter HL5 Legacy ID is not found", "level5LegacyService/handlePut/updateHl5Legacy", L5_MSG_ID_NOT_FOUND);
     }
 }

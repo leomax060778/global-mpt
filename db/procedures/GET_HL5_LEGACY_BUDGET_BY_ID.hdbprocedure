@@ -1,0 +1,54 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL5_LEGACY_BUDGET_BY_ID" (
+    IN in_hl5_legacy_id  bigint,
+    OUT out_result TABLE (
+                            hl5_legacy_budget_id INTEGER,
+                            organization_id INTEGER,
+                            percentage decimal(19, 6),
+                            organization_type TINYINT,
+                            organization_name NVARCHAR(255)
+    )
+)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL" AS
+BEGIN
+    va_hl5_budget = SELECT  l5_leg_bud.HL5_LEGACY_BUDGET_ID,
+                            l5_leg_bud.ORGANIZATION_ID,
+                            l5_leg_bud.PERCENTAGE,
+                            l5_leg_bud.ORGANIZATION_TYPE,
+                            IFNULL(reg.REGION_NAME, l2.ORGANIZATION_ACRONYM) AS ORGANIZATION_NAME
+                    FROM HL5_LEGACY_BUDGET l5_leg_bud
+                    LEFT JOIN REGION reg
+                        ON reg.REGION_ID = l5_leg_bud.ORGANIZATION_ID
+                    LEFT JOIN HL2 l2
+                        ON l2.HL2_ID = l5_leg_bud.ORGANIZATION_ID
+                    WHERE l5_leg_bud.HL5_LEGACY_ID = in_hl5_legacy_id
+                        AND l5_leg_bud.ENABLED = 1
+                        AND l5_leg_bud.DELETED = 0;
+
+	va_regions = SELECT null AS HL5_LEGACY_BUDGET_ID,
+	                    REGION_ID AS ORGANIZATION_ID,
+                        0 AS PERCENTAGE,
+                        1 AS ORGANIZATION_TYPE,
+                        REGION_NAME AS ORGANIZATION_NAME
+                 FROM REGION
+                 WHERE ENABLED = 1
+                    AND DELETED = 0
+                    AND REGION_ID NOT IN (SELECT ORGANIZATION_ID FROM :va_hl5_budget WHERE ORGANIZATION_TYPE = 1);
+
+    out_result =    (SELECT HL5_LEGACY_BUDGET_ID,
+                            ORGANIZATION_ID,
+                            PERCENTAGE,
+                            ORGANIZATION_TYPE,
+                            ORGANIZATION_NAME
+                      FROM :va_hl5_budget)
+
+                    UNION ALL
+
+                    (SELECT HL5_LEGACY_BUDGET_ID,
+                            ORGANIZATION_ID,
+                            PERCENTAGE,
+                            ORGANIZATION_TYPE,
+                            ORGANIZATION_NAME
+                     FROM :va_regions);
+END;

@@ -28,7 +28,13 @@ function handleGet(parameters, userSessionID){
         blLevel2.checkPermission(userSessionID, parameters[0].name, parameters[0].value);
 		if (parameters[0].name == hl2Id){
 			var isCarryOver = httpUtil.getUrlParameters().get("METHOD") == "CARRY_OVER";
-			var rdo = blLevel2.getLevel2ById(parameters[0].value, isCarryOver, userSessionID);
+			var type = httpUtil.getUrlParameters().get("TYPE") || null;
+			var hl1Id = httpUtil.getUrlParameters().get("HL1_ID") || null;
+			var rdo = type ?
+				blLevel2.getLevel2CarryOverInformation(type, parameters[0].value, userSessionID, hl1Id)
+				:
+				blLevel2.getLevel2ById(parameters[0].value, isCarryOver, userSessionID);
+
 			httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
 		}
 		else if (parameters[0].name == GET_ALL_CENTRAL_TEAM){

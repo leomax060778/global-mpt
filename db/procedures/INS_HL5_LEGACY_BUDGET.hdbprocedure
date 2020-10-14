@@ -1,0 +1,30 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_HL5_LEGACY_BUDGET"
+(	IN budgetHl5 TABLE (
+	                    in_hl5_legacy_id bigint,
+	                    in_organization_id bigint,
+	                    in_percentage decimal(19, 6),
+	                    in_organization_type tinyint,
+	                    in_created_user_id bigint
+	                    ),
+     OUT out_result bigint
+) 
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER 
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL" AS
+BEGIN
+
+	INSERT INTO HL5_LEGACY_BUDGET(  HL5_LEGACY_ID,
+                                    ORGANIZATION_ID,
+                                    PERCENTAGE,
+                                    ORGANIZATION_TYPE,
+                                    CREATED_USER_ID
+                                  )
+	(SELECT in_hl5_legacy_id,
+	        in_organization_id,
+            in_percentage,
+            in_organization_type,
+            in_created_user_id
+     FROM :budgetHl5);
+	
+	SELECT TOP 1 CURRENT_IDENTITY_VALUE() INTO out_result FROM "MKTG_PLANNING_TOOL"."HL5_LEGACY_BUDGET";
+END;
