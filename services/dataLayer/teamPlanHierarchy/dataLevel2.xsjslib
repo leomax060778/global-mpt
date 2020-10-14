@@ -320,7 +320,7 @@ function getHl2ByBudgetYearRegion(data){
     return  db.extractArray(result.out_result);
 }
 
-function getHl1ByBudgetYearPlanningPurpose(data){
+function getHl2ByBudgetYearPlanningPurpose(data){
     var result = db.executeProcedureManual(GET_HL2_BY_BUDGET_YEAR_PLANNING_PURPOSE, data);
     return  db.extractArray(result.out_result);
 }

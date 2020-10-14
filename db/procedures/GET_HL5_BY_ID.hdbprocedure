@@ -33,15 +33,22 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL5_BY_ID" (
 		, enabled tinyint
 		, deleted tinyint
 		, route_to_market_id integer
-        , venue nvarchar(255)
+        , affiliated_with_larger_event_id integer
+        , affiliated_event_name nvarchar(255)
+        , existing_customer_percentage decimal(19,2)
+        , gross_cost decimal(19,6)
+        , net_cost decimal(19,6)
+        , expected_revenue decimal(19,6)
+        , expected_cofounding decimal(19,6)
+        , registration_process_id integer
+        , event_summary nvarchar(1000)
+        , business_case nvarchar(1000)
+        , event_follow_up_activities nvarchar(255)
         , city nvarchar(255)
         , country_id integer
-        , url nvarchar(255)
         , sales_organization_id integer
         , planned_start_date NVARCHAR(32)
         , planned_end_date NVARCHAR(32)
-        , street nvarchar(255)
-        , postal_code nvarchar(20)
         , region nvarchar(255)
         , event_owner nvarchar(255)
         , number_of_participants nvarchar(255)
@@ -64,7 +71,8 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL5_BY_ID" (
         , inherited_creation TINYINT
         , des_type_id bigint
         , dynamic_form_id bigint
-		)		
+        , event_answer_id integer
+		)
 ) 
 	LANGUAGE SQLSCRIPT
 	SQL SECURITY INVOKER 
@@ -114,15 +122,22 @@ out_result = select
                 , HL5.enabled
                 , HL5.deleted
                 , HL5.route_to_market_id
-                , HL5.venue
+                , HL5.affiliated_with_larger_event_id
+                , HL5.affiliated_event_name
+                , HL5.existing_customer_percentage
+                , HL5.gross_cost
+                , HL5.net_cost
+                , HL5.expected_revenue
+                , HL5.expected_cofounding
+                , HL5.registration_process_id
+                , HL5.event_summary
+                , HL5.business_case
+                , HL5.event_follow_up_activities
                 , HL5.city
                 , HL5.country_id as country_id
-                , HL5.url
                 , HL5.sales_organization_id
                 , TO_NVARCHAR(HL5.PLANNED_START_DATE, 'MM/DD/YYYY') AS PLANNED_START_DATE
                 , TO_NVARCHAR(HL5.PLANNED_END_DATE, 'MM/DD/YYYY') AS PLANNED_END_DATE
-                , HL5.street
-                , HL5.postal_code
                 , HL5.region
                 , HL5.event_owner
                 , HL5.number_of_participants
@@ -145,6 +160,7 @@ out_result = select
                 , hl5.inherited_creation
                 , des_type_id
                 , hl5.dynamic_form_id
+                , hl5.event_answer_id
                  FROM HL5
                  LEFT JOIN :va_own_money_budget_request BSRS ON BSRS.HL5_ID = HL5.HL5_ID
                  LEFT JOIN CAMPAIGN_TYPE C_TYPE ON C_TYPE.CAMPAIGN_TYPE_ID = HL5.CAMPAIGN_TYPE_ID

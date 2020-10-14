@@ -23,16 +23,27 @@ function processRequest() {
 
 function handleGet(parameters, userSessionID) {
     var rdo = null;
-    var method = httpUtil.getUrlParameters().get("method").toUpperCase();
-    var deltaTimeLastUpdate = httpUtil.getUrlParameters().get("DELTA_TIME_LAST_UPDATE");
-    var levelFilter = httpUtil.getUrlParameters().get("HIERARCHY_LEVEL");
-    var scope = httpUtil.getUrlParameters().get("SCOPE");
-    var format = httpUtil.getUrlParameters().get("FORMAT");
-    var status = httpUtil.getUrlParameters().get("STATUS");
+    var jsonParameters = httpUtil.getJSONParameters();
+
+    if(!jsonParameters.METHOD){
+        throw ErrorLib.getErrors().BadRequest("", "",
+            "Missing parameter METHOD");
+    }
+
+    var method = jsonParameters.METHOD.toUpperCase();
+    var deltaTimeLastUpdate = jsonParameters.DELTA_TIME_LAST_UPDATE;
+    var levelFilter = jsonParameters.HIERARCHY_LEVEL; //Example: hl5,hl6
+    var scope = jsonParameters.SCOPE;
+    var format = jsonParameters.FORMAT;
+    var status = jsonParameters.STATUS;
+
     if (parameters.length > 0) {
         var filter = {};
+        filter.LIMIT = jsonParameters.LIMIT || null;
+        filter.OFFSET = jsonParameters.OFFSET || 0;
+
         if (method === "FULL" || method === "DELTA") {
-            filter.IN_IS_FULL_DOWNLOAD = (method.toUpperCase() === "FULL") ? 1 : 0;
+            filter.IN_IS_FULL_DOWNLOAD = (method === "FULL") ? 1 : 0;
             filter.IN_HIERARCHY_LEVEL = filter.IN_IS_FULL_DOWNLOAD ? [] : levelFilter;
             filter.IN_DELTA_TIME_LAST_UPDATE = deltaTimeLastUpdate || 0;
             filter.SCOPE = scope || null;

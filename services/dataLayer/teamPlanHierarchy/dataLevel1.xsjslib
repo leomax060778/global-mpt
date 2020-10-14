@@ -7,6 +7,7 @@ var db = mapper.getdbHelper();
 var INS_HL1 = "INS_HL1";
 var UPD_HL1 = "UPD_HL1";
 var UPD_HL1_BUDGET = "UPD_HL1_BUDGET";
+var UPD_MASS_PLANNIFICATION_LEVEL_BUDGET = "UPD_MASS_PLANNIFICATION_LEVEL_BUDGET";
 var DEL_HL1 = "DEL_HL1";
 // var GET_ALL_HL1 = "GET_ALL_HL1";
 var GET_HL1_BY_ID = "GET_HL1_BY_ID";
@@ -69,6 +70,15 @@ function updateBudget(hl1Id,budget,userId) {
         in_user_id: userId
     };
     return db.executeScalarManual(UPD_HL1_BUDGET, parameters, "out_result");
+}
+
+function updatePlannificationLevelBudgets(data, hierarchyLevel, userId){
+    var parameters = {};
+    parameters.in_hierarchy_level = hierarchyLevel;
+    parameters.in_modified_user_id = userId;
+    parameters.in_budgets = data;
+
+    return db.executeScalarManual(UPD_MASS_PLANNIFICATION_LEVEL_BUDGET, parameters, "out_result");
 }
 
 function deleteHl1(hl1Id, userId) {
@@ -169,7 +179,7 @@ function getLevel1ForSearch(budgetYearId, regionId, limit, offset, userSessionID
 
 }*/
 
-function getLevel1ByFilters(budgetYearId, regionId, subRegionId, userId, isSuperAdmin) {
+function getLevel1ByFilters(budgetYearId, regionId, subRegionId, limit, offset, searchString, userId, isSuperAdmin) {
     var parameters = {};
     var result = {};
     parameters.in_budget_year_id = budgetYearId;
@@ -177,36 +187,54 @@ function getLevel1ByFilters(budgetYearId, regionId, subRegionId, userId, isSuper
     parameters.in_subregion_id = subRegionId;
     parameters.in_user_id = userId;
     parameters.in_is_super_Admin = isSuperAdmin ? 1 : 0;
+    parameters.in_limit = limit;
+    parameters.in_offset = offset;
+    parameters.in_search_string = searchString !== null ? "*"+searchString+"*" : '';
 
     var list = db.executeProcedureManual(GET_HL1_BY_FILTER, parameters);
     result.out_result = db.extractArray(list.out_result);
     result.out_total_budget = list.out_total_budget;
+    result.out_total_l1 = list.out_total_l1;
+
     return result;
 }
 
-function getLevel1LobAllocationSummary(budgetYearId, regionId, subRegionId, userId, isSuperAdmin) {
+function getLevel1LobAllocationSummary(budgetYearId, regionId, subRegionId, limit, offset, searchString, userId, isSuperAdmin) {
     var parameters = {};
-    var result = {};
+
     parameters.in_budget_year_id = budgetYearId;
     parameters.in_region_id = regionId;
     parameters.in_subregion_id = subRegionId;
+    parameters.in_limit = limit;
+    parameters.in_offset = offset;
+    parameters.in_search_string = searchString !== null ? "*"+searchString+"*" : '';
     parameters.in_user_id = userId;
     parameters.in_is_super_Admin = isSuperAdmin ? 1 : 0;
 
     var list = db.executeProcedureManual(GET_HL1_ALLOCATION_SUMMARY, parameters);
-    return db.extractArray(list.out_result);
+    return {
+        out_result: db.extractArray(list.out_result),
+        out_total_rows: list.out_total_rows
+    };
 }
 
-function getHl1KpiSummary(budgetYearId, regionId, userId, isSuperAdmin) {
+function getHl1KpiSummary(budgetYearId, regionId, limit, offset, searchString, userId, isSuperAdmin) {
     var parameters = {
         in_budget_year_id: budgetYearId,
         in_region_id: regionId,
         in_user_id: userId,
-        in_is_super_Admin: isSuperAdmin ? 1 : 0
+        in_is_super_Admin: isSuperAdmin ? 1 : 0,
+        in_limit: limit,
+        in_offset: offset,
+        in_search_string: searchString !== null ? "*"+searchString+"*" : ''
     };
 
     var list = db.executeProcedureManual(GET_HL1_KPI_SUMMARY, parameters);
-    return db.extractArray(list.out_result);
+
+    return {
+        out_result: db.extractArray(list.out_result),
+        out_total_rows: list.out_total_rows
+    };
 }
 
 function insertLevel1Version(hl1_id, version, acronym, description, budgetYearId, regionId, userId, budget, planningPurposeId, teamTypeId, implementExecutionLevel, crtRelated) {

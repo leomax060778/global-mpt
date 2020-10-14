@@ -11,7 +11,7 @@ function processRequest(){
 	return httpUtil.processRequest(handleGet,handlePost,handlePut,handleDelete,false,"",true);
 }
 
-function handleGet() {
+function handleGet(params, userId) {
 	var parameters = httpUtil.getJSONParameters();
 	var rdo = null;
 
@@ -19,6 +19,11 @@ function handleGet() {
 		switch(parameters.METHOD){
 			case "GET_ALL":
 				rdo = budgetYear.getAllBudgetYear();
+				break;
+			case "GET_ALL_WITH_DYNAMIC_FORM":
+				var budgetYearId = parameters.BUDGET_YEAR_ID;
+				var level = parameters.LEVEL;
+				rdo = budgetYear.getAllBudgetYearWithDefaultYearDynamicForm(userId, budgetYearId, level);
 				break;
 			case "GET_ALL_BY_REQUIRE_DYNAMIC_FORM":
 				rdo = budgetYear.getAllByRequireDynamicForm();
@@ -35,6 +40,19 @@ function handleGet() {
 				}
 
 				rdo = budgetYear.getBudgetYearByLevelParent(level, parentId);
+				break;
+			case "GET_BUDGET_YEAR_AND_DYNAMIC_FORM_BY_LEVEL_PARENT":
+				var parentId = parameters.PARENT_ID;
+				var level = parameters.LEVEL;
+
+				if(!parentId){
+					throw ErrorLib.getErrors().BadRequest("","","Missing parameter PARENT_ID");
+				}
+				if(!level){
+					throw ErrorLib.getErrors().BadRequest("","","Missing parameter LEVEL");
+				}
+
+				rdo = budgetYear.getBudgetYearAndDynamicFormByLevelParent(level, parentId, null, userId);
 				break;
 			default:
 				throw ErrorLib.getErrors().BadRequest("","","invalid parameter value (should be GET_ALL or GET_ALL_BY_REQUIRE_DYNAMIC_FORM");

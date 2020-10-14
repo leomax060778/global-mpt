@@ -1,0 +1,38 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_PLANNING_PURPOSE_ID_BY_HL5_ID" (
+    IN in_hl_id BIGINT,
+    IN in_is_legacy TINYINT,
+    OUT out_result TABLE(
+    	PLANNING_PURPOSE_ID BIGINT
+    )
+)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	READS SQL DATA AS
+BEGIN
+    IF in_is_legacy = 1 THEN
+        out_result = SELECT hl1.PLANNING_PURPOSE_ID
+                     FROM HL5_LEGACY hl5_legacy
+                     INNER JOIN HL4 hl4
+                         ON hl4.HL4_ID = hl5_legacy.HL4_ID
+                     INNER JOIN HL3 hl3
+                         ON hl3.HL3_ID = hl4.HL3_ID
+                     INNER JOIN HL2 hl2
+                         ON hl2.HL2_ID = hl3.HL2_ID
+                     INNER JOIN HL1 hl1
+                         ON hl1.HL1_ID = hl2.HL1_ID
+                     WHERE hl5_legacy.HL5_LEGACY_ID = in_hl_id;
+    ELSE
+        out_result =    SELECT hl1.PLANNING_PURPOSE_ID
+                        FROM HL5 hl5
+                        INNER JOIN HL4 hl4
+                            ON hl4.HL4_ID = hl5.HL4_ID
+                        INNER JOIN HL3 hl3
+                            ON hl3.HL3_ID = hl4.HL3_ID
+                        INNER JOIN HL2 hl2
+                            ON hl2.HL2_ID = hl3.HL2_ID
+                        INNER JOIN HL1 hl1
+                            ON hl1.HL1_ID = hl2.HL1_ID
+                        WHERE hl5.HL5_ID = in_hl_id;
+    END IF;
+END;

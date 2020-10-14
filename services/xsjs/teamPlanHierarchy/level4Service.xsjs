@@ -87,8 +87,11 @@ function handleGet(params, userId) {
                 var regionId = parameters.REGION_ID || 0;
                 var subRegionId = parameters.SUBREGION_ID || 0;
                 var generalFilter = httpUtil.getUrlParameters().get("GENERAL_FILTER") || null;
+                var routeName = parameters.ROUTE_NAME || null;
+                var action = parameters.ACTION || "INIT";
+                var searchString = parameters.SEARCH_STRING || null;
 
-                result = hl4.getMarketingTacticsTree(budgetYearId, regionId, subRegionId, generalFilter);
+                result = hl4.getMarketingTacticsTree(budgetYearId, regionId, subRegionId, searchString, generalFilter, routeName, action, userId);
                 break;
             default:
 

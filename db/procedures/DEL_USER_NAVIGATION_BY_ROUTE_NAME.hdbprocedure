@@ -1,0 +1,17 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::DEL_USER_NAVIGATION_BY_ROUTE_NAME" (
+	IN in_user_id BIGINT,
+	IN in_route_name NVARCHAR(255),
+	OUT out_result INTEGER
+)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER 
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	AS
+BEGIN
+    -- For the User Navigation, a Hard Delete is needed.
+    DELETE FROM USER_NAVIGATION
+    WHERE USER_ID = in_user_id
+        AND ROUTE_NAME = in_route_name;
+
+    SELECT ::ROWCOUNT INTO out_result FROM DUMMY;
+END;

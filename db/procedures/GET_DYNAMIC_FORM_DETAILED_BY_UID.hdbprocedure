@@ -82,6 +82,8 @@ dynamic_forms_fields_detail =
         left join DYNAMIC_FORM_DEFAULT_VALUE dfdv on df.DYNAMIC_FORM_ID = dfdv.DYNAMIC_FORM_ID AND dff.DYNAMIC_FORM_FIELD_ID = dfdv.DYNAMIC_FORM_FIELD_ID and dfdv.enabled = 1 and dfdv.deleted = 0
         inner join DYNAMIC_FORM_TAB dft on dft.DYNAMIC_FORM_TAB_ID = dff.DYNAMIC_FORM_TAB_ID
         where df.DYNAMIC_FORM_UID = in_dynamic_form_uid
+            and dff.enabled = 1
+            and dff.deleted = 0
         order by dff.ORDER_NUMBER;
 
 dynamic_forms_allocation_detail =

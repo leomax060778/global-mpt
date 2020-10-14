@@ -1,0 +1,30 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::INS_SYNDICATED_SUB_PROGRAM_ASSOCIATION" (
+	IN in_allocation_category_id BIGINT,
+	IN in_allocation_option_id BIGINT,
+	IN in_marketing_program_id BIGINT,
+	IN in_hierarchy_level_id BIGINT,
+	IN in_created_user_id BIGINT,
+	OUT out_result INTEGER
+)
+   LANGUAGE SQLSCRIPT
+   SQL SECURITY INVOKER
+   DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+   AS
+BEGIN
+    INSERT INTO ALLOCATION_CATEGORY_OPTION_LEVEL_SYNDICATED_SUB_PROGRAM(
+        allocation_category_id,
+        allocation_option_id,
+        marketing_program_id,
+        hierarchy_level_id,
+        created_user_id
+        )
+    VALUES(
+        in_allocation_category_id,
+        in_allocation_option_id,
+        in_marketing_program_id,
+        in_hierarchy_level_id,
+        in_created_user_id
+    );
+
+    SELECT TOP 1 CURRENT_IDENTITY_VALUE() INTO out_result FROM "MKTG_PLANNING_TOOL"."ALLOCATION_CATEGORY_OPTION_LEVEL_SYNDICATED_SUB_PROGRAM";
+END

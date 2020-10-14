@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Dimension:dimension xmlns:Dimension="http://www.sap.com/ndb/BiModelDimension.ecore" schemaVersion="1.2" id="AT_HL5_CATEGORY_OPTION_LEGACY" applyPrivilegeType="ANALYTIC_PRIVILEGE" checkAnalyticPrivileges="true" defaultClient="$$client$$" defaultLanguage="$$language$$" hierarchiesSQLEnabled="false" translationRelevant="true" visibility="internal" dimensionType="Standard">
+  <descriptions defaultDescription="AT_HL5_CATEGORY_OPTION_LEGACY"/>
+  <informationModelLayout relativeWidthScenario="27"/>
+  <attributes>
+    <attribute id="AMOUNT" order="1" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="AMOUNT"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL5_CATEGORY_OPTION_LEGACY" columnName="AMOUNT"/>
+    </attribute>
+    <attribute id="HL5_CATEGORY_OPTION_LEGACY_ID" key="true" order="2" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="HL5_CATEGORY_OPTION_LEGACY_ID"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL5_CATEGORY_OPTION_LEGACY" columnName="HL5_CATEGORY_OPTION_LEGACY_ID"/>
+    </attribute>
+    <attribute id="ALLOCATION_CATEGORY_OPTION_LEVEL_ID" order="3" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="ALLOCATION_CATEGORY_OPTION_LEVEL_ID"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL5_CATEGORY_OPTION_LEGACY" columnName="ALLOCATION_CATEGORY_OPTION_LEVEL_ID"/>
+    </attribute>
+    <attribute id="HL5_LEGACY_ID" order="4" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="HL5_LEGACY_ID"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL5_CATEGORY_OPTION_LEGACY" columnName="HL5_LEGACY_ID"/>
+    </attribute>
+    <attribute id="ENABLED" order="5" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="ENABLED"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL5_CATEGORY_OPTION_LEGACY" columnName="ENABLED"/>
+    </attribute>
+    <attribute id="DELETED" order="6" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="DELETED"/>
+      <keyMapping schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL5_CATEGORY_OPTION_LEGACY" columnName="DELETED"/>
+    </attribute>
+  </attributes>
+  <calculatedAttributes/>
+  <privateDataFoundation>
+    <tableProxies>
+      <tableProxy>
+        <table schemaName="MKTG_PLANNING_TOOL" columnObjectName="HL5_CATEGORY_OPTION_LEGACY"/>
+      </tableProxy>
+    </tableProxies>
+    <joins/>
+    <layout>
+      <shapes>
+        <shape modelObjectName="HL5_CATEGORY_OPTION_LEGACY" modelObjectNameSpace="MKTG_PLANNING_TOOL" modelObjectType="catalog">
+          <upperLeftCorner x="36" y="31"/>
+        </shape>
+        <shape modelObjectName="DataFoundation" modelObjectNameSpace="DataFoundation" modelObjectType="repository">
+          <upperLeftCorner x="40" y="85"/>
+          <rectangleSize height="0" width="0"/>
+        </shape>
+      </shapes>
+    </layout>
+  </privateDataFoundation>
+  <hierarchies/>
+</Dimension:dimension>

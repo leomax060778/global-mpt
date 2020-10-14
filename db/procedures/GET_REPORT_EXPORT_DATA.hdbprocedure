@@ -1,39 +1,43 @@
 PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_REPORT_EXPORT_DATA" (
-		IN IN_IS_FULL_DOWNLOAD TINYINT
-		, IN IN_DELTA_TIME_LAST_UPDATE TIMESTAMP
-		, IN IN_HIERARCHY_LEVEL TABLE (
+		IN IN_IS_FULL_DOWNLOAD TINYINT,
+		IN IN_DELTA_TIME_LAST_UPDATE TIMESTAMP,
+		IN IN_HIERARCHY_LEVEL TABLE (
 			HIERARCHY_LEVEL_ID INTEGER
-		)
-		, IN IN_STATUS NVARCHAR (30)
-		, OUT out_result TABLE (
-			HIERARCHY_LEVEL_ID INTEGER
-            , CRM_ID NVARCHAR(30)
-            , CAMP_OBJ_TYPE NVARCHAR(30)
-            , BUDGET NVARCHAR(30)
-            , BUDGET_Q1 NVARCHAR(30)
-            , BUDGET_Q2 NVARCHAR(30)
-            , BUDGET_Q3 NVARCHAR(30)
-            , BUDGET_Q4 NVARCHAR(30)
-            , INTERNAL_FUNDING NVARCHAR(30)
-            , PARTNER_CONTRIBUTION NVARCHAR(30)
-            , CURRENCY NVARCHAR(30)
-            , MNP_VALUE NVARCHAR(30)
-            , MNP_VOLUME NVARCHAR(30)
-            , MTP_VALUE NVARCHAR(30)
-            , MTP_VOLUME NVARCHAR(30)
-            , MIP_VALUE NVARCHAR(30)
-            , MIP_VOLUME NVARCHAR(30)
-            , LEAD_VOLUME_VALUE NVARCHAR(30)
-            , LEAD_VOLUME_VOLUME NVARCHAR(30)
-            , BUDGET_YEAR NVARCHAR(30)
-            , ON_PREM NVARCHAR(30)
-            , CLOUD NVARCHAR(30)
-            , MODIFIED_DATE TIMESTAMP
-            , STATUS NVARCHAR(30)
-            , DES NVARCHAR(30)
-            , REPUTATION_INITIATIVE NVARCHAR(255)
-            , REPUTATION_INITIATIVE_AUDIENCE NVARCHAR(255)
-		)
+		),
+		IN IN_STATUS NVARCHAR (30),
+		IN IN_LIMIT INTEGER,
+		IN IN_OFFSET INTEGER,
+		OUT out_result TABLE (
+			HIERARCHY_LEVEL_ID INTEGER,
+			IS_LEGACY TINYINT,
+			CRM_ID NVARCHAR(30),
+			CAMP_OBJ_TYPE NVARCHAR(30),
+			BUDGET NVARCHAR(30),
+			BUDGET_Q1 NVARCHAR(30),
+			BUDGET_Q2 NVARCHAR(30),
+			BUDGET_Q3 NVARCHAR(30),
+			BUDGET_Q4 NVARCHAR(30),
+			INTERNAL_FUNDING NVARCHAR(30),
+			PARTNER_CONTRIBUTION NVARCHAR(30),
+			CURRENCY NVARCHAR(30),
+			MNP_VALUE NVARCHAR(30),
+			MNP_VOLUME NVARCHAR(30),
+			MTP_VALUE NVARCHAR(30),
+			MTP_VOLUME NVARCHAR(30),
+			MIP_VALUE NVARCHAR(30),
+			MIP_VOLUME NVARCHAR(30),
+			LEAD_VOLUME_VALUE NVARCHAR(30),
+			LEAD_VOLUME_VOLUME NVARCHAR(30),
+			BUDGET_YEAR NVARCHAR(30),
+			ON_PREM NVARCHAR(30),
+			CLOUD NVARCHAR(30),
+			MODIFIED_DATE TIMESTAMP,
+			STATUS NVARCHAR(30),
+			DES NVARCHAR(30),
+			REPUTATION_INITIATIVE NVARCHAR(255),
+			REPUTATION_INITIATIVE_AUDIENCE NVARCHAR(255)
+		),
+		OUT out_total_rows INTEGER
 	)
 	LANGUAGE SQLSCRIPT
 	SQL SECURITY INVOKER
@@ -41,131 +45,150 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_REPORT_EXPOR
 	AS
 BEGIN
     IF  IN_STATUS IS NULL THEN
-             IF IN_IS_FULL_DOWNLOAD <> 1 THEN
-                out_result = SELECT     HIERARCHY_LEVEL_VALUE AS HIERARCHY_LEVEL_ID
-                                    , CRM_ID
-                                    , CAMP_OBJ_TYPE
-                                    , BUDGET
-                                    , BUDGET_Q1
-                                    , BUDGET_Q2
-                                    , BUDGET_Q3
-                                    , BUDGET_Q4
-                                    , INTERNAL_FUNDING
-                                    , PARTNER_CONTRIBUTION
-                                    , CURRENCY
-                                    , MNP_VALUE
-                                    , MNP_VOLUME
-                                    , MTP_VALUE
-                                    , MTP_VOLUME
-                                    , MIP_VALUE
-                                    , MIP_VOLUME
-                                    , LEAD_VOLUME_VALUE
-                                    , LEAD_VOLUME_VOLUME
-                                    , BUDGET_YEAR
-                                    , ON_PREM
-                                    , CLOUD
-                                    , MODIFIED_DATE
-                                    , STATUS
-                                    , DES
-                                    , REPUTATION_INITIATIVE
-                                    , REPUTATION_INITIATIVE_AUDIENCE
-                 FROM "_SYS_BIC"."mktgplanningtool.db.data.views/CV_REPORT_EXPORT_DATA"
-                 WHERE HIERARCHY_LEVEL_ID IN (SELECT HIERARCHY_LEVEL_ID FROM :IN_HIERARCHY_LEVEL)
-                 AND IN_DELTA_TIME_LAST_UPDATE <= MODIFIED_DATE;
-                --AND ADD_SECONDS(CURRENT_TIMESTAMP, (-3600 * IN_DELTA_TIME_LAST_UPDATE)) <= MODIFIED_DATE;
-             ELSE
-             out_result = SELECT       HIERARCHY_LEVEL_VALUE AS HIERARCHY_LEVEL_ID
-                                         , CRM_ID
-                                         , CAMP_OBJ_TYPE
-                                         , BUDGET
-                                         , BUDGET_Q1
-                                         , BUDGET_Q2
-                                         , BUDGET_Q3
-                                         , BUDGET_Q4
-                                         , INTERNAL_FUNDING
-                                         , PARTNER_CONTRIBUTION
-                                         , CURRENCY
-                                         , MNP_VALUE
-                                         , MNP_VOLUME
-                                         , MTP_VALUE
-                                         , MTP_VOLUME
-                                         , MIP_VALUE
-                                         , MIP_VOLUME
-                                         , LEAD_VOLUME_VALUE
-                                         , LEAD_VOLUME_VOLUME
-                                         , BUDGET_YEAR
-                                         , ON_PREM
-                                         , CLOUD
-                                         , MODIFIED_DATE
-                                         , STATUS
-                                         , DES
-                                         , REPUTATION_INITIATIVE
-                                         , REPUTATION_INITIATIVE_AUDIENCE
-                     FROM "_SYS_BIC"."mktgplanningtool.db.data.views/CV_REPORT_EXPORT_DATA";
-             END IF;
+         IF IN_IS_FULL_DOWNLOAD <> 1 THEN
+
+            out_result = SELECT HIERARCHY_LEVEL_VALUE AS HIERARCHY_LEVEL_ID,
+                                IS_LEGACY,
+                                CRM_ID,
+                                CAMP_OBJ_TYPE,
+                                BUDGET,
+                                BUDGET_Q1,
+                                BUDGET_Q2,
+                                BUDGET_Q3,
+                                BUDGET_Q4,
+                                INTERNAL_FUNDING,
+                                PARTNER_CONTRIBUTION,
+                                CURRENCY,
+                                MNP_VALUE,
+                                MNP_VOLUME,
+                                MTP_VALUE,
+                                MTP_VOLUME,
+                                MIP_VALUE,
+                                MIP_VOLUME,
+                                LEAD_VOLUME_VALUE,
+                                LEAD_VOLUME_VOLUME,
+                                BUDGET_YEAR,
+                                ON_PREM,
+                                CLOUD,
+                                MODIFIED_DATE,
+                                STATUS,
+                                DES,
+                                REPUTATION_INITIATIVE,
+                                REPUTATION_INITIATIVE_AUDIENCE
+             FROM "_SYS_BIC"."mktgplanningtool.db.data.views/CV_REPORT_EXPORT_DATA"
+             WHERE HIERARCHY_LEVEL_ID IN (SELECT HIERARCHY_LEVEL_ID FROM :IN_HIERARCHY_LEVEL)
+                AND IN_DELTA_TIME_LAST_UPDATE <= MODIFIED_DATE
+             ORDER BY BUDGET_YEAR DESC, HIERARCHY_LEVEL_VALUE, CRM_ID DESC;
+
+         ELSE
+
+             out_result = SELECT HIERARCHY_LEVEL_VALUE AS HIERARCHY_LEVEL_ID,
+                                 IS_LEGACY,
+                                 CRM_ID,
+                                 CAMP_OBJ_TYPE,
+                                 BUDGET,
+                                 BUDGET_Q1,
+                                 BUDGET_Q2,
+                                 BUDGET_Q3,
+                                 BUDGET_Q4,
+                                 INTERNAL_FUNDING,
+                                 PARTNER_CONTRIBUTION,
+                                 CURRENCY,
+                                 MNP_VALUE,
+                                 MNP_VOLUME,
+                                 MTP_VALUE,
+                                 MTP_VOLUME,
+                                 MIP_VALUE,
+                                 MIP_VOLUME,
+                                 LEAD_VOLUME_VALUE,
+                                 LEAD_VOLUME_VOLUME,
+                                 BUDGET_YEAR,
+                                 ON_PREM,
+                                 CLOUD,
+                                 MODIFIED_DATE,
+                                 STATUS,
+                                 DES,
+                                 REPUTATION_INITIATIVE,
+                                 REPUTATION_INITIATIVE_AUDIENCE
+                        FROM "_SYS_BIC"."mktgplanningtool.db.data.views/CV_REPORT_EXPORT_DATA"
+                        ORDER BY BUDGET_YEAR DESC, HIERARCHY_LEVEL_VALUE, CRM_ID DESC;
+
+         END IF;
     ELSE
-                     IF IN_IS_FULL_DOWNLOAD <> 1 THEN
-                        out_result = SELECT     HIERARCHY_LEVEL_VALUE AS HIERARCHY_LEVEL_ID
-                                            , CRM_ID
-                                            , CAMP_OBJ_TYPE
-                                            , BUDGET
-                                            , BUDGET_Q1
-                                            , BUDGET_Q2
-                                            , BUDGET_Q3
-                                            , BUDGET_Q4
-                                            , INTERNAL_FUNDING
-                                            , PARTNER_CONTRIBUTION
-                                            , CURRENCY
-                                            , MNP_VALUE
-                                            , MNP_VOLUME
-                                            , MTP_VALUE
-                                            , MTP_VOLUME
-                                            , MIP_VALUE
-                                            , MIP_VOLUME
-                                            , LEAD_VOLUME_VALUE
-                                            , LEAD_VOLUME_VOLUME
-                                            , BUDGET_YEAR
-                                            , ON_PREM
-                                            , CLOUD
-                                            , MODIFIED_DATE
-                                            , STATUS
-                                            , DES
-                                            , REPUTATION_INITIATIVE
-                                            , REPUTATION_INITIATIVE_AUDIENCE
+        IF IN_IS_FULL_DOWNLOAD <> 1 THEN
+            out_result = SELECT HIERARCHY_LEVEL_VALUE AS HIERARCHY_LEVEL_ID,
+                                IS_LEGACY,
+                                CRM_ID,
+                                CAMP_OBJ_TYPE,
+                                BUDGET,
+                                BUDGET_Q1,
+                                BUDGET_Q2,
+                                BUDGET_Q3,
+                                BUDGET_Q4,
+                                INTERNAL_FUNDING,
+                                PARTNER_CONTRIBUTION,
+                                CURRENCY,
+                                MNP_VALUE,
+                                MNP_VOLUME,
+                                MTP_VALUE,
+                                MTP_VOLUME,
+                                MIP_VALUE,
+                                MIP_VOLUME,
+                                LEAD_VOLUME_VALUE,
+                                LEAD_VOLUME_VOLUME,
+                                BUDGET_YEAR,
+                                ON_PREM,
+                                CLOUD,
+                                MODIFIED_DATE,
+                                STATUS,
+                                DES,
+                                REPUTATION_INITIATIVE,
+                                REPUTATION_INITIATIVE_AUDIENCE
+             FROM "_SYS_BIC"."mktgplanningtool.db.data.views/CV_REPORT_EXPORT_DATA"
+              WHERE HIERARCHY_LEVEL_ID IN (SELECT HIERARCHY_LEVEL_ID FROM :IN_HIERARCHY_LEVEL)
+                 AND IN_DELTA_TIME_LAST_UPDATE <= MODIFIED_DATE
+                 AND STATUS = IN_STATUS
+              ORDER BY BUDGET_YEAR DESC, HIERARCHY_LEVEL_VALUE, CRM_ID DESC;
+        ELSE
+            out_result = SELECT HIERARCHY_LEVEL_VALUE AS HIERARCHY_LEVEL_ID,
+                                IS_LEGACY,
+                                CRM_ID,
+                                CAMP_OBJ_TYPE,
+                                BUDGET,
+                                BUDGET_Q1,
+                                BUDGET_Q2,
+                                BUDGET_Q3,
+                                BUDGET_Q4,
+                                INTERNAL_FUNDING,
+                                PARTNER_CONTRIBUTION,
+                                CURRENCY,
+                                MNP_VALUE,
+                                MNP_VOLUME,
+                                MTP_VALUE,
+                                MTP_VOLUME,
+                                MIP_VALUE,
+                                MIP_VOLUME,
+                                LEAD_VOLUME_VALUE,
+                                LEAD_VOLUME_VOLUME,
+                                BUDGET_YEAR,
+                                ON_PREM,
+                                CLOUD,
+                                MODIFIED_DATE,
+                                STATUS,
+                                DES,
+                                REPUTATION_INITIATIVE,
+                                REPUTATION_INITIATIVE_AUDIENCE
                          FROM "_SYS_BIC"."mktgplanningtool.db.data.views/CV_REPORT_EXPORT_DATA"
-                          WHERE HIERARCHY_LEVEL_ID IN (SELECT HIERARCHY_LEVEL_ID FROM :IN_HIERARCHY_LEVEL)
-                             AND IN_DELTA_TIME_LAST_UPDATE <= MODIFIED_DATE
-                             AND STATUS = IN_STATUS;
-                     ELSE
-                      out_result = SELECT                 HIERARCHY_LEVEL_VALUE AS HIERARCHY_LEVEL_ID
-                                                         , CRM_ID
-                                                         , CAMP_OBJ_TYPE
-                                                         , BUDGET
-                                                         , BUDGET_Q1
-                                                         , BUDGET_Q2
-                                                         , BUDGET_Q3
-                                                         , BUDGET_Q4
-                                                         , INTERNAL_FUNDING
-                                                         , PARTNER_CONTRIBUTION
-                                                         , CURRENCY
-                                                         , MNP_VALUE
-                                                         , MNP_VOLUME
-                                                         , MTP_VALUE
-                                                         , MTP_VOLUME
-                                                         , MIP_VALUE
-                                                         , MIP_VOLUME
-                                                         , LEAD_VOLUME_VALUE
-                                                         , LEAD_VOLUME_VOLUME
-                                                         , BUDGET_YEAR
-                                                         , ON_PREM
-                                                         , CLOUD
-                                                         , MODIFIED_DATE
-                                                         , STATUS
-                                                         , DES
-                                                         , REPUTATION_INITIATIVE
-                                                         , REPUTATION_INITIATIVE_AUDIENCE
-                                     FROM "_SYS_BIC"."mktgplanningtool.db.data.views/CV_REPORT_EXPORT_DATA"
-                                     WHERE STATUS = IN_STATUS;
-                     END IF;
+                         WHERE STATUS = IN_STATUS
+                         ORDER BY BUDGET_YEAR DESC, HIERARCHY_LEVEL_VALUE, CRM_ID DESC;
+         END IF;
     END IF;
+
+    --Total of Rows
+    SELECT DISTINCT COUNT(CRM_ID) INTO out_total_rows FROM :out_result;
+    --Set Limit and Offset if needed
+    IF :IN_LIMIT IS NOT NULL THEN
+        out_result = SELECT * FROM :out_result LIMIT :IN_LIMIT OFFSET :IN_OFFSET;
+    END IF;
+
 END;

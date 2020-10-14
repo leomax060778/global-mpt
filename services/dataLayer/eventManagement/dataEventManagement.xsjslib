@@ -91,7 +91,6 @@ function insertEventRequest(reqBody, userId){
 	params.IN_END_DATE = reqBody.END_DATE;
 	params.IN_CITY = reqBody.CITY;
 	params.IN_COUNTRY_ID = reqBody.COUNTRY_ID;
-	params.IN_VENUE = reqBody.VENUE;
 	params.IN_EVENT_OWNER = reqBody.EVENT_OWNER;
 	params.IN_OBJECTIVE_ID = reqBody.OBJECTIVE_ID;
 	params.IN_CAMPAIGN_TYPE_ID = reqBody.CAMPAIGN_TYPE_ID;

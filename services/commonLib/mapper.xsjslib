@@ -542,6 +542,11 @@ function getTeamTypeLib(){
     return $.mktgplanningtool.services.businessLayer.settings.teamTypeLib;
 }
 
+function getEventPlanningFormLib(){
+    $.import("mktgplanningtool.services.businessLayer.teamPlanHierarchy","eventPlanningFormLib");
+    return $.mktgplanningtool.services.businessLayer.teamPlanHierarchy.eventPlanningFormLib;
+}
+
 /************Data Layer Mapper*****************/
 
 function getdbHelper(){
@@ -1026,4 +1031,9 @@ function getDataPlanningPurposeOption(){
 function getDataTeamType(){
 	$.import("mktgplanningtool.services.dataLayer.settings","dataTeamType");
     return $.mktgplanningtool.services.dataLayer.settings.dataTeamType;
+}
+
+function getDataEventPlanningForm(){
+	$.import("mktgplanningtool.services.dataLayer.teamPlanHierarchy","dataEventPlanningForm");
+    return $.mktgplanningtool.services.dataLayer.teamPlanHierarchy.dataEventPlanningForm;
 }

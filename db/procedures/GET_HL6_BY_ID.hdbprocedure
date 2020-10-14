@@ -35,40 +35,48 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL6_BY_ID"(
 			enabled TINYINT,
 			deleted TINYINT,
 			distribution_channel_id INTEGER,
-			VENUE NVARCHAR(255),
+			affiliated_with_larger_event_id integer,
+			affiliated_event_name nvarchar(255),
+			existing_customer_percentage decimal(19,2),
+			gross_cost decimal(19,6),
+			net_cost decimal(19,6),
+			expected_revenue decimal(19,6),
+			expected_cofounding decimal(19,6),
+			registration_process_id integer,
+			event_summary nvarchar(1000),
+			business_case nvarchar(1000),
+			event_follow_up_activities nvarchar(255),
 			CITY NVARCHAR(255),
 			COUNTRY_ID INTEGER,
-			URL NVARCHAR(255),
 			results_campaign_q1 DECIMAL(19, 2),
 			results_campaign_q2 DECIMAL(19, 2),
 			results_campaign_q3 DECIMAL(19, 2),
 			results_campaign_q4 DECIMAL(19, 2),
 			planned_start_date NVARCHAR(32),
             planned_end_date NVARCHAR(32),
-			STREET NVARCHAR(255),
-			POSTAL_CODE NVARCHAR(20)
-			,REGION nvarchar(255)
-            ,EVENT_OWNER nvarchar(255)
-            ,NUMBER_OF_PARTICIPANTS nvarchar(255)
-            ,PRIORITY_ID bigint
-            , CO_FUNDED TINYINT
-            , ALLOW_BUDGET_ZERO TINYINT
-            , IS_POWER_USER TINYINT
-            , budget_spend_request_status_id nvarchar(255)
-            , budget_spend_request_status nvarchar(255)
-            , EMPLOYEE_RESPONSIBLE_USER nvarchar(7)
-            , PERSON_RESPONSIBLE NVARCHAR(7)
-            , CURRENCY_VALUE DECIMAL(19,6)
-            , CURRENCY_ABBREVIATION NVARCHAR(7)
-            , STATUS NVARCHAR(25)
-            , IS_COMPLETE TINYINT
-            , FORECAST_AT_L5 TINYINT
-            , COST_CENTER_NAME NVARCHAR(255)
-            , PRIORITY_NAME NVARCHAR(255)
-            , inherited_creation TINYINT
-            , PARENT_PATH NVARCHAR(255)
-            , HL5_LEGACY_ID BIGINT
-            , DYNAMIC_FORM_ID BIGINT
+			REGION nvarchar(255),
+			EVENT_OWNER nvarchar(255),
+			NUMBER_OF_PARTICIPANTS nvarchar(255),
+			PRIORITY_ID bigint,
+			CO_FUNDED TINYINT,
+			ALLOW_BUDGET_ZERO TINYINT,
+			IS_POWER_USER TINYINT,
+			budget_spend_request_status_id nvarchar(255),
+			budget_spend_request_status nvarchar(255),
+			EMPLOYEE_RESPONSIBLE_USER nvarchar(7),
+			PERSON_RESPONSIBLE NVARCHAR(7),
+			CURRENCY_VALUE DECIMAL(19,6),
+			CURRENCY_ABBREVIATION NVARCHAR(7),
+			STATUS NVARCHAR(25),
+			IS_COMPLETE TINYINT,
+			FORECAST_AT_L5 TINYINT,
+			COST_CENTER_NAME NVARCHAR(255),
+			PRIORITY_NAME NVARCHAR(255),
+			inherited_creation TINYINT,
+			PARENT_PATH NVARCHAR(255),
+			HL5_LEGACY_ID BIGINT,
+			DYNAMIC_FORM_ID BIGINT,
+			EVENT_ANSWER_ID INTEGER
 		)
 	)
 	LANGUAGE SQLSCRIPT
@@ -88,74 +96,85 @@ va_own_money_budget_request = SELECT TOP 1 BSRS.budget_spend_request_status_id
                                 AND BSR.BUDGET_SPEND_REQUEST_TYPE_ID = 1
                                 ORDER BY BUDGET_SPEND_REQUEST_ID DESC;
 	out_result = SELECT
-                HL6.HL6_ID
-				, HL6.HL6_CRM_DESCRIPTION
-				, HL6.ACRONYM
-				, HL6.BUDGET
-				, HL6.HL5_ID
-				, CASE WHEN HL6.HL5_ID IS NULL THEN HL5_LEGACY.HL4_ID ELSE HL5.HL4_ID END AS HL4_ID
-				, HL6.ROUTE_TO_MARKET_ID
-				, HL6.CAMPAIGN_OBJECTIVE_ID
-				, HL6.CAMPAIGN_TYPE_ID
-				, C_TYPE.show_additional_fields
-				, HL6.CAMPAIGN_SUBTYPE_ID
-				, HL6.MARKETING_PROGRAM_ID
-				, HL6.MARKETING_ACTIVITY_ID
-				, TO_NVARCHAR(HL6.ACTUAL_START_DATE, 'MM/DD/YYYY') AS ACTUAL_START_DATE
-				, TO_NVARCHAR(HL6.ACTUAL_END_DATE, 'MM/DD/YYYY') AS ACTUAL_END_DATE
-				, HL6.SHOW_ON_DG_CALENDAR
-				, HL6.BUSINESS_OWNER_ID
-				, HL6.EMPLOYEE_RESPONSIBLE_ID
-				, HL6.COST_CENTER_ID
-				, HL6.IN_BUDGET
-				, HL6.BUDGET_SPEND_Q1
-				, HL6.BUDGET_SPEND_Q2
-				, HL6.BUDGET_SPEND_Q3
-				, HL6.BUDGET_SPEND_Q4
-				, HL6.EURO_CONVERSION_ID
-				, HL6.HL6_STATUS_DETAIL_ID
-				, HL6.SALES_ORGANIZATION_ID
-				, HL6.CREATED_DATE_TZ
-				, HL6.MODIFIED_DATE_TZ
-				, HL6.CREATED_USER_ID
-				, HL6.MODIFIED_USER_ID
-				, HL6.ENABLED
-				, HL6.DELETED
-				, HL6.DISTRIBUTION_CHANNEL_ID
-				, HL6.VENUE
-				, HL6.CITY
-				, HL6.COUNTRY_ID
-				, HL6.URL
-				, HL6.RESULTS_CAMPAIGN_Q1
-				, HL6.RESULTS_CAMPAIGN_Q2
-				, HL6.RESULTS_CAMPAIGN_Q3
-				, HL6.RESULTS_CAMPAIGN_Q4
-				, TO_NVARCHAR(HL6.PLANNED_START_DATE, 'MM/DD/YYYY') AS PLANNED_START_DATE
-                , TO_NVARCHAR(HL6.PLANNED_END_DATE, 'MM/DD/YYYY') AS PLANNED_END_DATE
-				, HL6.STREET
-				, HL6.POSTAL_CODE
-				, HL6.REGION
-                , HL6.EVENT_OWNER
-                , HL6.NUMBER_OF_PARTICIPANTS
-                , HL6.PRIORITY_ID
-                , HL6.CO_FUNDED
-                , HL6.ALLOW_BUDGET_ZERO
-                , HL6.IS_POWER_USER
-                , BSRS.BUDGET_SPEND_REQUEST_STATUS_ID
-                , BSRS.BUDGET_SPEND_REQUEST_STATUS
-                , HL6.EMPLOYEE_RESPONSIBLE_USER
-                , HL6.PERSON_RESPONSIBLE
-                , CURRENCY.CURRENCY_VALUE
-                , CURRENCY.CURRENCY_ABBREVIATION
-                , STATUS.DETAIL AS STATUS
-                , HL6.IS_COMPLETE
-                , CASE WHEN HL6.HL5_ID IS NULL THEN NULL ELSE HL5.FORECAST_AT_L5 END AS FORECAST_AT_L5
-                , CONCAT(CONCAT(COST_CENTER.NAME, ', '), COST_CENTER.COST_CENTER_CODE) AS COST_CENTER_NAME
-                , PRI.NAME AS PRIORITY_NAME
-                , HL6.INHERITED_CREATION
-                , HL5_LEGACY.PATH AS PARENT_PATH
-                , HL6_LEGACY.HL5_LEGACY_ID
-                , HL6.DYNAMIC_FORM_ID
+                HL6.HL6_ID,
+                HL6.HL6_CRM_DESCRIPTION,
+                HL6.ACRONYM,
+                HL6.BUDGET,
+                HL6.HL5_ID,
+                CASE WHEN HL6.HL5_ID IS NULL THEN HL5_LEGACY.HL4_ID ELSE HL5.HL4_ID END AS HL4_ID,
+                HL6.ROUTE_TO_MARKET_ID,
+                HL6.CAMPAIGN_OBJECTIVE_ID,
+                HL6.CAMPAIGN_TYPE_ID,
+                C_TYPE.show_additional_fields,
+                HL6.CAMPAIGN_SUBTYPE_ID,
+                HL6.MARKETING_PROGRAM_ID,
+                HL6.MARKETING_ACTIVITY_ID,
+                TO_NVARCHAR(HL6.ACTUAL_START_DATE, 'MM/DD/YYYY') AS ACTUAL_START_DATE,
+                TO_NVARCHAR(HL6.ACTUAL_END_DATE, 'MM/DD/YYYY') AS ACTUAL_END_DATE,
+                HL6.SHOW_ON_DG_CALENDAR,
+                HL6.BUSINESS_OWNER_ID,
+                HL6.EMPLOYEE_RESPONSIBLE_ID,
+                HL6.COST_CENTER_ID,
+                HL6.IN_BUDGET,
+                HL6.BUDGET_SPEND_Q1,
+                HL6.BUDGET_SPEND_Q2,
+                HL6.BUDGET_SPEND_Q3,
+                HL6.BUDGET_SPEND_Q4,
+                HL6.EURO_CONVERSION_ID,
+                HL6.HL6_STATUS_DETAIL_ID,
+                HL6.SALES_ORGANIZATION_ID,
+                HL6.CREATED_DATE_TZ,
+                HL6.MODIFIED_DATE_TZ,
+                HL6.CREATED_USER_ID,
+                HL6.MODIFIED_USER_ID,
+                HL6.ENABLED,
+                HL6.DELETED,
+                HL6.DISTRIBUTION_CHANNEL_ID,
+                HL6.affiliated_with_larger_event_id,
+                HL6.affiliated_event_name,
+                HL6.existing_customer_percentage,
+                HL6.gross_cost,
+                HL6.net_cost,
+                HL6.expected_revenue,
+                HL6.expected_cofounding,
+                HL6.registration_process_id,
+                HL6.event_summary,
+                HL6.business_case,
+                HL6.event_follow_up_activities,
+                HL6.CITY,
+                HL6.COUNTRY_ID,
+                HL6.RESULTS_CAMPAIGN_Q1,
+                HL6.RESULTS_CAMPAIGN_Q2,
+                HL6.RESULTS_CAMPAIGN_Q3,
+                HL6.RESULTS_CAMPAIGN_Q4,
+                TO_NVARCHAR(HL6.PLANNED_START_DATE, 'MM/DD/YYYY') AS PLANNED_START_DATE,
+                TO_NVARCHAR(HL6.PLANNED_END_DATE, 'MM/DD/YYYY') AS PLANNED_END_DATE,
+                HL6.REGION,
+                HL6.EVENT_OWNER,
+                HL6.NUMBER_OF_PARTICIPANTS,
+                HL6.PRIORITY_ID,
+                HL6.CO_FUNDED,
+                HL6.ALLOW_BUDGET_ZERO,
+                HL6.IS_POWER_USER,
+                BSRS.BUDGET_SPEND_REQUEST_STATUS_ID,
+                BSRS.BUDGET_SPEND_REQUEST_STATUS,
+                HL6.EMPLOYEE_RESPONSIBLE_USER,
+                HL6.PERSON_RESPONSIBLE,
+                CURRENCY.CURRENCY_VALUE,
+                CURRENCY.CURRENCY_ABBREVIATION,
+                STATUS.DETAIL AS STATUS,
+                HL6.IS_COMPLETE,
+                CASE WHEN HL6.HL5_ID IS NULL --When is Null, then it is a Legacy record
+                    THEN HL5_LEGACY.FORECAST_AT_L5
+                    ELSE HL5.FORECAST_AT_L5
+                    END AS FORECAST_AT_L5,
+                CONCAT(CONCAT(COST_CENTER.NAME, ', '), COST_CENTER.COST_CENTER_CODE) AS COST_CENTER_NAME,
+                PRI.NAME AS PRIORITY_NAME,
+                HL6.INHERITED_CREATION,
+                HL5_LEGACY.PATH AS PARENT_PATH,
+                HL6_LEGACY.HL5_LEGACY_ID,
+                HL6.DYNAMIC_FORM_ID,
+                HL6.EVENT_ANSWER_ID
 			FROM HL6
 			LEFT JOIN HL5 ON HL5.HL5_ID = HL6.HL5_ID
 			LEFT JOIN HL6_LEGACY ON HL6_LEGACY.HL6_ID = HL6.HL6_ID

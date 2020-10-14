@@ -9,6 +9,7 @@ var GET_ALL_PLANNING_PURPOSE = "GET_ALL_PLANNING_PURPOSE";
 var GET_ALL_PLANNING_PURPOSE_RELATION = "GET_ALL_PLANNING_PURPOSE_RELATION";
 var GET_PLANNING_PURPOSE_RELATED_DATA = "GET_PLANNING_PURPOSE_RELATED_DATA";
 var GET_PLANNING_PURPOSE_ID_BY_HL4_ID = "GET_PLANNING_PURPOSE_ID_BY_HL4_ID";
+var GET_PLANNING_PURPOSE_ID_BY_HL5_ID = "GET_PLANNING_PURPOSE_ID_BY_HL5_ID";
 var INS_PLANNING_PURPOSE = "INS_PLANNING_PURPOSE";
 var UPD_PLANNING_PURPOSE = "UPD_PLANNING_PURPOSE";
 var DEL_PLANNING_PURPOSE = "DEL_PLANNING_PURPOSE";
@@ -44,6 +45,17 @@ function getPlanningPurposeIdByHl4Id(hl4Id, userId){
 	var list = db.extractArray(result.out_result);
 	
 	return list.length? list[0] : {};	
+}
+
+function getPlanningPurposeIdByHl5Id(hlId, isLegacy, userId){
+	var params = {};
+	params.in_hl_id = hlId;
+	params.in_is_legacy = isLegacy;
+
+	var result = db.executeProcedureManual(GET_PLANNING_PURPOSE_ID_BY_HL5_ID, params);
+	var list = db.extractArray(result.out_result);
+
+	return list.length? list[0] : {};
 }
 
 /****** INSERT ******/

@@ -216,9 +216,6 @@ function insertSalesBudgetSpendRequest(sales, id, level, conversionValue, automa
 
     if (arrBudgetSpendRequestOtherBudgetApprover.length) {
         dataBudgetSpendRequest.insertBudgetSpendRequestOtherBudgetApprover(arrBudgetSpendRequestOtherBudgetApprover);
-        if (!automaticBudgetApproval) {
-            notifyOtherBudgetApprover(arrBudgetSpendRequestOtherBudgetApprover, userId);
-        }
     }
 
     if (arrSaleHl.length)
@@ -370,7 +367,6 @@ function updateSalesBudgetSpendRequest(sales, id, level, conversionValue, automa
 
     if (arrBudgetSpendRequestOtherBudgetApprover.length) {
         dataBudgetSpendRequest.insertBudgetSpendRequestOtherBudgetApprover(arrBudgetSpendRequestOtherBudgetApprover);
-        notifyOtherBudgetApprover(arrBudgetSpendRequestOtherBudgetApprover, userId);
     }
 
     if (arrBudgetSpendRequestMessageToInsert.length)
@@ -388,7 +384,7 @@ function updateSalesBudgetSpendRequest(sales, id, level, conversionValue, automa
 
 function insertPartnerBudgetSpendRequest(value, message, id, level, conversionValue, automaticBudgetApproval, userId) {
     var arrBudgetSpendRequestMessage = [];
-    var statusId = automaticBudgetApproval ? BUDGET_SPEND_REQUEST_STATUS.APPROVED : BUDGET_SPEND_REQUEST_STATUS.PENDING;
+    var statusId = BUDGET_SPEND_REQUEST_STATUS.APPROVED;
     var budgetSpendRequestId = dataBudgetSpendRequest.insertBudgetSpendRequest(
         value / conversionValue, id, level, message || '',
         BUDGET_SPEND_REQUEST_TYPE.CO_FUNDING_EXTERNAL,
@@ -414,7 +410,7 @@ function updatePartnerBudgetSpendRequest(budgetSpendRequest, id, level, automati
 
     var arrBudgetSpendRequestMessageToUpdate = [];
     var updateMessage = false;
-    var statusId = automaticBudgetApproval ? BUDGET_SPEND_REQUEST_STATUS.APPROVED : BUDGET_SPEND_REQUEST_STATUS.PENDING;
+    var statusId = BUDGET_SPEND_REQUEST_STATUS.APPROVED;
     var budgetSpendRequestList = level == 'HL5' ? dataPartner.getPartnerByHl5Id(id, HIERARCHY_LEVEL.HL5).out_result : dataPartner.getPartnerByHl6Id(id);
     var arrBudgetSpendRequestToUpdate = [];
 
@@ -744,6 +740,12 @@ function getHlSalesByHlId(id, level) {
     return util.objectToArray(result);
 }
 
+/**
+ * @deprecated
+ * Notify about Sales by Email, removed from logic.
+ * @param arrBudgetSpendRequestOtherBudgetApprover
+ * @param userId
+ */
 function notifyOtherBudgetApprover(arrBudgetSpendRequestOtherBudgetApprover, userId) {
     var appUrl = config.getAppUrl();
     arrBudgetSpendRequestOtherBudgetApprover.forEach(function (elem) {
@@ -767,10 +769,6 @@ function validateExternalCofunding(data) {
     data.forEach(function (partner) {
         if (!partner.AMOUNT || !partner.AMOUNT.trim() || !Number(partner.AMOUNT.trim()))
             throw ErrorLib.getErrors().CustomError("", "budgetSpendRequestServices/handlePost/validateExternalCoFunding", INVALID_REQUEST_AMOUNT);
-
-        if (PARTNER_TYPE.INTEL == partner.PARTNER_TYPE_ID && !partner.INTEL_PROJECT_ID.trim()) {
-            throw ErrorLib.getErrors().CustomError("", "budgetSpendRequestServices/handlePost/validateExternalCoFunding", INVALID_INTEL_PROJECT_ID);
-        }
     });
     return true;
 }

@@ -9,6 +9,7 @@ var config = mapper.getDataConfig();
 
 var regionId = "REGION_ID";
 var fromExecutionLevel = "EXECUTION_LEVEL";
+var forFilters = "FILTER";
 
 function processRequest(){
 	return httpUtil.processRequest(handleGet,handlePost,handlePut,handleDelete,false,"",true);
@@ -16,19 +17,22 @@ function processRequest(){
 
 function handleGet(parameters){
     var method = httpUtil.getUrlParameters().get("METHOD");
-	if(parameters.length > 0 && method != fromExecutionLevel && !httpUtil.getUrlParameterByName("PARTIAL") ){
-		if(parameters[0].name == regionId){		
-			var rdo = blRegion.getRegionById(parameters[0].value);
-			httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);				
+	var rdo;
+
+	if (parameters.length > 0 && method === forFilters) {
+		rdo = blRegion.getAllRegionsForFilters();
+	} else if(parameters.length > 0 && method !== fromExecutionLevel && !httpUtil.getUrlParameterByName("PARTIAL") ){
+		if(parameters[0].name === regionId){
+			rdo = blRegion.getRegionById(parameters[0].value);
 		}
 		else{
 			throw ErrorLib.getErrors().BadRequest("","regionServices/handleGet","invalid parameter name (can be: REGION_ID)");
 		}
-	}else{
-		var rdo = blRegion.getAllRegions(method == fromExecutionLevel, httpUtil.getUrlParameterByName("PARTIAL"));
-		httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
+	} else {
+			rdo = blRegion.getAllRegions(method === fromExecutionLevel, httpUtil.getUrlParameterByName("PARTIAL"));
 	}
-	
+
+	httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
 };
 
 function handlePost(reqBody, userSessionID){

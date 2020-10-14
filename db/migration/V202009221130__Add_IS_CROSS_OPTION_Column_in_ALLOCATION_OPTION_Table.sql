@@ -1,0 +1,8 @@
+ALTER TABLE "MKTG_PLANNING_TOOL"."ALLOCATION_OPTION" ADD(IS_CROSS_OPTION TINYINT DEFAULT 0);
+
+-- *************************************************************************************
+-- Update schema version
+INSERT INTO SCHEMA_VERSION(VERSION, DESCRIPTION, SCRIPT)
+VALUES('V5.0.0-198', 'Add IS_CROSS_OPTION Column to ALLOCATION_OPTION Table', 'V202009221130__Add_IS_CROSS_OPTION_Column_in_ALLOCATION_OPTION_Table.sql');
+
+COMMIT;

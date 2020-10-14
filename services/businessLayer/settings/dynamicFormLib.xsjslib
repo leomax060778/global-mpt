@@ -67,6 +67,7 @@ function getDefaultDynamicForm() {
 function getDynamicFormFieldsById(levelId, formUid, formId, isNewRecord, fromDynamicForm, forValidationPurpose) {
     var parsedResult = {};
     var form = {};
+
     // If the request was made from an edition in Team Plan Hierarchy, then the formId will exist
     if (formId) {
         parsedResult = JSON.parse(JSON.stringify(dataDynamicForm.getDynamicFormDetailedById(formId, levelId)));
@@ -74,6 +75,7 @@ function getDynamicFormFieldsById(levelId, formUid, formId, isNewRecord, fromDyn
         // If the request was made from a new registry in Team Plan Hierarchy or it was made from an edition in Settings, then the formUid will exist and will be different from '0'
         if (formUid && formUid !== '0') {
             parsedResult = JSON.parse(JSON.stringify(dataDynamicForm.getDynamicFormDetailedByUid(formUid, levelId)));
+            
             if(parsedResult.DYNAMIC_FORM_MY_BUDGET.length){
                 for (var i = 0; i < parsedResult.DYNAMIC_FORMS_FIELDS_DETAIL.length; i++) {
                     var formIdElement = parsedResult.DYNAMIC_FORMS_FIELDS_DETAIL[i].FIELD_NAME;
@@ -86,6 +88,7 @@ function getDynamicFormFieldsById(levelId, formUid, formId, isNewRecord, fromDyn
         } else {
             // If formId does not exist and formUid is '0', then it means that tha request was made from Settings and was a New Dynamic Form
             var result = JSON.parse(JSON.stringify(dataDynamicForm.getAllDynamicFormFieldsByLevel(levelId)));
+
             parsedResult.DYNAMIC_FORMS_FIELDS_DETAIL = result.DYNAMIC_FIELDS;
             parsedResult.TAB_NAME = result.TAB_NAME;
             parsedResult.DYNAMIC_FORMS_ALLOCATION_DETAIL = [];
@@ -120,6 +123,7 @@ function getDynamicFormFieldsById(levelId, formUid, formId, isNewRecord, fromDyn
                 }
             }
         }
+
         // Creates the dynamic form field map
         form.DYNAMIC_FIELDS = dynamicFormMapCreator(
             parsedResult.DYNAMIC_FORMS_FIELDS_DETAIL,
@@ -358,6 +362,7 @@ function getCompleteForm(hierarchyLevelId){
     var parsedResult = {};
 
     var result = JSON.parse(JSON.stringify(dataDynamicForm.getAllDynamicFormFieldsByLevel(hierarchyLevelId)));
+
     parsedResult.DYNAMIC_FORMS_FIELDS_DETAIL = result.DYNAMIC_FIELDS;
     parsedResult.TAB_NAME = result.TAB_NAME;
     parsedResult.DYNAMIC_FORMS_ALLOCATION_DETAIL = [];
@@ -463,6 +468,7 @@ function getNewDynamicFormDefaultValue(data, dynamicFormId) {
             case "TEAM":
             case "PRIORITY_SUB_TEAM":
             case "DESCRIPTION":
+            case "EVENT_PLANNING_FORM":
                 Array.prototype.push.apply(result, getNewTacticsDetails(data.DYNAMIC_FIELDS[tab_name], dynamicFormId, tabIsHidden, data.HIERARCHY_LEVEL_ID));
                 break;
             case "CAMPAIGN_FORECASTING_KPIS":
@@ -1033,6 +1039,18 @@ function dynamicFormMapCreator(fieldList, selectedAllocationList, allocationList
             case "REGION":
             case "POSTAL_CODE":
             case "EVENT_OWNER":
+            case "AFFILIATED_WITH_LARGER_EVENT_ID":
+            case "AFFILIATED_EVENT_NAME":
+            case "EXISTING_CUSTOMER_PERCENTAGE":
+            case "TARGET_AUDIENCE":
+            case "GROSS_COST":
+            case "NET_COST":
+            case "EXPECTED_REVENUE":
+            case "EXPECTED_COFOUNDING":
+            case "REGISTRATION_PROCESS_ID":
+            case "EVENT_SUMMARY":
+            case "BUSINESS_CASE":
+            case "EVENT_FOLLOW_UP_ACTIVITIES":
                 if (!showAdditionalFields) {
                     currentField.ENABLED_SWITCH = false;
                 }
@@ -1125,7 +1143,6 @@ function dynamicFormMapCreator(fieldList, selectedAllocationList, allocationList
 
         selectedAllocationList.forEach(function (allocation) {
 
-                // throw JSON.stringify(allocation.ALLOCATION_CATEGORY_ID);
                 dynamicFormFieldsMap[formUid].DYNAMIC_FORMS_ALLOCATION_DETAIL[allocation.ALLOCATION_CATEGORY_ID] = {
                     "FIELD_NAME": "ALLOCATION_CATEGORY_OPTION_LEVEL_ID",
                     "CATEGORY_DEFAULT_NAME": allocation.CATEGORY_DEFAULT_NAME,

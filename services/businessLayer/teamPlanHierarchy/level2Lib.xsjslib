@@ -44,6 +44,7 @@ var L2_BUDGET_EXCEEDED = "The maximum number for Budget was exceeded.";
 var L1_MSG_PLAN_NO_CREATED = "The Plan could not be created.";
 var L1_MSG_NO_PRIVILEGE = "Not enough privilege to do this action.";
 var L1_MSG_PLAN_NOT_FOUND = "The Plan can not be found.";
+var L1_CARRY_OVER_TYPE_NOT_FOUND = "The Carry Over type can not be found.";
 var L1_MSG_PLAN_CANT_DELETE = "The selected Plan can not be deleted because has childs.";
 var L1_MSG_USER_NOT_FOUND = "The User can not be found.";
 var L1_MSG_OVER_BUDGET = "Team budget should be less than or equal to parent remaining budget.";
@@ -631,6 +632,87 @@ function getLevel2ById(hl2Id, carryOver, userId) {
             hl2Result.PLANNING_PURPOSE_OPTIONS = planningPurpose.ASSIGNED_PLANNING_PURPOSE_OPTIONS;
         }
     }
+
+    return hl2Result;
+}
+
+function getLevel2CarryOverInformation(type, hl2Id, userId, hl1Id){
+    switch (type) {
+        case "BASIC":
+            return getHl2BasicCarryOver(hl2Id, userId);
+            break;
+        case "KPI":
+            return getTargetKpiCarryOver(hl2Id, hl1Id);
+            break;
+        case "USER_ASSOCIATION":
+            return getUserAssociationCarryOver(hl2Id);
+            break;
+        case "BUDGET_EVENT_APPROVERS":
+            return getBudgetEventApproversCarryOver(hl2Id, hl1Id);
+            break;
+        case "CATEGORY_OPTION":
+            return getCategoryOptionCarryOver(hl2Id, userId);
+            break;
+        default:
+            throw ErrorLib.getErrors().BadRequest("The parameter type is not found", "level2Services/handleGet/getLevel2CarryOverInformation", L1_CARRY_OVER_TYPE_NOT_FOUND);
+            break;
+    }
+}
+
+function getHl2BasicCarryOver(hl2Id, userId){
+    if (!hl2Id)
+        throw ErrorLib.getErrors().BadRequest("The Parameter hl2Id is not found", "level2Services/handleGet/getLevel2ById", L1_MSG_PLAN_NOT_FOUND);
+
+    var hl2Result = JSON.parse(JSON.stringify(dataHl2.getLevel2ById(hl2Id)));
+
+    if (hl2Result.HL2_ID) {
+        var hl1BudgetAllocated = dataHl1.getHl1AllocatedBudget(hl2Result.HL1_ID, 0);
+        var hl2BudgetAllocated = dataHl2.getHl2AllocatedBudget(hl2Result.HL2_ID, 0);
+
+        hl2Result.ACRONYM = hl2Result.ORGANIZATION_ACRONYM;
+        hl2Result.BUDGET = hl2Result.HL2_BUDGET_TOTAL;
+        hl2Result.HL1_BUDGET_REMAINING = Number(hl2Result.HL1_BUDGET) - Number(hl1BudgetAllocated || 0);
+        hl2Result.CONTACT_DATA = contactDataLib.getContactData(hl2Id, 'CENTRAL');
+        hl2Result.HL2_BUDGET_REMAINING = Number(hl2Result.HL2_BUDGET_TOTAL) - Number(hl2BudgetAllocated || 0);
+    }
+
+    return hl2Result;
+}
+
+function getCategoryOptionCarryOver(hl2Id, userId){
+    var hl2Result = {};
+    hl2Result.CATEGORIES = hl3.getCarryOverHl2CategoryOption(hl2Id, userId);
+
+    return hl2Result;
+}
+
+function getTargetKpiCarryOver(hl2Id, hl1Id){
+    var hl2Result = {};
+    var hl2TargetKpi = expectedOutcomesLib.getExpectedOutcomesByHl2Id(hl2Id, hl1Id, true);
+    hl2Result.TARGET_KPIS = expectedOutcomesLib.filterKpiByLevel(hl2TargetKpi, 'HL3');
+
+    return hl2Result;
+}
+
+function getUserAssociationCarryOver(hl2Id){
+    var hl2Result = {};
+    var hl2Users = userbl.getUserByHl2Id(hl2Id);
+
+    hl2Result.ASSIGNED_USERS = hl2Users.users_in;
+    hl2Result.AVAILABLE_USERS = hl2Users.users_out;
+
+    return hl2Result;
+}
+
+function getBudgetEventApproversCarryOver(hl2Id, hl1Id){
+    var hl2Result = {};
+    var eventApprover = eventManagementLib.getEventApproverByHlId('HL2',hl2Id, hl1Id);
+    var bApprovers = budgetApprovers.getL2BudgetApproverByL2Id(hl2Id);
+
+    hl2Result.EVENT_APPROVERS = eventApprover.assigned;
+    hl2Result.EVENT_APPROVERS_AVAILABLE = eventApprover.available;
+    hl2Result.BUDGET_APPROVERS = bApprovers.assigned;
+    hl2Result.BUDGET_APPROVERS_AVAILABLE = bApprovers.available;
 
     return hl2Result;
 }

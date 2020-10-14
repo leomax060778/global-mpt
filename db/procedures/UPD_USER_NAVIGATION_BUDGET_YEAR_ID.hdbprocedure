@@ -1,0 +1,46 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::UPD_USER_NAVIGATION_BUDGET_YEAR_ID" (
+	IN in_user_id bigint,
+	IN in_budget_year_id bigint,
+	IN in_route_name nvarchar(255),
+	OUT out_result INTEGER
+)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
+	AS
+BEGIN
+    DECLARE va_user_navigation_id INTEGER;
+
+    va_user_navigation = SELECT user_nav.USER_NAVIGATION_ID,
+                                user_nav.USER_ID,
+                                user_nav.ROUTE_NAME
+                             FROM USER_NAVIGATION user_nav
+                             WHERE user_nav.USER_ID = in_user_id
+                                 AND user_nav.ROUTE_NAME = in_route_name
+                                 AND user_nav.ENABLED = 1
+                                 AND user_nav.DELETED = 0;
+
+    IF is_empty(:va_user_navigation) THEN
+      va_user_navigation_id := 0;
+    ELSE
+      va_user_navigation_id := :va_user_navigation.USER_NAVIGATION_ID[1];
+    END IF;
+
+    IF :va_user_navigation_id = 0 THEN
+        INSERT INTO USER_NAVIGATION (USER_ID, BUDGET_YEAR_ID, ROUTE_NAME, CREATED_USER_ID)
+        VALUES (in_user_id, in_budget_year_id, in_route_name, in_user_id);
+    ELSE
+        UPDATE user_nav
+        SET user_nav.BUDGET_YEAR_ID = in_budget_year_id,
+            user_nav.SELECTED_ITEM_ID = NULL, -- A change of Budget year means that the user loses the element previously selected
+            user_nav.MODIFIED_DATE_TZ = CURRENT_TIMESTAMP,
+            user_nav.MODIFIED_USER_ID = in_user_id
+        FROM USER_NAVIGATION user_nav
+        WHERE user_nav.USER_NAVIGATION_ID = :va_user_navigation_id;
+    END IF;
+
+    SELECT ::ROWCOUNT INTO out_result FROM DUMMY;
+
+END;
+
+

@@ -20,9 +20,8 @@ function getPathHl1Hl2Hl3(budgetYear, regionId){
 	return dataDetailedReport.getPathHl1Hl2Hl3(budgetYear, regionId);
 }
 
-function getDetailedReport(hl1_id, hl2_id, hl3_id){
-	var rdo = dataDetailedReport.getDetailedReport(hl1_id, hl2_id, hl3_id);
-
+function getDetailedReport(hl1Id, hl2Id, hl3Id, budgetYearId, regionId){
+	var rdo = dataDetailedReport.getDetailedReport(hl1Id, hl2Id, hl3Id, budgetYearId, regionId);
 
 	var map_hl5_cat = {};
     rdo.HL5_CATEGORY.forEach(function(hl5_cat){
@@ -47,7 +46,10 @@ function getDetailedReport(hl1_id, hl2_id, hl3_id){
     });
 
     var map_hl5_kpi = {};
+    var map_hl5_kpi_forecast_hl6 = {};
     var outcomesNameL5 = "";
+
+
     rdo.HL5_KPI.forEach(function(hl5_kpi){
         map_hl5_kpi[hl5_kpi.HL5_ID] = map_hl5_kpi[hl5_kpi.HL5_ID] || {};
         map_hl5_kpi[hl5_kpi.HL5_ID].KPI_COMMENTS = hl5_kpi.HL5_COMMENTS;
@@ -59,6 +61,19 @@ function getDetailedReport(hl1_id, hl2_id, hl3_id){
         map_hl5_kpi[hl5_kpi.HL5_ID][outcomesNameL5 + " VALUE"] = util.numberToLocaleString(hl5_kpi.HL5_EURO_VALUE);
         map_hl5_kpi[hl5_kpi.HL5_ID][outcomesNameL5 + " VOLUME"] = hl5_kpi.HL5_VOLUME_VALUE;
     });
+
+    rdo.HL5_KPI_FORECAST_HL6.forEach(function(hl5_kpi){
+        map_hl5_kpi_forecast_hl6[hl5_kpi.HL5_ID] = map_hl5_kpi_forecast_hl6[hl5_kpi.HL5_ID] || {};
+        map_hl5_kpi_forecast_hl6[hl5_kpi.HL5_ID].KPI_COMMENTS = '';
+        if (hl5_kpi.HL5_OUTCOMES_NAME.indexOf("/") > 0) {
+            outcomesNameL5 = hl5_kpi.HL5_OUTCOMES_NAME.replace("/", " ");
+        } else {
+            outcomesNameL5 = hl5_kpi.HL5_OUTCOMES_NAME;
+        }
+        map_hl5_kpi_forecast_hl6[hl5_kpi.HL5_ID][outcomesNameL5 + " VALUE"] = util.numberToLocaleString(hl5_kpi.HL5_EURO_VALUE);
+        map_hl5_kpi_forecast_hl6[hl5_kpi.HL5_ID][outcomesNameL5 + " VOLUME"] = hl5_kpi.HL5_VOLUME_VALUE;
+    });
+
 
     var map_hl6_kpi = {};
     var outcomesNameL6 = "";
@@ -107,8 +122,11 @@ function getDetailedReport(hl1_id, hl2_id, hl3_id){
             Object.keys(map_hl5_kpi[row.HL5_ID]).forEach(function (kpiKey) {
                 row["HL5_" + kpiKey] = map_hl5_kpi[row.HL5_ID][kpiKey];
             });
+        } else if (map_hl5_kpi_forecast_hl6[row.HL5_ID]) {
+            Object.keys(map_hl5_kpi_forecast_hl6[row.HL5_ID]).forEach(function (kpiKey) {
+                row["HL5_" + kpiKey] = map_hl5_kpi_forecast_hl6[row.HL5_ID][kpiKey];
+            });
         }
-        //if (map_hl5_kpi[row.HL5_ID] || map_hl6_kpi[row.HL6_ID])  throw JSON.stringify(row);
     });
 
     return rdo.DATA;

@@ -197,13 +197,13 @@ function getHL4CarryOverById(hl4Id, userId) {
     if (!hl4Id) {
         throw ErrorLib.getErrors().BadRequest("The HL4 ID could not be found.", "", L4_ID_NOT_FOUND);
     }
-    var budgetYearId = budgetYear.getBudgetYearByLevelParent(5, hl4Id);
-    var requiredDFObject = JSON.parse(JSON.stringify(budgetYear.getRequireDynamicFormByBudgetYearId(budgetYearId)));
+    var budgetYearObject = budgetYear.getBudgetYearByLevelParent(5, hl4Id, true);
+    var requiredDFObject = JSON.parse(JSON.stringify(budgetYear.getRequireDynamicFormByBudgetYearId(budgetYearObject.BUDGET_YEAR_ID)));
 
     var result = {};
     result.HL4 = dataHl4.getHL4CarryOverById(hl4Id);
     result.DYNAMIC_FORM = (Number(requiredDFObject.REQUIRE_DYNAMIC_FORM) === 1) ? blDynamicForm.getFormByParentId(hl4Id, 'L5', null, true, false) : blDynamicForm.getCompleteForm(HIERARCHY_LEVEL.HL5);
-
+    result.BUDGET_YEAR = budgetYearObject;
     return result;
 }
 
@@ -328,15 +328,109 @@ function getLevel4Kpi(hl3Id, userId) {
     return result;
 }
 
-function getMarketingTacticsTree(budgetYearId, regionId, subRegionId, generalFilter){
-    return getHl4ByUserGroupByHl1(null, budgetYearId, regionId, subRegionId, generalFilter);
+function getMarketingTacticsTree(budgetYearId, regionId, subRegionId, searchString, generalFilter, routeName, action, userId){
+    var result = {
+        SEARCH_STRING: "",
+        TREE: [],
+        SEARCH_FILTERS: {
+            BUDGET_YEAR_ID: 0,
+            REGION_ID: 0,
+            SUBREGION_ID: 0
+        },
+        L5_COLLECTION: [],
+        HL4_L5_COLLECTION_MAP: {},
+    };
+
+    var selectedItemId = null;
+
+    if(routeName){
+        if(action !== "INIT"){
+            updateUserNavigation(budgetYearId, regionId, subRegionId, searchString, generalFilter, routeName, action, userId);
+            result.FILTER_ACTIVE = action !== "CLEAR_FILTERS";
+            result.SEARCH_STRING = searchString;
+            result.SEARCH_FILTERS.BUDGET_YEAR_ID = (!!budgetYearId && Number(budgetYearId) !== 0) ? budgetYearId : budgetYear.getDefaultBudgetYear().BUDGET_YEAR_ID;
+            result.SEARCH_FILTERS.REGION_ID = regionId;
+        } else {
+            var userNavigationInfo = userLib.getUserNavigationByRouteNameAndUserId(routeName, userId);
+            result.FILTER_ACTIVE = getFilterState(userNavigationInfo);
+            result.SEARCH_STRING = userNavigationInfo.SEARCH_STRING || null;
+            result.SEARCH_FILTERS.BUDGET_YEAR_ID = userNavigationInfo.BUDGET_YEAR_ID || budgetYear.getDefaultBudgetYear().BUDGET_YEAR_ID;
+            result.SEARCH_FILTERS.REGION_ID = userNavigationInfo.REGION_ID || 0;
+        }
+
+        if(userNavigationInfo && userNavigationInfo.SELECTED_ITEM_ID){
+            selectedItemId = userNavigationInfo.SELECTED_ITEM_ID;
+            var l5Information = level5Lib.getHl5ByHl4Id(userNavigationInfo.SELECTED_ITEM_ID, userId, true);
+
+            result.HL4_L5_COLLECTION_MAP[userNavigationInfo.SELECTED_ITEM_ID] = {};
+            result.HL4_L5_COLLECTION_MAP[userNavigationInfo.SELECTED_ITEM_ID].L5_COLLECTION = l5Information.results;
+            result.HL4_L5_COLLECTION_MAP[userNavigationInfo.SELECTED_ITEM_ID].total_budget = l5Information.total_budget;
+            result.HL4_L5_COLLECTION_MAP[userNavigationInfo.SELECTED_ITEM_ID].remaining_budget = l5Information.remaining_budget;
+            result.HL4_L5_COLLECTION_MAP[userNavigationInfo.SELECTED_ITEM_ID].total_allocated = l5Information.total_allocated;
+
+            result.L5_COLLECTION_VISIBLE = !!selectedItemId;
+            result.L5_COLLECTION = l5Information.results;
+            result.SELECTED_ITEM_ID = userNavigationInfo.SELECTED_ITEM_ID;
+            result.total_budget = l5Information.total_budget;
+            result.remaining_budget = l5Information.remaining_budget;
+            result.total_allocated = l5Information.total_allocated;
+
+            if (result.HL4_L5_COLLECTION_MAP[userNavigationInfo.SELECTED_ITEM_ID].L5_COLLECTION && result.HL4_L5_COLLECTION_MAP[userNavigationInfo.SELECTED_ITEM_ID].L5_COLLECTION.length) {
+                result.HL4_L5_COLLECTION_MAP[userNavigationInfo.SELECTED_ITEM_ID].L5_COLLECTION.forEach(function (elem) {
+                    elem.IMPLEMENT_EXECUTION_LEVEL = true; //getHl5byHl4 already throws an error if this is false, so if it gets here, it is true.
+                });
+            }
+        }
+
+    } else {
+        result.SEARCH_STRING = searchString;
+        result.SEARCH_FILTERS.BUDGET_YEAR_ID = (!!budgetYearId && Number(budgetYearId) !== 0) ? budgetYearId : budgetYear.getDefaultBudgetYear().BUDGET_YEAR_ID;
+        result.SEARCH_FILTERS.REGION_ID = regionId;
+        result.SEARCH_FILTERS.SUBREGION_ID = subRegionId;
+    }
+
+    result.TREE = getHl4ByUserGroupByHl1(
+        null,
+        result.SEARCH_FILTERS.BUDGET_YEAR_ID,
+        result.SEARCH_FILTERS.REGION_ID,
+        result.SEARCH_FILTERS.SUBREGION_ID,
+        result.SEARCH_STRING,
+        generalFilter,
+        selectedItemId);
+
+    return result;
 }
 
-function getHl4ByUserGroupByHl1(userId, budgetYearId, regionId, subRegionId, generalFilter) {
+function getFilterState(userNavigationInfo){
+    return !!userNavigationInfo ? !!userNavigationInfo.SEARCH_STRING ||
+                                  !!userNavigationInfo.BUDGET_YEAR_ID ||
+                                  !!userNavigationInfo.REGION_ID ||
+                                  !!userNavigationInfo.SUBREGION_ID
+                                : false;
+}
+
+function updateUserNavigation(budgetYearId, regionId, subRegionId, searchString, generalFilter, routeName, action, userId){
+    switch (action){
+        case "BUDGET_YEAR_CHANGE":
+            userLib.updateUserNavigationBudgetYearId(routeName, userId, budgetYearId);
+            break;
+        case "SEARCH":
+            userLib.updateUserNavigationSearchString(routeName, userId, searchString);
+            break;
+        case "REGION_CHANGE":
+            userLib.updateUserNavigationRegionId(routeName, userId, regionId);
+            break;
+        case "CLEAR_FILTERS":
+            userLib.deleteUserNavigationByRouteName(routeName, userId);
+            break;
+    }
+}
+
+function getHl4ByUserGroupByHl1(userId, budgetYearId, regionId, subRegionId, searchString, generalFilter, selectedItemId) {
     var currentRegion = regionId ? regionId : 0;
     var superRegion = [];
     var isSA = userId ? util.isSuperAdmin(userId) : 1;
-    var hl3 = dataHl4.getHl4PathByUserId(userId || 0, isSA, budgetYearId || 0, regionId || 0, subRegionId || 0);
+    var hl3 = dataHl4.getHl4PathByUserId(userId || 0, isSA, budgetYearId || 0, regionId || 0, subRegionId || 0, searchString || "");
     var collection = {};
 
     var parser = function (object) {
@@ -357,8 +451,9 @@ function getHl4ByUserGroupByHl1(userId, budgetYearId, regionId, subRegionId, gen
     };
 
     if (!generalFilter || generalFilter === "REGIONAL_MARKETING") {
-
         hl3.forEach(function (item) {
+            var expanded = !!item.HL4_ID && !!selectedItemId && Number(item.HL4_ID) === Number(selectedItemId);
+
             if (Number(item.HL1_REGION_ID) !== 0) { //The 'zero' part is only for broken records in Dev/Testing
                 if (!collection[item.HL1_REGION_ID]) {
                     collection[item.HL1_REGION_ID] = {
@@ -367,6 +462,8 @@ function getHl4ByUserGroupByHl1(userId, budgetYearId, regionId, subRegionId, gen
                         CHILDREN: {}
                     }
                 }
+
+                collection[item.HL1_REGION_ID].EXPANDED = collection[item.HL1_REGION_ID].EXPANDED || expanded;
 
                 if (!collection[item.HL1_REGION_ID].CHILDREN[item.HL1_ID]) {
                     collection[item.HL1_REGION_ID].CHILDREN[item.HL1_ID] = {
@@ -377,6 +474,9 @@ function getHl4ByUserGroupByHl1(userId, budgetYearId, regionId, subRegionId, gen
                     };
                 }
 
+                collection[item.HL1_REGION_ID].CHILDREN[item.HL1_ID].EXPANDED =
+                    collection[item.HL1_REGION_ID].CHILDREN[item.HL1_ID].EXPANDED || expanded;
+
                 if (!collection[item.HL1_REGION_ID].CHILDREN[item.HL1_ID].CHILDREN[item.HL2_ID]) {
                     collection[item.HL1_REGION_ID].CHILDREN[item.HL1_ID].CHILDREN[item.HL2_ID] = {
                         HL2_ID: item.HL2_ID
@@ -385,6 +485,9 @@ function getHl4ByUserGroupByHl1(userId, budgetYearId, regionId, subRegionId, gen
                         , CHILDREN: []
                     };
                 }
+
+                collection[item.HL1_REGION_ID].CHILDREN[item.HL1_ID].CHILDREN[item.HL2_ID].EXPANDED =
+                    collection[item.HL1_REGION_ID].CHILDREN[item.HL1_ID].CHILDREN[item.HL2_ID].EXPANDED || expanded;
 
                 if (!collection[item.HL1_REGION_ID].CHILDREN[item.HL1_ID].CHILDREN[item.HL2_ID].CHILDREN[item.HL3_ID]) {
                     collection[item.HL1_REGION_ID].CHILDREN[item.HL1_ID].CHILDREN[item.HL2_ID].CHILDREN[item.HL3_ID] = {
@@ -395,10 +498,14 @@ function getHl4ByUserGroupByHl1(userId, budgetYearId, regionId, subRegionId, gen
                     };
                 }
 
+                collection[item.HL1_REGION_ID].CHILDREN[item.HL1_ID].CHILDREN[item.HL2_ID].CHILDREN[item.HL3_ID].EXPANDED =
+                    collection[item.HL1_REGION_ID].CHILDREN[item.HL1_ID].CHILDREN[item.HL2_ID].CHILDREN[item.HL3_ID].EXPANDED || expanded;
+
                 collection[item.HL1_REGION_ID].CHILDREN[item.HL1_ID].CHILDREN[item.HL2_ID].CHILDREN[item.HL3_ID].CHILDREN.push({
                     HL4_ID: item.HL4_ID,
                     PATH: item.HL4_PATH,
-                    HL4_DESCRIPTION: item.HL4_DESCRIPTION
+                    HL4_DESCRIPTION: item.HL4_DESCRIPTION,
+                    IS_SELECTED: expanded
                 });
             }
         });
@@ -968,11 +1075,6 @@ function validateRequiredFields(data, userId) {
     //Validate HL4_CRM_DESCRIPTION
     if (!data.HL4_CRM_DESCRIPTION) {
         throw ErrorLib.getErrors().CustomError("", "", L3_MSG_INITIATIVE_CRM_DESCRIPTION);
-    }
-
-    //validate BUDGET
-    if (data.BUDGET < 0) {
-        throw ErrorLib.getErrors().CustomError("", "", L3_MSG_INITIATIVE_BUDGET_VALUE);
     }
 
     //validate SHOPPING_CART_APPROVER
@@ -1677,12 +1779,20 @@ function crmFieldsHaveChanged(data, isComplete, userId, hl4) {
         Object.keys(crmBindingFields).forEach(function (object) {
             crmBindingFields[object].forEach(function (field) {
                 var oldParentPath = '';
-                var parentPath = '';
+                var parentPaths = {
+                    deprecatedParentPath: '',
+                    parentPath: ''
+                };
                 if (field == "PARENT_PATH") {
                     oldParentPath = data.HL4_INFORMATION.HL4.PARENT_PATH || null;
                     /** TODO: sacarlo tambien **/
-                    parentPath = pathBL.getPathByLevelParentForCrm('hl4', data.HL3_ID);
+                    parentPaths = pathBL.getPathByLevelParentForCrm('hl4', data.HL3_ID);
                 }
+
+                var sameAsDeprecatedParentPath = oldParentPath === parentPaths.deprecatedParentPath;
+                var sameAsCurrentParentPath = oldParentPath === parentPaths.parentPath;
+                var pathChanged = !sameAsDeprecatedParentPath && !sameAsCurrentParentPath;
+
                 var parameters = {
                     "in_hl4_id": data.HL4_ID,
                     "in_column_name": field,
@@ -1713,11 +1823,11 @@ function crmFieldsHaveChanged(data, isComplete, userId, hl4) {
                         break;
                 }
 
-                if (fieldChanged || oldParentPath != parentPath || (field == "BUDGET" && budgetChanged)) {
+                if (fieldChanged || pathChanged || (field == "BUDGET" && budgetChanged)) {
                     if (field == "PARENT_PATH") {
                         if (oldParentPath) {
-                            if (oldParentPath != parentPath) {
-                                pathBL.updParentPath('hl4', data.HL4_ID, parentPath, userId);
+                            if (pathChanged) {
+                                pathBL.updParentPath('hl4', data.HL4_ID, parentPaths.parentPath, userId);
                             }
                         } else {
                             pathBL.insParentPath('hl4', data.HL4_ID, data.HL3_ID, userId);
@@ -1726,7 +1836,7 @@ function crmFieldsHaveChanged(data, isComplete, userId, hl4) {
 
                     crmBindingChangedFields.push(parameters);
 
-                    if (field !== "BUDGET" || fieldChanged || oldParentPath != parentPath) {
+                    if (field !== "BUDGET" || fieldChanged || pathChanged) {
                         crmFieldsHaveChanged = true;
                     }
 

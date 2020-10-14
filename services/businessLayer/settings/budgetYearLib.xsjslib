@@ -39,6 +39,23 @@ function getAllBudgetYear() {
     return dbBudget.getAllBudgetYear();
 }
 
+function getAllBudgetYearWithDefaultYearDynamicForm(userSessionID, budgetYearId, level) {
+    var result = {};
+    result.BUDGET_YEAR_COLLECTION = dbBudget.getAllBudgetYear();
+    var selectedBudgetYearId = budgetYearId || getDefaultYearIdFromList(result.BUDGET_YEAR_COLLECTION);
+
+    result.DYNAMIC_FORM_DATA = dynamicFormLib.getFormByRoleIdBudgetYearId(level, selectedBudgetYearId, null, true, userSessionID);
+    return result;
+}
+
+function getDefaultYearIdFromList(budgetYearList){
+    var defaultBudgetYear = budgetYearList.filter(function(elem){
+        return !!elem.DEFAULT_YEAR;
+    });
+
+    return defaultBudgetYear.length ? defaultBudgetYear[0].BUDGET_YEAR_ID : null;
+}
+
 function getAllByRequireDynamicForm(){
     return dbBudget.getAllByRequireDynamicForm();
 }
@@ -81,6 +98,7 @@ function insertBudgetYear(budgetYear, userId) {
                                      budgetYear.VERSIONED_START_DATE,
                                      budgetYear.VERSIONED_END_DATE,
                                      budgetYear.REQUIRE_DYNAMIC_FORM,
+                                     budgetYear.SYNDICATED_SUB_PROGRAM_REQUIRED,
                                      userId);
 
     // If it is checked -> Insert default forms in all Roles.
@@ -127,6 +145,7 @@ function updateBudgetYear(budgetYear, userId) {
                                      budgetYear.VERSIONED_START_DATE,
                                      budgetYear.VERSIONED_END_DATE,
                                      budgetYear.REQUIRE_DYNAMIC_FORM,
+                                     budgetYear.SYNDICATED_SUB_PROGRAM_REQUIRED,
                                      userId);
 }
 
@@ -224,4 +243,12 @@ function getBudgetYearByLevelParent(level, hlId, toFilter, isLegacy) {
         return dbBudget.getBudgetYearByLevelParent(level, hlId, isLegacy);
 
     return dbBudget.getBudgetYearByLevelParent(level, hlId).BUDGET_YEAR_ID;
+}
+
+function getBudgetYearAndDynamicFormByLevelParent(level, hlId, isLegacy, userId){
+    var result = {};
+    result.PARENT_BUDGET_YEAR_ID = dbBudget.getBudgetYearByLevelParent(level, hlId).BUDGET_YEAR_ID;
+    result.DYNAMIC_FORM_DATA = dynamicFormLib.getFormByRoleIdBudgetYearId("L"+level, result.PARENT_BUDGET_YEAR_ID, null, true, userId);
+
+    return result;
 }

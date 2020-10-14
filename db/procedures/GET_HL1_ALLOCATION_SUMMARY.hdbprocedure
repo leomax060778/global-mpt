@@ -2,6 +2,9 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL1_ALLOCATI
 	 IN in_budget_year_id BIGINT
 	,IN in_region_id BIGINT
 	,IN in_subregion_id BIGINT
+	,IN in_limit INTEGER
+	,IN in_offset INTEGER
+	,IN in_search_string NVARCHAR(255)
 	,IN in_user_id BIGINT
 	,IN in_is_super_Admin tinyint
 	,OUT out_result TABLE (
@@ -18,65 +21,52 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL1_ALLOCATI
         , HL1_DESCRIPTION NVARCHAR(255)
         , SUB_AMOUNT DECIMAL(19, 2)
 		)
+	,OUT out_total_rows INTEGER
 )
 	LANGUAGE SQLSCRIPT
 	SQL SECURITY INVOKER
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
 	READS SQL DATA AS
 BEGIN
-	va_subresult =
-	SELECT
-		SUMMARY.HL1_ID
-		, "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(SUMMARY.BUDGET_YEAR, SUMMARY.L1_ACRONYM, '', '', '', '', '') AS CRM_ID
-		, SUMMARY.TOTAL_OF_PRIORITIES AS hl2_total_count
-		, UPPER(SUMMARY.L1_ACRONYM) as acronym
-		, SUMMARY.BUDGET_YEAR
-		, SUMMARY.IS_LOCKED
-        , SUMMARY.CATEGORY_NAME
-        , SUMMARY.OPTION_NAME
-        , SUMMARY.BUDGET_DISTRIBUTION_PERCENTAGE
-        , SUMMARY.BUDGET_DISTRIBUTION_AMOUNT
-		, SUMMARY.REGION_ID
-		, SUMMARY.HL1_DESCRIPTION
-		, SUMMARY.SUB_AMOUNT
-
-	FROM  "_SYS_BIC"."mktgplanningtool.db.data.views/CV_HL1_LOB_ALLOCATION_SUMMARY" SUMMARY
-	WHERE (SUMMARY.BUDGET_YEAR_ID = in_budget_year_id)
-	    AND (in_is_super_Admin = 1 OR SUMMARY.HL1_ID IN (SELECT HL1_ID FROM HL1_USER WHERE USER_ID = in_user_id));
-
+    DECLARE va_all_regions TINYINT;
     -- this filter is necesary to filter GLOBALS, where region_id = 0
-    if in_region_id = -1 then
-        out_result = select T.HL1_ID
-                            		, T.HL2_TOTAL_COUNT
-                            		, T.ACRONYM
-                            		, T.CRM_ID
-                            		, T.BUDGET_YEAR
-                            		, T.IS_LOCKED
-                                    , T.CATEGORY_NAME
-                                    , T.OPTION_NAME
-                                    , T.BUDGET_DISTRIBUTION_PERCENTAGE
-                                    , T.BUDGET_DISTRIBUTION_AMOUNT
-                                    , T.HL1_DESCRIPTION
-                                    , T.SUB_AMOUNT
-                              from :va_subresult T
-                    where T.REGION_ID = 0
-                    ORDER BY T.ACRONYM;
-    else
-        out_result = select T.HL1_ID
-                            , T.HL2_TOTAL_COUNT
-                            , T.ACRONYM
-                            , T.CRM_ID
-                            , T.BUDGET_YEAR
-                            , T.IS_LOCKED
-                            , T.CATEGORY_NAME
-                            , T.OPTION_NAME
-                            , T.BUDGET_DISTRIBUTION_PERCENTAGE
-                            , T.BUDGET_DISTRIBUTION_AMOUNT
-                            , T.HL1_DESCRIPTION
-                            , T.SUB_AMOUNT
-                            from :va_subresult T
-                    where (T.REGION_ID = in_region_id OR in_region_id = 0)
-                    ORDER BY T.ACRONYM;
-     end if;
+    va_all_regions = CASE WHEN in_region_id = -1 THEN 1 ELSE 0 END;
+
+    va_limits = SELECT DISTINCT summary.HL1_ID,
+    							summary.L1_ACRONYM
+                FROM "_SYS_BIC"."mktgplanningtool.db.data.views/CV_HL1_LOB_ALLOCATION_SUMMARY" summary
+                WHERE summary.BUDGET_YEAR_ID = in_budget_year_id
+                    AND ( (:va_all_regions = 0 AND (summary.REGION_ID = in_region_id OR in_region_id = 0))
+                                OR
+                          (:va_all_regions = 1 AND summary.REGION_ID = 0)
+                        )
+                    AND (in_is_super_Admin = 1 OR summary.HL1_ID IN (SELECT HL1_ID FROM HL1_USER WHERE USER_ID = in_user_id))
+                    AND (in_search_string = ''
+                            OR CONTAINS ((summary.L1_ACRONYM,
+                                          summary.HL1_DESCRIPTION),
+                                         in_search_string
+                                         )
+                    )
+                 ORDER BY summary.L1_ACRONYM;
+	out_result = SELECT summary.HL1_ID,
+                        summary.TOTAL_OF_PRIORITIES AS hl2_total_count,
+                        UPPER(summary.L1_ACRONYM) as acronym,
+                        "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(summary.BUDGET_YEAR, summary.L1_ACRONYM, '', '', '', '', '') AS CRM_ID,
+                        summary.BUDGET_YEAR,
+                        summary.IS_LOCKED,
+                        summary.CATEGORY_NAME,
+                        summary.OPTION_NAME,
+                        summary.BUDGET_DISTRIBUTION_PERCENTAGE,
+                        summary.BUDGET_DISTRIBUTION_AMOUNT,
+                        summary.HL1_DESCRIPTION,
+                        summary.SUB_AMOUNT
+                    FROM  "_SYS_BIC"."mktgplanningtool.db.data.views/CV_HL1_LOB_ALLOCATION_SUMMARY" summary
+                    WHERE summary.HL1_ID IN (SELECT lim.HL1_ID FROM :va_limits lim LIMIT :in_limit OFFSET :in_offset)
+                    ORDER BY summary.L1_ACRONYM;
+
+    --Calculate total of rows
+    SELECT DISTINCT COUNT(l1s.HL1_ID)
+        INTO out_total_rows
+        FROM  :va_limits l1s;
 END;
 

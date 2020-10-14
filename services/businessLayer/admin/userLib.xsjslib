@@ -883,3 +883,84 @@ function updateEntity(entity, userId) {
     user.ROLE_ID = RoleLib.getRoleByName(entity.IN_ROLE_NAME).ROLE_ID || "";
     return updateUser(user, userId);
 }
+
+function getUserNavigationByRouteNameAndUserId(routeName, userId){
+    return dbUser.getUserNavigationByRouteNameAndUserId(routeName, userId);
+}
+
+function updateUserNavigationSelectedItem(userId, selectedItemId, routeName){
+    if(!userId){
+        throw ErrorLib.getErrors().BadRequest("The Parameter userId is not found",
+            "/updateUserNavigationSelectedItem", userId);
+    }
+    if(!selectedItemId){
+        throw ErrorLib.getErrors().BadRequest("The Parameter selectedItemId is not found",
+            "/updateUserNavigationSelectedItem", selectedItemId);
+    }
+    if(!routeName){
+        throw ErrorLib.getErrors().BadRequest("The Parameter routeName is not found",
+            "/updateUserNavigationSelectedItem", routeName);
+    }
+
+    dbUser.updateUserNavigationSelectedItem(userId, selectedItemId, routeName);
+}
+
+function updateUserNavigationBudgetYearId(routeName, userId, budgetYearId){
+    if(!userId){
+        throw ErrorLib.getErrors().BadRequest("The Parameter userId is not found",
+            "/updateUserNavigationBudgetYearId", userId);
+    }
+    if(!budgetYearId){
+        throw ErrorLib.getErrors().BadRequest("The Parameter budgetYearId is not found",
+            "/updateUserNavigationBudgetYearId", budgetYearId);
+    }
+    if(!routeName){
+        throw ErrorLib.getErrors().BadRequest("The Parameter routeName is not found",
+            "/updateUserNavigationBudgetYearId", routeName);
+    }
+
+    dbUser.updateUserNavigationBudgetYearId(routeName, userId, budgetYearId);
+}
+
+function updateUserNavigationSearchString(routeName, userId, searchString){
+    if(!userId){
+        throw ErrorLib.getErrors().BadRequest("The Parameter userId is not found",
+            "/updateUserNavigationSearchString", userId);
+    }
+    if(!routeName){
+        throw ErrorLib.getErrors().BadRequest("The Parameter routeName is not found",
+            "/updateUserNavigationSearchString", routeName);
+    }
+
+    dbUser.updateUserNavigationSearchString(routeName, userId, searchString);
+}
+
+function updateUserNavigationRegionId(routeName, userId, regionId){
+    if(!userId){
+        throw ErrorLib.getErrors().BadRequest("The Parameter userId is not found",
+            "/updateUserNavigationRegionId", userId);
+    }
+    if(!regionId){
+        throw ErrorLib.getErrors().BadRequest("The Parameter regionId is not found",
+            "/updateUserNavigationRegionId", regionId);
+    }
+    if(!routeName){
+        throw ErrorLib.getErrors().BadRequest("The Parameter routeName is not found",
+            "/updateUserNavigationRegionId", routeName);
+    }
+
+    dbUser.updateUserNavigationRegionId(routeName, userId, regionId);
+}
+
+function deleteUserNavigationByRouteName(routeName, userId){
+    if(!userId){
+        throw ErrorLib.getErrors().BadRequest("The Parameter userId is not found",
+            "/deleteUserNavigationByRouteName", userId);
+    }
+    if(!routeName){
+        throw ErrorLib.getErrors().BadRequest("The Parameter routeName is not found",
+            "/deleteUserNavigationByRouteName", routeName);
+    }
+
+    dbUser.deleteUserNavigationByRouteName(routeName, userId);
+}

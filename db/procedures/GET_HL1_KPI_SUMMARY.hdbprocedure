@@ -1,9 +1,12 @@
 PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL1_KPI_SUMMARY" (
-	 IN in_budget_year_id BIGINT
-	,IN in_region_id BIGINT
-	,IN in_user_id BIGINT
-	,IN in_is_super_Admin tinyint
-	,OUT out_result TABLE (
+	IN in_budget_year_id BIGINT,
+    IN in_region_id BIGINT,
+    IN in_user_id BIGINT,
+    IN in_is_super_Admin tinyint,
+	IN in_limit INTEGER,
+	IN in_offset INTEGER,
+	IN in_search_string NVARCHAR(255),
+	OUT out_result TABLE (
 		KPI_TYPE_NAME NVARCHAR(255)
         , KPI_OPTION_NAME NVARCHAR(255)
         , TOTAL_VALUE DECIMAL(19,2)
@@ -15,67 +18,59 @@ PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL1_KPI_SUMM
         , HL1_DESCRIPTION NVARCHAR(255)
         , BUDGET_YEAR NVARCHAR(255)
         , REGION_NAME NVARCHAR(255)
-        , HL1_ID BIGINT
+        , HL1_ID INTEGER
         , IS_LOCKED TINYINT
-		)
+		),
+	OUT out_total_rows INTEGER
 ) 
 	LANGUAGE SQLSCRIPT
 	SQL SECURITY INVOKER 
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
 	READS SQL DATA AS
 BEGIN
-	va_subresult = SELECT SUMMARY_VIEW.KPI_TYPE_NAME
-                         , SUMMARY_VIEW.KPI_OPTION_NAME
-                         , SUMMARY_VIEW.TOTAL_VALUE
-                         , SUMMARY_VIEW.TOTAL_VOLUME
-                         , SUMMARY_VIEW.TOTAL_VALUE_ALLOCATED
-                         , SUMMARY_VIEW.TOTAL_VOLUME_ALLOCATED
-                         , UPPER(SUMMARY_VIEW.L1_ACRONYM) as L1_ACRONYM
-                         , "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(SUMMARY_VIEW.BUDGET_YEAR, SUMMARY_VIEW.L1_ACRONYM, '', '', '', '', '') AS CRM_ID
-                         , SUMMARY_VIEW.HL1_DESCRIPTION
-                         , SUMMARY_VIEW.BUDGET_YEAR
-                         , SUMMARY_VIEW.REGION_NAME
-                         , SUMMARY_VIEW.HL1_ID
-                        , SUMMARY_VIEW.IS_LOCKED
-                        , SUMMARY_VIEW.REGION_ID
-                         FROM "_SYS_BIC"."mktgplanningtool.db.data.views/CV_HL1_KPI_SUMMARY" SUMMARY_VIEW
-	INNER JOIN BUDGET_YEAR BUY ON BUY.budget_year_id = SUMMARY_VIEW.budget_year_id
-	LEFT JOIN REGION R ON R.region_id = SUMMARY_VIEW.region_id
-	WHERE (BUY.BUDGET_YEAR_ID = in_budget_year_id)
-	    AND SUMMARY_VIEW.HL1_ID IN (SELECT HL1_ID FROM HL1_USER WHERE USER_ID = in_user_id OR in_is_super_Admin = 1);
+    DECLARE va_all_regions TINYINT;
+    -- this filter is necesary to filter GLOBALS, where region_id = 0
+    va_all_regions = CASE WHEN in_region_id = -1 THEN 1 ELSE 0 END;
 
-    if in_region_id = -1 then
-        out_result = select T.KPI_TYPE_NAME
-                             , T.KPI_OPTION_NAME
-                             , T.TOTAL_VALUE
-                             , T.TOTAL_VOLUME
-                             , T.TOTAL_VALUE_ALLOCATED
-                             , T.TOTAL_VOLUME_ALLOCATED
-                             , T.L1_ACRONYM
-                             , T.CRM_ID
-                             , T.HL1_DESCRIPTION
-                             , T.BUDGET_YEAR
-                             , T.REGION_NAME
-                             , T.HL1_ID
-                             , T.IS_LOCKED
-                              from :va_subresult T
-                    where T.REGION_ID = 0 order by T.L1_ACRONYM;
-    else
-        out_result = select T.KPI_TYPE_NAME
-                             , T.KPI_OPTION_NAME
-                             , T.TOTAL_VALUE
-                             , T.TOTAL_VOLUME
-                             , T.TOTAL_VALUE_ALLOCATED
-                             , T.TOTAL_VOLUME_ALLOCATED
-                             , T.L1_ACRONYM
-                             , T.CRM_ID
-                             , T.HL1_DESCRIPTION
-                             , T.BUDGET_YEAR
-                             , T.REGION_NAME
-                             , T.HL1_ID
-                            , T.IS_LOCKED from :va_subresult T
-                    where (T.REGION_ID = in_region_id OR in_region_id = 0) order by T.L1_ACRONYM;
-     end if;
+    va_limits = SELECT DISTINCT summary.HL1_ID,
+                                summary.L1_ACRONYM
+                    FROM "_SYS_BIC"."mktgplanningtool.db.data.views/CV_HL1_KPI_SUMMARY" summary
+                    WHERE (summary.BUDGET_YEAR_ID = in_budget_year_id)
+                        AND ( (:va_all_regions = 0 AND (SUMMARY.REGION_ID = in_region_id OR in_region_id = 0))
+                                OR
+                              (:va_all_regions = 1 AND summary.REGION_ID = 0)
+                        )
+                        AND (in_is_super_Admin = 1
+                            OR summary.HL1_ID IN (SELECT HL1_ID FROM HL1_USER WHERE USER_ID = in_user_id))
+                        AND (in_search_string = ''
+                                OR CONTAINS ((summary.L1_ACRONYM,
+                                              summary.HL1_DESCRIPTION),
+                                             in_search_string
+                                             )
+                        )
+                    ORDER BY summary.L1_ACRONYM;
+
+    out_result = SELECT DISTINCT summary.KPI_TYPE_NAME,
+                                 summary.KPI_OPTION_NAME,
+                                 summary.TOTAL_VALUE,
+                                 summary.TOTAL_VOLUME,
+                                 summary.TOTAL_VALUE_ALLOCATED,
+                                 summary.TOTAL_VOLUME_ALLOCATED,
+                                 UPPER(summary.L1_ACRONYM) as L1_ACRONYM,
+                                 "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(summary.BUDGET_YEAR, summary.L1_ACRONYM, '', '', '', '', '') AS CRM_ID,
+                                 summary.HL1_DESCRIPTION,
+                                 summary.BUDGET_YEAR,
+                                 summary.REGION_NAME,
+                                 summary.HL1_ID,
+                                 summary.IS_LOCKED
+                  FROM "_SYS_BIC"."mktgplanningtool.db.data.views/CV_HL1_KPI_SUMMARY" summary
+                  WHERE   summary.HL1_ID IN (SELECT lim.HL1_ID FROM :va_limits lim LIMIT :in_limit OFFSET :in_offset)
+                  ORDER BY summary.L1_ACRONYM;
+
+	--Calculate total of rows
+	SELECT DISTINCT COUNT(l1s.HL1_ID)
+        INTO out_total_rows
+        FROM  :va_limits l1s;
 	
 END;
 

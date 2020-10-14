@@ -15,6 +15,7 @@ var section = "FOR_SEARCH";
 var getByBudgetRegion = "GET_HL1_BY_BUDGET_YEAR_REGION";
 var hl1Id = "HL1_ID";
 var GET_HL1_BY_FILTER = "GET_HL1_BY_FILTER";
+var GET_HL1_LOB_ALLOCATION_BY_FILTER = "GET_HL1_LOB_ALLOCATION_BY_FILTER";
 var GET_DATA_KPI = "GET_DATA_KPI";
 var GET_HL1_GROUP_BY_REGION = "GET_HL1_GROUP_BY_REGION";
 var GET_HL1_ALLOCATION_SUMMARY = "GET_HL1_ALLOCATION_SUMMARY";
@@ -31,16 +32,36 @@ function handleGet(parameters, userSessionID){
 
 		if (parameters[0].name == hl1Id){
 			var isCarryOver = httpUtil.getUrlParameters().get("METHOD") == "CARRY_OVER";
-			var rdo = blLevel1.getLevel1ById(parameters[0].value, isCarryOver, userSessionID);
+			var type = httpUtil.getUrlParameters().get("TYPE") || null;
+
+			var rdo = !!type ?
+				blLevel1.getLevel1CarryOverInformation(type, parameters[0].value, userSessionID)
+				:
+				blLevel1.getLevel1ById(parameters[0].value, isCarryOver, userSessionID);
+
 			httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
 		}
 		else if (parameters[0].name == GET_HL1_BY_FILTER){
-			//var objFilter = {};
 			var budgetYearId = httpUtil.getUrlParameters().get("BUDGET_YEAR_ID") || null;
 			var regionId = httpUtil.getUrlParameters().get("REGION_ID") || null;
 			var subRegionId = httpUtil.getUrlParameters().get("SUBREGION_ID") || null;
+			var limit = httpUtil.getUrlParameters().get("LIMIT") || 5;
+			var offset = httpUtil.getUrlParameters().get("OFFSET") || 0;
+			var searchString = httpUtil.getUrlParameters().get("SEARCH_STRING") || null;
 
-			var rdo = blLevel1.getLevel1ByFilters(budgetYearId, regionId, subRegionId, userSessionID);
+			var rdo = blLevel1.getLevel1ByFilters(budgetYearId, regionId, subRegionId, limit, offset, searchString, userSessionID);
+
+			httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
+		}
+		else if (parameters[0].name == GET_HL1_LOB_ALLOCATION_BY_FILTER){
+			var budgetYearId = httpUtil.getUrlParameters().get("BUDGET_YEAR_ID") || null;
+			var regionId = httpUtil.getUrlParameters().get("REGION_ID") || null;
+			var subRegionId = httpUtil.getUrlParameters().get("SUBREGION_ID") || null;
+			var limit = httpUtil.getUrlParameters().get("LIMIT") || 5;
+			var offset = httpUtil.getUrlParameters().get("OFFSET") || 0;
+			var searchString = httpUtil.getUrlParameters().get("SEARCH_STRING") || null;
+
+			var rdo = blLevel1.getLobAllocationSummary(budgetYearId, regionId, subRegionId, limit, offset, searchString, userSessionID);
 
 			httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
 		}
@@ -67,8 +88,11 @@ function handleGet(parameters, userSessionID){
 		else if (parameters[0].name == GET_DATA_KPI){
 			var budgetYearId = httpUtil.getUrlParameters().get("BUDGET_YEAR_ID") || null;
 			var regionId = httpUtil.getUrlParameters().get("REGION_ID") || null;
+			var limit = httpUtil.getUrlParameters().get("LIMIT") || 5;
+			var offset = httpUtil.getUrlParameters().get("OFFSET") || 0;
+			var searchString = httpUtil.getUrlParameters().get("SEARCH_STRING") || null;
 
-			var rdo = blLevel1.getLevel1Kpi(budgetYearId, regionId, userSessionID);
+			var rdo = blLevel1.getLevel1Kpi(budgetYearId, regionId, limit, offset, searchString, userSessionID);
 			httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
 		}
 		else if(httpUtil.getUrlParameters().get("METHOD") == getByBudgetRegion){
@@ -103,11 +127,18 @@ function handlePost(reqBody,userSessionID) {
 function handlePut(reqBody,userSessionID){
     var method = httpUtil.getUrlParameters().get("METHOD");
     var rdo = null;
-    var hl1Id = reqBody.HL1_ID || reqBody.ID;
-    blLevel1.checkPermission(userSessionID, null, hl1Id);
+
     switch (method) {
 		case 'UPDATE_BUDGET':
-            rdo =  blLevel1.updateBudget(hl1Id,reqBody.BUDGET,userSessionID);
+			var hl1Id = reqBody.HL1_ID || reqBody.ID;
+			blLevel1.checkPermission(userSessionID, null, hl1Id);
+
+			rdo =  blLevel1.updateBudget(hl1Id,reqBody.BUDGET,userSessionID);
+			break;
+		case 'BUDGET_MASSIVE_UPDATE':
+			blLevel1.checkPermissionMultiple(userSessionID, reqBody);
+
+			rdo = blLevel1.updatePlannificationLevelBudgets(reqBody, userSessionID);
 			break;
 		default:
             rdo =  blLevel1.updateHl1(reqBody,userSessionID);

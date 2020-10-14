@@ -3,6 +3,7 @@ $.import("mktgplanningtool.services.commonLib","mapper");
 var mapper = $.mktgplanningtool.services.commonLib.mapper;
 var httpUtil = mapper.getHttp();
 var eventManagementLib = mapper.getEventManagementLib();
+var businessEventPlanningForm = mapper.getEventPlanningFormLib();
 var ErrorLib = mapper.getErrors();
 /** *************************************** */
 
@@ -19,8 +20,10 @@ function handleGet(params, userId) {
         	var hl1 = parameters.HL1_ID || 0;
         	var hl2 = parameters.HL2_ID || 0;
         	var hl3 = parameters.HL3_ID || 0;
+        	var budgetYearId = parameters.BUDGET_YEAR_ID || 0;
+            var regionId = parameters.REGION_ID || 0;
         	
-            result = eventManagementLib.getAllEventRequestReport(hl1, hl2, hl3, userId);
+            result = businessEventPlanningForm.getAllEventPlanningFormReport(hl1, hl2, hl3, budgetYearId, regionId, userId);
             break;
         default:
             throw ErrorLib.getErrors().BadRequest("","","invalid parameter value (should be ALL_DETAILED");

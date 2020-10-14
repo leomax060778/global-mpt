@@ -1,12 +1,11 @@
 PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_ALL_MARKETING_PROGRAM" (
-        OUT output_result TABLE(
-            MARKETING_PROGRAM_ID BIGINT
-            , NAME NVARCHAR(100)
-            , DESCRIPTION NVARCHAR(255)
-            , SHOW_VALIDATION_WIZARD TINYINT
---            , VALIDATE TINYINT
-        )
+    OUT output_result TABLE(
+        MARKETING_PROGRAM_ID BIGINT,
+        NAME NVARCHAR(100),
+        DESCRIPTION NVARCHAR(255),
+        SHOW_VALIDATION_WIZARD TINYINT
     )
+)
 	LANGUAGE SQLSCRIPT
 	SQL SECURITY INVOKER 
 	DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
@@ -15,13 +14,13 @@ BEGIN
 /***************************** 
 	Write your procedure logic 
  *****************************/
-	output_result = SELECT MARKETING_PROGRAM_ID
-                    						, upper(NAME) as NAME
-                    						, DESCRIPTION
-                    						, SHOW_VALIDATION_WIZARD
-                    				 FROM MARKETING_PROGRAM
-                    				 WHERE deleted = 0
-                    				 AND enabled = 1
-                    				 ORDER BY SHOW_VALIDATION_WIZARD DESC,
-                    				 upper(NAME) ASC;
+	output_result = SELECT  MARKETING_PROGRAM_ID,
+	                        upper(NAME) as NAME,
+	                        DESCRIPTION,
+	                        SHOW_VALIDATION_WIZARD
+                    FROM MARKETING_PROGRAM
+                    WHERE deleted = 0
+                        AND enabled = 1
+                    ORDER BY DESCRIPTION ASC,
+                             UPPER(NAME) ASC;
 END;

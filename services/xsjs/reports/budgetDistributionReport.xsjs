@@ -15,8 +15,19 @@ function handleGet(parameters, userSessionID){
 	httpUtil.notImplementedMethod();
 };
 
-function handlePost(reqBody,userSessionID) {	
-	var rdo = blBudgetReport.getHl4ByFilter(reqBody,userSessionID);
+function handlePost(reqBody,userSessionID) {
+	var parameters = httpUtil.getJSONParameters();
+	var rdo = null;
+
+	switch(parameters.METHOD) {
+		case "DOWNLOAD":
+			rdo = blBudgetReport.getBudgetDistributionReport(reqBody, userSessionID)
+			break;
+		default:
+			rdo = blBudgetReport.getHl4ByFilter(reqBody, userSessionID);
+			break;
+	}
+
 	httpUtil.handleResponse(rdo, httpUtil.OK, httpUtil.AppJson);
 }
 

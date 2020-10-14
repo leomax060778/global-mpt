@@ -1,134 +1,155 @@
 PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::GET_HL4_PATH_BY_USER_ID" (
-        IN in_user_id BIGINT,
-		IN in_is_super_Admin TINYINT,
-		IN in_budget_year_id BIGINT,
-        IN in_region_id BIGINT,
-        IN in_subregion_id BIGINT,
-        OUT out_result TABLE(
-        	HL1_ID BIGINT,
-        	HL1_REGION_ID INTEGER,
-        	HL1_REGION_NAME NVARCHAR(255),
-        	HL1_PATH NVARCHAR(100),
-        	HL1_DESCRIPTION NVARCHAR(100),
-        	HL2_ID BIGINT,
-        	HL2_DESCRIPTION NVARCHAR(100),
-        	HL2_PATH NVARCHAR(100),
-        	HL3_ID BIGINT,
-            HL3_PATH NVARCHAR(100),
-            HL3_DESCRIPTION NVARCHAR(100),
-            HL4_ID BIGINT,
-            HL4_PATH NVARCHAR(100),
-            HL4_DESCRIPTION NVARCHAR(100)
-        )
+    IN in_user_id BIGINT,
+    IN in_is_super_Admin TINYINT,
+    IN in_budget_year_id BIGINT,
+    IN in_region_id BIGINT,
+    IN in_subregion_id BIGINT,
+    IN in_search_string NVARCHAR(255),
+    OUT out_result TABLE(
+        HL1_ID BIGINT,
+        HL1_REGION_ID INTEGER,
+        HL1_REGION_NAME NVARCHAR(255),
+        HL1_PATH NVARCHAR(100),
+        HL1_DESCRIPTION NVARCHAR(100),
+        HL2_ID BIGINT,
+        HL2_DESCRIPTION NVARCHAR(100),
+        HL2_PATH NVARCHAR(100),
+        HL3_ID BIGINT,
+        HL3_PATH NVARCHAR(100),
+        HL3_DESCRIPTION NVARCHAR(100),
+        HL4_ID BIGINT,
+        HL4_PATH NVARCHAR(100),
+        HL4_DESCRIPTION NVARCHAR(100)
+    )
 )
 LANGUAGE SQLSCRIPT
 SQL SECURITY INVOKER
 DEFAULT SCHEMA "MKTG_PLANNING_TOOL"
 AS
 BEGIN
-IF in_is_super_Admin = 1 THEN
-    var_out_result =
-    SELECT
-        hl1.HL1_ID,
-        hl1.ACRONYM as hl1_acronym,
-        hl1.REGION_ID as hl1_region_id,
-        R.REGION_NAME AS HL1_REGION_NAME,
-        BGY.BUDGET_YEAR as BUDGET_YEAR,
-        hl3.hl3_ID,
-        hl3.acronym as hl3_acronym,
-        hl1.description as HL1_DESCRIPTION,
-        hl3.hl3_description,
-        hl1.region_id as REGION_ID,
-        hl2.HL2_ID,
-        hl2.ORGANIZATION_ACRONYM as H2_ACRONYM,
-        hl2.ORGANIZATION_NAME as HL2_DESCRIPTION,
-        hl4.HL4_ID,
-        hl4.ACRONYM as HL4_ACRONYM,
-        hl4.HL4_CRM_DESCRIPTION AS HL4_DESCRIPTION
-    FROM HL4 hl4
-    INNER JOIN HL3 hl3 ON hl3.hl3_id = hl4.hl3_id AND hl3.enabled=1 AND hl3.deleted=0
-    INNER JOIN HL2 hl2 ON hl2.hl2_id = hl3.hl2_id AND hl2.enabled=1 AND hl2.deleted=0
-    INNER JOIN HL1 hl1 ON hl1.hl1_id = hl2.hl1_id AND hl1.enabled=1 AND hl1.deleted=0
-    INNER JOIN BUDGET_YEAR BGY ON hl1.budget_year_id = BGY.budget_year_id AND BGY.enabled=1 AND BGY.deleted=0
-    INNER JOIN REGION R ON R.region_id = HL1.region_id AND R.IS_GLOBAL_REGION = 0
-    LEFT JOIN SUBREGION SR ON SR.subregion_id = HL2.subregion_id
-    where hl4.enabled=1 AND hl4.deleted=0
-	    AND (BGY.BUDGET_YEAR_ID = in_budget_year_id OR in_budget_year_id = 0)
-	    AND (SR.SUBREGION_ID = in_subregion_id OR in_subregion_id = 0)
-	    ORDER BY HL1.ACRONYM, BGY.BUDGET_YEAR, hl4.ACRONYM;
-ELSE
-    var_out_result = SELECT
-        hl1.HL1_ID,
-        hl1.ACRONYM as hl1_acronym,
-        hl1.REGION_ID as hl1_region_id,
-        R.REGION_NAME AS HL1_REGION_NAME,
-        BGY.BUDGET_YEAR as BUDGET_YEAR,
-        hl3.hl3_ID,
-        hl3.acronym as hl3_acronym,
-        hl1.description as HL1_DESCRIPTION,
-        hl3.hl3_description,
-        hl1.region_id as REGION_ID,
-        hl2.HL2_ID,
-        hl2.ORGANIZATION_ACRONYM as H2_ACRONYM,
-        hl2.ORGANIZATION_NAME as HL2_DESCRIPTION,
-        hl4.HL4_ID,
-        hl4.ACRONYM as HL4_ACRONYM,
-        hl4.HL4_CRM_DESCRIPTION AS HL4_DESCRIPTION
-    FROM HL4 hl4
-    INNER JOIN HL3 hl3 ON hl3.hl3_id = hl4.hl3_id AND hl3.enabled=1 AND hl3.deleted=0
-    INNER JOIN HL3_USER hl3User ON hl3.hl3_id = hl3User.hl3_id and hl3User.USER_ID = in_user_id
-    INNER JOIN HL2 hl2 ON hl2.hl2_id = hl3.hl2_id AND hl2.enabled=1 AND hl2.deleted=0
-    INNER JOIN HL1 hl1 ON hl1.hl1_id = hl2.hl1_id AND hl1.enabled=1 AND hl1.deleted=0
-    INNER JOIN BUDGET_YEAR BGY ON hl1.budget_year_id = BGY.budget_year_id AND BGY.enabled=1 AND BGY.deleted=0
-    INNER JOIN REGION R ON R.region_id = HL1.region_id AND R.IS_GLOBAL_REGION = 0
-    LEFT JOIN SUBREGION SR ON SR.subregion_id = HL2.subregion_id
-    WHERE  hl4.enabled=1 AND hl4.deleted=0
-	    AND (BGY.BUDGET_YEAR_ID = in_budget_year_id OR in_budget_year_id = 0)
-	    AND (SR.SUBREGION_ID = in_subregion_id OR in_subregion_id = 0)
-	    ORDER BY HL1.ACRONYM, BGY.BUDGET_YEAR, hl4.acronym;
-END IF;
 
--- this filter is necesary to filter GLOBALS, where region_id = 0
-    if in_region_id = -1 then
-        out_result =
-        SELECT
-            T.HL1_ID,
-            T.HL1_REGION_ID,
-            T.HL1_REGION_NAME ,
-            "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(T.BUDGET_YEAR, T.hl1_acronym, '', '', '', '', '') AS HL1_PATH,
-            T.HL1_DESCRIPTION,
-            T.HL2_ID,
-            T.HL2_DESCRIPTION,
-            "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(T.BUDGET_YEAR, T.HL1_ACRONYM, T.H2_ACRONYM, '', '', '', '') AS HL2_PATH,
-            T.HL3_ID,
-            "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(T.BUDGET_YEAR, T.hl1_acronym, T.H2_ACRONYM, T.HL3_ACRONYM, '', '', '') AS HL3_PATH,
-            T.HL3_DESCRIPTION,
-            T.HL4_ID,
-            "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(T.BUDGET_YEAR, T.HL1_ACRONYM, T.H2_ACRONYM, T.HL3_ACRONYM, T.HL4_ACRONYM, '', '') AS HL4_PATH,
-            T.HL4_DESCRIPTION
-        FROM :var_out_result T
-        WHERE T.REGION_ID = 0;
+    IF in_is_super_Admin = 1 THEN
+        var_out_result = SELECT DISTINCT hl1.HL1_ID,
+                                        hl1.ACRONYM as hl1_acronym,
+                                        hl1.REGION_ID as hl1_region_id,
+                                        R.REGION_NAME AS HL1_REGION_NAME,
+                                        BGY.BUDGET_YEAR as BUDGET_YEAR,
+                                        hl3.HL3_ID,
+                                        hl3.acronym as hl3_acronym,
+                                        hl1.description as HL1_DESCRIPTION,
+                                        hl3.hl3_description,
+                                        hl1.region_id as REGION_ID,
+                                        hl2.HL2_ID,
+                                        hl2.ORGANIZATION_ACRONYM as H2_ACRONYM,
+                                        hl2.ORGANIZATION_NAME as HL2_DESCRIPTION,
+                                        hl4.HL4_ID,
+                                        hl4.ACRONYM as HL4_ACRONYM,
+                                        hl4.HL4_CRM_DESCRIPTION AS HL4_DESCRIPTION
+                            FROM HL4 hl4
+                            INNER JOIN HL3 hl3 ON hl3.hl3_id = hl4.hl3_id AND hl3.enabled=1 AND hl3.deleted=0
+                            INNER JOIN HL2 hl2 ON hl2.hl2_id = hl3.hl2_id AND hl2.enabled=1 AND hl2.deleted=0
+                            INNER JOIN HL1 hl1 ON hl1.hl1_id = hl2.hl1_id AND hl1.enabled=1 AND hl1.deleted=0
+                            INNER JOIN BUDGET_YEAR BGY ON hl1.budget_year_id = BGY.budget_year_id AND BGY.enabled=1 AND BGY.deleted=0
+                            INNER JOIN REGION R ON R.region_id = HL1.region_id AND R.IS_GLOBAL_REGION = 0
+                            LEFT JOIN SUBREGION SR ON SR.subregion_id = HL2.subregion_id
+                            WHERE hl4.enabled=1 AND hl4.deleted=0
+                                AND (BGY.BUDGET_YEAR_ID = in_budget_year_id OR in_budget_year_id = 0)
+                                AND (SR.SUBREGION_ID = in_subregion_id OR in_subregion_id = 0)
+                                AND (in_search_string = ''
+                                        OR CONTAINS ((  hl4.acronym,
+                                                        hl3.acronym,
+                                                        hl2.ORGANIZATION_ACRONYM,
+                                                        hl1.acronym,
+                                                        hl4.HL4_CRM_DESCRIPTION,
+                                                        hl3.hl3_description,
+                                                        hl2.ORGANIZATION_NAME,
+                                                        hl1.description),
+                                                        in_search_string
+                                                     )
+                                )
+                                ORDER BY HL1.ACRONYM,
+                                         BGY.BUDGET_YEAR,
+                                         hl4.ACRONYM;
+    ELSE
+        var_out_result = SELECT hl1.HL1_ID,
+                                hl1.ACRONYM as hl1_acronym,
+                                hl1.REGION_ID as hl1_region_id,
+                                R.REGION_NAME AS HL1_REGION_NAME,
+                                BGY.BUDGET_YEAR as BUDGET_YEAR,
+                                hl3.hl3_ID,
+                                hl3.acronym as hl3_acronym,
+                                hl1.description as HL1_DESCRIPTION,
+                                hl3.hl3_description,
+                                hl1.region_id as REGION_ID,
+                                hl2.HL2_ID,
+                                hl2.ORGANIZATION_ACRONYM as H2_ACRONYM,
+                                hl2.ORGANIZATION_NAME as HL2_DESCRIPTION,
+                                hl4.HL4_ID,
+                                hl4.ACRONYM as HL4_ACRONYM,
+                                hl4.HL4_CRM_DESCRIPTION AS HL4_DESCRIPTION
+                            FROM HL4 hl4
+                            INNER JOIN HL3 hl3 ON hl3.hl3_id = hl4.hl3_id AND hl3.enabled=1 AND hl3.deleted=0
+                            INNER JOIN HL3_USER hl3User ON hl3.hl3_id = hl3User.hl3_id and hl3User.USER_ID = in_user_id
+                            INNER JOIN HL2 hl2 ON hl2.hl2_id = hl3.hl2_id AND hl2.enabled=1 AND hl2.deleted=0
+                            INNER JOIN HL1 hl1 ON hl1.hl1_id = hl2.hl1_id AND hl1.enabled=1 AND hl1.deleted=0
+                            INNER JOIN BUDGET_YEAR BGY ON hl1.budget_year_id = BGY.budget_year_id AND BGY.enabled=1 AND BGY.deleted=0
+                            INNER JOIN REGION R ON R.region_id = HL1.region_id AND R.IS_GLOBAL_REGION = 0
+                            LEFT JOIN SUBREGION SR ON SR.subregion_id = HL2.subregion_id
+                            WHERE  hl4.enabled=1 AND hl4.deleted=0
+                                AND (BGY.BUDGET_YEAR_ID = in_budget_year_id OR in_budget_year_id = 0)
+                                AND (SR.SUBREGION_ID = in_subregion_id OR in_subregion_id = 0)
+                                AND (in_search_string = ''
+                                        OR CONTAINS ((  hl4.acronym,
+                                                        hl3.acronym,
+                                                        hl2.ORGANIZATION_ACRONYM,
+                                                        hl1.acronym,
+                                                        hl4.HL4_CRM_DESCRIPTION,
+                                                        hl3.hl3_description,
+                                                        hl2.ORGANIZATION_NAME,
+                                                        hl1.description),
+                                                        in_search_string
+                                                     )
+                                )
+                                ORDER BY HL1.ACRONYM, BGY.BUDGET_YEAR, hl4.acronym;
+    END IF;
 
-    else
+    -- this filter is necesary to filter GLOBALS, where region_id = 0
+    IF in_region_id = -1 THEN
+        out_result = SELECT T.HL1_ID,
+                            T.HL1_REGION_ID,
+                            T.HL1_REGION_NAME ,
+                            "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(T.BUDGET_YEAR, T.hl1_acronym, '', '', '', '', '') AS HL1_PATH,
+                            T.HL1_DESCRIPTION,
+                            T.HL2_ID,
+                            T.HL2_DESCRIPTION,
+                            "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(T.BUDGET_YEAR, T.HL1_ACRONYM, T.H2_ACRONYM, '', '', '', '') AS HL2_PATH,
+                            T.HL3_ID,
+                            "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(T.BUDGET_YEAR, T.hl1_acronym, T.H2_ACRONYM, T.HL3_ACRONYM, '', '', '') AS HL3_PATH,
+                            T.HL3_DESCRIPTION,
+                            T.HL4_ID,
+                            "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(T.BUDGET_YEAR, T.HL1_ACRONYM, T.H2_ACRONYM, T.HL3_ACRONYM, T.HL4_ACRONYM, '', '') AS HL4_PATH,
+                            T.HL4_DESCRIPTION
+                        FROM :var_out_result T
+                        WHERE T.REGION_ID = 0;
 
-        out_result =
-        SELECT
-              T.HL1_ID,
-              T.HL1_REGION_ID,
-              T.HL1_REGION_NAME,
-              "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(T.BUDGET_YEAR, T.hl1_acronym, '', '', '', '', '') AS HL1_PATH,
-              T.HL1_DESCRIPTION,
-              T.HL2_ID,
-              T.HL2_DESCRIPTION,
-              "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(T.BUDGET_YEAR, T.hl1_acronym, T.H2_ACRONYM, '', '', '', '') AS HL2_PATH,
-               T.HL3_ID,
-              "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(T.BUDGET_YEAR, T.hl1_acronym, T.H2_ACRONYM, T.hl3_acronym, '', '', '') AS HL3_PATH,
-              T.HL3_DESCRIPTION,
-              T.HL4_ID,
-              "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(T.BUDGET_YEAR, T.HL1_ACRONYM, T.H2_ACRONYM, T.HL3_ACRONYM, T.HL4_ACRONYM, '', '') AS HL4_PATH,
-              T.HL4_DESCRIPTION
-        FROM :var_out_result T
-        WHERE (T.REGION_ID = in_region_id OR in_region_id = 0);
+    ELSE
 
-    end if;
+        out_result = SELECT T.HL1_ID,
+                            T.HL1_REGION_ID,
+                            T.HL1_REGION_NAME,
+                            "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(T.BUDGET_YEAR, T.hl1_acronym, '', '', '', '', '') AS HL1_PATH,
+                            T.HL1_DESCRIPTION,
+                            T.HL2_ID,
+                            T.HL2_DESCRIPTION,
+                            "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(T.BUDGET_YEAR, T.hl1_acronym, T.H2_ACRONYM, '', '', '', '') AS HL2_PATH,
+                             T.HL3_ID,
+                            "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(T.BUDGET_YEAR, T.hl1_acronym, T.H2_ACRONYM, T.hl3_acronym, '', '', '') AS HL3_PATH,
+                            T.HL3_DESCRIPTION,
+                            T.HL4_ID,
+                            "MKTG_PLANNING_TOOL"."mktgplanningtool.db.functions::GET_CRM_ID"(T.BUDGET_YEAR, T.HL1_ACRONYM, T.H2_ACRONYM, T.HL3_ACRONYM, T.HL4_ACRONYM, '', '') AS HL4_PATH,
+                            T.HL4_DESCRIPTION
+                        FROM :var_out_result T
+                        WHERE (T.REGION_ID = in_region_id OR in_region_id = 0);
+
+    END IF;
 END;

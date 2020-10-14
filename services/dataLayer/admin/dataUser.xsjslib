@@ -10,20 +10,30 @@ var spGetAllByUserName = "GET_ALL_USER_BY_USER_NAME";
 var spGetUserById = "GET_USER_BY_ID";
 var spGetUserByUserName = "GET_USER_BY_USERNAME";
 var spGetUserByEmail = "GET_USER_BY_EMAIL";
-var spInseruser = "INS_USER";
-var spUpdateUser = "UPD_USER";
-var spUpdateUserDataProtection = "UPD_USER_DATA_PROTECTION";
-var spUpdateUserWithMask = "UPD_USER_APPLY_DATA_PROTECTION";
-var spRestoreUser = "UPD_USER_RESTORE";
-var spDeleteUser = "DEL_USER";
-var spUpdatePass = "UPD_USER_PASSWORD";
 var spGetUsersByHl1Id = "GET_USERS_BY_HL1_ID";
 var spGetUsersApproversByHl1Id = "GET_USERS_APPROVERS_BY_HL1_ID";
 var spGetUsersByHl2Id = "GET_USERS_BY_HL2_ID";
 var spGetUsersByHl3Id = "GET_USERS_BY_HL3_ID";
 var spGetHash = "GET_HASH_SHA256";
 var spGetUserByRoleId = "GET_USER_BY_ROLE_ID";
+var spGetUserNavigationByRouteNameAndUserId = "GET_USER_NAVIGATION_BY_ROUTE_NAME_AND_USER_ID";
 
+var spInseruser = "INS_USER";
+
+var spUpdateUser = "UPD_USER";
+var spUpdateUserDataProtection = "UPD_USER_DATA_PROTECTION";
+var spUpdateUserWithMask = "UPD_USER_APPLY_DATA_PROTECTION";
+var spRestoreUser = "UPD_USER_RESTORE";
+var spUpdatePass = "UPD_USER_PASSWORD";
+var spUpdateUserNavigationSelectedItem = "UPD_USER_NAVIGATION_SELECTED_ITEM";
+var spUpdateUserNavigationBudgetYearId = "UPD_USER_NAVIGATION_BUDGET_YEAR_ID";
+var spUpdateUserNavigationSearchString = "UPD_USER_NAVIGATION_SEARCH_STRING";
+var spUpdateUserNavigationRegionId = "UPD_USER_NAVIGATION_REGION_ID";
+
+var spDeleteUser = "DEL_USER";
+var spDeleteUserNavigationByRouteName = "DEL_USER_NAVIGATION_BY_ROUTE_NAME";
+
+/** Permission SPs **/
 var spGET_ALL_HL1_PERMISSIONS_BY_USER = "GET_ALL_HL1_PERMISSIONS_BY_USER";
 var spGET_ALL_HL2_PERMISSIONS_BY_USER = "GET_ALL_HL2_PERMISSIONS_BY_USER";
 var spGET_ALL_HL3_PERMISSIONS_BY_USER = "GET_ALL_HL3_PERMISSIONS_BY_USER";
@@ -318,4 +328,65 @@ function existsHlUserPair(levelUserId, hlId, level){
 	var list = db.extractArray(result.out_result);
 	exists = list.length > 0;
 	return exists;
+}
+
+/**
+ * Get all information about navigation
+ * @param routeName {String} Name of the Route to search
+ * @param userId {number} ID of the user that is navigating
+ * @returns {*}
+ */
+function getUserNavigationByRouteNameAndUserId(routeName, userId){
+	var params = {};
+	params.in_user_id = userId;
+	params.in_route_name = routeName;
+
+	var result = db.executeProcedureManual(spGetUserNavigationByRouteNameAndUserId, params);
+	var list = db.extractArray(result.out_result);
+
+	return list.length ? list[0] : {};
+}
+
+function updateUserNavigationSelectedItem(userId, selectedItemId, routeName){
+	var params = {};
+	params.in_user_id = userId;
+	params.in_selected_item_id = selectedItemId;
+	params.in_route_name = routeName;
+
+	return db.executeScalarManual(spUpdateUserNavigationSelectedItem, params, "out_result");
+}
+
+function updateUserNavigationBudgetYearId(routeName, userId, budgetYearId){
+	var params = {};
+	params.in_user_id = userId;
+	params.in_budget_year_id = budgetYearId;
+	params.in_route_name = routeName;
+
+	return db.executeScalarManual(spUpdateUserNavigationBudgetYearId, params, "out_result");
+}
+
+function updateUserNavigationSearchString(routeName, userId, searchString){
+	var params = {};
+	params.in_user_id = userId;
+	params.in_search_string = searchString;
+	params.in_route_name = routeName;
+
+	return db.executeScalarManual(spUpdateUserNavigationSearchString, params, "out_result");
+}
+
+function updateUserNavigationRegionId(routeName, userId, regionId){
+	var params = {};
+	params.in_user_id = userId;
+	params.in_region_id = regionId;
+	params.in_route_name = routeName;
+
+	return db.executeScalarManual(spUpdateUserNavigationRegionId, params, "out_result");
+}
+
+function deleteUserNavigationByRouteName(routeName, userId){
+	var params = {};
+	params.in_user_id = userId;
+	params.in_route_name = routeName;
+
+	return db.executeScalarManual(spDeleteUserNavigationByRouteName, params, "out_result");
 }

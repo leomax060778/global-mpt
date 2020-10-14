@@ -18,17 +18,16 @@ var GET_HL6_BY_USER_ID = 'GET_HL6_BY_USER_ID';
 var spMassInsertHl6LogStatus = "INS_MASS_HL6_LOG_STATUS";
 var HL6_MASS_CHANGE_STATUS = "HL6_MASS_CHANGE_STATUS";
 var GET_HL6_FOR_EMAIL = "GET_HL6_FOR_EMAIL";
+var spGetTargetAudienceByHl6Id = "GET_HL6_TARGET_AUDIENCE_BY_HL6_ID";
 
 /********INSERT**********************/
-var spInsHl6CrmBinding = "INS_HL6_CRM_BINDING";
 var spInsHl6LogStatus = "INS_HL6_LOG_STATUS";
 var spInsHl6 = "INS_HL6";
 var INS_HL6_LEGACY = "INS_HL6_LEGACY";
 var spInsHl6Versioned = "INS_HL6_IN_CRM_VERSION";
-
-
 var spInsHl6Sales = "INS_HL6_SALES";
 var spInsHl6Budget = "INS_HL6_BUDGET";
+var spInsTargetAudience = 'INS_HL6_TARGET_AUDIENCE';
 
 /************OTHER*********************/
 var spHl6ChangeInOutBudget = "HL6_CHANGE_IN_OUT_BUDGET";
@@ -36,7 +35,6 @@ var spHl6ExistsInCrm = "HL6_EXISTS_IN_CRM";
 var spHl6ChangeStatus = "HL6_CHANGE_STATUS";
 
 /***********UPDATE***********************/
-//var spUpdHl6ChangedFields = "UPD_HL6_CHANGED_FIELDS";
 var spUpdHl6 = "UPD_HL6";
 
 /**********DELETE************************/
@@ -46,6 +44,7 @@ var spDelHl6Budget = "DEL_HL6_BUDGET";
 var spDelHl6BudgetHard = "DEL_HL6_BUDGET_HARD";
 var spDelHl6Sales = "DEL_HL6_SALES";
 var spDelHl6SalesHard = "DEL_HL6_SALES_HARD";
+var spHardDeleteTargetAudience = "DEL_HL6_TARGET_AUDIENCE_BY_HL6_ID";
 /******************************************************/
 var spInsertHl6CRMBinding = "INS_HL6_CRM_BINDING";
 var spUpdateHl6CRMBinding = "UPD_HL6_CHANGED_FIELDS";
@@ -70,17 +69,68 @@ var UPD_DELETION_REASON = "UPD_HL6_DELETION_REASON";
 var spUPDEnableCrmCreation = "UPD_ENABLE_CRM_CREATION_BY_ID_BY_LEVEL";
 
 /*inserts*/
-function insertHl6(hl6CrmDescription,hl6Acronym,budget,hl5Id, routeToMarket
-    ,campaignObjectiveId,campaignTypeId,campaignSubTypeId,marketingProgramId,marketingActivityId
-    ,actualStartDate,actualEndDate,showOnDgCalendar,businessOwnerId,employeeResponsibleId,costCenterId, inBudget
-    ,budgetSpendQ1,budgetSpendQ2,budgetSpendQ3,budgetSpendQ4,euroConversionId,hl6StatusDetailId,salesOrganizationId,createdUserId
-    ,distribution_channel_id,venue,city,country,url,results_campaign_q1,results_campaign_q2,results_campaign_q3,results_campaign_q4
-    ,planned_start_date,planned_end_date,street,postal_code
-    , region
-    , event_owner
-    , number_of_participants
-    , priority_id,co_funded,allow_budget_zero, is_power_user, employeeResponsible, personResponsible, is_complete
-    , autoCommit, imported,import_id, inherited_creation, parent_path, enable_crm_creation, dynamicFormId){
+function insertHl6(hl6CrmDescription,
+                   hl6Acronym,
+                   budget,
+                   hl5Id,
+                   routeToMarket,
+                   campaignObjectiveId,
+                   campaignTypeId,
+                   campaignSubTypeId,
+                   marketingProgramId,
+                   marketingActivityId,
+                   actualStartDate,
+                   actualEndDate,
+                   showOnDgCalendar,
+                   businessOwnerId,
+                   employeeResponsibleId,
+                   costCenterId,
+                   inBudget,
+                   budgetSpendQ1,
+                   budgetSpendQ2,
+                   budgetSpendQ3,
+                   budgetSpendQ4,
+                   euroConversionId,
+                   hl6StatusDetailId,
+                   salesOrganizationId,
+                   createdUserId,
+                   distribution_channel_id,
+                   affiliatedWithLargerEventId,
+                   affiliatedEventName,
+                   existingCustomerPercentage,
+                   grossCost,
+                   netCost,
+                   expectedRevenue,
+                   expectedCofounding,
+                   registrationProcessId,
+                   eventSummary,
+                   businessCase,
+                   eventFollowUpActivities,
+                   city,
+                   country,
+                   results_campaign_q1,
+                   results_campaign_q2,
+                   results_campaign_q3,
+                   results_campaign_q4,
+                   planned_start_date,
+                   planned_end_date,
+                   event_owner,
+                   number_of_participants,
+                   priority_id,
+                   co_funded,
+                   allow_budget_zero,
+                   is_power_user,
+                   employeeResponsible,
+                   personResponsible,
+                   is_complete,
+                   autoCommit,
+                   imported,
+                   import_id,
+                   inherited_creation,
+                   parent_path,
+                   enable_crm_creation,
+                   dynamicFormId,
+                   eventAnswerId){
     var params = {
         'in_hl6_crm_description' : hl6CrmDescription,
         'in_acronym': hl6Acronym,
@@ -110,36 +160,43 @@ function insertHl6(hl6CrmDescription,hl6Acronym,budget,hl5Id, routeToMarket
         'in_sales_organization_id' : salesOrganizationId,
         'in_created_user_id' : createdUserId,
         'in_distribution_channel_id' : distribution_channel_id ? distribution_channel_id : null,
-        'in_venue' : venue ? venue : "",
+        'in_affiliated_with_larger_event_id': affiliatedWithLargerEventId ? affiliatedWithLargerEventId : null,
+        'in_affiliated_event_name': affiliatedEventName ? affiliatedEventName : "",
+        'in_existing_customer_percentage': existingCustomerPercentage ? existingCustomerPercentage : null,
+        'in_gross_cost': grossCost ? grossCost : null,
+        'in_net_cost': netCost ? netCost : null,
+        'in_expected_revenue': expectedRevenue ? expectedRevenue : null,
+        'in_expected_cofounding': expectedCofounding ? expectedCofounding : null,
+        'in_registration_process_id': registrationProcessId ? registrationProcessId : null,
+        'in_event_summary': eventSummary ? eventSummary : "",
+        'in_business_case': businessCase ? businessCase : "",
+        'in_event_follow_up_activities': eventFollowUpActivities ? eventFollowUpActivities : "",
         'in_city' : city ? city : "",
         'in_country' : country ? country : "",
-        'in_url' : url ? url : "",
 
         'in_results_campaign_q1' : results_campaign_q1,
         'in_results_campaign_q2' : results_campaign_q2,
         'in_results_campaign_q3' : results_campaign_q3,
-        'in_results_campaign_q4' : results_campaign_q4
-        ,'in_planned_start_date' : planned_start_date
-        ,'in_planned_end_date' : planned_end_date
-        ,'in_street' : street ? street : ""
-        ,'in_postal_code' : postal_code ? postal_code : ""
-        , 'in_region': region || ''
-        , 'in_event_owner': event_owner || ''
-        , 'in_number_of_participants': number_of_participants || ''
-        , 'in_priority_id': priority_id
-        , 'in_imported' : imported ? imported : 0
-        , 'in_import_id': import_id ? import_id : null
-        , 'in_co_funded': co_funded ? co_funded : 0
-        , 'in_allow_budget_zero': allow_budget_zero ? allow_budget_zero : 0
-        , 'in_is_power_user': is_power_user || Number(is_power_user) ? is_power_user : 1
-        , 'in_employee_responsible_user': employeeResponsible || null
-        , 'in_person_responsible' : personResponsible || null
-        , 'in_is_complete': is_complete
-        , 'in_country_id': country
-        , 'in_inherited_creation' : inherited_creation ? 1 : 0
-        ,  'in_parent_path' : parent_path || null
-        , 'in_enable_crm_creation': enable_crm_creation
-        , 'in_dynamic_form_id': dynamicFormId || null
+        'in_results_campaign_q4' : results_campaign_q4,
+        'in_planned_start_date' : planned_start_date,
+        'in_planned_end_date' : planned_end_date,
+        'in_event_owner': event_owner || '',
+        'in_number_of_participants': number_of_participants || '',
+        'in_priority_id': priority_id,
+        'in_imported' : imported ? imported : 0,
+        'in_import_id': import_id ? import_id : null,
+        'in_co_funded': co_funded ? co_funded : 0,
+        'in_allow_budget_zero': allow_budget_zero ? allow_budget_zero : 0,
+        'in_is_power_user': is_power_user || Number(is_power_user) ? is_power_user : 1,
+        'in_employee_responsible_user': employeeResponsible || null,
+        'in_person_responsible' : personResponsible || null,
+        'in_is_complete': is_complete,
+        'in_country_id': country,
+        'in_inherited_creation' : inherited_creation ? 1 : 0,
+        'in_parent_path' : parent_path || null,
+        'in_enable_crm_creation': enable_crm_creation,
+        'in_dynamic_form_id': dynamicFormId || null,
+        'in_event_answer_id': eventAnswerId || null
     };
 
     var rdo;
@@ -160,6 +217,9 @@ function insertHl6Legacy(hl6Id, hl5LegacyId){
     return db.executeScalarManual(INS_HL6_LEGACY,params,'out_result');
 }
 
+function insertTargetAudience(targetAudienceBulk){
+    return db.executeScalar(spInsTargetAudience, targetAudienceBulk, 'out_result');
+}
 /*en inserts*/
 
 
@@ -280,6 +340,14 @@ function getHl6ForSearch(userSessionID, isSA, budget_year_id, region_id, subregi
     result.result = db.extractArray(list.out_result);
     result.total_rows = list.totalRows;
     return result;
+}
+
+function getTargetAudienceByHl6Id(hl6Id){
+    var params = {};
+    params.in_hl6_id = hl6Id;
+
+    var result = db.executeProcedureManual(spGetTargetAudienceByHl6Id,params);
+    return db.extractArray(result.out_result);
 }
 
 function insertHl6Budget(data){
@@ -459,16 +527,64 @@ function massInsertHl6LogStatus(hl6_ids, userId) {
 
 
 
-function updateHl6(hl6Id,acronym, hl6CrmDescription,budget, routeToMarket
-    ,campaignObjectiveId,campaignTypeId,campaignSubTypeId,marketingProgramId,marketingActivityId
-    ,actualStartDate,actualEndDate,showOnDgCalendar,businessOwnerId,employeeResponsibleId,costCenterId, inBudget
-    ,budgetSpendQ1,budgetSpendQ2,budgetSpendQ3,budgetSpendQ4,euroConversionId,hl6StatusDetailId,salesOrganizationId,userId
-    ,distribution_channel_id,venue,city,country,url,results_campaign_q1,results_campaign_q2,results_campaign_q3,results_campaign_q4
-    ,planned_start_date,planned_end_date,street,postal_code
-    , region
-    , event_owner
-    , number_of_participants
-    , priority_id, co_funded, allow_budget_zero,is_power_user,employee_responsible_user,person_responsible, is_complete, inherited_creation, enable_crm_creation,autoCommit){
+function updateHl6(hl6Id,
+                   acronym,
+                   hl6CrmDescription,
+                   budget,
+                   routeToMarket,
+                   campaignObjectiveId,
+                   campaignTypeId,
+                   campaignSubTypeId,
+                   marketingProgramId,
+                   marketingActivityId,
+                   actualStartDate,
+                   actualEndDate,
+                   showOnDgCalendar,
+                   businessOwnerId,
+                   employeeResponsibleId,
+                   costCenterId,
+                   inBudget,
+                   budgetSpendQ1,
+                   budgetSpendQ2,
+                   budgetSpendQ3,
+                   budgetSpendQ4,
+                   euroConversionId,
+                   hl6StatusDetailId,
+                   salesOrganizationId,
+                   userId,
+                   distribution_channel_id,
+                   affiliatedWithLargerEventId,
+                   affiliatedEventName,
+                   existingCustomerPercentage,
+                   grossCost,
+                   netCost,
+                   expectedRevenue,
+                   expectedCofounding,
+                   registrationProcessId,
+                   eventSummary,
+                   businessCase,
+                   eventFollowUpActivities,
+                   city,
+                   country,
+                   results_campaign_q1,
+                   results_campaign_q2,
+                   results_campaign_q3,
+                   results_campaign_q4,
+                   planned_start_date,
+                   planned_end_date,
+                   event_owner,
+                   number_of_participants,
+                   priority_id,
+                   co_funded,
+                   allow_budget_zero,
+                   is_power_user,
+                   employee_responsible_user,
+                   person_responsible,
+                   is_complete,
+                   inherited_creation,
+                   enable_crm_creation,
+                   eventAnswerId,
+                   autoCommit){
     var params = {
         'in_hl6_id': hl6Id,
         'in_hl6_acronym': acronym,
@@ -498,31 +614,38 @@ function updateHl6(hl6Id,acronym, hl6CrmDescription,budget, routeToMarket
         'in_sales_organization_id' : salesOrganizationId,
         'in_modified_user_id' : userId,
         'in_distribution_channel_id' : distribution_channel_id ? distribution_channel_id : null,
-        'in_venue' : venue ? venue : "",
+        'in_affiliated_with_larger_event_id': affiliatedWithLargerEventId ? affiliatedWithLargerEventId : null,
+        'in_affiliated_event_name': affiliatedEventName ? affiliatedEventName : "",
+        'in_existing_customer_percentage': existingCustomerPercentage ? existingCustomerPercentage : null,
+        'in_gross_cost': grossCost ? grossCost : null,
+        'in_net_cost': netCost ? netCost : null,
+        'in_expected_revenue': expectedRevenue ? expectedRevenue : null,
+        'in_expected_cofounding': expectedCofounding ? expectedCofounding : null,
+        'in_registration_process_id': registrationProcessId ? registrationProcessId : null,
+        'in_event_summary': eventSummary ? eventSummary : "",
+        'in_business_case': businessCase ? businessCase : "",
+        'in_event_follow_up_activities': eventFollowUpActivities ? eventFollowUpActivities : "",
         'in_city' : city ? city : "",
         'in_country' : country ? country : "",
-        'in_url' : url ? url : "",
         'in_results_campaign_q1' : results_campaign_q1,
         'in_results_campaign_q2' : results_campaign_q2,
         'in_results_campaign_q3' : results_campaign_q3,
-        'in_results_campaign_q4' : results_campaign_q4
-        ,'in_planned_start_date' : planned_start_date
-        ,'in_planned_end_date' : planned_end_date
-        ,'in_street' : street ? street : ""
-        ,'in_postal_code' : postal_code ? postal_code : ""
-        , 'in_region': region || ''
-        , 'in_event_owner': event_owner || ''
-        , 'in_number_of_participants': number_of_participants || ''
-        , 'in_priority_id': priority_id
-        , 'in_co_funded': co_funded
-        , 'in_allow_budget_zero':allow_budget_zero
-        , 'in_is_power_user': is_power_user || Number(is_power_user) ? is_power_user : 1
-        , 'in_employee_responsible_user' : employee_responsible_user
-        , 'in_person_responsible' : person_responsible
-        , 'in_is_complete': is_complete
-        , 'in_country_id': country
-        , 'in_inherited_creation': inherited_creation ? 1 : 0
-        , 'in_enable_crm_creation': enable_crm_creation
+        'in_results_campaign_q4' : results_campaign_q4,
+        'in_planned_start_date' : planned_start_date,
+        'in_planned_end_date' : planned_end_date,
+        'in_event_owner': event_owner || '',
+        'in_number_of_participants': number_of_participants || '',
+        'in_priority_id': priority_id,
+        'in_co_funded': co_funded,
+        'in_allow_budget_zero':allow_budget_zero,
+        'in_is_power_user': is_power_user || Number(is_power_user) ? is_power_user : 1,
+        'in_employee_responsible_user' : employee_responsible_user,
+        'in_person_responsible' : person_responsible,
+        'in_is_complete': is_complete,
+        'in_country_id': country,
+        'in_inherited_creation': inherited_creation ? 1 : 0,
+        'in_enable_crm_creation': enable_crm_creation,
+        'in_event_answer_id': eventAnswerId
     };
 
     var rdo = db.executeScalarManual(spUpdHl6,params,'out_result');
@@ -721,4 +844,12 @@ function updEnableCrmCreation(hl6Id, flag) {
     };
     var rdo = db.executeScalarManual(spUPDEnableCrmCreation, params, 'out_result');
     return rdo;
+}
+
+function hardDeleteTargetAudienceByHl6Id(hl6Id){
+    var params = {
+        'in_hl6_id' : hl6Id
+    };
+
+    return db.executeScalar(spHardDeleteTargetAudience, params, 'out_result');
 }

@@ -32,12 +32,20 @@ function getL6ByWBSPath(wbs_path) {
 
 function getReportExportData(filter) {
     var res = db.executeProcedure(spGetReportExportData, filter);
-    return db.extractArray(res.out_result);
+
+    return {
+        TOTAL_ROWS: res.out_total_rows || 0,
+        DATA: db.extractArray(res.out_result)
+    };
 }
+
 
 function getReportExportDataRegion(filter) {
     var res = db.executeProcedure(spGetReportExportDataRegion, filter);
-    return db.extractArray(res.out_result);
+    return {
+        TOTAL_ROWS: res.out_total_rows || 0,
+        DATA: db.extractArray(res.out_result)
+    };
 }
 
 function insertLogReportExportData(filterParams) {

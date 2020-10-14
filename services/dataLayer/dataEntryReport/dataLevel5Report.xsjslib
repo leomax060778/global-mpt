@@ -9,6 +9,8 @@ var GET_ALL_HL5_DE_REPORT = "GET_HL5_DE_REPORT";
 var GET_HL5_FOR_PROCESSING_REPORT = "GET_HL5_FOR_PROCESSING_REPORT";
 var GET_PROCESSING_REPORT_FOR_DOWNLOAD = "GET_PROCESSING_REPORT_FOR_DOWNLOAD";
 var GET_ALL_HL5_CHANGED_FIELDS = "GET_ALL_HL5_CHANGED_FIELDS";
+var GET_COUNT_HL5_UPDATE_IN_CRM = "GET_COUNT_HL5_UPDATE_IN_CRM";
+var GET_HL5_EVENTS_PROCESSING_REPORT_FOR_DOWNLOAD = "GET_HL5_EVENTS_PROCESSING_REPORT_FOR_DOWNLOAD";
 var spGetL5ChangedFieldsByHl5Id = "GET_HL5_CHANGED_FIELDS_BY_HL5_ID";
 var spDelL5ChangedFieldsByHl5Id = "DEL_HL5_CRM_BINDING";
 var UPD_PROCESSING_REPORT_EXPORT_DATA = "UPD_PROCESSING_REPORT_EXPORT_DATA";
@@ -37,8 +39,25 @@ function getAllHL5ChangedFields() {
         out_hl5_changed_fields: db.extractArray(data.out_hl5_changed_fields),
         out_hl5: db.extractArray(data.out_hl5),
         out_hl5_category_options: db.extractArray(data.out_hl5_category_options),
-        out_hl5_extra_fields: db.extractArray(data.out_hl5_extra_fields)
+        out_top_hl5_in_crm_version: db.extractArray(data.out_top_hl5_in_crm_version)
     };
+}
+
+function getCountHL5UpdateInCRM(){
+    var data = db.executeProcedureManual(GET_COUNT_HL5_UPDATE_IN_CRM, {});
+    var result = db.extractArray(data.out_result);
+
+    if(result && result.length){
+        return result[0];
+    }
+
+    return null;
+}
+
+function getEventDataReport(){
+    var data = db.executeProcedureManual(GET_HL5_EVENTS_PROCESSING_REPORT_FOR_DOWNLOAD, {});
+
+    return db.extractArray(data.out_result);
 }
 
 function updateLevel5ReportForDownload(HL5_ID) {

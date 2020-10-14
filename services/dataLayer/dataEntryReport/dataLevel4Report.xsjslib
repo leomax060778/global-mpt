@@ -39,7 +39,7 @@ function getAllHL4ChangedFields() {
         out_hl4_changed_fields: db.extractArray(data.out_hl4_changed_fields),
         out_hl4: db.extractArray(data.out_hl4),
         out_hl4_category_options: db.extractArray(data.out_hl4_category_options),
-        out_hl4_extra_fields: db.extractArray(data.out_hl4_extra_fields)
+        out_top_hl4_in_crm_version: db.extractArray(data.out_top_hl4_in_crm_version)
     };
 }
 

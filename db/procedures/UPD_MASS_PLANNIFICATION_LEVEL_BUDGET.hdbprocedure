@@ -1,0 +1,62 @@
+PROCEDURE "MKTG_PLANNING_TOOL"."mktgplanningtool.db.procedures::UPD_MASS_PLANNIFICATION_LEVEL_BUDGET" (
+	IN in_hierarchy_level NVARCHAR(3),
+	IN in_modified_user_id BIGINT,
+	IN in_budgets TABLE(
+	    BUDGET DECIMAL(19,2),
+	    HL_ID BIGINT
+	),
+	OUT out_result bigint
+	)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+	DEFAULT SCHEMA "MKTG_PLANNING_TOOL" AS
+BEGIN
+    IF in_hierarchy_level = 'HL1' THEN
+
+        UPDATE HL1 SET
+            HL1.MODIFIED_DATE_TZ = CURRENT_TIMESTAMP,
+            HL1.MODIFIED_USER_ID = in_modified_user_id,
+            HL1.BUDGET = bulk.BUDGET
+        FROM HL1, (
+            SELECT BUDGET, HL_ID FROM :in_budgets
+        ) bulk
+        WHERE HL1.HL1_ID = bulk.HL_ID;
+
+    ELSEIF in_hierarchy_level = 'HL2' THEN
+
+        UPDATE HL2 SET
+            HL2.MODIFIED_DATE_TZ = CURRENT_TIMESTAMP,
+            HL2.MODIFIED_USER_ID = in_modified_user_id,
+            HL2.HL2_BUDGET_TOTAL = bulk.BUDGET
+        FROM HL2, (
+                    SELECT BUDGET, HL_ID FROM :in_budgets
+                ) bulk
+        WHERE HL2.HL2_ID = bulk.HL_ID;
+
+    ELSEIF in_hierarchy_level = 'HL3' THEN
+
+        UPDATE HL3 SET
+            HL3.MODIFIED_DATE_TZ = CURRENT_TIMESTAMP,
+            HL3.MODIFIED_USER_ID = in_modified_user_id,
+            HL3.HL3_FNC_BUDGET_TOTAL = bulk.BUDGET
+        FROM HL3, (
+            SELECT BUDGET, HL_ID FROM :in_budgets
+        ) bulk
+        WHERE HL3.HL3_ID = bulk.HL_ID;
+
+    ELSEIF in_hierarchy_level = 'HL4' THEN
+
+        UPDATE HL4 SET
+            HL4.MODIFIED_DATE_TZ = CURRENT_TIMESTAMP,
+            HL4.MODIFIED_USER_ID = in_modified_user_id,
+            HL4.BUDGET = bulk.BUDGET
+        FROM HL4, (
+            SELECT BUDGET, HL_ID FROM :in_budgets
+        ) bulk
+        WHERE HL4.HL4_ID = bulk.HL_ID;
+
+    END IF;
+
+	SELECT ::ROWCOUNT INTO out_result FROM DUMMY;
+
+END;

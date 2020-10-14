@@ -19,6 +19,7 @@ function handleGet(param){
     var hierarchy = httpUtil.getUrlParameterByName("HL");
     var hl_id = httpUtil.getUrlParameterByName("HL_ID");
     var ALL = httpUtil.getUrlParameterByName("ALL");
+    var filter = httpUtil.getUrlParameterByName("FILTER");
     var rdo;
     switch (hierarchy){
         case 'HL4':
@@ -39,9 +40,15 @@ function handleGet(param){
             if(method === "DOWNLOAD_CREATE_IN_CRM")
                 rdo = businessPlanL5.getAllL5CreateInCrmDEReportForDownload();
             else if(method === "DOWNLOAD_UPDATE_IN_CRM")
-                rdo = businessPlanL5.getAllHL5ChangedFields();
+                rdo = businessPlanL5.getAllHL5ChangedFields(filter);
             else if(method === "DOWNLOAD_DELETION_REQUEST")
                 rdo = !ALL ? businessPlanL5.getAllHL5DeletionRequest('HL5'): businessPlanL5.getAllHL5DeletionRequest('ALL_LEVELS');
+            else if (method === "GET_COUNT_UPDATE_IN_CRM"){
+                rdo = businessPlanL5.getCountHL5UpdateInCRM();
+            }
+            else if (method === "DOWNLOAD_EVENT_DATA"){
+                rdo = businessPlanL5.getEventDataReport();
+            }
             else if (!hl_id){
                 rdo = businessPlanL5.getAllL5DEReport();
             }
@@ -53,11 +60,17 @@ function handleGet(param){
             if(method === "DOWNLOAD_CREATE_IN_CRM")
                 rdo = businessPlanL6.getAllL6CreateInCrmDEReportForDownload();
             else if(method === "DOWNLOAD_UPDATE_IN_CRM")
-                rdo = businessPlanL6.getAllHL6ChangedFields();
+                rdo = businessPlanL6.getAllHL6ChangedFields(filter);
             else if(method === "DOWNLOAD_DELETION_REQUEST")
                 rdo = !ALL ? businessPlanL6.getAllHL6DeletionRequest('HL6'): businessPlanL6.getAllHL6DeletionRequest('ALL_LEVELS');
+            else if (method === "GET_COUNT_UPDATE_IN_CRM"){
+                rdo = businessPlanL6.getCountHL6UpdateInCRM();
+            }
+            else if (method === "DOWNLOAD_EVENT_DATA"){
+                rdo = businessPlanL6.getEventDataReport();
+            }
             else if (!hl_id){
-                rdo = businessPlanL6.getAllL6DEReport();
+            	rdo = businessPlanL6.getAllL6DEReport();
             }
             else {
                 rdo = businessPlanL6.getL6ChangedFieldsByHl6Id(hl_id);
